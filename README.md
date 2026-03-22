@@ -1,9 +1,9 @@
 # Fusión de Imágenes Infrarrojas y Visibles mediante Morfología Matemática
 
 > **Tesis de Maestría en Ciencias de Datos**  
-> Universidad — Formato Enrique Villalba  
-> Autor: *(tu nombre)*  
-> Director: *(nombre del director)*  
+> Universidad Comunera (UCOM) 
+> Autor: Lic. Juan Pablo Bazan , Ing. Yan Bajac
+> Director: D.Sc Julio Cesar Mello 
 
 ---
 
