@@ -1,0 +1,33 @@
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Dataset raw (imágenes originales – demasiado grandes para git)
+data/raw/
+
+# Imágenes procesadas y resultados generados
+data/processed/
+experiments/results/fused_images/
+experiments/results/metrics_reports/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*~
+
+# Windows
+Thumbs.db
+desktop.ini
