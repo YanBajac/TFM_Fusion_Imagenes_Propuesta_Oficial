@@ -9,3 +9,6 @@ PyWavelets>=1.6
 jupyter>=1.0
 ipykernel>=6.0
 openpyxl>=3.1        # para exportar a Excel desde pandas
+torch>=2.0
+torchvision>=0.15
+plotly>=5.18

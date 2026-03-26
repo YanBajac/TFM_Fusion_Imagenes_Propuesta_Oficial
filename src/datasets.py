@@ -44,3 +44,55 @@ def list_pairs(vis_dir: str | Path = None, ir_dir: str | Path = None) -> list[tu
 
     common = sorted(vis_files.keys() & ir_files.keys())
     return [(vis_files[k], ir_files[k]) for k in common]
+
+
+try:
+    import torch
+    from torch.utils.data import Dataset, DataLoader
+    from torchvision import transforms
+    from PIL import Image
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
+
+if TORCH_AVAILABLE:
+    class TNOFusionDataset(Dataset):
+        """
+        Dataset de PyTorch para cargar pares de imágenes (VIS e IR) simultáneamente.
+        Aplica conversión a escala de grises y convierte a tensores al vuelo.
+        """
+        def __init__(self, vis_dir: str | Path = None, ir_dir: str | Path = None, transform=None):
+            self.pairs = list_pairs(vis_dir, ir_dir)
+            if transform is None:
+                # Transformación por defecto: escala de grises y conversión a Tensor [0, 1]
+                self.transform = transforms.Compose([
+                    transforms.Grayscale(num_output_channels=1),
+                    transforms.ToTensor()
+                ])
+            else:
+                self.transform = transform
+
+        def __len__(self):
+            return len(self.pairs)
+
+        def __getitem__(self, idx):
+            vis_path, ir_path = self.pairs[idx]
+            
+            # Cargar con PIL para que torchvision.transforms funcione nativamente
+            vis_img = Image.open(vis_path).convert('RGB')
+            ir_img = Image.open(ir_path).convert('RGB')
+            
+            if self.transform:
+                vis_tensor = self.transform(vis_img)
+                ir_tensor = self.transform(ir_img)
+            
+            return vis_tensor, ir_tensor
+
+    def get_dataloader(vis_dir=None, ir_dir=None, batch_size=4, shuffle=True, num_workers=0):
+        """
+        Crea un DataLoader de PyTorch para el dataset de fusión.
+        """
+        dataset = TNOFusionDataset(vis_dir, ir_dir)
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
+        return dataloader
+

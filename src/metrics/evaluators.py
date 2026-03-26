@@ -103,8 +103,9 @@ def mutual_information(
     # MI = sum p(f,s) * log( p(f,s) / (p(f)*p(s)) )
     mi = 0.0
     nz = joint_hist > 0
+    p_f_mat = p_f[:, None] * p_s[None, :]
     mi = np.sum(
-        joint_hist[nz] * np.log2(joint_hist[nz] / (p_f[nz.any(axis=1)][:, None] * p_s[nz.any(axis=0)])[nz])
+        joint_hist[nz] * np.log2(joint_hist[nz] / p_f_mat[nz])
     )
     return float(mi)
 
