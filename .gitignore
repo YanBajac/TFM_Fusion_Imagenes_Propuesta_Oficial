@@ -48,3 +48,8 @@ docs/_pv_*.png
 docs/_av_*.png
 docs/_dv_*.png
 docs/_chk_*.png
+
+# Pesos y artefactos de YOLO/entrenamiento
+*.pt
+runs/
+experiments/results/detection_train/
