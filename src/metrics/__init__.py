@@ -5,7 +5,12 @@ from .evaluators import (
     fusion_efficiency,
     mean_gradient,
     mutual_information,
+    spatial_frequency,
+    ssim_fusion,
+    scd,
+    vif_fusion,
     evaluate_all,
+    METRIC_DIRECTION,
 )
 
 __all__ = [
@@ -14,5 +19,10 @@ __all__ = [
     "fusion_efficiency",
     "mean_gradient",
     "mutual_information",
+    "spatial_frequency",
+    "ssim_fusion",
+    "scd",
+    "vif_fusion",
     "evaluate_all",
+    "METRIC_DIRECTION",
 ]

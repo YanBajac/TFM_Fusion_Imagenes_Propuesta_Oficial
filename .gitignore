@@ -31,3 +31,20 @@ build/
 # Windows
 Thumbs.db
 desktop.ini
+
+# Backups locales de documentos (no versionar)
+docs/*_BACKUP*.docx
+docs/*_BACKUP*.pptx
+docs/*BACKUP*.docx
+
+# Datos comprimidos / dataset
+data/*.zip
+*.zip
+
+# Archivos temporales de previsualización y mensajes de commit
+.git_commit_msg.txt
+docs/_preview*.pdf
+docs/_pv_*.png
+docs/_av_*.png
+docs/_dv_*.png
+docs/_chk_*.png

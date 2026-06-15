@@ -28,14 +28,19 @@ from src.utils import save_image, save_metrics_csv
 # ---------------------------------------------------------------------------
 METHODS = {
     # Baselines
-    "Promedio":         lambda v, i: average_fusion(v, i),
-    "PiramideLaplace":  lambda v, i: laplacian_pyramid_fusion(v, i, levels=4),
-    "Curvelet":         lambda v, i: curvelet_fusion(v, i, levels=3),
-    # Método propuesto – distintas configuraciones
-    "TopHat_disk_L3":   lambda v, i: TopHatFusion("disk",   levels=3).fuse(v, i),
-    "TopHat_square_L3": lambda v, i: TopHatFusion("square", levels=3).fuse(v, i),
-    "TopHat_cross_L3":  lambda v, i: TopHatFusion("cross",  levels=3).fuse(v, i),
-    "TopHat_disk_L5":   lambda v, i: TopHatFusion("disk",   levels=5).fuse(v, i),
+    "Promedio":             lambda v, i: average_fusion(v, i),
+    "PiramideLaplace":      lambda v, i: laplacian_pyramid_fusion(v, i, levels=4),
+    "Curvelet":             lambda v, i: curvelet_fusion(v, i, levels=3),
+    # Metodo propuesto - White Top-Hat (WTH)
+    "TopHat_disk_L3":       lambda v, i: TopHatFusion("disk",   levels=3).fuse(v, i),
+    "TopHat_square_L3":     lambda v, i: TopHatFusion("square", levels=3).fuse(v, i),
+    "TopHat_cross_L3":      lambda v, i: TopHatFusion("cross",  levels=3).fuse(v, i),
+    "TopHat_disk_L5":       lambda v, i: TopHatFusion("disk",   levels=5).fuse(v, i),
+    # Metodo propuesto - variante con Black Top-Hat (WTH+BTH)
+    "TopHat_disk_L3_BTH":   lambda v, i: TopHatFusion("disk",   levels=3, use_black_top_hat=True).fuse(v, i),
+    "TopHat_square_L3_BTH": lambda v, i: TopHatFusion("square", levels=3, use_black_top_hat=True).fuse(v, i),
+    "TopHat_cross_L3_BTH":  lambda v, i: TopHatFusion("cross",  levels=3, use_black_top_hat=True).fuse(v, i),
+    "TopHat_disk_L5_BTH":   lambda v, i: TopHatFusion("disk",   levels=5, use_black_top_hat=True).fuse(v, i),
 }
 
 RESULTS_DIR   = ROOT / "experiments" / "results"
@@ -50,32 +55,48 @@ def main():
         print("No se encontraron pares VIS/IR en data/raw/VIS y data/raw/IR.")
         return
 
-    print(f"Procesando {len(pairs)} pares con {len(METHODS)} métodos...\n")
+    # Checkpoint: cargar registros previos y saltar (metodo, imagen) ya hechos.
     records = []
+    done = set()
+    if METRICS_CSV.exists() and METRICS_CSV.stat().st_size > 0:
+        import pandas as pd
+        try:
+            prev = pd.read_csv(METRICS_CSV)
+        except Exception:
+            prev = None
+        # Solo reanudar si el CSV tiene el esquema nuevo (incluye Qabf).
+        if prev is not None and "Qabf" in prev.columns:
+            records = prev.to_dict("records")
+            done = {(r["method"], r["image"]) for r in records}
+            print(f"Reanudando: {len(done)} registros previos encontrados.")
+
+    print(f"Procesando {len(pairs)} pares con {len(METHODS)} metodos...\n")
 
     for vis_path, ir_path in pairs:
         vis, ir = load_pair(vis_path, ir_path)
         image_name = vis_path.stem
 
         for method_name, fuse_fn in METHODS.items():
+            if (method_name, image_name) in done:
+                continue
             try:
                 fused = fuse_fn(vis, ir)
             except Exception as exc:
                 print(f"  [SKIP] {method_name} / {image_name}: {exc}")
                 continue
 
-            # Guardar imagen fusionada
             out_img = FUSED_DIR / method_name / f"{image_name}.png"
             save_image(fused, out_img)
 
-            # Calcular métricas
             metrics = evaluate_all(fused, vis, ir)
             records.append({"method": method_name, "image": image_name, **metrics})
+            done.add((method_name, image_name))
 
             print(f"  OK  {method_name:25s} | {image_name}  EN={metrics['EN']:.4f}")
 
-    # Guardar métricas consolidadas
-    save_metrics_csv(records, METRICS_CSV)
+        # Guardar tras cada par (checkpoint).
+        save_metrics_csv(records, METRICS_CSV)
+
     print(f"\nDone. {len(records)} registros guardados en {METRICS_CSV}")
 
 
