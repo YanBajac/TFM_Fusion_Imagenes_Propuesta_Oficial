@@ -35,6 +35,9 @@ MODALITIES = {
 }
 
 def to_u8(arr): return (np.clip(arr, 0, 1) * 255).astype("uint8")
+def gray2d(x):
+    """Coerciona a 2D en escala de grises (robusto si cv2 devolvió 3 canales)."""
+    return x if getattr(x, 'ndim', 2) == 2 else x[..., :3].mean(axis=2).astype(np.float32)
 
 # ---------------- 1) PSEUDO-ETIQUETAS ----------------
 def pseudo_labels(pairs, labeler, conf=0.25):
@@ -44,8 +47,8 @@ def pseudo_labels(pairs, labeler, conf=0.25):
         from ultralytics import YOLO
         det = YOLO("yolov8n.pt")
         for vp, ip in pairs:
-            v, _ = load_pair(vp, ip); H, W = v.shape
-            r = det(to_u8(v), conf=conf, verbose=False)[0]
+            v, _ = load_pair(vp, ip); v = gray2d(v); H, W = v.shape[:2]
+            r = det(cv2.cvtColor(to_u8(v), cv2.COLOR_GRAY2BGR), conf=conf, verbose=False)[0]
             boxes = []
             if r.boxes is not None:
                 for c, xywhn in zip(r.boxes.cls.tolist(), r.boxes.xywhn.tolist()):
@@ -55,7 +58,7 @@ def pseudo_labels(pairs, labeler, conf=0.25):
     else:  # HOG (offline, solo personas) — respaldo para validar el pipeline sin torch
         hog = cv2.HOGDescriptor(); hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
         for vp, ip in pairs:
-            v, _ = load_pair(vp, ip); H, W = v.shape
+            v, _ = load_pair(vp, ip); v = gray2d(v); H, W = v.shape[:2]
             rects, _ = hog.detectMultiScale(cv2.cvtColor(to_u8(v), cv2.COLOR_GRAY2BGR),
                                             winStride=(8, 8), padding=(8, 8), scale=1.05, hitThreshold=-0.3)
             boxes = [(0, (x + w/2)/W, (y + h/2)/H, w/W, h/H) for (x, y, w, h) in rects]
@@ -75,7 +78,7 @@ def build_datasets(pairs, labels, val_frac=0.3, test_frac=0.0, seed=0):
     img_id = {m: 0 for m in MODALITIES}; ann_id = {m: 0 for m in MODALITIES}
     cls_label = {m: {} for m in MODALITIES}  # imagen -> 1 si hay persona
     for k, (vp, ip) in enumerate(pairs):
-        v, i = load_pair(vp, ip)
+        v, i = load_pair(vp, ip); v = gray2d(v); i = gray2d(i)
         if i.shape != v.shape: i = cv2.resize(i, (v.shape[1], v.shape[0]))
         H, W, boxes = labels[vp.stem]; sp = split_of(k); stem = vp.stem
         for m, fn in MODALITIES.items():
