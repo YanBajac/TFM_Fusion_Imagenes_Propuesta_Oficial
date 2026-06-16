@@ -20,6 +20,7 @@ from src.fusion import (
     laplacian_pyramid_fusion,
     curvelet_fusion,
 )
+from src.fusion.optimal_top_hat import OptimalTopHatFusion
 from src.metrics import evaluate_all
 from src.utils import save_image, save_metrics_csv
 
@@ -41,6 +42,8 @@ METHODS = {
     "TopHat_square_L3_BTH": lambda v, i: TopHatFusion("square", levels=3, use_black_top_hat=True).fuse(v, i),
     "TopHat_cross_L3_BTH":  lambda v, i: TopHatFusion("cross",  levels=3, use_black_top_hat=True).fuse(v, i),
     "TopHat_disk_L5_BTH":   lambda v, i: TopHatFusion("disk",   levels=5, use_black_top_hat=True).fuse(v, i),
+    # Metodo optimo (disco + lineales) con (r,m) optimizados por PSO
+    "TopHat_Optimo":        lambda v, i: OptimalTopHatFusion(r=1, m=0.3, mode="sum").fuse(v, i),
 }
 
 RESULTS_DIR   = ROOT / "experiments" / "results"
