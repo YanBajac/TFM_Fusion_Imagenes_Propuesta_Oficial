@@ -28,6 +28,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from src.datasets import list_pairs, load_pair
 from src.fusion import TopHatFusion, laplacian_pyramid_fusion
+from src.fusion.optimal_top_hat import OptimalMultiscaleFusion
 
 OUT = ROOT / "experiments" / "results" / "detection_train"
 COCO_KEEP = {0: "person", 1: "bicycle", 2: "car", 3: "motorcycle", 5: "bus", 7: "truck"}
@@ -37,8 +38,8 @@ REMAP = {0:0, 1:1, 2:2, 3:3, 5:4, 7:5}
 MODALITIES = {
     "VIS": lambda v, i: v,
     "IR": lambda v, i: i,
-    "Fused_WTH_diskL5": lambda v, i: TopHatFusion("disk", 5).fuse(v, i),
-    "Fused_Laplace": lambda v, i: laplacian_pyramid_fusion(v, i, 4),
+    "Anterior_TopHat": lambda v, i: TopHatFusion("disk", 5).fuse(v, i),
+    "Optimo_Multiescala": lambda v, i: OptimalMultiscaleFusion(n=6, base_radius=2.89, m=0.10).fuse(v, i),
 }
 
 def to_u8_bgr(arr):
