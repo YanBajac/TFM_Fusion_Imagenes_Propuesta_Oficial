@@ -4,7 +4,6 @@ datasets.py
 Funciones para cargar y gestionar pares de imágenes visibles (VIS) e infrarrojas (IR).
 """
 
-import os
 from pathlib import Path
 import cv2
 import numpy as np

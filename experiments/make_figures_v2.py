@@ -1,8 +1,6 @@
 """Genera figuras actualizadas: boxplots de metricas de calidad, ranking
 global con 12 metricas, y efecto del Black Top-Hat."""
-import sys
 from pathlib import Path
-import numpy as np
 import pandas as pd
 import matplotlib
 matplotlib.use("Agg")

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Figura comparativa del método óptimo (PSO) en métricas de fidelidad y contraste."""
 from pathlib import Path
-import pandas as pd, numpy as np
+import pandas as pd
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 ROOT=Path("."); MDIR=ROOT/"experiments/results/metrics_reports"; FIG=ROOT/"docs/figures"

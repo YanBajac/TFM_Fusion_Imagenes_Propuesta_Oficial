@@ -17,7 +17,7 @@ Uso:
   python experiments/detection/run_detection_eval.py --detector hog
   python experiments/detection/run_detection_eval.py --detector yolo --weights yolov8n.pt
 """
-import argparse, glob, os, time, sys
+import argparse, time
 from pathlib import Path
 import numpy as np
 import cv2

@@ -12,7 +12,7 @@ USO:
   python experiments/detection/run_all_applications.py --models yolo --epochs 10 --device cpu
 Salida: experiments/results/metrics_reports/application_results.csv
 """
-import argparse, sys, json, shutil, time
+import argparse, sys, json, shutil
 from pathlib import Path
 import numpy as np, cv2
 

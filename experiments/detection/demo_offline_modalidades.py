@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Demo offline (HOG, referencial) de detectabilidad por MODALIDAD de entrada,
 incluyendo el método óptimo multiescala. NO toca detection_metrics.csv."""
-import sys, glob, time
 from pathlib import Path
 import numpy as np, cv2, pandas as pd
 ROOT=Path(__file__).resolve().parents[2]

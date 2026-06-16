@@ -20,14 +20,14 @@ Uso (en tu PC):
     pip install ultralytics
     python experiments/detection/train_local_pseudolabels.py --epochs 30 --device cpu
 """
-import argparse, shutil, sys
+import argparse, sys
 from pathlib import Path
 import numpy as np, cv2, yaml, pandas as pd
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from src.datasets import list_pairs, load_pair
-from src.fusion import TopHatFusion, laplacian_pyramid_fusion
+from src.fusion import TopHatFusion
 from src.fusion.optimal_top_hat import OptimalMultiscaleFusion
 
 OUT = ROOT / "experiments" / "results" / "detection_train"

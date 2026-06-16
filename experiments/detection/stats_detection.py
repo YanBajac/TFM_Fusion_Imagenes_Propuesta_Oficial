@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Friedman + Wilcoxon (Holm) sobre las métricas de detección por método."""
-import sys
 from pathlib import Path
 import numpy as np, pandas as pd
 from scipy import stats

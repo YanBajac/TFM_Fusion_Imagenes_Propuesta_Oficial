@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
-import pandas as pd, numpy as np
+import pandas as pd
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 MDIR=Path("experiments/results/metrics_reports"); FIG=Path("docs/figures")
 m=pd.read_csv(MDIR/"descriptive_means.csv",index_col=0)

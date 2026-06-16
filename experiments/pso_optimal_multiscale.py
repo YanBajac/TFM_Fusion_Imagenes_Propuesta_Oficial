@@ -13,7 +13,6 @@ import numpy as np
 ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT))
 from src.datasets import list_pairs, load_pair
 from src.fusion.optimal_top_hat import fuse_optimal_multiscale
-from skimage.metrics import structural_similarity as ssim
 from src.metrics.evaluators import _qabf_nabf, scd as _scd, ssim_fusion as _ssimf
 
 STATE=ROOT/"experiments"/"results"/"pso"/"pso_multiscale_state.json"
