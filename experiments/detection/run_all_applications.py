@@ -111,6 +111,17 @@ def build_datasets(pairs, labels, val_frac=0.3, test_frac=0.0, seed=0):
     return cls_label
 
 # ---------------- 3) MODELOS ----------------
+def resolve_device(dev):
+    """Si se pide GPU pero no hay CUDA, usa CPU (evita el error de ultralytics)."""
+    try:
+        import torch
+        if str(dev) != "cpu" and not torch.cuda.is_available():
+            print(f"  [aviso] device={dev} sin CUDA disponible -> usando CPU.")
+            return "cpu"
+    except Exception:
+        return "cpu"
+    return dev
+
 def run_yolo(epochs, device, imgsz=640):
     from ultralytics import YOLO; rows = []
     for m in MODALITIES:
@@ -163,7 +174,12 @@ def run_keras(cls_label, epochs):
         tr = tf.keras.utils.image_dataset_from_directory(str(d/"kr"/"train"), image_size=(IMG, IMG), batch_size=8)
         va = tf.keras.utils.image_dataset_from_directory(str(d/"kr"/"valid"), image_size=(IMG, IMG), batch_size=8, shuffle=False)
         norm = tf.keras.layers.Rescaling(1./255)
-        base = tf.keras.applications.MobileNetV2(input_shape=(IMG, IMG, 3), include_top=False, weights="imagenet"); base.trainable = False
+        try:
+            base = tf.keras.applications.MobileNetV2(input_shape=(IMG, IMG, 3), include_top=False, weights="imagenet")
+        except Exception as e:
+            print(f"  [aviso] sin pesos ImageNet ({str(e)[:40]}); entrenando desde cero."); 
+            base = tf.keras.applications.MobileNetV2(input_shape=(IMG, IMG, 3), include_top=False, weights=None)
+        base.trainable = False
         model = tf.keras.Sequential([norm, base, tf.keras.layers.GlobalAveragePooling2D(),
                                      tf.keras.layers.Dropout(0.2), tf.keras.layers.Dense(2, activation="softmax")])
         model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
@@ -188,9 +204,10 @@ def main():
     labels = pseudo_labels(pairs, args.labeler)
     print("Construyendo datasets de las 4 modalidades...")
     cls_label = build_datasets(pairs, labels, val_frac=args.val_frac)
+    dev = resolve_device(args.device)
     want = [x.strip() for x in args.models.split(",") if x.strip()]
     import pandas as pd; rows = []
-    for name, fn in [("yolo", lambda: run_yolo(args.epochs, args.device)),
+    for name, fn in [("yolo", lambda: run_yolo(args.epochs, dev)),
                      ("rfdetr", lambda: run_rfdetr(args.epochs, args.device)),
                      ("keras", lambda: run_keras(cls_label, args.epochs))]:
         if name not in want: continue
