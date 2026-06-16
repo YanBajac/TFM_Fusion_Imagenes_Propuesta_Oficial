@@ -36,7 +36,8 @@ if FUSED.exists():
         if d.is_dir() and d.name in {
             "Promedio","PiramideLaplace","Curvelet",
             "TopHat_disk_L3","TopHat_square_L3","TopHat_cross_L3","TopHat_disk_L5",
-            "TopHat_disk_L3_BTH","TopHat_square_L3_BTH","TopHat_cross_L3_BTH","TopHat_disk_L5_BTH"}:
+            "TopHat_disk_L3_BTH","TopHat_square_L3_BTH","TopHat_cross_L3_BTH","TopHat_disk_L5_BTH",
+            "TopHat_Optimo","Optimo_Multiescala"}:
             METHOD_DIRS[d.name] = d
 
 VEHICLE = {"car","truck","bus","motorcycle","bicycle"}
