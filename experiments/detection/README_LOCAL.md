@@ -35,3 +35,23 @@ del pipeline; la comparación concluyente sale de YOLO/RF-DETR en GPU.
 `python experiments/detection/run_detection_eval.py --detector yolo` (requiere ultralytics/torch en tu PC)
 corre un YOLO preentrenado sobre todas las modalidades, incluida `Optimo_Multiescala`, y reporta
 detectabilidad + FPS.
+
+---
+
+## ⭐ Vía simple: UN SOLO script para los 3 modelos
+
+En vez de los notebooks, podés correr todo con un comando (sin Roboflow, sin anotar):
+
+```powershell
+# en tu PC (CPU, lento) o en Colab con GPU
+pip install ultralytics rfdetr supervision tensorflow scikit-learn pyyaml
+python experiments\detection\run_all_applications.py --models yolo,rfdetr,keras --epochs 30 --device 0
+```
+
+- `--device 0` = GPU;  `--device cpu` = CPU.  Para prueba rápida: `--epochs 5`.
+- Autogenera pseudo-etiquetas con un YOLO preentrenado (o `--labeler hog` sin torch),
+  arma las 4 modalidades (VIS, IR, Anterior_TopHat, Optimo_Multiescala) en formato YOLO y COCO,
+  entrena los 3 modelos y guarda **`experiments/results/metrics_reports/application_results.csv`**.
+- Cada modelo se **salta solo** si su librería no está instalada (podés correr solo `--models yolo`).
+
+Mandame `application_results.csv` y armo la Parte B de la tesis.

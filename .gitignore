@@ -54,3 +54,4 @@ docs/_chk_*.png
 runs/
 experiments/results/detection_train/
 experiments/results/pso/
+experiments/results/applications/
