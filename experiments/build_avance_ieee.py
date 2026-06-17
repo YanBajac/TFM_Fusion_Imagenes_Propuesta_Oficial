@@ -38,7 +38,7 @@ def line(s, x1, y1, x2, y2, color=RULE, w=0.75):
     ln=s.shapes.add_connector(MSO_CONNECTOR.STRAIGHT, x1,y1,x2,y2)
     ln.line.color.rgb=color; ln.line.width=Pt(w); return ln
 
-def footer(s, page, left="Torre Top-Hat · Fusión VIS+IR — UCOM"):
+def footer(s, page, left="Método óptimo multiescala · Fusión VIS+IR — UCOM"):
     line(s, MX, Inches(7.02), SW-MX, Inches(7.02), RULE, 0.75)
     b,tf=tb(s, MX, Inches(7.08), Inches(8), Inches(0.3))
     run(tf.paragraphs[0], left, 9, LIGHT)
@@ -91,7 +91,7 @@ b,tf=tb(s, MX, Inches(2.2), SW-2*MX, Inches(1.6))
 run(tf.paragraphs[0], "Fusión de imágenes infrarrojas y visibles", 38, INK, bold=True)
 p=tf.add_paragraph(); run(p, "mediante morfología matemática", 38, INK, bold=True)
 b,tf=tb(s, MX, Inches(3.9), SW-2*MX, Inches(0.5))
-run(tf.paragraphs[0], "Una propuesta basada en la Torre Top-Hat multiescala", 18, ACC)
+run(tf.paragraphs[0], "Un método óptimo multiescala con elementos estructurantes circulares y lineales, optimizado por PSO", 18, ACC)
 line(s, MX, Inches(5.4), SW-MX, Inches(5.4), RULE, 0.75)
 b,tf=tb(s, MX, Inches(5.6), SW-2*MX, Inches(1.1))
 run(tf.paragraphs[0], "Autores:  Lic. Juan Pablo Bazán   ·   Ing. Yan Bajac", 13, INK)
@@ -100,7 +100,7 @@ p=tf.add_paragraph(); p.space_before=Pt(6); run(p, "Avance de tesis   ·   Asunc
 
 # ============================ S2 — Agenda ============================
 s=slide(); header(s, "Contenido", "Agenda", 2)
-items=["Problema y objetivos","Marco teórico — Torre Top-Hat","Diseño experimental",
+items=["Problema y objetivos","Marco teórico — método multiescala","Diseño experimental",
  "Hallazgo metodológico (refinamiento)","Resultados cuantitativos","Análisis estadístico",
  "Conclusiones y próximos pasos"]
 b,tf=tb(s, MX, Inches(1.7), SW-2*MX, Inches(5.0))
@@ -126,13 +126,13 @@ para(tf,"Esta tesis aborda esa brecha con un benchmark factorial de 36 configura
 s=slide(); header(s,"1 · Objetivos","Objetivos",4)
 b,tf=tb(s, MX, Inches(1.7), Inches(11.6), Inches(1.4))
 subhead(tf,"Objetivo general", first=True)
-para(tf,"Proponer y evaluar un método de fusión VIS+IR basado en una Torre Top-Hat morfológica multiescala, comparándolo cuantitativa y estadísticamente con métodos clásicos del estado del arte sobre el TNO Image Fusion Dataset.")
+para(tf,"Proponer y evaluar un método óptimo multiescala de fusión VIS+IR (Top-Hat con elementos estructurantes circulares y lineales, optimizado por PSO), comparándolo con el método anterior (Torre Top-Hat) y con baselines clásicos, y analizando su impacto en una tarea de detección, sobre el TNO Image Fusion Dataset.")
 b,tf=tb(s, MX, Inches(3.5), Inches(11.6), Inches(3.2))
 subhead(tf,"Objetivos específicos", first=True)
-esp=["Implementar la Torre Top-Hat con SE disco/cuadrado/cruz, niveles 2–5 y radio base 2/3/5.",
- "Realizar el benchmark exhaustivo de las 36 configuraciones sobre 20 pares VIS/IR.",
- "Comparar contra Promedio, Pirámide de Laplace y Curvelet.",
- "Validar diferencias con Friedman + Wilcoxon pareado y construir un ranking global."]
+esp=["Formular el método óptimo multiescala: banco de 5 SE (disco + 4 líneas) y cascada de n escalas.",
+ "Optimizar automáticamente sus hiperparámetros (n, r, m) mediante enjambre de partículas (PSO).",
+ "Comparar con el método anterior (Torre Top-Hat) y los baselines con 12 métricas y pruebas no paramétricas.",
+ "Analizar el impacto de la fusión en una tarea de detección de objetos (YOLO)."]
 for i,e in enumerate(esp):
     p=tf.add_paragraph(); p.space_after=Pt(7)
     run(p, f"{i+1:02d}   ", 14, ACC, bold=True); run(p, e, 14, INK)
@@ -149,15 +149,17 @@ bullet(tf,"La geometría (disco, cuadrado, cruz) y el radio del SE definen qué 
 bullet(tf,"La Torre Top-Hat encadena varias de estas transformadas con SE de radio creciente para extraer detalles a múltiples escalas.")
 
 # ============================ S6 — Método (figura) ============================
-s=slide(); header(s,"2 · Método propuesto","Torre Top-Hat",6)
-figure(s, FIGDIR+"fig_esquema_torre_tophat.png", MX, Inches(1.65), Inches(7.4), Inches(4.4))
-b,tf=tb(s, Inches(8.5), Inches(1.7), Inches(3.95), Inches(4.6))
-subhead(tf,"Reglas de fusión", first=True)
-bullet(tf,"Detalle (WTH): selección por máxima actividad local por píxel.", size=13)
-bullet(tf,"Base (residual): promedio simple de ambas fuentes.", size=13)
-p=tf.add_paragraph(); p.space_before=Pt(10); p.space_after=Pt(4)
-run(p,"F = base_F + Σₖ WTHₖ − Σₖ BTHₖ", 14, ACC, bold=True)
-para(tf,"Modo WTH (por defecto): el término BTH es nulo. Modo WTH+BTH: el detalle oscuro se resta. Separar detalle y base es metodológicamente crítico.", size=12, color=GRAY)
+s=slide(); header(s,"2 · Método propuesto","Método óptimo multiescala",6)
+figure(s, "docs/figures/disenos/C_esquema_vectorial.png", MX, Inches(1.85), Inches(7.4), Inches(3.0))
+b,tf=tb(s, Inches(8.5), Inches(1.7), Inches(3.95), Inches(4.9))
+subhead(tf,"Operador", first=True)
+bullet(tf,"Banco de 5 SE por escala: 1 disco + 4 líneas (0/45/90/135°), combinados por máximo.", size=12.5)
+bullet(tf,"Cascada de n escalas (radios r·i); agregación por máximo entre escalas.", size=12.5)
+subhead(tf,"Regla de fusión")
+p=tf.add_paragraph(); p.space_after=Pt(4)
+run(p,"F = I_base + m·(WTH_M+WTHS_M) − m·(BTH_M+BTHS_M)", 12, ACC, bold=True)
+subhead(tf,"Optimización (PSO)")
+para(tf,"Los hiperparámetros (n, r, m) se ajustan por enjambre de partículas → n=6, r≈2,89, m=0,10. La Torre Top-Hat (un disco por escala) es el método anterior de comparación.", size=12, color=GRAY)
 
 # ============================ S7 — Diseño (stats) ============================
 s=slide(); header(s,"3 · Diseño experimental","Diseño experimental",7)
@@ -241,11 +243,11 @@ b,tf=tb(s, MX, Inches(6.15), Inches(11.6), Inches(0.7))
 para(tf,"EN/SD/FE crecen con niveles y radio; MG óptimo en disco L5 r3; MI favorece configuraciones someras. Diferencias internas modestas (robustez de hiperparámetros).", first=True, size=12, color=GRAY)
 
 # ============================ S15 — Métricas estándar ============================
-s=slide(); header(s,"5 · Resultados","Métricas estándar de calidad",15)
-figure(s, FIGDIR+"fig_boxplot_metricas_calidad.png", MX, Inches(1.65), Inches(11.6), Inches(4.0),
-       caption="Qabf, Nabf, SSIM, SCD, VIF y SF por método (n = 20).")
+s=slide(); header(s,"5 · Resultados","Método óptimo multiescala vs. baselines",15)
+figure(s, FIGDIR+"fig_metodo_optimo_multiescala.png", MX, Inches(1.65), Inches(11.6), Inches(4.0),
+       caption="Método óptimo multiescala frente al método anterior y a los baselines en las métricas estándar de calidad.")
 b,tf=tb(s, MX, Inches(6.15), Inches(11.6), Inches(0.7))
-para(tf,"La Top-Hat WTH lidera SSIM y SCD y genera menos artefactos (Nabf) entre los multiescala; las variantes +BTH disparan el Nabf.", first=True, size=12, color=GRAY)
+para(tf,"Lidera Qabf (0,514) y SCD (1,453), menor Nabf entre métodos no triviales (0,065) y 2º en SSIM (0,775); cede en contraste (SD, EN). Óptimo PSO: n=6, r≈2,89, m=0,10.", first=True, size=12, color=GRAY)
 
 # ============================ S16 — Efecto BTH ============================
 s=slide(); header(s,"5 · Resultados","Efecto de la variante Black Top-Hat",16)
@@ -263,8 +265,8 @@ para(tf,"En VIS se detecta solo 1 persona; con fusión sube a 13 (WTH) y 16 (+BT
 
 # ============================ S18 — Discusión ============================
 s=slide(); header(s,"7 · Discusión","Discusión integrada",18)
-disc=[("Pirámide de Laplace, baseline a vencer","Encabeza el ranking agregado (4,42) por su ventaja en contraste (SD) y fidelidad perceptual (VIF). No domina en fidelidad estructural."),
- ("Torre Top-Hat: fortalezas complementarias","Mejor configuración disco L5 (2° global, 5,00). Supera a Laplace en SSIM y SCD (significativo); iguala en Qabf y Nabf."),
+disc=[("Método óptimo multiescala: mayor calidad de fusión","Lidera Qabf (0,514) y SCD (1,453), menor Nabf entre métodos no triviales (0,065) y 2º en SSIM (0,775). Supera al método anterior en bordes, correlación y artefactos."),
+ ("Pirámide de Laplace y Torre Top-Hat","Laplace encabeza el ranking agregado de 12 métricas (4,42) por contraste (SD) y VIF; la Torre Top-Hat (anterior, disco L5) es 2ª (5,00)."),
  ("Sesgo intrínseco de la métrica MI","El promedio gana MI per-imagen por su naturaleza lineal. Conviene reportar MI siempre acompañada de métricas de calidad global."),
  ("No hay método universalmente óptimo","La elección depende del criterio operativo: equilibrio global (Laplace), fidelidad estructural / interpretabilidad (Top-Hat) o trazabilidad lineal (Promedio).")]
 b,tf=tb(s, MX, Inches(1.7), Inches(11.6), Inches(5.0))
@@ -276,11 +278,11 @@ for i,(h,t) in enumerate(disc):
 
 # ============================ S19 — Conclusiones ============================
 s=slide(); header(s,"Cierre","Conclusiones",19)
-conc=["La Torre Top-Hat (modo WTH) supera a la Pirámide de Laplace en fidelidad estructural (SSIM, SCD) e iguala en preservación de bordes (Qabf, Nabf).",
- "La Pirámide de Laplace logra el mejor ranking agregado (4,42) por contraste y VIF; Curvelet resulta el más débil al penalizar artefactos (Nabf).",
+conc=["El método óptimo multiescala propuesto logra la mayor calidad de fusión: lidera Qabf (0,514), SCD (1,453) y Nabf (0,065), y es 2º en SSIM (0,775); valida los SE lineales, la cascada y el ajuste por PSO.",
+ "Supera al método anterior (Torre Top-Hat, modo WTH) en bordes, correlación y artefactos; la Torre, a su vez, supera a Laplace en fidelidad estructural (SSIM, SCD).",
+ "La Pirámide de Laplace logra el mejor ranking agregado (4,42) por contraste y VIF; Curvelet es el más débil al penalizar artefactos (Nabf).",
  "Diferencias estadísticamente robustas: Friedman p << 0,001 en las 12 métricas; Wilcoxon con corrección de Holm y tamaño de efecto.",
- "La variante Black Top-Hat aumenta el contraste pero degrada la calidad y multiplica los artefactos (Nabf ×5): no se recomienda por defecto.",
- "Separar las reglas de fusión (detalle vs. base) es una decisión metodológica con impacto cuantitativo medible y transferible."]
+ "La variante Black Top-Hat aumenta el contraste pero degrada la calidad y multiplica los artefactos (Nabf ×5): no se recomienda por defecto."]
 b,tf=tb(s, MX, Inches(1.7), Inches(11.6), Inches(5.0))
 for i,c in enumerate(conc):
     p=tf.paragraphs[0] if i==0 else tf.add_paragraph()
@@ -311,5 +313,5 @@ run(tf.paragraphs[0], "Lic. Juan Pablo Bazán   ·   Ing. Yan Bajac", 12, INK)
 p=tf.add_paragraph(); run(p, "Director: D.Sc. Julio César Mello", 12, INK)
 p=tf.add_paragraph(); p.space_before=Pt(4); run(p, "UCOM — Maestría en Ciencias de Datos · 2026", 10.5, LIGHT)
 
-prs.save("docs/Tesis_Avance_Presentacion_IEEE.pptx")
+prs.save("docs/Tesis_Avance_Presentacion.pptx")
 print("OK slides:", len(prs.slides._sldIdLst))
