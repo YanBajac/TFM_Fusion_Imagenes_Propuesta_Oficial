@@ -46,9 +46,19 @@ def main():
                      "mAP50_95":round(float(met.box.map),4),
                      "precision":round(float(met.box.mp),4), "recall":round(float(met.box.mr),4)})
         print(f"  {m}: mAP50={rows[-1]['mAP50']}  mAP50-95={rows[-1]['mAP50_95']}")
-    df=pd.DataFrame(rows).sort_values("mAP50_95", ascending=False)
-    OUT.parent.mkdir(parents=True, exist_ok=True); df.to_csv(OUT, index=False)
-    print("\n===== COMPARACION mAP (LLVIP) =====")
+    new=pd.DataFrame(rows)
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    if OUT.exists() and len(new):
+        prev=pd.read_csv(OUT)
+        prev=prev[~prev["method"].isin(new["method"])]     # reemplaza filas recomputadas
+        df=pd.concat([prev, new], ignore_index=True)
+    elif OUT.exists():
+        df=pd.read_csv(OUT)
+    else:
+        df=new
+    df=df.sort_values("mAP50_95", ascending=False)
+    df.to_csv(OUT, index=False)
+    print("\n===== COMPARACION mAP (LLVIP) — acumulado =====")
     print(df.to_string(index=False)); print("\nGuardado:", OUT)
 
 if __name__=="__main__": main()
