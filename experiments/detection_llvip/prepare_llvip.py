@@ -2,22 +2,15 @@
 """
 prepare_llvip.py — Construye datasets YOLO FUSIONADOS a partir de LLVIP.
 
-LLVIP (descargar de https://github.com/bupt-ai-cz/LLVIP) estructura tipica:
-  LLVIP/visible/train/*.jpg   LLVIP/visible/test/*.jpg
-  LLVIP/infrared/train/*.jpg  LLVIP/infrared/test/*.jpg
-  LLVIP/Annotations/*.xml     (VOC, clase 'person'; cajas validas sobre el par alineado)
+OJO: necesitas el DATASET (no el repo de codigo). Descargalo de:
+  https://drive.google.com/file/d/1VTlT3Y7e1h-Zsne4zahjx5q0TK2ClMVv/view
+y descomprimilo. Debe contener carpetas 'visible' e 'infrared' (con train/test)
+y 'Annotations' (VOC, clase 'person').
 
-Para CADA metodo de fusion genera  <out>/llvip_<metodo>/  con formato YOLO:
-  images/train, images/val, labels/train, labels/val, data.yaml
-Las ETIQUETAS son identicas para todos los metodos (solo cambian los pixeles).
-Asi la comparacion de mAP aisla el efecto del metodo de fusion.
-
-Uso (ejemplo, PowerShell):
-  python experiments\detection_llvip\prepare_llvip.py --llvip_root "D:\datasets\LLVIP" `
-      --out datasets --methods VIS,IR,Promedio,PiramideLaplace,Optimo_Multiescala,Propuesta_Novedosa `
-      --limit-train 2000 --limit-val 500
+Genera <out>/llvip_<metodo>/ (images/{train,val}, labels/{train,val}, data.yaml)
+por cada metodo. Las ETIQUETAS son identicas para todos (solo cambian los pixeles).
 """
-import argparse, sys, shutil
+import argparse, sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 import numpy as np, cv2
@@ -30,25 +23,40 @@ from src.fusion.prop_top_hat import TopHatFusion
 def g2d(a):
     a=np.asarray(a); return a[...,0] if a.ndim==3 else a
 
-# metodos de fusion (operan en gris [0,1] -> imagen fusionada [0,1])
 FUSERS = {
     "Promedio":           lambda v,i: average_fusion(v,i),
     "PiramideLaplace":    lambda v,i: laplacian_pyramid_fusion(v,i,levels=4),
     "Curvelet":           lambda v,i: curvelet_fusion(v,i,levels=3),
     "TopHat_disk_L5":     lambda v,i: TopHatFusion("disk",levels=5).fuse(v,i),
     "Optimo_Multiescala": lambda v,i: fuse_optimal_multiscale(v,i,6,2.89,0.10),
-    "Propuesta_Novedosa": lambda v,i: fuse_novel(v,i,8,0.120),   # n=8, m=0.12 (PSO)
+    "Propuesta_Novedosa": lambda v,i: fuse_novel(v,i,8,0.120),
 }
+IMG_EXT=(".jpg",".jpeg",".png",".bmp")
 
 def load_gray01(p):
     im=cv2.imread(str(p), cv2.IMREAD_GRAYSCALE)
     return None if im is None else im.astype(np.float32)/255.0
 
+def find_dataset_root(root):
+    """Devuelve el dir que contiene 'visible' e 'infrared' (busca anidado)."""
+    if (root/"visible").is_dir() and (root/"infrared").is_dir(): return root
+    for d in root.rglob("visible"):
+        if (d.parent/"infrared").is_dir(): return d.parent
+    return None
+
+def list_split_images(vroot, split):
+    """Devuelve lista de imagenes visibles del split. Soporta visible/train o visible/ plano."""
+    sub=vroot/split
+    if sub.is_dir():
+        return sorted([p for p in sub.iterdir() if p.suffix.lower() in IMG_EXT])
+    # plano: visible/*.jpg (sin train/test) -> se reparte luego
+    return sorted([p for p in vroot.iterdir() if p.suffix.lower() in IMG_EXT])
+
 def find_ann(root, stem):
     for c in [root/"Annotations"/f"{stem}.xml", root/"Annotations"/"train"/f"{stem}.xml",
               root/"Annotations"/"test"/f"{stem}.xml"]:
         if c.exists(): return c
-    hits=list((root/"Annotations").rglob(f"{stem}.xml"))
+    hits=list((root).rglob(f"{stem}.xml"))
     return hits[0] if hits else None
 
 def voc_to_yolo(xml_path, W, H):
@@ -56,7 +64,7 @@ def voc_to_yolo(xml_path, W, H):
     try: r=ET.parse(str(xml_path)).getroot()
     except Exception: return out
     for obj in r.findall("object"):
-        bb=obj.find("bndbox");
+        bb=obj.find("bndbox")
         if bb is None: continue
         x1=float(bb.find("xmin").text); y1=float(bb.find("ymin").text)
         x2=float(bb.find("xmax").text); y2=float(bb.find("ymax").text)
@@ -75,42 +83,59 @@ def main():
     ap.add_argument("--limit-train", type=int, default=0)
     ap.add_argument("--limit-val", type=int, default=0)
     a=ap.parse_args()
-    root=Path(a.llvip_root); out=Path(a.out)
-    methods=[m.strip() for m in a.methods.split(",") if m.strip()]
-    splits={"train":"train","test":"val"}   # LLVIP usa train/test -> YOLO train/val
-    # preparar carpetas
+    given=Path(a.llvip_root)
+    root=find_dataset_root(given)
+    if root is None:
+        print("ERROR: no encontre carpetas 'visible' e 'infrared' bajo:", given)
+        print(" -> Parece que tenes el REPO de codigo, no el DATASET.")
+        print(" -> Descarga el dataset LLVIP de:")
+        print("    https://drive.google.com/file/d/1VTlT3Y7e1h-Zsne4zahjx5q0TK2ClMVv/view")
+        print("    y apunta --llvip_root a la carpeta que contiene 'visible/' e 'infrared/'.")
+        sys.exit(2)
+    print("Dataset LLVIP detectado en:", root)
+    out=Path(a.out); methods=[m.strip() for m in a.methods.split(",") if m.strip()]
+    vroot=root/"visible"; iroot=root/"infrared"
+    # determinar splits
+    if (vroot/"train").is_dir():
+        split_map=[("train","train"), ("test","val")]
+        flat=False
+    else:
+        split_map=[(".","all")]; flat=True
     for m in methods:
         for sp in ("train","val"):
             (out/f"llvip_{m}"/"images"/sp).mkdir(parents=True, exist_ok=True)
             (out/f"llvip_{m}"/"labels"/sp).mkdir(parents=True, exist_ok=True)
-    for src_split, yolo_split in splits.items():
-        vdir=root/"visible"/src_split; idir=root/"infrared"/src_split
-        if not vdir.exists():
-            print(f"[AVISO] no existe {vdir}; salto split {src_split}"); continue
-        vis=sorted([p for p in vdir.iterdir() if p.suffix.lower() in (".jpg",".png",".bmp")])
-        lim = a.__dict__["limit_train"] if yolo_split=="train" else a.__dict__["limit_val"]
-        if lim: vis=vis[:lim]
-        print(f"Split {src_split}->{yolo_split}: {len(vis)} pares")
-        for k,vp in enumerate(vis):
-            stem=vp.stem; ip=idir/vp.name
-            if not ip.exists(): continue
-            v=load_gray01(vp); i=load_gray01(ip)
-            if v is None or i is None: continue
-            if v.shape!=i.shape: i=cv2.resize(i,(v.shape[1],v.shape[0]))
-            H,W=v.shape[:2]
-            ann=find_ann(root, stem); ylab=voc_to_yolo(ann,W,H) if ann else []
-            for m in methods:
-                if m=="VIS": img=v
-                elif m=="IR": img=i
-                else: img=FUSERS[m](v,i)
-                save_uint8(img, out/f"llvip_{m}"/"images"/yolo_split/f"{stem}.jpg")
-                (out/f"llvip_{m}"/"labels"/yolo_split/f"{stem}.txt").write_text("\n".join(ylab))
-            if (k+1)%200==0: print(f"  {k+1} pares...")
-    # data.yaml por metodo
+    for src_split, yolo_split in split_map:
+        vis=list_split_images(vroot, src_split)
+        if flat:
+            # repartir 80/20
+            n=len(vis); cut=int(n*0.8)
+            groups=[("train",vis[:cut]),("val",vis[cut:])]
+        else:
+            lim=a.__dict__["limit_train"] if yolo_split=="train" else a.__dict__["limit_val"]
+            if lim: vis=vis[:lim]
+            groups=[(yolo_split,vis)]
+        for ysplit, lst in groups:
+            print(f"Split -> {ysplit}: {len(lst)} pares")
+            for k,vp in enumerate(lst):
+                stem=vp.stem
+                ip = (iroot/src_split/vp.name) if not flat else (iroot/vp.name)
+                if not ip.exists():
+                    cand=list(iroot.rglob(vp.name)); ip=cand[0] if cand else ip
+                if not ip.exists(): continue
+                v=load_gray01(vp); i=load_gray01(ip)
+                if v is None or i is None: continue
+                if v.shape!=i.shape: i=cv2.resize(i,(v.shape[1],v.shape[0]))
+                H,W=v.shape[:2]
+                ann=find_ann(root, stem); ylab=voc_to_yolo(ann,W,H) if ann else []
+                for m in methods:
+                    img = v if m=="VIS" else (i if m=="IR" else FUSERS[m](v,i))
+                    save_uint8(img, out/f"llvip_{m}"/"images"/ysplit/f"{stem}.jpg")
+                    (out/f"llvip_{m}"/"labels"/ysplit/f"{stem}.txt").write_text("\n".join(ylab))
+                if (k+1)%200==0: print(f"  {k+1}...")
     for m in methods:
         d=(out/f"llvip_{m}").resolve()
-        (d/"data.yaml").write_text(
-            f"path: {d}\ntrain: images/train\nval: images/val\nnc: 1\nnames: ['person']\n")
+        (d/"data.yaml").write_text(f"path: {d}\ntrain: images/train\nval: images/val\nnc: 1\nnames: ['person']\n")
     print("LISTO. Datasets en", out.resolve())
 
 if __name__=="__main__": main()
