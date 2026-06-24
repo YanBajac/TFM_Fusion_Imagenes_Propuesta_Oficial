@@ -40,7 +40,16 @@ FUSERS = {
     "Propuesta_Novedosa":  lambda v,i: fuse_novel(v,i,8,0.120),   # n=8, m=0.12 (PSO)
 }
 
+def g2d(a):
+    """Coerce a imagen 2D (H,W); descarta canal extra (H,W,1) o toma 1er canal."""
+    import numpy as _np
+    a=_np.asarray(a)
+    if a.ndim==3:
+        a=a[...,0]
+    return a
+
 def to_bgr(img01):
+    img01=g2d(img01)
     g=(np.clip(img01,0,1)*255).astype(np.uint8)
     return cv2.cvtColor(g, cv2.COLOR_GRAY2BGR)
 
@@ -95,7 +104,7 @@ def main():
     if a.limit: pairs=pairs[:a.limit]
     rows=[]
     for vp,ip in pairs:
-        v,i=load_pair(vp,ip); stem=Path(vp).stem
+        v,i=load_pair(vp,ip); v=g2d(v); i=g2d(i); stem=Path(vp).stem
         mods={"VIS":v,"IR":i}
         for name,fn in FUSERS.items(): mods[name]=fn(v,i)
         for name,img in mods.items():
