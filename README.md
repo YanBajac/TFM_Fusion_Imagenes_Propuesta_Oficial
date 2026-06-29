@@ -5,11 +5,15 @@
 > Autores: Lic. Juan Pablo Bazán, Ing. Yan Bajac
 > Director: D.Sc. Julio César Mello
 
-> **Propuesta central:** un **método óptimo multiescala** de fusión VIS/IR basado en transformadas
-> Top-Hat con elementos estructurantes **circulares y lineales**, descomposición **en cascada** e
-> hiperparámetros optimizados por **enjambre de partículas (PSO)**. Se compara con el método anterior
-> (Torre Top-Hat) y con baselines clásicos sobre el **TNO Image Fusion Dataset** (20 pares), usando
-> **12 métricas sin referencia**, y se evalúa su impacto en una **tarea de detección** con YOLO.
+> **Propuesta central (definitiva):** una **fusión morfológica multiescala** VIS/IR basada en
+> transformadas Top-Hat que, en cada escala, **promedia** las respuestas de cuatro elementos
+> estructurantes **lineales** (0°, 45°, 90°, 135°) y toma el **máximo** frente a la respuesta de un
+> **disco**; agrega las escalas por **máximo por píxel** (sin cascada) y reconstruye con el esquema
+> aditivo-sustractivo de Bala et al. (2024), con un peso de contraste `m`. Los hiperparámetros `(n, m)`
+> se ajustan por **enjambre de partículas (PSO)**. Se compara con una variante preliminar en cascada,
+> con la Torre Top-Hat (método anterior) y con baselines clásicos sobre el **TNO Image Fusion Dataset**
+> (20 pares) usando **16 métricas sin referencia**, y se evalúa su impacto en **detección de objetos**
+> entrenando YOLOv8 sobre el dataset etiquetado **LLVIP** (mAP).
 
 ---
 
@@ -20,8 +24,8 @@
    - [Fusión de imágenes multimodal](#21-fusión-de-imágenes-multimodal)
    - [Morfología matemática](#22-morfología-matemática)
    - [Transformada Top-Hat](#23-transformada-top-hat)
-   - [Método óptimo multiescala (propuesta central)](#24-método-óptimo-multiescala-propuesta-central)
-   - [Torre Top-Hat (método anterior)](#25-torre-top-hat-método-anterior)
+   - [Propuesta novedosa: fusión multiescala (método central)](#24-propuesta-novedosa-fusión-multiescala-método-central)
+   - [Variante preliminar en cascada y Torre Top-Hat](#25-variante-preliminar-en-cascada-y-torre-top-hat)
    - [Algoritmos de referencia (baselines)](#26-algoritmos-de-referencia-baselines)
    - [Métricas de evaluación](#27-métricas-de-evaluación)
 3. [Resultados principales](#3-resultados-principales)
@@ -29,7 +33,7 @@
 5. [Instalación](#5-instalación)
 6. [Uso rápido](#6-uso-rápido)
 7. [Ejecución de experimentos](#7-ejecución-de-experimentos)
-8. [Evaluación orientada a tarea (detección)](#8-evaluación-orientada-a-tarea-detección)
+8. [Evaluación orientada a tarea (detección LLVIP)](#8-evaluación-orientada-a-tarea-detección-llvip)
 9. [Notebooks de análisis](#9-notebooks-de-análisis)
 10. [Dependencias](#10-dependencias)
 11. [Referencias](#11-referencias)
@@ -38,19 +42,18 @@
 
 ## 1. Descripción del problema
 
-Las cámaras **visibles (VIS)** capturan la reflectancia de la luz solar, ofreciendo alta resolución
-textural y de color pero siendo sensibles a condiciones de iluminación adversas (noche, niebla, humo).
-Las cámaras **infrarrojas (IR)** detectan la radiación térmica emitida por los objetos, siendo
-robustas a la oscuridad pero con menor resolución espacial y detalle de textura.
+Las cámaras **visibles (VIS)** capturan la reflectancia de la luz, ofreciendo alta resolución textural
+y de color pero siendo sensibles a condiciones de iluminación adversas (noche, niebla, humo). Las
+cámaras **infrarrojas (IR)** detectan la radiación térmica emitida por los objetos, siendo robustas a
+la oscuridad pero con menor resolución espacial y detalle de textura.
 
 La **fusión de imágenes** VIS+IR busca generar una única imagen que combine las fortalezas de ambas
-modalidades, mejorando la percepción visual para aplicaciones como vigilancia y seguridad perimetral,
-detección de personas en visibilidad reducida, guía de vehículos autónomos e inspección industrial y
-médica.
+modalidades, mejorando la percepción para vigilancia y seguridad perimetral, detección de personas en
+visibilidad reducida, guía de vehículos autónomos e inspección industrial y médica.
 
-Esta tesis propone y evalúa un **método óptimo multiescala** basado en morfología matemática, lo
-contrasta estadísticamente con un método anterior y con baselines clásicos, y mide su efecto sobre
-una tarea de detección de objetos.
+Esta tesis propone y evalúa una **fusión morfológica multiescala** (la *Propuesta Novedosa*), la
+contrasta estadísticamente con una variante preliminar, con un método anterior y con baselines
+clásicos, y mide su efecto sobre una tarea de detección de objetos con un dataset etiquetado.
 
 ---
 
@@ -58,75 +61,79 @@ una tarea de detección de objetos.
 
 ### 2.1 Fusión de imágenes multimodal
 
-La fusión de imágenes combina información complementaria de dos o más sensores para obtener una
-representación más completa de una escena. El esquema general opera en tres etapas: **preprocesamiento**
-(registro, normalización), **fusión en dominio transformado** (descomposición multiescala, regla de
-fusión por capa y reconstrucción) y **evaluación** mediante métricas sin referencia.
+La fusión combina información complementaria de dos o más sensores para obtener una representación más
+completa de una escena. El esquema general opera en tres etapas: **preprocesamiento** (registro,
+normalización), **fusión en dominio transformado** (descomposición multiescala, regla de fusión por
+capa y reconstrucción) y **evaluación** mediante métricas sin referencia. La revisión de Singh et al.
+(2023) sitúa los métodos morfológicos dentro de la taxonomía de técnicas de fusión y motiva el uso de
+métricas sin referencia (PLIF) cuando no existe imagen ideal de referencia.
 
 ### 2.2 Morfología matemática
 
-La **morfología matemática** es un marco algebraico para el análisis de estructuras geométricas en
-imágenes, basado en la teoría de retículas completas. Sus operaciones fundamentales son:
+Marco algebraico para el análisis de estructuras geométricas en imágenes. Sus operaciones
+fundamentales (escala de grises, elemento estructurante `b`):
 
 | Operación | Definición | Efecto visual |
 |-----------|-----------|---------------|
+| **Dilatación** `δ(f,b)` | máximo local bajo `b` | engruesa estructuras claras, rellena valles |
 | **Erosión** `ε(f,b)` | mínimo local bajo `b` | adelgaza estructuras, elimina picos |
-| **Dilatación** `δ(f,b)` | máximo local bajo `b` | engruesa estructuras, rellena valles |
-| **Apertura** `γ(f,b) = δ(ε(f,b),b)` | erosión seguida de dilatación | elimina objetos menores que `b` |
-| **Cierre** `φ(f,b) = ε(δ(f,b),b)` | dilatación seguida de erosión | rellena huecos menores que `b` |
-
-donde `f` es la imagen y `b` el **elemento estructurante (SE)** que define la geometría del vecindario.
+| **Apertura** `γ(f,b) = δ(ε(f,b),b)` | erosión seguida de dilatación | elimina objetos claros menores que `b` |
+| **Cierre** `φ(f,b) = ε(δ(f,b),b)` | dilatación seguida de erosión | rellena huecos oscuros menores que `b` |
 
 ### 2.3 Transformada Top-Hat
 
-Las transformadas **Top-Hat** extraen detalles que la apertura/cierre eliminan:
+- **White Top-Hat (WTH):** `WTH(f,b) = f − γ(f,b)` → resalta estructuras brillantes menores que `b`.
+- **Black Top-Hat (BTH):** `BTH(f,b) = φ(f,b) − f` → resalta estructuras oscuras menores que `b`.
 
-- **White Top-Hat (WTH):** `WTH(f,b) = f − γ(f,b)` → resalta estructuras brillantes más pequeñas que `b`.
-- **Black Top-Hat (BTH):** `BTH(f,b) = φ(f,b) − f` → resalta estructuras oscuras más pequeñas que `b`.
+El **tipo de SE** (disco, línea, …) determina qué orientaciones de detalle se enfatizan y el **diámetro**
+controla la escala.
 
-El **tipo de SE** (disco, cuadrado, cruz, línea) determina qué orientaciones de detalle se enfatizan
-y el **radio `r`** controla la escala.
+### 2.4 Propuesta novedosa: fusión multiescala (método central)
 
-### 2.4 Método óptimo multiescala (propuesta central)
+Adapta a la fusión VIS/IR el realce multiescala de Román et al. (2024) y la reconstrucción
+aditiva-sustractiva con promedio multidireccional de Bala et al. (2024), optimizando la fusión
+ponderada por PSO al estilo de Ortega y Espinoza (2025).
 
-El método propuesto generaliza la Top-Hat sobre dos ejes: la **geometría del SE** y la **escala**.
-Adapta a la fusión VIS/IR la metodología de realce multiescala de Román et al. (2024) y el esquema de
-fusión optimizada por PSO de Ortega y Espinoza (2025).
-
-1. **Banco de 5 elementos estructurantes por escala** — un disco y cuatro líneas (0°, 45°, 90°, 135°).
-   Las cinco respuestas WTH/BTH se combinan tomando el **máximo por píxel**, captando bordes en
-   cualquier orientación sin privilegiar ninguna a priori.
-2. **Descomposición multiescala en cascada** — el operador se evalúa en `n` escalas (radios `r·i`); se
-   calculan diferencias en cascada (`WTHS_i`) y se agrega cada familia por máximo (`WTH_M`, `WTHS_M`,
-   `BTH_M`, `BTHS_M`).
-3. **Regla de fusión ponderada** — sobre la base `I_base = (VIS+IR)/2`:
+1. **Operador por escala.** En cada escala `i` (SE de diámetro `d_i = 2i+1`) se **promedian** las cuatro
+   respuestas lineales y se toma el **máximo por píxel** frente a la respuesta del disco:
 
    ```
-   F = I_base + m·(WTH_M + WTHS_M) − m·(BTH_M + BTHS_M)
+   WTH_líneas = (1/4)·Σθ [ f − γ(f, b_θ) ]          (θ = 0°, 45°, 90°, 135°)
+   WTH_i      = máx( WTH_líneas , WTH_disco )        (idéntico para BTH_i)
    ```
 
-4. **Optimización por PSO** — los hiperparámetros `(n, r, m)` se ajustan con enjambre de partículas
-   (30 partículas × 30 iteraciones) maximizando una aptitud orientada a fusión
-   `F = SSIM + Qabf + 0.5·SCD − Nabf`. **Óptimo hallado:** `n=6`, `r≈2.89`, `m=0.10`.
+   El promedio angular atenúa el ruido direccional; el máximo frente al disco preserva por igual
+   estructuras orientadas e isótropas. *(Esta combinación es la aportación propia.)*
 
-Implementación: `src/fusion/optimal_top_hat.py` (`OptimalMultiscaleFusion`); PSO en
-`experiments/pso_optimal_multiscale.py`.
+2. **Agregación multiescala por máximo** (sin diferencias en cascada):
 
-### 2.5 Torre Top-Hat (método anterior)
+   ```
+   WTH_M = máx_{i=1..n} WTH_i        BTH_M = máx_{i=1..n} BTH_i
+   ```
 
-Descomposición multiescala iterativa con un **único disco por escala** y reglas de selección manuales,
-usada como **base de comparación**:
+3. **Combinación entre fuentes y reconstrucción** sobre `I_base = (VIS + IR)/2`:
 
-```
-Nivel 1 (r=r₀):   WTH₁ = f − γ(f, b_{r₀})
-Nivel k (r=k·r₀): WTHₖ = R_{k-1} − γ(R_{k-1}, b_{kr₀})
-Residual:         R_L = base de baja frecuencia
-F = base_fusionada + Σ WTHₖ^fus − Σ BTHₖ^fus
-```
+   ```
+   WTH_M = máx(WTH_M^VIS, WTH_M^IR)      BTH_M = máx(BTH_M^VIS, BTH_M^IR)
+   F     = I_base + m·WTH_M − m·BTH_M
+   ```
 
-Las capas de detalle se fusionan por **máxima actividad local**; la base, por **promedio**. Modos WTH
-(por defecto) y WTH+BTH. Parámetros del benchmark: SE ∈ {disco, cuadrado, cruz}, `L ∈ {2,3,4,5}`,
-`r₀ ∈ {2,3,5}`. Implementación: `src/fusion/prop_top_hat.py` (`TopHatFusion`).
+4. **Optimización por PSO.** Los hiperparámetros `(n, m)` se ajustan con enjambre de partículas
+   (20 partículas × 20 iteraciones) maximizando una aptitud orientada a fusión
+   `F = SSIM + Qabf + 0.5·SCD − Nabf`. **Óptimo hallado:** `n = 8`, `m = 0.12`.
+
+Implementación: `src/fusion/novel_fusion.py` (`NovelMultiscaleFusion`); PSO en
+`experiments/pso_novel.py`.
+
+### 2.5 Variante preliminar en cascada y Torre Top-Hat
+
+- **Variante multiescala en cascada** (preliminar / ablación): combina los cinco SE por **máximo** y
+  añade **diferencias en cascada** entre escalas (ecuaciones 15–21 de Román et al.), con `(n, r, m)`
+  optimizados por PSO (`n=6`, `r≈2.89`, `m=0.10`). Implementación:
+  `src/fusion/optimal_top_hat.py` (`OptimalMultiscaleFusion`).
+- **Torre Top-Hat** (método anterior): descomposición iterativa con un **único disco por escala** y
+  reglas de selección manuales; fusión de detalle por máxima actividad local y base por promedio.
+  Implementación: `src/fusion/prop_top_hat.py` (`TopHatFusion`).
 
 ### 2.6 Algoritmos de referencia (baselines)
 
@@ -138,8 +145,8 @@ Las capas de detalle se fusionan por **máxima actividad local**; la base, por *
 
 ### 2.7 Métricas de evaluación
 
-Evaluación con **12 métricas sin referencia**: seis clásicas de actividad/información y seis estándar
-de calidad de fusión.
+Evaluación con **16 métricas sin referencia**: seis clásicas de actividad/información, seis estándar de
+calidad de fusión y cuatro adicionales tomadas de la revisión de Singh et al. (2023).
 
 | Símbolo | Nombre | Dirección |
 |---------|--------|-----------|
@@ -154,6 +161,8 @@ de calidad de fusión.
 | **SSIM** | Similitud estructural con las fuentes | ↑ |
 | **SCD** | Suma de correlaciones de las diferencias | ↑ |
 | **VIF** | Fidelidad de información visual | ↑ |
+| **FMI** | Feature Mutual Information (Haghighat et al., 2011) | ↑ |
+| **Q0 / QW / QE** | Índices de calidad de Piella y Heijmans (2003) | ↑ |
 
 Análisis estadístico no paramétrico: **Friedman** global por métrica, **Wilcoxon** pareado con
 corrección de **Holm** y tamaño de efecto rank-biserial, y **ranking promedio** respetando la dirección
@@ -163,20 +172,39 @@ de cada métrica. Implementación: `src/metrics/evaluators.py` y `experiments/ru
 
 ## 3. Resultados principales
 
-Sobre 20 pares del TNO Image Fusion Dataset:
+**Calidad de imagen — TNO Image Fusion Dataset (20 pares).** La *Propuesta Novedosa* (`n=8, m=0.12`)
+ofrece el perfil **más limpio y estructuralmente fiel**: la **menor tasa de artefactos** entre los
+métodos reales (**Nabf = 0.030**) y la **mayor similitud estructural** entre los no triviales
+(**SSIM = 0.785**), con buena preservación de bordes y correlación (**Qabf = 0.484**, **SCD = 1.397**,
+**VIF = 0.354**). La variante preliminar en cascada lidera Qabf (0.514) y SCD (1.453) a costa de más
+artefactos (Nabf 0.065) y algo menos de SSIM (0.775).
 
-- El **método óptimo multiescala** lidera las métricas estándar de calidad: **Qabf = 0.514** (1.º),
-  **SCD = 1.453** (1.º), **Nabf = 0.065** (la menor entre los métodos no triviales) y **SSIM = 0.775**
-  (2.º, solo detrás del promedio trivial). Cede en contraste (SD, EN), por lo que su ranking agregado
-  de 12 métricas queda en la franja media (6.67).
-- No hay un método universalmente dominante: la **pirámide de Laplace** encabeza el ranking agregado
-  (4.42) por su ventaja en contraste y VIF; la **Torre Top-Hat** (disco, L=5) es segunda (5.00) y supera
-  a Laplace en fidelidad estructural (SSIM, SCD).
-- La variante **Black Top-Hat** no se recomienda por defecto: sube contraste pero degrada Qabf/SSIM/VIF
-  y multiplica los artefactos (Nabf ×5).
-- En **detección** (YOLOv8n por inferencia), la fusión mejora la detectabilidad de personas frente a
-  VIS; las diferencias entre métodos no son estadísticamente significativas con `n=20` sin etiquetas
-  (limitación documentada).
+| Método | Qabf ↑ | Nabf ↓ | SSIM ↑ | SCD ↑ | VIF ↑ |
+|--------|:---:|:---:|:---:|:---:|:---:|
+| Promedio (trivial) | 0.310 | 0.000 | 0.792 | 1.325 | 0.331 |
+| Pirámide de Laplace | 0.442 | 0.108 | 0.721 | 1.322 | 0.410 |
+| Curvelet | 0.476 | 0.192 | 0.731 | 1.321 | 0.307 |
+| Torre Top-Hat (disco, L5) | 0.458 | 0.117 | 0.739 | 1.430 | 0.356 |
+| Variante en cascada (preliminar) | **0.514** | 0.065 | 0.775 | **1.453** | 0.369 |
+| **Propuesta Novedosa** | 0.484 | **0.030** | **0.785** | 1.397 | 0.354 |
+
+**Detección — LLVIP (YOLOv8, mismas etiquetas, solo cambia la fusión).** La superioridad en calidad de
+imagen **no se traslada** directamente a la detección: el **IR solo** obtiene el mejor mAP, la fusión
+**supera al VIS solo**, y las fusiones simples igualan o superan a las morfológicas.
+
+| Entrada | mAP@0.5 ↑ | mAP@0.5:0.95 ↑ |
+|---------|:---:|:---:|
+| **IR (solo)** | **0.957** | **0.663** |
+| Pirámide de Laplace | 0.949 | 0.651 |
+| Promedio | 0.948 | 0.639 |
+| Propuesta Novedosa | 0.905 | 0.618 |
+| Variante en cascada | 0.899 | 0.628 |
+| VIS (solo) | 0.808 | 0.451 |
+
+**Conclusión honesta:** la *Propuesta Novedosa* es un método orientado a **fidelidad y limpieza** de la
+imagen fusionada, no necesariamente a la detectabilidad. La variante Black Top-Hat no se recomienda por
+defecto (sube contraste pero degrada Qabf/SSIM/VIF y multiplica los artefactos). *Superioridad en
+calidad de imagen ≠ superioridad en detección.*
 
 ---
 
@@ -186,32 +214,40 @@ Sobre 20 pares del TNO Image Fusion Dataset:
 tesis_mciencias_datos/
 │
 ├── data/raw/                       # VIS/ e IR/ con nombres coincidentes (20 pares TNO)
+│   (data/LLVIP/ y datasets/ quedan fuera del repo por tamaño — ver .gitignore)
 │
 ├── src/
 │   ├── datasets.py                 # Carga y emparejado VIS/IR
 │   ├── fusion/
+│   │   ├── novel_fusion.py         # NovelMultiscaleFusion (PROPUESTA NOVEDOSA, método central)
+│   │   ├── optimal_top_hat.py      # OptimalMultiscaleFusion (variante preliminar en cascada)
 │   │   ├── prop_top_hat.py         # TopHatFusion (Torre Top-Hat, método anterior)
-│   │   ├── optimal_top_hat.py      # OptimalMultiscaleFusion (propuesta central) + variante monoescala
 │   │   └── comparatives.py         # average / laplacian_pyramid / curvelet
 │   ├── metrics/
-│   │   └── evaluators.py           # 12 métricas + METRIC_DIRECTION
+│   │   └── evaluators.py           # 16 métricas + METRIC_DIRECTION (incl. FMI, Q0/QW/QE)
 │   └── utils/                      # io, visualización, reorganización del dataset
 │
 ├── experiments/
 │   ├── run_all_fusions.py          # Ejecuta todos los métodos sobre el dataset
 │   ├── run_stats_analysis.py       # Friedman + Wilcoxon(Holm) + ranking
-│   ├── pso_optimal_multiscale.py   # PSO del método óptimo multiescala (n, r, m)
-│   ├── pso_optimal_tophat.py       # PSO de la variante monoescala (r, m)
-│   ├── detection/                  # Evaluación orientada a tarea (YOLO/RF-DETR/Keras)
+│   ├── pso_novel.py                # PSO de la Propuesta Novedosa (n, m)  -> n=8, m=0.12
+│   ├── pso_optimal_multiscale.py   # PSO de la variante en cascada (n, r, m)
+│   ├── detection_llvip/            # Reentrenamiento de detección con LLVIP (mAP concluyente)
+│   │   ├── prepare_llvip.py        #   genera datasets YOLO fusionados por método (labels compartidas)
+│   │   └── train_eval_llvip.py     #   entrena YOLOv8 por método y compara mAP (CSV acumulativo)
+│   ├── detection/                  # Detectabilidad por inferencia (TNO, sin etiquetas)
 │   ├── make_*figure*.py            # Generación de figuras de la tesis
 │   └── results/metrics_reports/    # all_metrics.csv, ranking, friedman, wilcoxon, detección
 │
-├── notebooks/                      # 01–07 (EDA, fusión, stats, detección, Colab)
+├── notebooks/                      # 01–07 (EDA, fusión, stats, detección)
 ├── docs/
-│   ├── Tesis_Borrador.docx         # Documento principal
+│   ├── Tesis_Borrador.docx         # Documento principal (formato UCOM/Villalba, 26 ecuaciones, índice)
 │   ├── figures/                    # Figuras del libro
 │   └── reportes_finales/           # Reportes cuali/cuantitativos
 │
+├── ejecutar_llvip.ps1              # Lanzador del pipeline LLVIP en la PC (GPU)
+├── reparar_torch_gpu.ps1           # Reinstala torch con CUDA (GPU)
+├── push_to_github.ps1              # Commit + push asistido
 ├── requirements.txt
 └── README.md
 ```
@@ -241,19 +277,18 @@ Las imágenes de cada modalidad deben tener el **mismo nombre de archivo** en `d
 
 ```python
 from src.datasets import list_pairs, load_pair
-from src.fusion.optimal_top_hat import OptimalMultiscaleFusion   # propuesta central
-from src.fusion import TopHatFusion                              # método anterior
+from src.fusion.novel_fusion import NovelMultiscaleFusion     # propuesta central
 from src.metrics.evaluators import evaluate_all
 
 pairs = list_pairs()
 vis, ir = load_pair(*pairs[0])
 
-# Método óptimo multiescala (configuración óptima del PSO)
-fuser = OptimalMultiscaleFusion(n=6, base_radius=2.89, m=0.10)
+# Propuesta Novedosa (configuración óptima del PSO)
+fuser = NovelMultiscaleFusion(n=8, m=0.12)
 fused = fuser.fuse(vis, ir)
 
 metrics = evaluate_all(fused, vis, ir)
-print(metrics)   # EN, SD, FE, MG, MI_vis, MI_ir, SF, Qabf, Nabf, SSIM, SCD, VIF
+print(metrics)   # EN, SD, FE, MG, MI_vis, MI_ir, SF, Qabf, Nabf, SSIM, SCD, VIF, FMI, Q0, QW, QE
 ```
 
 ---
@@ -267,31 +302,32 @@ python experiments/run_all_fusions.py
 # 2. Análisis estadístico (Friedman, Wilcoxon+Holm, ranking)
 python experiments/run_stats_analysis.py
 
-# 3. Optimización por PSO del método óptimo multiescala (reanudable)
-python experiments/pso_optimal_multiscale.py
+# 3. Optimización por PSO de la Propuesta Novedosa (reanudable) -> n=8, m=0.12
+python experiments/pso_novel.py
 ```
 
-Salidas en `experiments/results/metrics_reports/`: `all_metrics.csv`, `descriptive_means.csv`,
-`ranking_methods.csv`, `friedman_results.csv`, `wilcoxon_results.csv`.
+Salidas en `experiments/results/metrics_reports/`: `all_metrics.csv`, `comparativa_con_propuesta.csv`,
+`descriptive_means.csv`, `ranking_methods.csv`, `friedman_results.csv`, `wilcoxon_results.csv`,
+`metrics_extra_fmi_piella.csv`.
 
 ---
 
-## 8. Evaluación orientada a tarea (detección)
+## 8. Evaluación orientada a tarea (detección LLVIP)
 
-La carpeta `experiments/detection/` evalúa el efecto de la fusión en una tarea downstream de detección:
+Para una comparación **concluyente** del efecto de la fusión en la detección se reentrena el mismo
+detector (YOLOv8) sobre cada versión fusionada del dataset **LLVIP** (VIS/IR alineado y etiquetado,
+peatones nocturnos). Las **etiquetas son idénticas** para todos los métodos: solo cambian los píxeles
+fusionados, de modo que la diferencia de mAP aísla el efecto del método.
 
 ```powershell
-# Detectabilidad por inferencia (YOLOv8n) sobre VIS, IR y las fusiones
-python experiments/detection/run_detection_eval.py --detector yolo
-
-# Resumen y estadística
-python experiments/detection/summarize_detection.py
-python experiments/detection/stats_detection.py
+# Pipeline completo en la PC (con GPU). Requiere el dataset LLVIP descomprimido.
+powershell -ExecutionPolicy Bypass -File .\ejecutar_llvip.ps1 -LLVIP "D:\datasets\LLVIP"
 ```
 
-`run_all_applications.py` deja preparado (scaffold) el entrenamiento por modalidad con YOLO, RF-DETR y
-Keras; para métricas de mAP concluyentes se requiere un dataset etiquetado (M3FD/LLVIP). Los notebooks
-04–07 cubren el flujo en Colab con GPU.
+Esto ejecuta `experiments/detection_llvip/prepare_llvip.py` (genera los datasets YOLO fusionados por
+método) y `train_eval_llvip.py` (entrena y compara mAP, acumulando en
+`experiments/results/metrics_reports/detection_llvip_map.csv`). La carpeta `experiments/detection/`
+mantiene la evaluación previa por **inferencia** sobre TNO (sin etiquetas).
 
 ---
 
@@ -313,7 +349,7 @@ Keras; para métricas de mAP concluyentes se requiere un dataset etiquetado (M3F
 
 `numpy`, `opencv-python`, `scikit-image`, `scipy`, `PyWavelets`, `pandas`, `matplotlib`, `seaborn`,
 `jupyter`, `ipykernel`, `openpyxl`, `plotly`, `torch`, `torchvision` (ver `requirements.txt`).
-La detección con YOLO/RF-DETR requiere `ultralytics` / `rfdetr` (preferentemente con GPU).
+La detección con YOLO/RF-DETR requiere `ultralytics` / `rfdetr` (preferentemente con GPU CUDA).
 
 ---
 
@@ -325,8 +361,11 @@ La detección con YOLO/RF-DETR requiere `ultralytics` / `rfdetr` (preferentement
 - Candès, E. et al. (2006). Fast Discrete Curvelet Transforms. *SIAM Multiscale Model. Simul.*
 - Kennedy, J. & Eberhart, R. (1995). Particle Swarm Optimization. *Proc. ICNN*.
 - Xydeas, C. & Petrović, V. (2000). Objective image fusion performance measure. *Electronics Letters*.
-- Li, S. et al. (2017). Pixel-level image fusion: A survey of the state of the art. *Information Fusion*, 33.
+- Piella, G. & Heijmans, H. (2003). A new quality metric for image fusion. *Proc. ICIP*.
+- Haghighat, M. et al. (2011). A non-reference image fusion metric based on mutual information of image features. *Computers & Electrical Engineering*.
 - Ma, J. et al. (2019). Infrared and visible image fusion methods and applications: A survey. *Information Fusion*, 45.
+- Singh, S. et al. (2023). A review of image fusion: methods, applications and performance metrics. *(revisión de referencia del estado del arte)*.
+- Bala, A. A. et al. (2024). Hybrid technique for fundus image enhancement using a modified morphological filter and a denoising net.
 - Román, J. C. M., Vázquez Noguera, J. L. & Legal-Ayala, H. (2024). Algoritmo de realce de contraste multiescala con Top-Hat (SE circulares y lineales).
 - Ortega Rodríguez, M. A. & Espinoza Ríos, G. A. (2025). Optimización de los parámetros de fusión Top-Hat mediante PSO. FPUNA.
 
