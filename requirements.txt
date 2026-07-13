@@ -12,3 +12,4 @@ openpyxl>=3.1        # para exportar a Excel desde pandas
 torch>=2.0
 torchvision>=0.15
 plotly>=5.18
+ultralytics>=8.2     # YOLOv8: entrenamiento/eval mAP en LLVIP (experiments/detection_llvip)

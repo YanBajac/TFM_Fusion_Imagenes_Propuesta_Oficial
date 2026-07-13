@@ -20,7 +20,8 @@ from src.fusion import (
     laplacian_pyramid_fusion,
     curvelet_fusion,
 )
-from src.fusion.optimal_top_hat import OptimalTopHatFusion, OptimalMultiscaleFusion
+from src.fusion.optimal_top_hat import OptimalTopHatFusion, OptimalMultiscaleFusion, fuse_optimal
+from src.fusion.novel_fusion import fuse_novel
 from src.metrics import evaluate_all
 from src.utils import save_image, save_metrics_csv
 
@@ -42,10 +43,12 @@ METHODS = {
     "TopHat_square_L3_BTH": lambda v, i: TopHatFusion("square", levels=3, use_black_top_hat=True).fuse(v, i),
     "TopHat_cross_L3_BTH":  lambda v, i: TopHatFusion("cross",  levels=3, use_black_top_hat=True).fuse(v, i),
     "TopHat_disk_L5_BTH":   lambda v, i: TopHatFusion("disk",   levels=5, use_black_top_hat=True).fuse(v, i),
-    # Metodo optimo (disco + lineales) con (r,m) optimizados por PSO
+    # Exploraciones PSO (descartadas)
     "TopHat_Optimo":        lambda v, i: OptimalTopHatFusion(r=1, m=0.3, mode="sum").fuse(v, i),
-    # Propuesta central: método óptimo MULTIESCALA (disco+lineales, cascada, PSO)
     "Optimo_Multiescala":   lambda v, i: OptimalMultiscaleFusion(n=6, base_radius=2.89, m=0.10).fuse(v, i),
+    "Multiescala_n8":       lambda v, i: fuse_novel(v, i, n=8, m=0.12),
+    # PROPUESTA CENTRAL: Top-Hat de una sola escala (disco + 4 lineales por maximo), PSO
+    "Propuesta_Novedosa":   lambda v, i: fuse_optimal(v, i, r=12, m=0.1274, mode="max"),
 }
 
 RESULTS_DIR   = ROOT / "experiments" / "results"

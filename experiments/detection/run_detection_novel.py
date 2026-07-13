@@ -23,7 +23,7 @@ import numpy as np, cv2, pandas as pd
 ROOT = Path(__file__).resolve().parents[2]; sys.path.insert(0, str(ROOT))
 from src.datasets import list_pairs, load_pair
 from src.fusion.novel_fusion import fuse_novel
-from src.fusion.optimal_top_hat import fuse_optimal_multiscale
+from src.fusion.optimal_top_hat import fuse_optimal_multiscale, fuse_optimal
 from src.fusion.comparatives import average_fusion, laplacian_pyramid_fusion, curvelet_fusion
 from src.fusion.prop_top_hat import TopHatFusion
 
@@ -36,8 +36,7 @@ FUSERS = {
     "PiramideLaplace":     lambda v,i: laplacian_pyramid_fusion(v,i,levels=4),
     "Curvelet":            lambda v,i: curvelet_fusion(v,i,levels=3),
     "TopHat_disk_L5":      lambda v,i: TopHatFusion("disk",levels=5).fuse(v,i),
-    "Optimo_Multiescala":  lambda v,i: fuse_optimal_multiscale(v,i,6,2.89,0.10),
-    "Propuesta_Novedosa":  lambda v,i: fuse_novel(v,i,8,0.120),   # n=8, m=0.12 (PSO)
+    "Propuesta_Novedosa":  lambda v,i: fuse_optimal(v,i,12,0.127,mode="max"),  # single-scale r=12, m=0.127 (PSO)
 }
 
 def g2d(a):
@@ -121,7 +120,7 @@ def main():
         imgs_con_det=("has_det","sum"),conf_mean=("conf_mean",lambda s:s[s>0].mean() if (s>0).any() else 0),
         ms_mean=("ms","mean")).round(3)
     agg["FPS"]=(1000/agg["ms_mean"]).round(1)
-    order=["VIS","IR","Promedio","PiramideLaplace","Curvelet","TopHat_disk_L5","Optimo_Multiescala","Propuesta_Novedosa"]
+    order=["VIS","IR","Promedio","PiramideLaplace","Curvelet","TopHat_disk_L5","Propuesta_Novedosa"]
     agg=agg.reindex([m for m in order if m in agg.index])
     print(agg.to_string()); print("\nGuardado:",out)
 

@@ -1,0 +1,16 @@
+method,det_total,det_por_img,person_total,vehiculo_total,imgs_con_det,conf_media,ms_media,FPS
+IR,14,0.7,5,4,11,0.471,97.615,10.2
+TopHat_cross_L3_BTH,12,0.6,6,1,9,0.448,32.91,30.4
+TopHat_disk_L5_BTH,11,0.55,4,1,8,0.453,32.392,30.9
+TopHat_square_L3_BTH,11,0.55,4,1,9,0.454,34.15,29.3
+TopHat_square_L3,9,0.45,3,4,8,0.482,32.375,30.9
+Optimo_Multiescala,9,0.45,4,2,9,0.507,31.611,31.6
+TopHat_cross_L3,8,0.4,3,3,7,0.5,32.67,30.6
+TopHat_disk_L3,8,0.4,3,3,7,0.53,32.644,30.6
+TopHat_disk_L5,8,0.4,4,2,8,0.523,32.27,31.0
+Promedio,7,0.35,4,2,7,0.485,32.668,30.6
+Curvelet,7,0.35,3,0,7,0.445,33.743,29.6
+TopHat_disk_L3_BTH,7,0.35,2,1,7,0.519,32.472,30.8
+VIS,7,0.35,1,4,5,0.366,146.424,6.8
+PiramideLaplace,6,0.3,2,2,6,0.538,32.524,30.7
+TopHat_Optimo,5,0.25,2,2,5,0.539,32.425,30.8

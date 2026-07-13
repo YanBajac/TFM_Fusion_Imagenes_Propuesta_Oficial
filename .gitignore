@@ -9,7 +9,9 @@ data/raw/
 # Imágenes procesadas y resultados generados
 data/processed/
 experiments/results/fused_images/
-experiments/results/metrics_reports/
+# metrics_reports SÍ se versiona: respalda las tablas y la estadística de la tesis (Apéndice C)
+experiments/results/metrics_reports/*.png
+experiments/results/metrics_reports/*.html
 
 # Python
 __pycache__/
@@ -53,7 +55,7 @@ docs/_chk_*.png
 *.pt
 runs/
 experiments/results/detection_train/
-experiments/results/pso/
+# pso SÍ se versiona: estados/checkpoints que documentan las corridas (Tabla 2, Figura 13)
 experiments/results/applications/
 
 # Clon anidado accidental del repo
@@ -68,3 +70,6 @@ data/LLVIP/
 datasets/
 data/**/visible/
 data/**/infrared/
+
+# Documentos pesados/locales (no versionar)
+docs/_local/

@@ -1,0 +1,8 @@
+method,det_total,person_total,vehiculo_total,imgs_con_det,conf_mean,FPS
+VIS,7.0,1.0,4.0,5.0,0.366,75.7
+IR,14.0,5.0,4.0,11.0,0.471,97.1
+Promedio,7.0,4.0,2.0,7.0,0.485,109.5
+PiramideLaplace,6.0,2.0,2.0,6.0,0.537,113.7
+Curvelet,7.0,3.0,0.0,7.0,0.445,112.2
+TopHat_disk_L5,8.0,4.0,2.0,8.0,0.523,115.1
+Propuesta_Novedosa,8.0,4.0,2.0,8.0,0.5,111.8

@@ -15,7 +15,7 @@ param(
   [int]$LimitVal = 500,
   [int]$Epochs = 40,
   [string]$Device = "auto",
-  [string]$Methods = "VIS,IR,Promedio,PiramideLaplace,Optimo_Multiescala,Propuesta_Novedosa"
+  [string]$Methods = "VIS,IR,Promedio,PiramideLaplace,TopHat_disk_L5,Propuesta_Novedosa"
 )
 Set-Location $PSScriptRoot
 if ($LLVIP -eq "") { $LLVIP = Read-Host "Ruta a la carpeta LLVIP extraida (ej: D:\datasets\LLVIP)" }

@@ -1,0 +1,7 @@
+method,FMI,Q0,QW,QE
+Promedio,0.2151,0.6909,0.7269,0.3405
+PiramideLaplace,0.2761,0.7435,0.856,0.404
+Curvelet,0.1971,0.7272,0.8233,0.3692
+TopHat_disk_L5,0.2131,0.7431,0.8101,0.36
+Optimo_Multiescala,0.2065,0.7669,0.8308,0.3787
+Propuesta_Novedosa,0.2075,0.7531,0.7988,0.3631

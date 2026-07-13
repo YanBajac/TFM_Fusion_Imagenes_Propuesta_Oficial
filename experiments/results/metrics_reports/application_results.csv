@@ -1,0 +1,21 @@
+modelo,modalidad,mAP50,mAP50_95,precision,recall,F1,error,accuracy
+YOLO,VIS,0.6219,0.6219,0.0063,1.0,0.0125,,
+YOLO,IR,0.7462,0.4477,0.0057,1.0,0.0113,,
+YOLO,Anterior_TopHat,0.995,0.597,0.0061,1.0,0.0121,,
+YOLO,Optimo_Multiescala,0.7462,0.5472,0.0057,1.0,0.0114,,
+RF-DETR,VIS,,,,,,"Caught FileNotFoundError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File ""C:\Users\Us",
+RF-DETR,IR,,,,,,"Caught FileNotFoundError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File ""C:\Users\Us",
+RF-DETR,Anterior_TopHat,,,,,,"Caught FileNotFoundError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File ""C:\Users\Us",
+RF-DETR,Optimo_Multiescala,,,,,,"Caught FileNotFoundError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File ""C:\Users\Us",
+Keras,VIS,,,0.0,0.0,0.0,,1.0
+Keras,IR,,,0.0,0.0,0.0,,1.0
+Keras,Anterior_TopHat,,,0.0,0.0,0.0,,1.0
+Keras,Optimo_Multiescala,,,0.0,0.0,0.0,,1.0
