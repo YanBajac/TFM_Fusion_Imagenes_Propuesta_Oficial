@@ -85,15 +85,3 @@ def fuse_optimal(vis: np.ndarray, ir: np.ndarray, r: int = 3, m: float = 1.0,
     bth_max = np.maximum(bth_v, bth_i)
     fused = base + m * wth_max - m * bth_max
     return np.clip(fused, 0.0, 1.0).astype(np.float32)
-
-
-class OptimalTopHatFusion:
-    """Interfaz tipo objeto, consistente con TopHatFusion."""
-    def __init__(self, r: int = 3, m: float = 1.0, mode: str = "sum"):
-        self.r = r; self.m = m; self.mode = mode
-
-    def fuse(self, vis, ir):
-        return fuse_optimal(vis, ir, self.r, self.m, self.mode)
-
-    def __repr__(self):
-        return f"OptimalTopHatFusion(r={self.r}, m={self.m}, mode={self.mode!r})"

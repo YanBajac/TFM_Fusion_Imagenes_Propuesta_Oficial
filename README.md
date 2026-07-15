@@ -234,20 +234,18 @@ tesis_mciencias_datos/
 │   ├── run_all_fusions.py          # Benchmark: los 7 métodos sobre el dataset -> all_metrics.csv
 │   ├── run_stats_analysis.py       # Friedman + Wilcoxon(Holm) + ranking
 │   ├── pso_grid_search.py          # Barrido PSO 5x5 (Cuadro 1 FPUNA) -> r=25, m=0.0703
-│   ├── pso_bala_singlescale.py     # PSO simple de la propuesta (corrida unica, reanudable)
-│   ├── build_avance_html.py        # Informe de avance HTML (fuente del PDF)
 │   ├── make_montajes_cualitativos.py # 20 montajes por escena (propuesta en rojo)
 │   ├── detection_llvip/            # Reentrenamiento de detección con LLVIP (mAP concluyente)
 │   │   ├── prepare_llvip.py        #   genera datasets YOLO fusionados por método (labels compartidas)
 │   │   └── train_eval_llvip.py     #   entrena YOLOv8 por método y compara mAP (CSV acumulativo)
-│   ├── detection/                  # Detectabilidad por inferencia (TNO, sin etiquetas)
 │   └── results/metrics_reports/    # all_metrics.csv, ranking, friedman, wilcoxon, detección
 │
-├── notebooks/                      # 01–07 (EDA, fusión, stats, detección)
+├── notebooks/                      # 01–03 (EDA, comparación visual, análisis estadístico)
 ├── docs/
-│   ├── Tesis_Borrador.docx         # Documento principal (formato UCOM/Villalba, 26 ecuaciones, índice)
-│   ├── figures/                    # Figuras del libro
-│   └── reportes_finales/           # Reportes cuali/cuantitativos
+│   ├── Tesis_Borrador_V3.docx      # Documento principal (propuesta suma r=25; formato UCOM/Villalba)
+│   ├── Avances_Tesis.pdf           # Informe de avances · Avances_Tesis_Tablas.xlsx (tablas)
+│   ├── figures/                    # Figuras del libro (fuente y montajes cualitativos)
+│   └── reportes_finales/           # Metodología de evaluación de detección
 │
 ├── ejecutar_llvip.ps1              # Lanzador del pipeline LLVIP en la PC (GPU)
 ├── reparar_torch_gpu.ps1           # Reinstala torch con CUDA (GPU)
@@ -331,8 +329,7 @@ powershell -ExecutionPolicy Bypass -File .\ejecutar_llvip.ps1 -LLVIP "D:\dataset
 
 Esto ejecuta `experiments/detection_llvip/prepare_llvip.py` (genera los datasets YOLO fusionados por
 método) y `train_eval_llvip.py` (entrena y compara mAP, acumulando en
-`experiments/results/metrics_reports/detection_llvip_map.csv`). La carpeta `experiments/detection/`
-mantiene la evaluación previa por **inferencia** sobre TNO (sin etiquetas).
+`experiments/results/metrics_reports/detection_llvip_map.csv`).
 
 ---
 
@@ -343,10 +340,6 @@ mantiene la evaluación previa por **inferencia** sobre TNO (sin etiquetas).
 | `01_EDA_dataset.ipynb` | Exploración visual y estadística del dataset |
 | `02_fusion_tests.ipynb` | Comparación visual rápida de configuraciones |
 | `03_stats_analysis.ipynb` | Análisis cuantitativo, boxplots, Wilcoxon/Friedman |
-| `04_yolo_roboflow_deteccion.ipynb` | Entrenamiento YOLO por modalidad (Colab, mAP) |
-| `05_keras_clasificacion_downstream.ipynb` | MobileNetV2 transfer learning (tarea alternativa) |
-| `06_rfdetr_deteccion.ipynb` | Detección con RF-DETR |
-| `07_colab_deteccion_automatica.ipynb` | Flujo de detección automática en Colab |
 
 ---
 
