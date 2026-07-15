@@ -225,7 +225,7 @@ tesis_mciencias_datos/
 │   ├── datasets.py                 # Carga y emparejado VIS/IR
 │   ├── fusion/
 │   │   ├── optimal_top_hat.py      # fuse_optimal (PROPUESTA NOVEDOSA, mode="sum", r=25, m=0.0703)
-│   │   └── comparatives.py         # LP / RP / DWT / DTCWT / CVT / Top-Hat clásico / promedio
+│   │   └── comparatives.py         # LP / RP / DWT / DTCWT / CVT / Top-Hat clásico
 │   ├── metrics/
 │   │   └── evaluators.py           # 16 métricas + METRIC_DIRECTION (incl. FMI, Q0/QW/QE)
 │   └── utils/                      # io, visualización, reorganización del dataset
@@ -240,7 +240,7 @@ tesis_mciencias_datos/
 │   │   └── train_eval_llvip.py     #   entrena YOLOv8 por método y compara mAP (CSV acumulativo)
 │   └── results/metrics_reports/    # all_metrics.csv, ranking, friedman, wilcoxon, detección
 │
-├── notebooks/                      # 01–03 (EDA, comparación visual, análisis estadístico)
+├── notebooks/                      # 01 (EDA) y 03 (análisis estadístico)
 ├── docs/
 │   ├── Tesis_Borrador_V3.docx      # Documento principal (propuesta suma r=25; formato UCOM/Villalba)
 │   ├── Avances_Tesis.pdf           # Informe de avances · Avances_Tesis_Tablas.xlsx (tablas)
@@ -338,7 +338,6 @@ método) y `train_eval_llvip.py` (entrena y compara mAP, acumulando en
 | Notebook | Propósito |
 |----------|-----------|
 | `01_EDA_dataset.ipynb` | Exploración visual y estadística del dataset |
-| `02_fusion_tests.ipynb` | Comparación visual rápida de configuraciones |
 | `03_stats_analysis.ipynb` | Análisis cuantitativo, boxplots, Wilcoxon/Friedman |
 
 ---

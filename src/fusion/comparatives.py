@@ -30,14 +30,6 @@ except ImportError:
 
 
 # ---------------------------------------------------------------------------
-# 1. Promedio simple
-# ---------------------------------------------------------------------------
-def average_fusion(vis: np.ndarray, ir: np.ndarray) -> np.ndarray:
-    """Fusión por promedio ponderado igual (0.5 VIS + 0.5 IR)."""
-    return np.clip(0.5 * vis + 0.5 * ir, 0.0, 1.0)
-
-
-# ---------------------------------------------------------------------------
 # 2. Pirámides de Laplace
 # ---------------------------------------------------------------------------
 def _build_gaussian_pyramid(img: np.ndarray, levels: int) -> list[np.ndarray]:
