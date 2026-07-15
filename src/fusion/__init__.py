@@ -1,14 +1,23 @@
 # fusion package
-from .prop_top_hat import TopHatFusion
+from .optimal_top_hat import fuse_optimal, OptimalTopHatFusion
 from .comparatives import (
     average_fusion,
     laplacian_pyramid_fusion,
+    ratio_pyramid_fusion,
+    dwt_fusion,
+    dtcwt_fusion,
     curvelet_fusion,
+    tophat_classic_fusion,
 )
 
 __all__ = [
-    "TopHatFusion",
+    "fuse_optimal",
+    "OptimalTopHatFusion",
     "average_fusion",
     "laplacian_pyramid_fusion",
+    "ratio_pyramid_fusion",
+    "dwt_fusion",
+    "dtcwt_fusion",
     "curvelet_fusion",
+    "tophat_classic_fusion",
 ]

@@ -15,20 +15,22 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 import numpy as np, cv2
 ROOT = Path(__file__).resolve().parents[2]; sys.path.insert(0, str(ROOT))
-from src.fusion.novel_fusion import fuse_novel
-from src.fusion.optimal_top_hat import fuse_optimal_multiscale, fuse_optimal
-from src.fusion.comparatives import average_fusion, laplacian_pyramid_fusion, curvelet_fusion
-from src.fusion.prop_top_hat import TopHatFusion
+from src.fusion.optimal_top_hat import fuse_optimal
+from src.fusion.comparatives import (laplacian_pyramid_fusion, ratio_pyramid_fusion,
+                                     dwt_fusion, dtcwt_fusion, curvelet_fusion,
+                                     tophat_classic_fusion)
 
 def g2d(a):
     a=np.asarray(a); return a[...,0] if a.ndim==3 else a
 
 FUSERS = {
-    "Promedio":           lambda v,i: average_fusion(v,i),
     "PiramideLaplace":    lambda v,i: laplacian_pyramid_fusion(v,i,levels=4),
+    "RatioPiramide":      lambda v,i: ratio_pyramid_fusion(v,i,levels=4),
+    "DWT":                lambda v,i: dwt_fusion(v,i,levels=3),
+    "DTCWT":              lambda v,i: dtcwt_fusion(v,i,levels=4),
     "Curvelet":           lambda v,i: curvelet_fusion(v,i,levels=3),
-    "TopHat_disk_L5":     lambda v,i: TopHatFusion("disk",levels=5).fuse(v,i),
-    "Propuesta_Novedosa": lambda v,i: fuse_optimal(v,i,12,0.127,mode="max"),  # single-scale r=12, m=0.127 (PSO)
+    "TopHat_Clasico":     lambda v,i: tophat_classic_fusion(v,i,r=5),
+    "Propuesta_Novedosa": lambda v,i: fuse_optimal(v,i,25,0.0703,mode="sum"),  # (r,m) del barrido PSO 5x5
 }
 IMG_EXT=(".jpg",".jpeg",".png",".bmp")
 
@@ -78,7 +80,7 @@ def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--llvip_root", required=True)
     ap.add_argument("--out", default="datasets")
-    ap.add_argument("--methods", default="VIS,IR,Promedio,PiramideLaplace,TopHat_disk_L5,Propuesta_Novedosa")
+    ap.add_argument("--methods", default="VIS,IR,PiramideLaplace,RatioPiramide,DWT,DTCWT,Curvelet,TopHat_Clasico,Propuesta_Novedosa")
     ap.add_argument("--limit-train", type=int, default=0)
     ap.add_argument("--limit-val", type=int, default=0)
     a=ap.parse_args()

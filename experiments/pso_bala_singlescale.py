@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""PSO del metodo Bala single-scale (Eqs 1-8 con maximo, fusion Eq 12).
+"""PSO de la propuesta single-scale con SUMA de ramas (Eqs 1-8 de Bala, fusion Eq 12).
 Operador por fuente (una escala, radio r; sin complemento): THm=(1/4)sum_theta[s-(s o linea)],
 BHm=(1/4)sum_theta[(s . linea)-s], TH_bright=s-(s o disco), BH_dark=(s . disco)-s,
-I_opt_top=max(THm,TH_bright) (ec7 a max), I_opt_bot=max(BHm,BH_dark) (ec8 a max).
+I_opt_top=THm+TH_bright (ec7, SUMA), I_opt_bot=BHm+BH_dark (ec8, SUMA).
 Fusion (ec12): I_FUS=(VIS+IR)/2 + m*max(top_IR,top_VIS) - m*max(bot_IR,bot_VIS).
-Equivale a fuse_optimal(mode='max'). PSO optimiza (r,m); aptitud F=SSIM+Qabf+0.5*SCD-Nabf
+Equivale a fuse_optimal(mode='sum'). PSO optimiza (r,m); aptitud F=SSIM+Qabf+0.5*SCD-Nabf
 sobre escenas representativas (eval final = 20 pares con evaluadores originales). Reanudable.
 """
 import sys, json, time, argparse
@@ -16,7 +16,7 @@ from src.datasets import list_pairs, load_pair
 from src.fusion.optimal_top_hat import fuse_optimal
 from src.metrics.evaluators import _Q_pair, _corr
 
-STATE = Path('experiments/results/pso/pso_bala_state.json')
+STATE = Path('experiments/results/pso/pso_propuesta_sum_state.json')
 LO = np.array([1.0, 0.05]); HI = np.array([12.0, 1.20])
 N_PART, T_MAX = 30, 50
 W_MAX, W_MIN, C1, C2 = 0.9, 0.4, 1.5, 1.5
@@ -57,7 +57,7 @@ def fitness(x):
     r = int(round(np.clip(x[0], 1, 12))); m = float(np.clip(x[1], 0.05, 1.20))
     acc = 0.0; C = cache()
     for c in C:
-        f = fuse_optimal(c['v'], c['i'], r, m, mode="max")
+        f = fuse_optimal(c['v'], c['i'], r, m, mode="sum")
         gF, aF = _grad_so(f)
         QAF = _Q_pair(c['gA'], c['aA'], gF, aF); QBF = _Q_pair(c['gB'], c['aB'], gF, aF)
         qabf = float(np.sum(QAF*c['gA'] + QBF*c['gB']) / c['wsum'])

@@ -19,7 +19,7 @@ OUT = ROOT/"experiments"/"results"/"metrics_reports"/"detection_llvip_map.csv"
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--datasets-dir", default="datasets")
-    ap.add_argument("--methods", default="VIS,IR,Promedio,PiramideLaplace,TopHat_disk_L5,Propuesta_Novedosa")
+    ap.add_argument("--methods", default="VIS,IR,PiramideLaplace,RatioPiramide,DWT,DTCWT,Curvelet,TopHat_Clasico,Propuesta_Novedosa")
     ap.add_argument("--model", default="yolov8n.pt")
     ap.add_argument("--epochs", type=int, default=40)
     ap.add_argument("--imgsz", type=int, default=640)

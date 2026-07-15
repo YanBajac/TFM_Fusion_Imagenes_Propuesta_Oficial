@@ -58,8 +58,9 @@ for m in METRICS:
 pd.DataFrame(fr_rows).to_csv(MDIR / "friedman_results.csv", index=False)
 
 # ---------------------------------------------------------------- Wilcoxon
-tophats = [x for x in methods if x.startswith("TopHat")]
-baselines = [x for x in methods if not x.startswith("TopHat")]
+# Metodos morfologicos (propuesta y clasico) contrastados contra el estado del arte
+tophats = [x for x in methods if x.startswith("TopHat") or x.startswith("Propuesta")]
+baselines = [x for x in methods if x not in tophats]
 
 def rank_biserial(a, b):
     """Tamano de efecto matched-pairs rank-biserial para Wilcoxon."""

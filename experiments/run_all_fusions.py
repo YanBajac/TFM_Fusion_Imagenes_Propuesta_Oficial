@@ -15,40 +15,34 @@ sys.path.insert(0, str(ROOT))
 
 from src.datasets import list_pairs, load_pair
 from src.fusion import (
-    TopHatFusion,
-    average_fusion,
+    fuse_optimal,
     laplacian_pyramid_fusion,
+    ratio_pyramid_fusion,
+    dwt_fusion,
+    dtcwt_fusion,
     curvelet_fusion,
+    tophat_classic_fusion,
 )
-from src.fusion.optimal_top_hat import OptimalTopHatFusion, OptimalMultiscaleFusion, fuse_optimal
-from src.fusion.novel_fusion import fuse_novel
 from src.metrics import evaluate_all
 from src.utils import save_image, save_metrics_csv
 
 # ---------------------------------------------------------------------------
-# Configuración de métodos a comparar
+# Configuración de métodos a comparar (benchmark de la tesis)
 # ---------------------------------------------------------------------------
+# Hiperparámetros de la propuesta hallados por PSO (operador con SUMA de ramas)
+PROP_R, PROP_M = 25, 0.0703  # optimo del barrido PSO 5x5 (Cuadro 1 FPUNA): F=1.9843, n=10, T>=30
+
 METHODS = {
-    # Baselines
-    "Promedio":             lambda v, i: average_fusion(v, i),
-    "PiramideLaplace":      lambda v, i: laplacian_pyramid_fusion(v, i, levels=4),
-    "Curvelet":             lambda v, i: curvelet_fusion(v, i, levels=3),
-    # Metodo propuesto - White Top-Hat (WTH)
-    "TopHat_disk_L3":       lambda v, i: TopHatFusion("disk",   levels=3).fuse(v, i),
-    "TopHat_square_L3":     lambda v, i: TopHatFusion("square", levels=3).fuse(v, i),
-    "TopHat_cross_L3":      lambda v, i: TopHatFusion("cross",  levels=3).fuse(v, i),
-    "TopHat_disk_L5":       lambda v, i: TopHatFusion("disk",   levels=5).fuse(v, i),
-    # Metodo propuesto - variante con Black Top-Hat (WTH+BTH)
-    "TopHat_disk_L3_BTH":   lambda v, i: TopHatFusion("disk",   levels=3, use_black_top_hat=True).fuse(v, i),
-    "TopHat_square_L3_BTH": lambda v, i: TopHatFusion("square", levels=3, use_black_top_hat=True).fuse(v, i),
-    "TopHat_cross_L3_BTH":  lambda v, i: TopHatFusion("cross",  levels=3, use_black_top_hat=True).fuse(v, i),
-    "TopHat_disk_L5_BTH":   lambda v, i: TopHatFusion("disk",   levels=5, use_black_top_hat=True).fuse(v, i),
-    # Exploraciones PSO (descartadas)
-    "TopHat_Optimo":        lambda v, i: OptimalTopHatFusion(r=1, m=0.3, mode="sum").fuse(v, i),
-    "Optimo_Multiescala":   lambda v, i: OptimalMultiscaleFusion(n=6, base_radius=2.89, m=0.10).fuse(v, i),
-    "Multiescala_n8":       lambda v, i: fuse_novel(v, i, n=8, m=0.12),
-    # PROPUESTA CENTRAL: Top-Hat de una sola escala (disco + 4 lineales por maximo), PSO
-    "Propuesta_Novedosa":   lambda v, i: fuse_optimal(v, i, r=12, m=0.1274, mode="max"),
+    # Estado del arte
+    "PiramideLaplace":  lambda v, i: laplacian_pyramid_fusion(v, i, levels=4),
+    "RatioPiramide":    lambda v, i: ratio_pyramid_fusion(v, i, levels=4),
+    "DWT":              lambda v, i: dwt_fusion(v, i, levels=3),
+    "DTCWT":            lambda v, i: dtcwt_fusion(v, i, levels=4),
+    "Curvelet":         lambda v, i: curvelet_fusion(v, i, levels=3),
+    # Metodologia clasica de la transformada Top-Hat (basico)
+    "TopHat_Clasico":   lambda v, i: tophat_classic_fusion(v, i, r=5),
+    # PROPUESTA CENTRAL: Top-Hat una escala, disco + 4 lineales por SUMA, PSO
+    "Propuesta_Novedosa": lambda v, i: fuse_optimal(v, i, r=PROP_R, m=PROP_M, mode="sum"),
 }
 
 RESULTS_DIR   = ROOT / "experiments" / "results"

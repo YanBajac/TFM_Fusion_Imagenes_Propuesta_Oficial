@@ -7,14 +7,17 @@
 
 > **Propuesta central (definitiva):** una fusión VIS/IR basada en transformadas Top-Hat de
 > **una sola escala** definida por el radio `r`: se **promedian** las respuestas de cuatro elementos
-> estructurantes **lineales** (0°, 45°, 90°, 135°, longitud `2r+1`) y se toma el **máximo por píxel**
-> frente a la respuesta de un **disco** `B_r`; entre fuentes gana el detalle dominante y se reconstruye
-> con el esquema aditivo-sustractivo de Bala et al. (2024), `F = I_base + m·WTH − m·BTH`. Los
-> hiperparámetros `(r, m)` se ajustan por **enjambre de partículas (PSO)** con aptitud orientada a
-> fusión → **óptimo: r = 12, m = 0.127**. Se compara con la Torre Top-Hat (método anterior), con las
-> variantes multiescala exploradas (descartadas) y con baselines clásicos sobre el **TNO Image Fusion
-> Dataset** (20 pares) usando **métricas sin referencia**, y se evalúa su impacto en **detección de
-> objetos** entrenando YOLOv8 sobre el dataset etiquetado **LLVIP** (mAP).
+> estructurantes **lineales** (0°, 45°, 90°, 135°, longitud `2r+1`) y se **suman** a la respuesta de un
+> **disco** `B_r` (esquema de Bala et al., 2024); entre fuentes gana el detalle dominante y se
+> reconstruye con `F = I_base + m·WTH − m·BTH`. Los hiperparámetros `(r, m)` se ajustan por
+> **enjambre de partículas (PSO)** con aptitud orientada a fusión, eligiendo la configuración del
+> enjambre mediante un **barrido de 25 combinaciones** (partículas 2–10 × iteraciones 10–50,
+> replicando el diseño de Ortega y Espinoza 2025) → **óptimo global: r = 25, m = 0.070**.
+> Se compara contra **seis métodos**: cinco del estado del arte —Pirámide de Laplace (LP), Ratio of
+> low-pass Pyramid (RP, Toet 1989), Wavelet discreta (DWT), Dual-Tree Complex Wavelet (DTCWT) y
+> Curvelet (CVT)— más la **metodología clásica de la transformada Top-Hat**, sobre el **TNO Image
+> Fusion Dataset** (20 pares) con **12 métricas sin referencia**, y se evalúa su impacto en
+> **detección de objetos** entrenando YOLOv8 sobre el dataset etiquetado **LLVIP** (mAP).
 
 ---
 
@@ -26,9 +29,8 @@
    - [Morfología matemática](#22-morfología-matemática)
    - [Transformada Top-Hat](#23-transformada-top-hat)
    - [Propuesta novedosa: fusión Top-Hat de una sola escala (método central)](#24-propuesta-novedosa-fusión-top-hat-de-una-sola-escala-método-central)
-   - [Variantes exploradas (descartadas) y Torre Top-Hat](#25-variantes-exploradas-descartadas-y-torre-top-hat)
-   - [Algoritmos de referencia (baselines)](#26-algoritmos-de-referencia-baselines)
-   - [Métricas de evaluación](#27-métricas-de-evaluación)
+   - [Métodos comparativos del benchmark](#25-métodos-comparativos-del-benchmark)
+   - [Métricas de evaluación](#26-métricas-de-evaluación)
 3. [Resultados principales](#3-resultados-principales)
 4. [Estructura del proyecto](#4-estructura-del-proyecto)
 5. [Instalación](#5-instalación)
@@ -52,9 +54,10 @@ La **fusión de imágenes** VIS+IR busca generar una única imagen que combine l
 modalidades, mejorando la percepción para vigilancia y seguridad perimetral, detección de personas en
 visibilidad reducida, guía de vehículos autónomos e inspección industrial y médica.
 
-Esta tesis propone y evalúa una **fusión morfológica multiescala** (la *Propuesta Novedosa*), la
-contrasta estadísticamente con una variante preliminar, con un método anterior y con baselines
-clásicos, y mide su efecto sobre una tarea de detección de objetos con un dataset etiquetado.
+Esta tesis propone y evalúa una **fusión morfológica Top-Hat de una sola escala** (la *Propuesta
+Novedosa*), la contrasta estadísticamente con cinco métodos del estado del arte y con la metodología
+clásica de la transformada Top-Hat, y mide su efecto sobre una tarea de detección de objetos con un
+dataset etiquetado.
 
 ---
 
@@ -91,23 +94,23 @@ controla la escala.
 
 ### 2.4 Propuesta novedosa: fusión Top-Hat de una sola escala (método central)
 
-Integra el filtro morfológico multiángulo de Bala et al. (2024) —con la suma de ramas reemplazada
-por **máximo**— en el esquema de fusión ponderada por PSO de Ortega y Espinoza (2025).
+Integra el filtro morfológico multiángulo de dos etapas de Bala et al. (2024) —respuestas lineales
+promediadas **sumadas** a la respuesta del disco— en el esquema de fusión ponderada por PSO de
+Ortega y Espinoza (2025).
 
 1. **Elementos estructurantes** (escala única de radio `r`): un disco `B_r` y cuatro segmentos
    lineales `L_{r,θ}` de longitud `2r+1` (θ = 0°, 45°, 90°, 135°).
 
-2. **Operador combinado.** Se **promedian** las cuatro respuestas Top-Hat lineales y se toma el
-   **máximo por píxel** frente a la respuesta del disco (análogo para BTH con el cierre):
+2. **Operador combinado por suma.** Se **promedian** las cuatro respuestas Top-Hat lineales y se
+   **suman** a la respuesta del disco (análogo para BTH con el cierre):
 
    ```
    WTH_líneas = (1/4)·Σθ [ f − γ(f, L_{r,θ}) ]
-   WTH        = máx( WTH_líneas , WTH_disco )        (idéntico para BTH)
+   WTH        = WTH_líneas + WTH_disco              (idéntico para BTH)
    ```
 
-   El promedio angular atenúa el ruido direccional; el máximo frente al disco preserva por igual
-   estructuras orientadas e isótropas. *(El reemplazo de la suma de Bala por el máximo es la
-   aportación propia.)*
+   El promedio angular atenúa el ruido direccional; la suma acumula la evidencia de las estructuras
+   direccionales e isótropas.
 
 3. **Combinación entre fuentes y reconstrucción** sobre `I_base = (VIS + IR)/2`:
 
@@ -116,37 +119,35 @@ por **máximo**— en el esquema de fusión ponderada por PSO de Ortega y Espino
    F     = I_base + m·WTH_F − m·BTH_F
    ```
 
-4. **Optimización por PSO.** Los hiperparámetros `(r, m)` se ajustan con enjambre de partículas
-   (30 partículas × 50 iteraciones, `r ∈ [1,12]`, `m ∈ [0.05,1.20]`) maximizando la aptitud
-   orientada a fusión `F = SSIM + Qabf + 0.5·SCD − Nabf`. **Óptimo hallado:** `r = 12`, `m = 0.127`.
+4. **Optimización por PSO.** La configuración del enjambre se eligió con un **barrido de 25
+   combinaciones** (partículas `n ∈ {2,4,6,8,10}` × iteraciones `T ∈ {10,20,30,40,50}`, replicando
+   el Cuadro 1 de Ortega y Espinoza 2025), con `r ∈ [1,25]` (rango del mismo trabajo) y
+   `m ∈ [0.05,1.20]`, maximizando la aptitud orientada a fusión `F = SSIM + Qabf + 0.5·SCD − Nabf`.
+   **Óptimo global:** `r = 25`, `m = 0.070` (F = 1.9843), alcanzado consistentemente con `n = 10` y
+   `T ≥ 30`; los enjambres de 2 partículas caen en el óptimo local `r = 1`. Tabla completa:
+   `experiments/results/metrics_reports/pso_grid_search.csv`.
 
-Implementación: `src/fusion/optimal_top_hat.py` (`fuse_optimal(vis, ir, r, m, mode="max")`);
-PSO en `experiments/pso_bala_singlescale.py`.
+Implementación: `src/fusion/optimal_top_hat.py` (`fuse_optimal(vis, ir, r, m, mode="sum")`);
+barrido en `experiments/pso_grid_search.py`.
 
-### 2.5 Variantes exploradas (descartadas) y Torre Top-Hat
-
-- **Aptitud de fidelidad pura** (`SSIM + E + PSNR`, `pso_optimal_tophat.py`): condujo al óptimo
-  trivial `r=1, m=0.30` — la aptitud premiaba no realzar. Motivó la aptitud orientada a fusión.
-- **Variante multiescala en cascada** (`n=6, r≈2.89, m=0.10`, `OptimalMultiscaleFusion`): lidera
-  Qabf/SCD pero duplica artefactos (Nabf 0.065).
-- **Variante multiescala sin cascada** (`n=8, m=0.12`, `src/fusion/novel_fusion.py`): limpia pero
-  más compleja; la formulación de una sola escala la supera en Qabf y SCD.
-- **Torre Top-Hat** (método anterior): descomposición iterativa con un **único disco por escala** y
-  reglas de selección manuales; fusión de detalle por máxima actividad local y base por promedio.
-  Implementación: `src/fusion/prop_top_hat.py` (`TopHatFusion`).
-
-### 2.6 Algoritmos de referencia (baselines)
+### 2.5 Métodos comparativos del benchmark
 
 | Método | Descripción | Referencia |
 |--------|-------------|------------|
-| **Promedio** | `F = 0.5·VIS + 0.5·IR` — cota inferior de complejidad | — |
-| **Pirámide de Laplace** | Descomposición Gaussiana-Laplaciana (4 niveles); fusión por máxima actividad | Burt y Adelson (1983) |
-| **Curvelet (vía wavelet 2D)** | Subbandas direccionales (db4, 3 niveles); máxima magnitud en detalle | Candès et al. (2006) |
+| **Pirámide de Laplace (LP)** | Descomposición Gaussiana-Laplaciana (4 niveles); detalle por máxima actividad | Burt y Adelson (1983) |
+| **Ratio of low-pass Pyramid (RP)** | Razones entre niveles gaussianos; se conserva la razón que más se aparta de 1; reconstrucción multiplicativa | Toet (1989) |
+| **Wavelet discreta (DWT)** | Subbandas de detalle/aproximación (Haar, 3 niveles); detalle por máxima magnitud | — |
+| **Dual-Tree Complex Wavelet (DTCWT)** | 6 subbandas direccionales complejas por nivel (4 niveles), invariante al desplazamiento | Kingsbury |
+| **Curvelet (CVT, vía wavelet 2D)** | Subbandas direccionales (db4, 3 niveles); máxima magnitud en detalle | Candès et al. (2006) |
+| **Top-Hat clásico** | Fusión morfológica básica: disco `B_5`, `F = I_base + máx(WTH) − máx(BTH)` sin ponderación | — |
 
-### 2.7 Métricas de evaluación
+Implementación: `src/fusion/comparatives.py`. Todos se evalúan con la misma implementación de
+métricas, sobre los mismos 20 pares.
 
-Evaluación con **16 métricas sin referencia**: seis clásicas de actividad/información, seis estándar de
-calidad de fusión y cuatro adicionales tomadas de la revisión de Singh et al. (2023).
+### 2.6 Métricas de evaluación
+
+Evaluación con **12 métricas sin referencia**: seis de actividad/información y seis estándar de
+calidad de fusión (el evaluador implementa además FMI y los índices de Piella).
 
 | Símbolo | Nombre | Dirección |
 |---------|--------|-----------|
@@ -161,8 +162,6 @@ calidad de fusión y cuatro adicionales tomadas de la revisión de Singh et al. 
 | **SSIM** | Similitud estructural con las fuentes | ↑ |
 | **SCD** | Suma de correlaciones de las diferencias | ↑ |
 | **VIF** | Fidelidad de información visual | ↑ |
-| **FMI** | Feature Mutual Information (Haghighat et al., 2011) | ↑ |
-| **Q0 / QW / QE** | Índices de calidad de Piella y Heijmans (2003) | ↑ |
 
 Análisis estadístico no paramétrico: **Friedman** global por métrica, **Wilcoxon** pareado con
 corrección de **Holm** y tamaño de efecto rank-biserial, y **ranking promedio** respetando la dirección
@@ -172,44 +171,45 @@ de cada métrica. Implementación: `src/metrics/evaluators.py` y `experiments/ru
 
 ## 3. Resultados principales
 
-**Calidad de imagen — TNO Image Fusion Dataset (20 pares).** La *Propuesta Novedosa* (`r=12, m=0.127`)
-ofrece el perfil **más equilibrado**: la **mejor preservación de bordes** (**Qabf = 0.495**), la
-**menor tasa de artefactos** entre los métodos reales (**Nabf = 0.035**) y la **mayor similitud
-estructural** entre los no triviales (**SSIM = 0.783**), con **SCD = 1.421** y **VIF = 0.361**.
+**Calidad de imagen — TNO Image Fusion Dataset (20 pares).** La *Propuesta Novedosa* (`r=25, m=0.070`)
+logra la **menor tasa de artefactos por amplio margen** (**Nabf = 0.041**, 2.7 veces menos que el
+mejor rival) y la **mayor similitud estructural** (**SSIM = 0.782**); en Qabf, SCD y VIF queda
+**segunda**, a milésimas del líder de cada columna.
 
 | Método | Qabf ↑ | Nabf ↓ | SSIM ↑ | SCD ↑ | VIF ↑ |
 |--------|:---:|:---:|:---:|:---:|:---:|
-| Promedio (trivial) | 0.310 | 0.000 | 0.792 | 1.325 | 0.331 |
-| Pirámide de Laplace | 0.442 | 0.108 | 0.721 | 1.322 | 0.410 |
-| Curvelet | 0.476 | 0.192 | 0.731 | 1.321 | 0.307 |
-| Torre Top-Hat (disco, L5) | 0.458 | 0.117 | 0.739 | 1.430 | 0.356 |
-| **Propuesta Novedosa (r=12, m=0.127)** | **0.495** | **0.035** | **0.783** | 1.421 | 0.361 |
+| Pirámide de Laplace (LP) | 0.442 | 0.108 | 0.721 | 1.322 | **0.410** |
+| Ratio of low-pass Pyramid (RP) | 0.497 | 0.212 | 0.721 | **1.468** | 0.384 |
+| Wavelet discreta (DWT) | 0.489 | 0.229 | 0.716 | 1.322 | 0.303 |
+| Dual-Tree Complex Wavelet (DTCWT) | **0.501** | 0.151 | 0.739 | 1.376 | 0.360 |
+| Curvelet (CVT) | 0.476 | 0.192 | 0.731 | 1.321 | 0.307 |
+| Top-Hat clásico | 0.305 | 0.585 | 0.578 | 1.360 | 0.334 |
+| **Propuesta Novedosa (r=25, m=0.070)** | 0.500 | **0.041** | **0.782** | 1.450 | 0.368 |
 
-**Ranking global (15 métodos, 12 métricas, dirección respetada).** La propuesta ocupa el **6º lugar**
-(rank promedio 7.42): es **2ª en Qabf y 3ª en Nabf, SSIM, SCD y VIF** (las métricas de calidad de
-fusión), pero las métricas de actividad/contraste (EN, SD, FE, MG, SF), que premian el realce agresivo
-—los primeros puestos allí son de las variantes BTH, las más ruidosas—, bajan su promedio. Por ese
-sesgo, documentado en el estudio de métricas, la comparación principal usa las métricas de calidad y
-los contrastes de Wilcoxon. Ranking completo: `experiments/results/metrics_reports/ranking_methods.csv`.
+El **Top-Hat clásico** —la referencia morfológica directa— solo gana en actividad bruta (EN, MG, SF) a
+costa del mayor Nabf del estudio (0.585): la diferencia con la propuesta aísla el aporte del banco
+disco + líneas y del ajuste `(r, m)` por PSO. En el **ranking global** (7 métodos, 12 métricas) la
+propuesta es 1ª en Nabf y SSIM y 2ª en Qabf/SCD/VIF; las métricas de actividad, que premian el realce
+agresivo, bajan su promedio. En los contrastes de **Wilcoxon-Holm** (60, propuesta vs. los 5 del
+estado del arte) resulta significativamente mejor en 25, peor en 27 (concentrados en las métricas de
+actividad) y sin diferencia en 8.
 
-**Detección — LLVIP (YOLOv8, mismas etiquetas, solo cambia la fusión).** La superioridad en calidad de
-imagen **no se traslada** directamente a la detección: el **IR solo** obtiene el mejor mAP, la fusión
-**supera al VIS solo**, y las fusiones simples igualan o superan a las morfológicas.
+**Detección — LLVIP (YOLOv8n reentrenado por método, mismas etiquetas, solo cambia la fusión).**
+Toda fusión supera con claridad al VIS solo, pero ninguna al IR solo (el peatón nocturno es
+esencialmente térmico); entre las fusiones, la propuesta es competitiva sin ser la líder. *La
+superioridad en calidad de imagen no se traslada automáticamente a la detección* (H3 parcial).
 
 | Entrada | mAP@0.5 ↑ | mAP@0.5:0.95 ↑ |
 |---------|:---:|:---:|
 | **IR (solo)** | **0.957** | **0.663** |
-| Pirámide de Laplace | 0.949 | 0.651 |
-| Promedio | 0.948 | 0.639 |
-| Torre Top-Hat (disco L5) | 0.935 | 0.632 |
-| Propuesta Novedosa (r=12) | 0.914 | 0.608 |
+| Pirámide de Laplace (LP) | 0.949 | 0.651 |
+| Dual-Tree Complex Wavelet (DTCWT) | 0.948 | 0.633 |
+| Wavelet discreta (DWT) | 0.946 | 0.614 |
+| Curvelet (CVT) | 0.941 | 0.639 |
+| Top-Hat clásico | 0.938 | 0.609 |
+| **Propuesta Novedosa (r=25, m=0.070)** | 0.936 | 0.609 |
+| Ratio Pyramid (RP) | 0.926 | 0.538 |
 | VIS (solo) | 0.808 | 0.451 |
-
-**Conclusión honesta:** la *Propuesta Novedosa* es un método orientado a **fidelidad y limpieza** de la
-imagen fusionada, no necesariamente a la detectabilidad. La variante Black Top-Hat no se recomienda por
-defecto (sube contraste pero degrada Qabf/SSIM/VIF y multiplica los artefactos). La elección de la
-función de aptitud del PSO es determinante: la fidelidad pura conduce a óptimos triviales.
-*Superioridad en calidad de imagen ≠ superioridad en detección.*
 
 ---
 
@@ -224,25 +224,19 @@ tesis_mciencias_datos/
 ├── src/
 │   ├── datasets.py                 # Carga y emparejado VIS/IR
 │   ├── fusion/
-│   │   ├── optimal_top_hat.py      # fuse_optimal (PROPUESTA NOVEDOSA, mode="max") + variante en cascada
-│   │   ├── novel_fusion.py         # NovelMultiscaleFusion (variante multiescala, descartada)
-│   │   ├── prop_top_hat.py         # TopHatFusion (Torre Top-Hat, método anterior)
-│   │   └── comparatives.py         # average / laplacian_pyramid / curvelet
+│   │   ├── optimal_top_hat.py      # fuse_optimal (PROPUESTA NOVEDOSA, mode="sum", r=25, m=0.0703)
+│   │   └── comparatives.py         # LP / RP / DWT / DTCWT / CVT / Top-Hat clásico / promedio
 │   ├── metrics/
 │   │   └── evaluators.py           # 16 métricas + METRIC_DIRECTION (incl. FMI, Q0/QW/QE)
 │   └── utils/                      # io, visualización, reorganización del dataset
 │
 ├── experiments/
-│   ├── run_all_fusions.py          # Ejecuta todos los métodos sobre el dataset
+│   ├── run_all_fusions.py          # Benchmark: los 7 métodos sobre el dataset -> all_metrics.csv
 │   ├── run_stats_analysis.py       # Friedman + Wilcoxon(Holm) + ranking
-│   ├── pso_bala_singlescale.py     # PSO de la PROPUESTA (r, m) -> r=12, m=0.127
-│   ├── pso_novel.py                # PSO variante multiescala (n, m) -> n=8, m=0.12 (exploración)
-│   ├── pso_optimal_multiscale.py   # PSO variante en cascada (n, r, m) (exploración)
-│   ├── pso_optimal_tophat.py       # PSO con aptitud de fidelidad -> r=1 trivial (exploración)
+│   ├── pso_grid_search.py          # Barrido PSO 5x5 (Cuadro 1 FPUNA) -> r=25, m=0.0703
+│   ├── pso_bala_singlescale.py     # PSO simple de la propuesta (corrida unica, reanudable)
 │   ├── build_avance_html.py        # Informe de avance HTML (fuente del PDF)
 │   ├── make_montajes_cualitativos.py # 20 montajes por escena (propuesta en rojo)
-│   ├── make_figures_v2.py          # Boxplots, ranking y efecto BTH
-│   ├── make_schema_figure.py       # Esquema de la Torre Top-Hat
 │   ├── detection_llvip/            # Reentrenamiento de detección con LLVIP (mAP concluyente)
 │   │   ├── prepare_llvip.py        #   genera datasets YOLO fusionados por método (labels compartidas)
 │   │   └── train_eval_llvip.py     #   entrena YOLOv8 por método y compara mAP (CSV acumulativo)
@@ -293,8 +287,8 @@ from src.metrics.evaluators import evaluate_all
 pairs = list_pairs()
 vis, ir = load_pair(*pairs[0])
 
-# Propuesta Novedosa (configuración óptima del PSO)
-fused = fuse_optimal(vis, ir, r=12, m=0.127, mode="max")
+# Propuesta Novedosa (configuración óptima del PSO, operador con suma de ramas)
+fused = fuse_optimal(vis, ir, r=25, m=0.0703, mode="sum")
 
 metrics = evaluate_all(fused, vis, ir)
 print(metrics)   # EN, SD, FE, MG, MI_vis, MI_ir, SF, Qabf, Nabf, SSIM, SCD, VIF, FMI, Q0, QW, QE
@@ -311,16 +305,15 @@ python experiments/run_all_fusions.py
 # 2. Análisis estadístico (Friedman, Wilcoxon+Holm, ranking)
 python experiments/run_stats_analysis.py
 
-# 3. Optimización por PSO de la Propuesta Novedosa (reanudable) -> r=12, m=0.127
-python experiments/pso_bala_singlescale.py
+# 3. Barrido de configuraciones PSO (25 combinaciones, reanudable) -> r=25, m=0.0703
+python experiments/pso_grid_search.py
 
 # 4. Montajes cualitativos (20 escenas, propuesta en rojo)
 python experiments/make_montajes_cualitativos.py
 ```
 
-Salidas en `experiments/results/metrics_reports/`: `all_metrics.csv`, `comparativa_con_propuesta.csv`,
-`descriptive_means.csv`, `ranking_methods.csv`, `friedman_results.csv`, `wilcoxon_results.csv`,
-`metrics_extra_fmi_piella.csv`.
+Salidas en `experiments/results/metrics_reports/`: `all_metrics.csv`, `descriptive_means.csv`,
+`ranking_methods.csv`, `friedman_results.csv`, `wilcoxon_results.csv`.
 
 ---
 
