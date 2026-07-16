@@ -235,6 +235,8 @@ tesis_mciencias_datos/
 │   ├── run_stats_analysis.py       # Friedman + Wilcoxon(Holm) + ranking
 │   ├── pso_grid_search.py          # Barrido PSO 5x5 (Cuadro 1 FPUNA) -> r=25, m=0.0703
 │   ├── make_montajes_cualitativos.py # 20 montajes por escena (propuesta en rojo)
+│   ├── make_avances_report.py      # Regenera docs/Avances_Tesis.pdf (HTML -> PDF con Edge)
+│   ├── make_avances_excel.py       # Regenera docs/Avances_Tesis_Tablas.xlsx (10 hojas)
 │   ├── detection_llvip/            # Reentrenamiento de detección con LLVIP (mAP concluyente)
 │   │   ├── prepare_llvip.py        #   genera datasets YOLO fusionados por método (labels compartidas)
 │   │   └── train_eval_llvip.py     #   entrena YOLOv8 por método y compara mAP (CSV acumulativo)
