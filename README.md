@@ -235,6 +235,7 @@ tesis_mciencias_datos/
 │   ├── run_stats_analysis.py       # Friedman + Wilcoxon(Holm) + ranking
 │   ├── pso_grid_search.py          # Barrido PSO 5x5 (Cuadro 1 FPUNA) -> r=25, m=0.0703
 │   ├── make_montajes_cualitativos.py # 20 montajes por escena (propuesta en rojo)
+│   ├── make_figuras_metodo.py      # Figuras del método (banco de SE, ejemplo de modalidades)
 │   ├── make_avances_report.py      # Regenera docs/Avances_Tesis.pdf (HTML -> PDF con Edge)
 │   ├── make_avances_excel.py       # Regenera docs/Avances_Tesis_Tablas.xlsx (10 hojas)
 │   ├── detection_llvip/            # Reentrenamiento de detección con LLVIP (mAP concluyente)
@@ -246,6 +247,7 @@ tesis_mciencias_datos/
 ├── docs/
 │   ├── Tesis_Borrador_V3.docx      # Documento principal (propuesta suma r=25; formato UCOM/Villalba)
 │   ├── Avances_Tesis.pdf           # Informe de avances · Avances_Tesis_Tablas.xlsx (tablas)
+│   ├── Tesis_Defensa_Presentacion.pptx # Presentación de defensa (17 láminas, notas del orador)
 │   ├── figures/                    # Figuras del libro (fuente y montajes cualitativos)
 │   └── reportes_finales/           # Metodología de evaluación de detección
 │
