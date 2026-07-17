@@ -216,7 +216,7 @@ superioridad en calidad de imagen no se traslada automáticamente a la detecció
 ## 4. Estructura del proyecto
 
 ```
-tesis_mciencias_datos/
+TFM_Fusion_Imagenes_Propuesta_Oficial/
 │
 ├── data/raw/                       # VIS/ e IR/ con nombres coincidentes (20 pares TNO)
 │   (data/LLVIP/ y datasets/ quedan fuera del repo por tamaño — ver .gitignore)
@@ -265,8 +265,8 @@ tesis_mciencias_datos/
 **Requisitos:** Python 3.11+
 
 ```powershell
-git clone https://github.com/YanBajac/tesis_mciencias_datos.git
-cd tesis_mciencias_datos
+git clone https://github.com/YanBajac/TFM_Fusion_Imagenes_Propuesta_Oficial.git
+cd TFM_Fusion_Imagenes_Propuesta_Oficial
 
 python -m venv .venv
 .venv\Scripts\Activate.ps1

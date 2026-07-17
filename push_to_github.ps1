@@ -60,5 +60,5 @@ Write-Host "==> Pushing a origin/main..." -ForegroundColor Cyan
 git push origin main
 
 Write-Host ""
-Write-Host "Listo. Verifica en https://github.com/YanBajac/tesis_mciencias_datos" -ForegroundColor Green
+Write-Host "Listo. Verifica en https://github.com/YanBajac/TFM_Fusion_Imagenes_Propuesta_Oficial" -ForegroundColor Green
 Read-Host "Enter para cerrar"
