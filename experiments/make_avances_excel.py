@@ -107,6 +107,7 @@ hojas = [
     ("Wilcoxon", "120 contrastes pareados (propuesta y Top-Hat clásico vs. los 5 del estado del arte)"),
     ("Ranking_Global", "Ranking promedio de los 7 métodos (12 métricas)"),
     ("Deteccion_LLVIP", "mAP de YOLOv8n reentrenado por método sobre LLVIP (evaluación orientada a tarea)"),
+    ("Ablacion_Fo", "Ablación de la función de aptitud: barridos con la Fo del libro FPUNA y comparación de óptimos"),
 ]
 for h, d in hojas:
     ws.cell(f, 1, h).font = F_TXTB
@@ -328,6 +329,43 @@ f = nota(ws, f, "Lectura: toda fusión supera al visible solo (+0,12 a +0,14 en 
          "modalidad más fuerte (0,957) y ninguna fusión lo supera (peatón nocturno = térmico); entre las fusiones, en "
          "banda estrecha (0,926–0,949), la propuesta es competitiva (0,936) sin ser líder. La superioridad en calidad de "
          "imagen no se traslada automáticamente a la detección (H3 parcial).")
+
+# ============================================================ 11. ABLACION Fo
+ws = wb.create_sheet("Ablacion_Fo")
+ws.sheet_view.showGridLines = False
+f = titulo(ws, 1, "Ablación de la función de aptitud (pedido de la revisión de avances)",
+           "El barrido 5×5 se repitió con la Fo del libro FPUNA (SSIM_avg + E_n + PSNR_n) y su rango m ∈ [0,3; 2,0], "
+           "sobre la propuesta y sobre el operador clásico. En negrita el mejor por columna.")
+ws.column_dimensions["A"].width = 38
+for j in range(2, 7):
+    ws.column_dimensions[get_column_letter(j)].width = 12
+ws.cell(f, 1, "Resultado de los barridos con Fo").font = F_SUB; f += 1
+f = nota(ws, f, "En las 50 corridas (25 configuraciones × 2 operadores) el óptimo fue m* = 0,30, el piso del rango: "
+         "los términos de fidelidad de Fo dominan a la entropía. Sobre la propuesta Fo eligió además r* = 1 (óptimo "
+         "trivial); sobre el clásico, r* = 25.")
+f = nota(ws, f, "Curva aptitud vs m (r = 25, sin restricciones): las tres curvas decrecen monótonamente en [0,5; 2,0] "
+         "— ningún (n, T) puede converger allí — y el máximo real de Fo sobre la propuesta está en m ≈ 0,07, "
+         "coincidente con el óptimo de F_apt (0,0703). Ver docs/figures/fig_aptitud_vs_m.png.")
+f += 1
+f = encabezado(ws, f, ["Variante (operador + aptitud)", "Qabf ↑", "Nabf ↓", "SSIM ↑", "SCD ↑", "VIF ↑"])
+ABLA = [
+    ("Propuesta + F_apt (r=25; m=0,070)", 0.500, 0.041, 0.782, 1.450, 0.368),
+    ("Top-Hat clásico + Fo (r=25; m=0,30)", 0.534, 0.184, 0.745, 1.504, 0.395),
+    ("Propuesta + Fo (r=1; m=0,30)", 0.448, 0.121, 0.761, 1.353, 0.322),
+    ("Top-Hat clásico manual (r=5; m=1)", 0.305, 0.585, 0.578, 1.360, 0.334),
+]
+mejor_abla = {1: 0.534, 2: 0.041, 3: 0.782, 4: 1.504, 5: 0.395}
+for fila_a in ABLA:
+    es_prop = fila_a[0].startswith("Propuesta + F_apt")
+    celda(ws, f, 1, fila_a[0], bold=es_prop, align=CL)
+    for j in range(1, 6):
+        celda(ws, f, j + 1, fila_a[j], fmt="0.000", bold=(mejor_abla[j] == fila_a[j] or es_prop))
+    f += 1
+f += 1
+f = nota(ws, f, "Lectura: la propuesta con F_apt conserva el mejor perfil de limpieza y estructura (Nabf, SSIM); el "
+         "óptimo de Fo sobre el clásico es competitivo en bordes y correlación al costo de 4,5× más artefactos; el de "
+         "Fo sobre la propuesta confirma el óptimo trivial. La aptitud define el perfil del resultado (refuerza H2). "
+         "Fuente: metrics_reports/fo_ablacion_comparativa.csv y pso_grid_search_fo_*.csv.")
 
 wb.save(OUT)
 print("Guardado:", OUT)

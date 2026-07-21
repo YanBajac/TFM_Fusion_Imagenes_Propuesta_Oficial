@@ -260,7 +260,7 @@ def fig_file(name, max_w=1350):
     return file_img_b64(p, max_w=max_w) if os.path.exists(p) else None
 EXIST = {n: fig_file(n) for n in [
     "fig_morfologia_tophat.png", "fig_cinco_se.png", "fig_pso_diagrama.png",
-    "ejemplo_modalidades.png"]}
+    "ejemplo_modalidades.png", "fig_aptitud_vs_m.png"]}
 print("imagenes ok")
 
 def tabla_friedman():
@@ -381,7 +381,8 @@ H.append(f"""
     <li>Resultados cuantitativos: tabla general y gráficas (sección 8).</li>
     <li>Análisis estadístico: Friedman, Wilcoxon-Holm y ranking (sección 9).</li>
     <li>Resultados cualitativos de las 20 escenas (sección 10).</li>
-    <li>Evaluación orientada a tarea y conclusiones (secciones 11 y 12).</li>
+    <li>Evaluación orientada a tarea (sección 11), ablación de la función de aptitud (sección 12)
+        y conclusiones (sección 13).</li>
   </ol>
   {pie(2)}
 </div>
@@ -649,9 +650,39 @@ H.append(f"""
 """)
 pg += 1
 
+TAB_ABLA = """<table><thead><tr><th>Variante</th><th>Qabf &uarr;</th><th>Nabf &darr;</th>
+<th>SSIM &uarr;</th><th>SCD &uarr;</th><th>VIF &uarr;</th></tr></thead><tbody>
+<tr><td><b>Propuesta + F_apt (r=25; m=0,070)</b></td><td>0,500</td><td><b>0,041</b></td><td><b>0,782</b></td><td>1,450</td><td>0,368</td></tr>
+<tr><td>Top-Hat clásico + Fo (r=25; m=0,30)</td><td><b>0,534</b></td><td>0,184</td><td>0,745</td><td><b>1,504</b></td><td><b>0,395</b></td></tr>
+<tr><td>Propuesta + Fo (r=1; m=0,30)</td><td>0,448</td><td>0,121</td><td>0,761</td><td>1,353</td><td>0,322</td></tr>
+<tr><td>Top-Hat clásico manual (r=5; m=1)</td><td>0,305</td><td>0,585</td><td>0,578</td><td>1,360</td><td>0,334</td></tr>
+</tbody></table>"""
+
 H.append(f"""
 <div class="page">
-  <h2>12. Conclusiones</h2>
+  <h2>12. Ablación de la función de aptitud (pedido de la revisión)</h2>
+  <p>El barrido de 25 configuraciones se repitió con la función objetivo del trabajo de referencia,
+  <b>Fo = SSIM<sub>avg</sub> + E<sub>n</sub> + PSNR<sub>n</sub></b> (Ortega y Espinoza, 2025), con su
+  rango original m &isin; [0,3; 2,0], sobre la propuesta y sobre el operador clásico. En las
+  <b>50 corridas</b> el peso óptimo se ubicó en el límite inferior del rango (<b>m* = 0,30</b>): los dos
+  términos de fidelidad de Fo dominan a la entropía y empujan el realce al mínimo permitido. Sobre la
+  propuesta, Fo seleccionó además <b>r* = 1</b>, un óptimo trivial que desactiva el banco de SE.</p>
+  {figura(EXIST.get("fig_aptitud_vs_m.png"), "Aptitud en función de m (r = 25), sin restricciones de rango: las tres curvas decrecen monótonamente en [0,5-2], y el máximo real de Fo sobre la propuesta coincide con nuestro óptimo (m ≈ 0,07).", 78)}
+  <p><b>Tabla 9.</b> Óptimos de cada aptitud evaluados sobre los 20 pares (medias).</p>
+  {TAB_ABLA}
+  <p class="lectura">Lectura: ninguna configuración del enjambre puede converger dentro de [0,5; 2,0]
+  porque la aptitud decrece monótonamente allí; ambas formulaciones acuerdan el peso adecuado del
+  operador con suma (m ≈ 0,07). La propuesta con F_apt conserva el mejor perfil de limpieza y estructura;
+  el óptimo de Fo sobre el clásico es competitivo en bordes y correlación al costo de 4,5&times; más
+  artefactos. La función de aptitud define el perfil del resultado (refuerza H2).</p>
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>13. Conclusiones</h2>
   <h3>Resumen del planteamiento</h3>
   <ol>
     <li><b>Propuesta:</b> Top-Hat de una sola escala (radio r) con banco de cinco SE; respuestas lineales
@@ -678,6 +709,8 @@ H.append(f"""
   </ul>
   <h3>Próximos pasos</h3>
   <ul>
+    <li>Experimento de clases complementarias sobre M3FD (People/IR y Lamp/VIS): un único detector
+        entrenado con VIS+IR mezcladas, evaluado por inferencia sobre cada método de fusión.</li>
     <li>Extender la evaluación de detección a otros detectores y al conjunto completo de LLVIP.</li>
     <li>Complementar con una validación perceptual por observadores.</li>
   </ul>
