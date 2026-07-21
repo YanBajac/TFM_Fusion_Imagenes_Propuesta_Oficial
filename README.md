@@ -335,6 +335,25 @@ Esto ejecuta `experiments/detection_llvip/prepare_llvip.py` (genera los datasets
 método) y `train_eval_llvip.py` (entrena y compara mAP, acumulando en
 `experiments/results/metrics_reports/detection_llvip_map.csv`).
 
+### 8.1 Clases complementarias (M3FD): un modelo, dos objetos, una imagen fusionada
+
+Experimento complementario sobre **M3FD** (TarDAL, CVPR 2022; 4.200 pares VIS/IR con 6 clases
+YOLO): un **único** YOLOv8 se entrena con imágenes VIS **e** IR mezcladas (con sus etiquetas) y se
+evalúa **por inferencia** sobre la validación en cada modalidad y en cada método de fusión. Las
+clases son complementarias —**People** domina en IR (firma térmica) y **Lamp** en VIS—, de modo que
+solo la imagen fusionada permite detectar ambas a la vez. Se comparan, además de los métodos del
+benchmark, los dos óptimos del PSO sobre la propuesta: `Propuesta_Fapt` (aptitud de la tesis,
+r=25, m=0.0703) y `Propuesta_Fo` (aptitud del libro FPUNA, r=1, m=0.30), más la réplica completa
+del método FPUNA (`PSO_FPUNA_Fo`: disco único, r=25, m=0.30).
+
+```powershell
+# Requiere M3FD (Detection) descargado: https://github.com/JinyuanLiu-CV/TarDAL
+powershell -ExecutionPolicy Bypass -File .\ejecutar_m3fd.ps1 -M3FD "data\M3FD"
+```
+
+Resultados (mAP global y AP@0.5 por clase) en
+`experiments/results/metrics_reports/detection_m3fd_map.csv`.
+
 ---
 
 ## 9. Notebooks de análisis
