@@ -206,12 +206,15 @@ def dtcwt_fusion(vis: np.ndarray, ir: np.ndarray, levels: int = 4) -> np.ndarray
 # ---------------------------------------------------------------------------
 # 7. Top-Hat clásico (fusión morfológica básica)
 # ---------------------------------------------------------------------------
-def tophat_classic_fusion(vis: np.ndarray, ir: np.ndarray, r: int = 5) -> np.ndarray:
+def tophat_classic_fusion(vis: np.ndarray, ir: np.ndarray, r: int = 5,
+                          m: float = 1.0) -> np.ndarray:
     """
     Metodología clásica de la transformada Top-Hat para fusión de imágenes:
     un único disco de radio r, detalle brillante y oscuro por máximo entre
-    fuentes, reconstrucción aditivo-sustractiva sin ponderación (m = 1):
-        F = (VIS+IR)/2 + máx(WTH_v, WTH_i) − máx(BTH_v, BTH_i)
+    fuentes, reconstrucción aditivo-sustractiva (sin ponderación con m = 1,
+    el caso clásico; m ajustable para la variante optimizada por PSO del
+    esquema de Ortega y Espinoza, 2025):
+        F = (VIS+IR)/2 + m·máx(WTH_v, WTH_i) − m·máx(BTH_v, BTH_i)
     """
     se = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1))
     v = vis.astype(np.float32)
@@ -221,5 +224,5 @@ def tophat_classic_fusion(vis: np.ndarray, ir: np.ndarray, r: int = 5) -> np.nda
     bth_v = cv2.morphologyEx(v, cv2.MORPH_CLOSE, se) - v
     bth_i = cv2.morphologyEx(i, cv2.MORPH_CLOSE, se) - i
     base = 0.5 * (v + i)
-    fused = base + np.maximum(wth_v, wth_i) - np.maximum(bth_v, bth_i)
+    fused = base + m * np.maximum(wth_v, wth_i) - m * np.maximum(bth_v, bth_i)
     return np.clip(fused, 0.0, 1.0).astype(np.float32)
