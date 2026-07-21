@@ -64,21 +64,58 @@ def hallar_dir(root, candidatos):
     return None
 
 def hallar_labels(root):
+    """Devuelve (dir, 'yolo'|'voc'): acepta .txt YOLO o .xml VOC (M3FD usa VOC)."""
     for cand in ["labels", "Labels", "label", "Annotation", "annotations"]:
         d = root / cand
-        if d.is_dir() and any(p.suffix == ".txt" for p in d.rglob("*.txt")):
-            return d
+        if d.is_dir():
+            if any(p.suffix == ".txt" for p in d.rglob("*.txt")):
+                return d, "yolo"
+            if any(p.suffix == ".xml" for p in d.rglob("*.xml")):
+                return d, "voc"
     for d in root.rglob("*"):
-        if d.is_dir() and any(p.suffix == ".txt" for p in d.iterdir()):
-            return d
-    return None
+        if d.is_dir():
+            if any(p.suffix == ".txt" for p in d.iterdir()):
+                return d, "yolo"
+            if any(p.suffix == ".xml" for p in d.iterdir()):
+                return d, "voc"
+    return None, None
 
-def buscar_label(labdir, stem):
-    c = labdir / f"{stem}.txt"
+def buscar_label(labdir, stem, ext):
+    c = labdir / f"{stem}{ext}"
     if c.exists():
         return c
-    hits = list(labdir.rglob(f"{stem}.txt"))
+    hits = list(labdir.rglob(f"{stem}{ext}"))
     return hits[0] if hits else None
+
+def voc_a_yolo(xml_path, W, H):
+    """Convierte un XML VOC de M3FD a lineas YOLO usando el orden de NAMES."""
+    import xml.etree.ElementTree as ET
+    out = []
+    try:
+        r = ET.parse(str(xml_path)).getroot()
+    except Exception:
+        return ""
+    sz = r.find("size")
+    if sz is not None:
+        try:
+            W = int(sz.find("width").text) or W
+            H = int(sz.find("height").text) or H
+        except Exception:
+            pass
+    for obj in r.findall("object"):
+        nombre = (obj.find("name").text or "").strip()
+        if nombre not in NAMES:
+            continue
+        bb = obj.find("bndbox")
+        if bb is None:
+            continue
+        x1 = float(bb.find("xmin").text); y1 = float(bb.find("ymin").text)
+        x2 = float(bb.find("xmax").text); y2 = float(bb.find("ymax").text)
+        cx = ((x1 + x2) / 2) / W; cy = ((y1 + y2) / 2) / H
+        w = (x2 - x1) / W; h = (y2 - y1) / H
+        if w > 0 and h > 0:
+            out.append(f"{NAMES.index(nombre)} {cx:.6f} {cy:.6f} {w:.6f} {h:.6f}")
+    return "\n".join(out)
 
 def data_yaml(d, train_rel, val_rel):
     d = d.resolve()
@@ -86,6 +123,11 @@ def data_yaml(d, train_rel, val_rel):
     (d / "data.yaml").write_text(
         f"path: {d}\ntrain: {train_rel}\nval: {val_rel}\nnc: {len(NAMES)}\nnames: [{nombres}]\n",
         encoding="utf-8")
+
+def leer_label(lb):
+    if lb.suffix == ".txt":
+        return lb.read_text(encoding="utf-8", errors="replace")
+    return voc_a_yolo(lb, 1024, 768)
 
 def main():
     ap = argparse.ArgumentParser()
@@ -97,13 +139,14 @@ def main():
     root = Path(a.m3fd_root)
     vdir = hallar_dir(root, ["vi", "Vis", "visible", "vis", "Visible", "RGB"])
     idir = hallar_dir(root, ["ir", "Ir", "infrared", "Inf", "Infrared"])
-    labdir = hallar_labels(root)
+    labdir, labtipo = hallar_labels(root)
     if not (vdir and idir and labdir):
         print("ERROR: no encontre las carpetas del dataset bajo:", root)
         print("  visible:", vdir, "| infrarrojo:", idir, "| labels:", labdir)
         print("  Descarga 'M3FD Detection' desde https://github.com/JinyuanLiu-CV/TarDAL")
         sys.exit(2)
-    print("VIS:", vdir, "\nIR: ", idir, "\nLAB:", labdir)
+    print("VIS:", vdir, "\nIR: ", idir, "\nLAB:", labdir, f"({labtipo})")
+    ext = ".txt" if labtipo == "yolo" else ".xml"
 
     vis_all = sorted([p for p in vdir.iterdir() if p.suffix.lower() in IMG_EXT])
     pares = []
@@ -112,7 +155,7 @@ def main():
         if not ip.exists():
             hits = [c for c in idir.iterdir() if c.stem == vp.stem]
             ip = hits[0] if hits else None
-        lb = buscar_label(labdir, vp.stem)
+        lb = buscar_label(labdir, vp.stem, ext)
         if ip is not None and lb is not None:
             pares.append((vp, ip, lb))
     print(f"pares VIS/IR con label: {len(pares)}")
@@ -129,7 +172,7 @@ def main():
         (mixto / "images" / sp).mkdir(parents=True, exist_ok=True)
         (mixto / "labels" / sp).mkdir(parents=True, exist_ok=True)
     for k, (vp, ip, lb) in enumerate(train):
-        lab = lb.read_text(encoding="utf-8", errors="replace")
+        lab = leer_label(lb)
         for tag, src in (("vi", vp), ("ir", ip)):
             im = load_gray01(src)
             if im is None:
@@ -140,7 +183,7 @@ def main():
             print(f"  train {k+1}...", flush=True)
     # val del mixto: ambas modalidades (solo para monitoreo del entrenamiento)
     for vp, ip, lb in val:
-        lab = lb.read_text(encoding="utf-8", errors="replace")
+        lab = leer_label(lb)
         for tag, src in (("vi", vp), ("ir", ip)):
             im = load_gray01(src)
             if im is None:
@@ -162,7 +205,7 @@ def main():
             continue
         if v.shape != i.shape:
             i = cv2.resize(i, (v.shape[1], v.shape[0]))
-        lab = lb.read_text(encoding="utf-8", errors="replace")
+        lab = leer_label(lb)
         for m in metodos:
             img = v if m == "VIS" else (i if m == "IR" else FUSERS[m](v, i))
             d = out / f"m3fd_test_{m}"
