@@ -39,10 +39,17 @@ def main():
     import pandas as pd
 
     dd = Path(a.datasets_dir)
-    best = ROOT / "runs" / "m3fd" / "mixto" / "weights" / "best.pt"
+
+    def hallar_best():
+        """Localiza el best.pt del mixto (ultralytics puede anidar la carpeta runs)."""
+        cands = sorted(ROOT.glob("runs/**/mixto/weights/best.pt"),
+                       key=lambda p: p.stat().st_mtime)
+        return cands[-1] if cands else None
+
+    best = hallar_best()
 
     # ---------- 1. entrenamiento unico sobre el mixto VIS+IR ----------
-    if a.skip_train and best.exists():
+    if a.skip_train and best is not None:
         print("Salteo entrenamiento; uso", best)
     else:
         data = dd / "m3fd_mixto" / "data.yaml"
@@ -56,8 +63,11 @@ def main():
         if a.device != "":
             kw["device"] = a.device
         model.train(**kw)
+        best = hallar_best()
 
     # ---------- 2. inferencia sobre cada set de prueba ----------
+    assert best is not None, "no se encontró best.pt bajo runs/**/mixto/weights/"
+    print("Pesos:", best)
     modelo = YOLO(str(best))
     nombres = modelo.names          # {idx: nombre}
     filas = []
