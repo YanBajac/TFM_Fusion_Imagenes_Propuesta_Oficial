@@ -108,6 +108,7 @@ hojas = [
     ("Ranking_Global", "Ranking promedio de los 7 métodos (12 métricas)"),
     ("Deteccion_LLVIP", "mAP de YOLOv8n reentrenado por método sobre LLVIP (evaluación orientada a tarea)"),
     ("Ablacion_Fo", "Ablación de la función de aptitud: barridos con la Fo del libro FPUNA y comparación de óptimos"),
+    ("Deteccion_M3FD", "Clases complementarias en M3FD: AP por clase con un detector único VIS+IR (People/IR, Lamp/VIS)"),
 ]
 for h, d in hojas:
     ws.cell(f, 1, h).font = F_TXTB
@@ -366,6 +367,42 @@ f = nota(ws, f, "Lectura: la propuesta con F_apt conserva el mejor perfil de lim
          "óptimo de Fo sobre el clásico es competitivo en bordes y correlación al costo de 4,5× más artefactos; el de "
          "Fo sobre la propuesta confirma el óptimo trivial. La aptitud define el perfil del resultado (refuerza H2). "
          "Fuente: metrics_reports/fo_ablacion_comparativa.csv y pso_grid_search_fo_*.csv.")
+
+# ============================================================ 12. DETECCION M3FD
+ws = wb.create_sheet("Deteccion_M3FD")
+ws.sheet_view.showGridLines = False
+f = titulo(ws, 1, "Clases complementarias en M3FD — un detector único VIS+IR",
+           "YOLOv8n entrenado con las imágenes de ambas modalidades mezcladas (4.000 imágenes, 40 épocas) y evaluado "
+           "por inferencia sobre cada entrada. People domina en IR (térmica); Lamp solo se ve en VIS. En negrita el mejor por columna.")
+ws.column_dimensions["A"].width = 40
+for j in range(2, 6):
+    ws.column_dimensions[get_column_letter(j)].width = 16
+f = encabezado(ws, f, ["Entrada del detector", "AP@0,5 People ↑", "AP@0,5 Lamp ↑", "Promedio del par ↑", "mAP@0,5 (6 clases) ↑"])
+M3FD = [
+    ("VIS (solo)", 0.178, 0.135, 0.157, 0.245),
+    ("IR (solo)", 0.220, 0.018, 0.119, 0.191),
+    ("Pirámide de Laplace (LP)", 0.147, 0.096, 0.122, 0.215),
+    ("Ratio Pyramid (RP)", 0.198, 0.133, 0.165, 0.231),
+    ("Wavelet discreta (DWT)", 0.165, 0.110, 0.137, 0.228),
+    ("Dual-Tree Complex Wavelet (DTCWT)", 0.159, 0.114, 0.137, 0.229),
+    ("Curvelet (CVT)", 0.167, 0.100, 0.133, 0.228),
+    ("Top-Hat clásico (r=5; m=1)", 0.125, 0.054, 0.090, 0.198),
+    ("PSO FPUNA (clásico + Fo; r=25; m=0,30)", 0.174, 0.118, 0.146, 0.229),
+    ("Propuesta + Fo (r=1; m=0,30)", 0.200, 0.110, 0.155, 0.238),
+    ("Propuesta + F_apt (r=25; m=0,070)", 0.207, 0.117, 0.162, 0.239),
+]
+mejor_m3fd = {1: 0.220, 2: 0.135, 3: 0.165, 4: 0.245}
+for fila_m in M3FD:
+    es_prop = fila_m[0].startswith("Propuesta + F_apt")
+    celda(ws, f, 1, fila_m[0], bold=es_prop, align=CL)
+    for j in range(1, 5):
+        celda(ws, f, j + 1, fila_m[j], fmt="0.000", bold=(mejor_m3fd[j] == fila_m[j] or es_prop))
+    f += 1
+f += 1
+f = nota(ws, f, "Lectura: complementariedad extrema (IR ciego a Lamp: 0,018; VIS débil en People). Las mejores fusiones "
+         "superan en el promedio del par a ambas modalidades individuales (RP 0,165 y propuesta 0,162 vs VIS 0,157 e "
+         "IR 0,119): detectan ambas clases en una sola imagen. La propuesta es la mejor fusión en mAP global (0,239) y "
+         "en People (0,207), y F_apt supera a Fo en las dos clases clave. Fuente: metrics_reports/detection_m3fd_map.csv.")
 
 wb.save(OUT)
 print("Guardado:", OUT)

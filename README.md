@@ -351,8 +351,12 @@ del método FPUNA (`PSO_FPUNA_Fo`: disco único, r=25, m=0.30).
 powershell -ExecutionPolicy Bypass -File .\ejecutar_m3fd.ps1 -M3FD "data\M3FD"
 ```
 
-Resultados (mAP global y AP@0.5 por clase) en
-`experiments/results/metrics_reports/detection_m3fd_map.csv`.
+**Resultados** (`detection_m3fd_map.csv`): la complementariedad es extrema — el IR domina People
+(AP@0.5 = 0.220) pero es prácticamente ciego a Lamp (0.018); el VIS presenta el patrón espejo
+(0.178 / 0.135). Las mejores fusiones superan en el promedio del par a ambas modalidades
+individuales (propuesta 0.162, RP 0.165 vs VIS 0.157 e IR 0.119): detectan ambas clases en una
+sola imagen. La **propuesta es la mejor fusión** en mAP global (0.239) y en People (0.207), y su
+óptimo F_apt supera al de F_o en las dos clases clave.
 
 ---
 

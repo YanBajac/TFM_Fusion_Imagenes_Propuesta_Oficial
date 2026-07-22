@@ -381,8 +381,8 @@ H.append(f"""
     <li>Resultados cuantitativos: tabla general y gráficas (sección 8).</li>
     <li>Análisis estadístico: Friedman, Wilcoxon-Holm y ranking (sección 9).</li>
     <li>Resultados cualitativos de las 20 escenas (sección 10).</li>
-    <li>Evaluación orientada a tarea (sección 11), ablación de la función de aptitud (sección 12)
-        y conclusiones (sección 13).</li>
+    <li>Evaluación orientada a tarea (sección 11), ablación de la función de aptitud (sección 12),
+        clases complementarias en M3FD (sección 13) y conclusiones (sección 14).</li>
   </ol>
   {pie(2)}
 </div>
@@ -680,9 +680,49 @@ H.append(f"""
 """)
 pg += 1
 
+TAB_M3FD = """<table><thead><tr><th>Entrada del detector</th><th>AP People &uarr;</th>
+<th>AP Lamp &uarr;</th><th>Promedio del par &uarr;</th><th>mAP@0,5 &uarr;</th></tr></thead><tbody>
+<tr><td>VIS (solo)</td><td>0,178</td><td><b>0,135</b></td><td>0,157</td><td><b>0,245</b></td></tr>
+<tr><td>IR (solo)</td><td><b>0,220</b></td><td>0,018</td><td>0,119</td><td>0,191</td></tr>
+<tr><td>Pirámide de Laplace (LP)</td><td>0,147</td><td>0,096</td><td>0,122</td><td>0,215</td></tr>
+<tr><td>Ratio Pyramid (RP)</td><td>0,198</td><td>0,133</td><td><b>0,165</b></td><td>0,231</td></tr>
+<tr><td>Wavelet discreta (DWT)</td><td>0,165</td><td>0,110</td><td>0,137</td><td>0,228</td></tr>
+<tr><td>DTCWT</td><td>0,159</td><td>0,114</td><td>0,137</td><td>0,229</td></tr>
+<tr><td>Curvelet (CVT)</td><td>0,167</td><td>0,100</td><td>0,133</td><td>0,228</td></tr>
+<tr><td>Top-Hat clásico (r=5; m=1)</td><td>0,125</td><td>0,054</td><td>0,090</td><td>0,198</td></tr>
+<tr><td>PSO FPUNA (clásico + Fo; r=25; m=0,30)</td><td>0,174</td><td>0,118</td><td>0,146</td><td>0,229</td></tr>
+<tr><td>Propuesta + Fo (r=1; m=0,30)</td><td>0,200</td><td>0,110</td><td>0,155</td><td>0,238</td></tr>
+<tr><td><b>Propuesta + F_apt (r=25; m=0,070)</b></td><td>0,207</td><td>0,117</td><td>0,162</td><td>0,239</td></tr>
+</tbody></table>"""
+
 H.append(f"""
 <div class="page">
-  <h2>13. Conclusiones</h2>
+  <h2>13. Detección con clases complementarias (M3FD)</h2>
+  <p>Experimento diseñado para aislar el escenario donde la fusión es insustituible: el dataset
+  <b>M3FD</b> (Liu et al., 2022; 2.000 pares de entrenamiento y 500 de validación) anota seis clases,
+  dos de ellas de <b>visibilidad opuesta</b>: las personas dominan en el infrarrojo (firma térmica) y
+  las luces (Lamp) son esencialmente visibles solo en el canal visible. Un <b>único detector YOLOv8n</b>
+  se entrenó con las imágenes de ambas modalidades mezcladas (4.000 imágenes, 40 épocas, etiquetas
+  compartidas) y se evaluó <b>por inferencia</b> sobre la validación de cada modalidad y de cada método
+  de fusión — incluidos los dos óptimos del PSO (F_apt y Fo).</p>
+  <p><b>Tabla 10.</b> AP@0,5 por clase y mAP global (medias sobre 500 imágenes de validación).</p>
+  {TAB_M3FD}
+  <p class="lectura">Lectura: la complementariedad es extrema — el IR domina en personas (0,220) pero es
+  prácticamente ciego a las luces (0,018); el VIS presenta el patrón espejo. Las mejores fusiones superan
+  en el promedio del par a <b>ambas</b> modalidades individuales (RP 0,165 y propuesta 0,162 vs VIS 0,157
+  e IR 0,119): detectan ambas clases en una sola imagen, algo que ninguna modalidad logra por separado.
+  La propuesta es la <b>mejor fusión del estudio</b> en mAP global (0,239) y en personas (0,207, cerca del
+  IR puro), y su óptimo F_apt supera al de Fo en las dos clases clave. El VIS conserva el mejor mAP global
+  de seis clases (0,245) por la abundancia de vehículos diurnos; los valores absolutos son moderados
+  (subconjunto de 500, modelo nano).</p>
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>14. Conclusiones</h2>
   <h3>Resumen del planteamiento</h3>
   <ol>
     <li><b>Propuesta:</b> Top-Hat de una sola escala (radio r) con banco de cinco SE; respuestas lineales
@@ -709,9 +749,8 @@ H.append(f"""
   </ul>
   <h3>Próximos pasos</h3>
   <ul>
-    <li>Experimento de clases complementarias sobre M3FD (People/IR y Lamp/VIS): un único detector
-        entrenado con VIS+IR mezcladas, evaluado por inferencia sobre cada método de fusión.</li>
-    <li>Extender la evaluación de detección a otros detectores y al conjunto completo de LLVIP.</li>
+    <li>Extender la evaluación de detección a otros detectores y a los conjuntos completos de
+        LLVIP y M3FD.</li>
     <li>Complementar con una validación perceptual por observadores.</li>
   </ul>
   {pie(pg)}
