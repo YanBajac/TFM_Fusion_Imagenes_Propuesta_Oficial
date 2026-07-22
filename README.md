@@ -247,11 +247,11 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 ├── docs/
 │   ├── Tesis_Borrador_V3.docx      # Documento principal (propuesta suma r=25; formato UCOM/Villalba)
 │   ├── Avances_Tesis.pdf           # Informe de avances · Avances_Tesis_Tablas.xlsx (tablas)
-│   ├── Tesis_Defensa_Presentacion.pptx # Presentación de defensa (17 láminas, notas del orador)
-│   ├── figures/                    # Figuras del libro (fuente y montajes cualitativos)
-│   └── reportes_finales/           # Metodología de evaluación de detección
+│   ├── Tesis_Defensa_Presentacion.pptx # Presentación de defensa (19 láminas, notas del orador)
+│   └── figures/                    # Figuras del libro (fuente y montajes cualitativos)
 │
 ├── ejecutar_llvip.ps1              # Lanzador del pipeline LLVIP en la PC (GPU)
+├── ejecutar_m3fd.ps1               # Lanzador del experimento de clases complementarias (M3FD)
 ├── reparar_torch_gpu.ps1           # Reinstala torch con CUDA (GPU)
 ├── push_to_github.ps1              # Commit + push asistido
 ├── requirements.txt

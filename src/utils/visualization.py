@@ -1,41 +1,7 @@
-"""visualization.py – Funciones para graficar comparaciones visuales y métricas."""
+"""visualization.py – Funciones para graficar métricas del benchmark."""
 
 from pathlib import Path
-import numpy as np
 import matplotlib.pyplot as plt
-
-
-def plot_comparison(
-    images: dict[str, np.ndarray],
-    title: str = "Comparación de métodos de fusión",
-    save_path: str | Path | None = None,
-) -> None:
-    """
-    Muestra un mosaico con las imágenes de cada método.
-
-    Parameters
-    ----------
-    images : dict  {nombre_método: imagen_array}
-    title  : str   Título general de la figura.
-    save_path : opcional – si se provee, guarda la figura.
-    """
-    n = len(images)
-    fig, axes = plt.subplots(1, n, figsize=(4 * n, 4))
-    if n == 1:
-        axes = [axes]
-
-    for ax, (name, img) in zip(axes, images.items()):
-        ax.imshow(img, cmap="gray", vmin=0, vmax=1)
-        ax.set_title(name, fontsize=10)
-        ax.axis("off")
-
-    fig.suptitle(title, fontsize=13, y=1.02)
-    plt.tight_layout()
-
-    if save_path:
-        Path(save_path).parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(str(save_path), dpi=150, bbox_inches="tight")
-    plt.show()
 
 
 def plot_metrics_bar(
