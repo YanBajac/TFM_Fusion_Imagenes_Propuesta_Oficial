@@ -67,6 +67,7 @@ yolov8n.pt
 
 # Dataset LLVIP (demasiado grande para git)
 data/LLVIP/
+data/M3FD_Detection/
 datasets/
 data/**/visible/
 data/**/infrared/
