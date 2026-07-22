@@ -260,7 +260,7 @@ def fig_file(name, max_w=1350):
     return file_img_b64(p, max_w=max_w) if os.path.exists(p) else None
 EXIST = {n: fig_file(n) for n in [
     "fig_morfologia_tophat.png", "fig_cinco_se.png", "fig_pso_diagrama.png",
-    "ejemplo_modalidades.png", "fig_aptitud_vs_m.png"]}
+    "ejemplo_modalidades.png", "fig_aptitud_vs_m.png", "fig_m3fd_detecciones.png"]}
 print("imagenes ok")
 
 def tabla_friedman():
@@ -715,6 +715,19 @@ H.append(f"""
   IR puro), y su óptimo F_apt supera al de Fo en las dos clases clave. El VIS conserva el mejor mAP global
   de seis clases (0,245) por la abundancia de vehículos diurnos; los valores absolutos son moderados
   (subconjunto de 500, modelo nano).</p>
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>13. Clases complementarias (continuación): la prueba visual</h2>
+  <p>Dos escenas de la validación con las detecciones del modelo único dibujadas (personas en
+  granate, luces en azul). En la escena superior el visible no detecta <b>ninguna persona</b> y la
+  fusión las recupera; en la inferior el infrarrojo no detecta <b>ninguna luz</b> y la fusión las
+  conserva junto con las personas: <b>ambas clases en una sola imagen</b>.</p>
+  {figura(EXIST.get("fig_m3fd_detecciones.png"), "Detecciones del modelo único VIS+IR sobre las escenas 02129 y 02229 de M3FD (conf ≥ 0,25).", 92)}
   {pie(pg)}
 </div>
 """)
