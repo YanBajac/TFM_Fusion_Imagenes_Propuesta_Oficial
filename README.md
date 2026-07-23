@@ -16,8 +16,10 @@
 > Se compara contra **seis métodos**: cinco del estado del arte —Pirámide de Laplace (LP), Ratio of
 > low-pass Pyramid (RP, Toet 1989), Wavelet discreta (DWT), Dual-Tree Complex Wavelet (DTCWT) y
 > Curvelet (CVT)— más la **metodología clásica de la transformada Top-Hat**, sobre el **TNO Image
-> Fusion Dataset** (20 pares) con **12 métricas sin referencia**, y se evalúa su impacto en
-> **detección de objetos** entrenando YOLOv8 sobre el dataset etiquetado **LLVIP** (mAP).
+> Fusion Dataset** (20 pares) con **12 métricas sin referencia**. La elección de la aptitud se valida
+> con una **ablación** frente a la `Fo` del trabajo de referencia, y el impacto en **detección de
+> objetos** se evalúa con dos experimentos: YOLOv8 reentrenado por método sobre **LLVIP** (mAP) y un
+> **detector único VIS+IR** sobre **M3FD** con clases complementarias (People/IR, Lamp/VIS).
 
 ---
 
@@ -36,7 +38,7 @@
 5. [Instalación](#5-instalación)
 6. [Uso rápido](#6-uso-rápido)
 7. [Ejecución de experimentos](#7-ejecución-de-experimentos)
-8. [Evaluación orientada a tarea (detección LLVIP)](#8-evaluación-orientada-a-tarea-detección-llvip)
+8. [Evaluación orientada a tarea (detección LLVIP y M3FD)](#8-evaluación-orientada-a-tarea-detección-llvip-y-m3fd)
 9. [Notebooks de análisis](#9-notebooks-de-análisis)
 10. [Dependencias](#10-dependencias)
 11. [Referencias](#11-referencias)
@@ -211,6 +213,23 @@ superioridad en calidad de imagen no se traslada automáticamente a la detecció
 | Ratio Pyramid (RP) | 0.926 | 0.538 |
 | VIS (solo) | 0.808 | 0.451 |
 
+**Ablación de la función de aptitud.** El barrido 5×5 se repitió con la función objetivo del trabajo
+de referencia (`Fo = SSIM_avg + E_n + PSNR_n`, rango `m ∈ [0.3, 2.0]`): en las **50 corridas** el
+óptimo cayó al piso del rango (`m* = 0.30`) y, sobre la propuesta, `Fo` eligió `r* = 1` (óptimo
+trivial que desactiva el banco de SE). La curva aptitud-vs-m sin restricciones
+(`docs/figures/fig_aptitud_vs_m.png`) muestra que las tres curvas decrecen monótonamente en
+`[0.5, 2]` — ningún tamaño de enjambre puede converger allí — y que el máximo real de `Fo` sobre la
+propuesta está en `m ≈ 0.07`, coincidente con el óptimo de `F_apt`. Resultados:
+`fo_ablacion_comparativa.csv` y `pso_grid_search_fo_*.csv`.
+
+**Detección — M3FD (clases complementarias, un único detector VIS+IR).** Con dos clases de
+visibilidad opuesta (**People** domina en IR: 0.220 vs 0.178; **Lamp** solo se ve en VIS: 0.135 vs
+0.018), las mejores fusiones superan en el promedio del par a **ambas** modalidades individuales
+(propuesta 0.162, RP 0.165 vs VIS 0.157 e IR 0.119): detectan ambas clases en una sola imagen. La
+**propuesta es la mejor fusión** en mAP global (0.239) y en People (0.207), y su óptimo `F_apt`
+supera al de `Fo` en las dos clases clave. La prueba visual con las detecciones dibujadas está en
+`docs/figures/fig_m3fd_detecciones.png`. Resultados: `detection_m3fd_map.csv` (ver §8.1).
+
 ---
 
 ## 4. Estructura del proyecto
@@ -320,7 +339,7 @@ Salidas en `experiments/results/metrics_reports/`: `all_metrics.csv`, `descripti
 
 ---
 
-## 8. Evaluación orientada a tarea (detección LLVIP)
+## 8. Evaluación orientada a tarea (detección LLVIP y M3FD)
 
 Para una comparación **concluyente** del efecto de la fusión en la detección se reentrena el mismo
 detector (YOLOv8) sobre cada versión fusionada del dataset **LLVIP** (VIS/IR alineado y etiquetado,
