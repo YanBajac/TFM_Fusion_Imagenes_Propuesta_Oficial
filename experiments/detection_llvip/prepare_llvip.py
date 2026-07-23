@@ -30,7 +30,8 @@ FUSERS = {
     "DTCWT":              lambda v,i: dtcwt_fusion(v,i,levels=4),
     "Curvelet":           lambda v,i: curvelet_fusion(v,i,levels=3),
     "TopHat_Clasico":     lambda v,i: tophat_classic_fusion(v,i,r=5),
-    "Propuesta_Novedosa": lambda v,i: fuse_optimal(v,i,25,0.0703,mode="sum"),  # (r,m) del barrido PSO 5x5
+    "Propuesta_Novedosa": lambda v,i: fuse_optimal(v,i,25,0.0703,mode="sum"),  # F_apt (barrido PSO 5x5)
+    "Propuesta_Fo":       lambda v,i: fuse_optimal(v,i,1,0.30,mode="sum"),     # F_o (rango publicado, optimo r=1)
 }
 IMG_EXT=(".jpg",".jpeg",".png",".bmp")
 
