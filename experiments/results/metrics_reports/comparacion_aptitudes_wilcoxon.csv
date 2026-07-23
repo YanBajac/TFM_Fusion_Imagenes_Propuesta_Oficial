@@ -1,0 +1,13 @@
+metrica,media_Fapt,media_Fo,p_value,Fapt_mejor,significativo
+EN,6.6406,6.5981,0.0007,True,True
+SD,0.1173,0.1129,0.0,True,True
+FE,1.0487,1.0423,0.0012,True,True
+MG,0.0194,0.0232,0.0,False,True
+MI_vis,1.3422,1.3681,0.7012,False,False
+MI_ir,0.9088,0.9316,0.4304,False,False
+SF,9.6441,12.403,0.0,False,True
+Qabf,0.4999,0.4478,0.0,True,True
+Nabf,0.0406,0.1211,0.0,True,True
+SSIM,0.7822,0.7607,0.0,True,True
+SCD,1.4498,1.3528,0.0,True,True
+VIF,0.3683,0.3219,0.0,True,True

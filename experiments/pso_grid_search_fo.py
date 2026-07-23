@@ -102,10 +102,16 @@ def init_swarm(n, seed):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--operator", choices=["propuesta", "clasico"], required=True)
+    ap.add_argument("--m-lo", type=float, default=0.30)
+    ap.add_argument("--m-hi", type=float, default=2.00)
+    ap.add_argument("--tag", default="")
     ap.add_argument("--budget", type=float, default=5400.0)
     a = ap.parse_args()
-    STATE = Path(f'experiments/results/pso/pso_grid_fo_{a.operator}_state.json')
-    OUT_CSV = Path(f'experiments/results/metrics_reports/pso_grid_search_fo_{a.operator}.csv')
+    global LO, HI
+    LO = np.array([1.0, a.m_lo]); HI = np.array([25.0, a.m_hi])
+    suf = a.operator + (f"_{a.tag}" if a.tag else "")
+    STATE = Path(f'experiments/results/pso/pso_grid_fo_{suf}_state.json')
+    OUT_CSV = Path(f'experiments/results/metrics_reports/pso_grid_search_fo_{suf}.csv')
     fitness = hacer_fitness(a.operator)
     s = json.load(open(STATE)) if STATE.exists() else {"configs": {}}
     t0 = time.time()
