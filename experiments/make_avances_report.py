@@ -168,10 +168,10 @@ charts["ranking"] = fig_to_b64(fig)
 
 # --- detección LLVIP: barras mAP por método ---
 _dord = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT", "Curvelet",
-         "TopHat_Clasico", "Propuesta_Novedosa"]
+         "TopHat_Clasico", "Propuesta_Novedosa", "Propuesta_Fo"]
 _dshort = {"VIS": "VIS", "IR": "IR", "PiramideLaplace": "LP", "RatioPiramide": "RP",
            "DWT": "DWT", "DTCWT": "DTCWT", "Curvelet": "CVT", "TopHat_Clasico": "TH clás.",
-           "Propuesta_Novedosa": "Propuesta"}
+           "Propuesta_Novedosa": "Prop. F_apt", "Propuesta_Fo": "Prop. Fo"}
 dd = det.loc[_dord]
 fig, ax = plt.subplots(figsize=(7.4, 3.0))
 x = np.arange(len(_dord)); w = 0.4
@@ -260,7 +260,8 @@ def fig_file(name, max_w=1350):
     return file_img_b64(p, max_w=max_w) if os.path.exists(p) else None
 EXIST = {n: fig_file(n) for n in [
     "fig_morfologia_tophat.png", "fig_cinco_se.png", "fig_pso_diagrama.png",
-    "ejemplo_modalidades.png", "fig_aptitud_vs_m.png", "fig_m3fd_detecciones.png"]}
+    "ejemplo_modalidades.png", "fig_aptitud_vs_m.png", "fig_m3fd_detecciones.png",
+    "comparacion_aptitudes.png"]}
 print("imagenes ok")
 
 def tabla_friedman():
@@ -271,8 +272,10 @@ def tabla_friedman():
             f'<th>p-valor</th><th>Significativa (α = 0,05)</th></tr>{rows}</table>')
 
 DET_ORDEN = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT",
-             "Curvelet", "TopHat_Clasico", PROP]
-DET_LBL = {"VIS": "VIS (solo)", "IR": "IR (solo)", **LBL}
+             "Curvelet", "TopHat_Clasico", PROP, "Propuesta_Fo"]
+DET_LBL = {**LBL, "VIS": "VIS (solo)", "IR": "IR (solo)",
+           "Propuesta_Novedosa": "Propuesta · F_apt (r=25, m=0,070)",
+           "Propuesta_Fo": "Propuesta · Fo (r=1, m=0,30)"}
 def tabla_det():
     best50 = det["mAP50"].idxmax(); best5095 = det["mAP50_95"].idxmax()
     bestp = det["precision"].idxmax(); bestr = det["recall"].idxmax()
@@ -672,9 +675,23 @@ H.append(f"""
   {TAB_ABLA}
   <p class="lectura">Lectura: ninguna configuración del enjambre puede converger dentro de [0,5; 2,0]
   porque la aptitud decrece monótonamente allí; ambas formulaciones acuerdan el peso adecuado del
-  operador con suma (m ≈ 0,07). La propuesta con F_apt conserva el mejor perfil de limpieza y estructura;
-  el óptimo de Fo sobre el clásico es competitivo en bordes y correlación al costo de 4,5&times; más
-  artefactos. La función de aptitud define el perfil del resultado (refuerza H2).</p>
+  operador con suma (m ≈ 0,07). Un Wilcoxon pareado entre los dos óptimos de la propuesta favorece a
+  F_apt de forma significativa en <b>8 de 12 métricas</b> (fidelidad estructural y artefactos), y Fo
+  solo supera en actividad de alta frecuencia. La función de aptitud define el perfil del resultado
+  (refuerza H2).</p>
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>12. Ablación (continuación): comparación cualitativa</h2>
+  <p>El mismo operador tunado con cada aptitud, sobre tres escenas: la configuración de Fo (r=1, m=0,30)
+  inyecta más textura de alta frecuencia, mientras que la de F_apt (r=25, m=0,070) es más limpia y
+  estructuralmente fiel. Las diferencias son sutiles al ojo —ambas son fusiones razonables del mismo
+  operador— y las cuantifica la tabla anterior.</p>
+  {figura(EXIST.get("comparacion_aptitudes.png"), "Efecto de la función de aptitud sobre el mismo operador (VIS, IR, Fo, F_apt) en tres escenas del TNO.", 82)}
   {pie(pg)}
 </div>
 """)

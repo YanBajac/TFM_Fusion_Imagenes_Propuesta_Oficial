@@ -315,8 +315,10 @@ for j in range(2, 6):
     ws.column_dimensions[get_column_letter(j)].width = 15
 f = encabezado(ws, f, ["Entrada del detector", "mAP@0,5 ↑", "mAP@0,5:0,95 ↑", "Precisión ↑", "Recall ↑"])
 DET_ORDEN = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT",
-             "Curvelet", "TopHat_Clasico", PROP]
-DET_LBL = {"VIS": "VIS (solo)", "IR": "IR (solo)", **LBL}
+             "Curvelet", "TopHat_Clasico", PROP, "Propuesta_Fo"]
+DET_LBL = {**LBL, "VIS": "VIS (solo)", "IR": "IR (solo)",
+           "Propuesta_Novedosa": "Propuesta · F_apt (r=25, m=0,070)",
+           "Propuesta_Fo": "Propuesta · Fo (r=1, m=0,30)"}
 COLS = ["mAP50", "mAP50_95", "precision", "recall"]
 best = {c: det[c].idxmax() for c in COLS}
 for m in DET_ORDEN:
