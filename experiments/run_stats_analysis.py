@@ -22,8 +22,10 @@ from src.metrics.evaluators import METRIC_DIRECTION
 MDIR = ROOT / "experiments" / "results" / "metrics_reports"
 df = pd.read_csv(MDIR / "all_metrics.csv")
 
-METRICS = ["EN", "SD", "FE", "MG", "MI_vis", "MI_ir",
-           "SF", "Qabf", "Nabf", "SSIM", "SCD", "VIF"]
+# Set de métricas del análisis (alineado con Ortega y Espinoza: clásicas de
+# actividad/información + SF, SSIM y PSNR). Se descartan Qabf, Nabf, SCD, VIF y
+# las del review (FMI, Q0, QW, QE).
+METRICS = ["EN", "SD", "FE", "MG", "MI_vis", "MI_ir", "SF", "SSIM", "PSNR"]
 methods = sorted(df["method"].unique())
 images = sorted(df["image"].unique())
 
