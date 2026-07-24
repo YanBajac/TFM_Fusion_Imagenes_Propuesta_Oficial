@@ -57,9 +57,8 @@ fried = pd.read_csv(os.path.join(MR, "friedman_results.csv"))
 wilc  = pd.read_csv(os.path.join(MR, "wilcoxon_results.csv"))
 rankm = pd.read_csv(os.path.join(MR, "ranking_methods.csv"), index_col=0)
 allm  = pd.read_csv(os.path.join(MR, "all_metrics.csv"))
-grid  = pd.read_csv(os.path.join(MR, "pso_grid_search.csv"))
-pso_grid = json.load(open(os.path.join(ROOT, "experiments", "results", "pso",
-                                       "pso_grid_state.json")))
+grid  = pd.read_csv(os.path.join(MR, "pso_grid_search_fo_propuesta_oficial.csv")).rename(
+    columns={"Fo_opt": "F_opt"})
 
 PROP = "Propuesta_Novedosa"
 ORDEN = ["PiramideLaplace", "RatioPiramide", "DWT", "DTCWT", "Curvelet", "TopHat_Clasico", PROP]
@@ -68,8 +67,9 @@ LBL = {"PiramideLaplace": "Pirámide de Laplace (LP)", "RatioPiramide": "Ratio o
        "Curvelet": "Curvelet (CVT)", "TopHat_Clasico": "Top-Hat clásico",
        PROP: "PROPUESTA NOVEDOSA (r=25, m=0,070)"}
 DIRECTION = {"EN": 1, "SD": 1, "FE": 1, "MG": 1, "MI_vis": 1, "MI_ir": 1, "SF": 1,
-             "Qabf": 1, "Nabf": -1, "SSIM": 1, "SCD": 1, "VIF": 1}
+             "SSIM": 1, "PSNR": 1}
 METS = list(DIRECTION.keys())
+NM = len(METS)  # 9
 
 wb = Workbook()
 
@@ -83,11 +83,11 @@ info = [
     ("Propuesta central", "Fusión Top-Hat de UNA SOLA ESCALA (radio r): disco B_r + 4 líneas L_{r,θ} (0°, 45°, 90°, 135°, largo 2r+1). "
      "Respuestas lineales promediadas y SUMADAS a la del disco (Bala et al. 2024); entre fuentes máximo; "
      "reconstrucción F = I_base + m·WTH − m·BTH."),
-    ("Optimización", "Barrido de 25 configuraciones PSO (partículas 2-10 × iteraciones 10-50, Cuadro 1 de Ortega & Espinoza 2025) sobre (r, m), r en [1,25]. Óptimo global: r = 25, m = 0,0703 (F = 1,9843), alcanzado consistentemente con n=10 y T>=30."),
+    ("Optimización", "Barrido de 25 configuraciones PSO (partículas 2-10 × iteraciones 10-50, Cuadro 1 de Ortega & Espinoza 2025) sobre (r, m), r en [1,25]. Óptimo global: r = 25, m ≈ 0,07 (Fo = 1,7654), alcanzado consistentemente con n=10 y T>=30; config operativa m = 0,0703."),
     ("Benchmark", "7 métodos: LP, RP (Toet 1989), DWT, DTCWT, CVT, Top-Hat clásico y la propuesta. "
-     "20 pares TNO × 12 métricas sin referencia."),
-    ("Resultados clave", "La propuesta logra el menor Nabf (0,041, 2,7× menos que el mejor rival) y la mayor SSIM (0,782); "
-     "2ª en Qabf (0,500), SCD (1,450) y VIF (0,368)."),
+     "20 pares TNO × nueve métricas sin referencia (EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PSNR)."),
+    ("Resultados clave", "La propuesta alcanza la mayor SSIM del estudio (0,782), significativa frente a los cinco "
+     "métodos del estado del arte, y es 2ª en información mutua (MI_ir 0,909); más conservadora en actividad (EN, SD, SF)."),
     ("Detección (LLVIP)", "YOLOv8n reentrenado por método. IR solo lidera (mAP@0,5=0,957); toda fusión supera al VIS solo; propuesta competitiva (0,936) sin liderar. Calidad de imagen ≠ detectabilidad (H3 parcial)."),
 ]
 for k, v in info:
@@ -98,16 +98,14 @@ for k, v in info:
 f += 1
 ws.cell(f, 1, "Contenido del libro").font = F_SUB; f += 1
 hojas = [
-    ("PSO_Configuracion", "Parámetros del PSO de la propuesta (algoritmo, rangos, aptitud, óptimo)"),
+    ("PSO_Configuracion", "Parámetros del PSO de la propuesta (algoritmo, rangos, aptitud Fo, óptimo)"),
     ("PSO_Barrido", "Barrido de 25 configuraciones (partículas × iteraciones) replicando el Cuadro 1 del libro FPUNA"),
-    ("PSO_Ejecucion", "Historia iteración por iteración de la mejor configuración (n=10, T=50)"),
-    ("Benchmark", "Los 7 métodos × 12 métricas (promedio de los 20 pares TNO)"),
+    ("Benchmark", "Los 7 métodos × nueve métricas (promedio de los 20 pares TNO)"),
     ("Propuesta_por_Imagen", "Métricas de la propuesta en cada escena, con promedio y desvío por fórmula"),
     ("Friedman", "Test global por métrica (7 métodos × 20 imágenes)"),
-    ("Wilcoxon", "120 contrastes pareados (propuesta y Top-Hat clásico vs. los 5 del estado del arte)"),
-    ("Ranking_Global", "Ranking promedio de los 7 métodos (12 métricas)"),
+    ("Wilcoxon", "90 contrastes pareados (propuesta y Top-Hat clásico vs. los 5 del estado del arte)"),
+    ("Ranking_Global", "Ranking promedio de los 7 métodos (nueve métricas)"),
     ("Deteccion_LLVIP", "mAP de YOLOv8n reentrenado por método sobre LLVIP (evaluación orientada a tarea)"),
-    ("Ablacion_Fo", "Ablación de la función de aptitud: barridos con la Fo del libro FPUNA y comparación de óptimos"),
     ("Deteccion_M3FD", "Clases complementarias en M3FD: AP por clase con un detector único VIS+IR (People/IR, Lamp/VIS)"),
 ]
 for h, d in hojas:
@@ -130,11 +128,11 @@ conf = [
     ("Variables", "(r, m) — radio del SE y peso de contraste"),
     ("Rango de búsqueda", "r ∈ [1, 25] (rango del libro FPUNA) · m ∈ [0,05; 1,20] (ajustado al operador con suma)"),
     ("Configuraciones evaluadas", "25: partículas n ∈ {2,4,6,8,10} × iteraciones T ∈ {10,20,30,40,50} (Cuadro 1 del libro)"),
-    ("Función de aptitud", "F = SSIM + Qabf + 0,5·SCD − Nabf (orientada a calidad de fusión)"),
+    ("Función de aptitud", "Fo = SSIM_avg + E_n + PSNR_n (Ortega y Espinoza, 2025; ecuación 14)"),
     ("Evaluada sobre", "3 escenas representativas del TNO (1 de cada 7)"),
-    ("Óptimo global hallado", "r* = 25 · m* = 0,0703 (alcanzado por 6 de las 25 configuraciones; consistente con n=10 y T≥30)"),
-    ("Aptitud alcanzada", f"F = {grid['F_opt'].max():.4f}"),
-    ("Estado guardado en", "experiments/results/pso/pso_grid_state.json · tabla: metrics_reports/pso_grid_search.csv"),
+    ("Óptimo global hallado", "r* = 25 · m ≈ 0,07 (alcanzado por 3 de las 25 configuraciones; consistente con n=10 y T≥30); config operativa m = 0,0703"),
+    ("Aptitud alcanzada", f"Fo = {grid['F_opt'].max():.4f}"),
+    ("Estado guardado en", "metrics_reports/pso_grid_search_fo_propuesta_oficial.csv"),
 ]
 for k, v in conf:
     celda(ws, f, 1, k, bold=True, align=CL)
@@ -150,7 +148,7 @@ f = nota(ws, f, "Con la suma de ramas se inyecta más energía de detalle que co
 ws = wb.create_sheet("PSO_Barrido")
 ws.sheet_view.showGridLines = False
 f = titulo(ws, 1, "Barrido de configuraciones PSO — 25 combinaciones (Cuadro 1 de Ortega & Espinoza, 2025)",
-           "Cada fila es una corrida PSO independiente (semilla propia). En negrita las configuraciones que alcanzan el óptimo global F = 1,9843.")
+           "Cada fila es una corrida PSO independiente (semilla propia). En negrita las configuraciones que alcanzan el óptimo global Fo = 1,7654.")
 f = encabezado(ws, f, ["Partículas (n)", "Iteraciones (Tmax)", "Evaluaciones", "r óptimo", "m óptimo",
                        "Aptitud F", "Tiempo (s)"], [14, 16, 13, 10, 11, 11, 11])
 Fmax = grid["F_opt"].max()
@@ -175,28 +173,14 @@ for n in [2, 4, 6, 8, 10]:
         celda(ws, f, j, v, fmt="0.0000", bold=abs(v - Fmax) < 5e-4)
     f += 1
 f += 1
-f = nota(ws, f, "Lectura: n = 2 cae en el óptimo local r = 1 (F 1,909) en 3 de 5 corridas; con n = 10 y T >= 30 "
-         "el óptimo global (r = 25, m = 0,070) se alcanza en todas las corridas.")
-
-# ============================================================ 3. PSO EJECUCION
-ws = wb.create_sheet("PSO_Ejecucion")
-ws.sheet_view.showGridLines = False
-f = titulo(ws, 1, "Ejecución del PSO — mejor global por iteración (configuración n=10, T=50)",
-           "Iteración t, posición del mejor global (r, m) y su aptitud F. La aptitud nunca decrece (elitismo del gbest).")
-f = encabezado(ws, f, ["it", "r", "m", "F"], [8, 8, 10, 10])
-for i, h in enumerate(pso_grid["configs"]["n10_T50"]["history"]):
-    celda(ws, f, 1, h["it"], fmt="0")
-    celda(ws, f, 2, round(h["r"], 2), fmt="0.##")
-    celda(ws, f, 3, round(h["m"], 4), fmt="0.0000")
-    celda(ws, f, 4, round(h["gbest_fit"], 4), fmt="0.0000")
-    f += 1
-ws.freeze_panes = "A5"
+f = nota(ws, f, "Lectura: n = 2 cae en el óptimo local r = 1 en 2 de 5 corridas; con n = 10 y T >= 30 "
+         "el óptimo global (r = 25, m ≈ 0,07) se alcanza de forma consistente.")
 
 # ============================================================ 4. BENCHMARK
 ws = wb.create_sheet("Benchmark")
 ws.sheet_view.showGridLines = False
-f = titulo(ws, 1, "Benchmark — 7 métodos × 12 métricas (promedio de 20 pares TNO)",
-           "Negrita = mejor de la columna según la dirección de la métrica (Nabf se minimiza).")
+f = titulo(ws, 1, "Benchmark — 7 métodos × nueve métricas (promedio de 20 pares TNO)",
+           "Negrita = mejor de la columna (todas las métricas de tipo «mayor es mejor»).")
 ws.column_dimensions["A"].width = 36
 for j in range(2, 14):
     ws.column_dimensions[get_column_letter(j)].width = 8.5
@@ -216,10 +200,10 @@ for m in ORDEN:
 # ============================================================ 5. PROPUESTA POR IMAGEN
 ws = wb.create_sheet("Propuesta_por_Imagen")
 ws.sheet_view.showGridLines = False
-f = titulo(ws, 1, "Propuesta novedosa (r=12, m=0,069) — métricas en cada escena del TNO",
+f = titulo(ws, 1, "Propuesta novedosa (r=25, m=0,070) — métricas en cada escena del TNO",
            "Última fila: promedio y desvío estándar con fórmulas; el promedio coincide con la fila de la hoja Benchmark.")
 ws.column_dimensions["A"].width = 40
-for j in range(2, 14):
+for j in range(2, 2 + NM):
     ws.column_dimensions[get_column_letter(j)].width = 9
 f = encabezado(ws, f, ["Escena"] + METS)
 first_data = f
@@ -231,12 +215,12 @@ for _, r in pi.iterrows():
     f += 1
 last_data = f - 1
 celda(ws, f, 1, "PROMEDIO (20 escenas)", bold=True, align=CL)
-for j in range(2, 14):
+for j in range(2, 2 + NM):
     L = get_column_letter(j)
     celda(ws, f, j, f"=AVERAGE({L}{first_data}:{L}{last_data})", fmt="0.000", bold=True)
 f += 1
 celda(ws, f, 1, "DESVÍO ESTÁNDAR", bold=True, align=CL)
-for j in range(2, 14):
+for j in range(2, 2 + NM):
     L = get_column_letter(j)
     celda(ws, f, j, f"=STDEV({L}{first_data}:{L}{last_data})", fmt="0.000", bold=True)
 ws.freeze_panes = "B4"
@@ -259,7 +243,7 @@ ws = wb.create_sheet("Wilcoxon")
 ws.sheet_view.showGridLines = False
 f = titulo(ws, 1, "Wilcoxon pareado (20 imágenes) — métodos morfológicos vs. estado del arte",
            "Corrección de Holm por métrica. Resultado por fórmula: ≈ si p_holm ≥ 0,05; si no, mejor/peor según "
-           "(media método − media rival) × dirección (columna E; Nabf = −1).")
+           "(media método − media rival) × dirección (columna D; todas las métricas +1).")
 cols = ["Método", "Rival", "Métrica", "Dirección", "Media método", "Media rival",
         "p", "p (Holm)", "Efecto r", "Resultado"]
 f = encabezado(ws, f, cols, [24, 22, 9, 10, 12, 12, 11, 11, 9, 11])
@@ -286,21 +270,23 @@ ws.freeze_panes = "A4"
 # ============================================================ 8. RANKING
 ws = wb.create_sheet("Ranking_Global")
 ws.sheet_view.showGridLines = False
-f = titulo(ws, 1, "Ranking global de los 7 métodos (12 métricas, dirección respetada)",
-           "Rango 1 = mejor en esa métrica. La columna final promedia los 12 rangos con fórmula. La propuesta es 1ª "
-           "en Nabf y SSIM y 2ª en Qabf/SCD/VIF; las métricas de actividad (EN, SD, FE, MG, SF), que premian el realce "
-           "agresivo (el Top-Hat clásico las lidera con el mayor Nabf del estudio), bajan su promedio global.")
+f = titulo(ws, 1, "Ranking global de los 7 métodos (nueve métricas, dirección respetada)",
+           "Rango 1 = mejor en esa métrica. La columna final promedia los nueve rangos con fórmula. La propuesta es 1ª "
+           "en SSIM y 2ª en información mutua; las métricas de actividad (EN, SD, FE, MG, SF), que premian el realce "
+           "agresivo (lideradas por el Top-Hat clásico), bajan su promedio global (7ª).")
 ws.column_dimensions["A"].width = 36
-for j in range(2, 15):
+for j in range(2, 3 + NM):
     ws.column_dimensions[get_column_letter(j)].width = 8.5
 f = encabezado(ws, f, ["Método"] + METS + ["Rank promedio"])
 rk = rankm.sort_values("avg_rank")
+_last = get_column_letter(1 + NM)  # última columna de métrica (J con 9)
+_avgc = 2 + NM                     # columna del rank promedio (K con 9)
 for name, r in rk.iterrows():
     es_prop = (name == PROP)
     celda(ws, f, 1, LBL.get(name, name), bold=es_prop, align=CL)
     for j, mk in enumerate(METS, 2):
         celda(ws, f, j, float(r[mk]), fmt="0.0", bold=es_prop)
-    celda(ws, f, 14, f"=AVERAGE(B{f}:M{f})", fmt="0.00", bold=True)
+    celda(ws, f, _avgc, f"=AVERAGE(B{f}:{_last}{f})", fmt="0.00", bold=True)
     f += 1
 
 # ============================================================ 9. DETECCIÓN LLVIP
@@ -315,10 +301,9 @@ for j in range(2, 6):
     ws.column_dimensions[get_column_letter(j)].width = 15
 f = encabezado(ws, f, ["Entrada del detector", "mAP@0,5 ↑", "mAP@0,5:0,95 ↑", "Precisión ↑", "Recall ↑"])
 DET_ORDEN = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT",
-             "Curvelet", "TopHat_Clasico", PROP, "Propuesta_Fo"]
+             "Curvelet", "TopHat_Clasico", PROP]
 DET_LBL = {**LBL, "VIS": "VIS (solo)", "IR": "IR (solo)",
-           "Propuesta_Novedosa": "Propuesta · F_apt (r=25, m=0,070)",
-           "Propuesta_Fo": "Propuesta · Fo (r=1, m=0,30)"}
+           "Propuesta_Novedosa": "Propuesta Novedosa (r=25, m=0,070)"}
 COLS = ["mAP50", "mAP50_95", "precision", "recall"]
 best = {c: det[c].idxmax() for c in COLS}
 for m in DET_ORDEN:
@@ -333,44 +318,7 @@ f = nota(ws, f, "Lectura: toda fusión supera al visible solo (+0,12 a +0,14 en 
          "banda estrecha (0,926–0,949), la propuesta es competitiva (0,936) sin ser líder. La superioridad en calidad de "
          "imagen no se traslada automáticamente a la detección (H3 parcial).")
 
-# ============================================================ 11. ABLACION Fo
-ws = wb.create_sheet("Ablacion_Fo")
-ws.sheet_view.showGridLines = False
-f = titulo(ws, 1, "Ablación de la función de aptitud (pedido de la revisión de avances)",
-           "El barrido 5×5 se repitió con la Fo del libro FPUNA (SSIM_avg + E_n + PSNR_n) y su rango m ∈ [0,3; 2,0], "
-           "sobre la propuesta y sobre el operador clásico. En negrita el mejor por columna.")
-ws.column_dimensions["A"].width = 38
-for j in range(2, 7):
-    ws.column_dimensions[get_column_letter(j)].width = 12
-ws.cell(f, 1, "Resultado de los barridos con Fo").font = F_SUB; f += 1
-f = nota(ws, f, "En las 50 corridas (25 configuraciones × 2 operadores) el óptimo fue m* = 0,30, el piso del rango: "
-         "los términos de fidelidad de Fo dominan a la entropía. Sobre la propuesta Fo eligió además r* = 1 (óptimo "
-         "trivial); sobre el clásico, r* = 25.")
-f = nota(ws, f, "Curva aptitud vs m (r = 25, sin restricciones): las tres curvas decrecen monótonamente en [0,5; 2,0] "
-         "— ningún (n, T) puede converger allí — y el máximo real de Fo sobre la propuesta está en m ≈ 0,07, "
-         "coincidente con el óptimo de F_apt (0,0703). Ver docs/figures/fig_aptitud_vs_m.png.")
-f += 1
-f = encabezado(ws, f, ["Variante (operador + aptitud)", "Qabf ↑", "Nabf ↓", "SSIM ↑", "SCD ↑", "VIF ↑"])
-ABLA = [
-    ("Propuesta + F_apt (r=25; m=0,070)", 0.500, 0.041, 0.782, 1.450, 0.368),
-    ("Top-Hat clásico + Fo (r=25; m=0,30)", 0.534, 0.184, 0.745, 1.504, 0.395),
-    ("Propuesta + Fo (r=1; m=0,30)", 0.448, 0.121, 0.761, 1.353, 0.322),
-    ("Top-Hat clásico manual (r=5; m=1)", 0.305, 0.585, 0.578, 1.360, 0.334),
-]
-mejor_abla = {1: 0.534, 2: 0.041, 3: 0.782, 4: 1.504, 5: 0.395}
-for fila_a in ABLA:
-    es_prop = fila_a[0].startswith("Propuesta + F_apt")
-    celda(ws, f, 1, fila_a[0], bold=es_prop, align=CL)
-    for j in range(1, 6):
-        celda(ws, f, j + 1, fila_a[j], fmt="0.000", bold=(mejor_abla[j] == fila_a[j] or es_prop))
-    f += 1
-f += 1
-f = nota(ws, f, "Lectura: la propuesta con F_apt conserva el mejor perfil de limpieza y estructura (Nabf, SSIM); el "
-         "óptimo de Fo sobre el clásico es competitivo en bordes y correlación al costo de 4,5× más artefactos; el de "
-         "Fo sobre la propuesta confirma el óptimo trivial. La aptitud define el perfil del resultado (refuerza H2). "
-         "Fuente: metrics_reports/fo_ablacion_comparativa.csv y pso_grid_search_fo_*.csv.")
-
-# ============================================================ 12. DETECCION M3FD
+# ============================================================ 11. DETECCION M3FD
 ws = wb.create_sheet("Deteccion_M3FD")
 ws.sheet_view.showGridLines = False
 f = titulo(ws, 1, "Clases complementarias en M3FD — un detector único VIS+IR",
@@ -389,13 +337,11 @@ M3FD = [
     ("Dual-Tree Complex Wavelet (DTCWT)", 0.159, 0.114, 0.137, 0.229),
     ("Curvelet (CVT)", 0.167, 0.100, 0.133, 0.228),
     ("Top-Hat clásico (r=5; m=1)", 0.125, 0.054, 0.090, 0.198),
-    ("PSO FPUNA (clásico + Fo; r=25; m=0,30)", 0.174, 0.118, 0.146, 0.229),
-    ("Propuesta + Fo (r=1; m=0,30)", 0.200, 0.110, 0.155, 0.238),
-    ("Propuesta + F_apt (r=25; m=0,070)", 0.207, 0.117, 0.162, 0.239),
+    ("Propuesta Novedosa (r=25; m=0,070)", 0.207, 0.117, 0.162, 0.239),
 ]
 mejor_m3fd = {1: 0.220, 2: 0.135, 3: 0.165, 4: 0.245}
 for fila_m in M3FD:
-    es_prop = fila_m[0].startswith("Propuesta + F_apt")
+    es_prop = fila_m[0].startswith("Propuesta Novedosa")
     celda(ws, f, 1, fila_m[0], bold=es_prop, align=CL)
     for j in range(1, 5):
         celda(ws, f, j + 1, fila_m[j], fmt="0.000", bold=(mejor_m3fd[j] == fila_m[j] or es_prop))
@@ -404,7 +350,7 @@ f += 1
 f = nota(ws, f, "Lectura: complementariedad extrema (IR ciego a Lamp: 0,018; VIS débil en People). Las mejores fusiones "
          "superan en el promedio del par a ambas modalidades individuales (RP 0,165 y propuesta 0,162 vs VIS 0,157 e "
          "IR 0,119): detectan ambas clases en una sola imagen. La propuesta es la mejor fusión en mAP global (0,239) y "
-         "en People (0,207), y F_apt supera a Fo en las dos clases clave. Fuente: metrics_reports/detection_m3fd_map.csv.")
+         "en People (0,207), manteniendo las luces cerca del visible. Fuente: metrics_reports/detection_m3fd_map.csv.")
 
 wb.save(OUT)
 print("Guardado:", OUT)

@@ -63,10 +63,9 @@ means = pd.read_csv(os.path.join(MR, "descriptive_means.csv")).set_index("method
 fried = pd.read_csv(os.path.join(MR, "friedman_results.csv"))
 wilc  = pd.read_csv(os.path.join(MR, "wilcoxon_results.csv"))
 rankm = pd.read_csv(os.path.join(MR, "ranking_methods.csv"), index_col=0)
-grid  = pd.read_csv(os.path.join(MR, "pso_grid_search.csv"))
+grid  = pd.read_csv(os.path.join(MR, "pso_grid_search_fo_propuesta_oficial.csv")).rename(
+    columns={"Fo_opt": "F_opt"})
 det   = pd.read_csv(os.path.join(MR, "detection_llvip_map.csv")).set_index("method")
-pso_grid = json.load(open(os.path.join(ROOT, "experiments", "results", "pso",
-                                       "pso_grid_state.json")))
 
 PROP = "Propuesta_Novedosa"
 ORDEN = ["PiramideLaplace", "RatioPiramide", "DWT", "DTCWT", "Curvelet",
@@ -81,7 +80,7 @@ LBL = {"PiramideLaplace": "Pirámide de Laplace (LP)",
 SHORT = {"PiramideLaplace": "LP", "RatioPiramide": "RP", "DWT": "DWT", "DTCWT": "DTCWT",
          "Curvelet": "CVT", "TopHat_Clasico": "TH clás.", PROP: "Propuesta"}
 DIRECTION = {"EN": 1, "SD": 1, "FE": 1, "MG": 1, "MI_vis": 1, "MI_ir": 1, "SF": 1,
-             "Qabf": 1, "Nabf": -1, "SSIM": 1, "SCD": 1, "VIF": 1}
+             "SSIM": 1, "PSNR": 1}
 METS = list(DIRECTION.keys())
 
 def tabla_metodos(methods, resaltar=None):
@@ -112,16 +111,16 @@ n_best_prop = sum(1 for mk in METS
 charts = {}
 AZUL = "#4472c4"; GRIS = "#a6a6a6"
 
-# convergencia comparada: una curva por numero de particulas (T=50)
+# mejor aptitud F_o alcanzada segun el numero de particulas (Tmax=50)
 fig, ax = plt.subplots(figsize=(7.2, 3.2))
-tonos = {2: "#c9c9c9", 4: "#9db4c0", 6: "#7a97ab", 8: "#5b7f99", 10: "#4472c4"}
-for n in [2, 4, 6, 8, 10]:
-    h = pso_grid["configs"][f"n{n}_T50"]["history"]
-    ax.plot([x["it"] for x in h], [x["gbest_fit"] for x in h], "-",
-            color=tonos[n], lw=2 if n == 10 else 1.2, label=f"n = {n}")
-ax.set_xlabel("Iteración"); ax.set_ylabel("Mejor aptitud F")
-ax.set_title("Convergencia del PSO según el número de partículas (Tmax = 50)", fontsize=11)
-ax.legend(frameon=False, fontsize=8, ncol=5, loc="lower right")
+_ns = [2, 4, 6, 8, 10]
+_yb = [grid[(grid.n == n) & (grid.Tmax == 50)]["F_opt"].values[0] for n in _ns]
+ax.plot(_ns, _yb, "-o", color=AZUL, lw=2, ms=7, mfc=AZUL, mec="white")
+_im = int(np.argmax(_yb))
+ax.scatter([_ns[_im]], [_yb[_im]], s=150, facecolor="none", edgecolor=AZUL, lw=1.6, zorder=4)
+ax.set_xlabel("Número de partículas del enjambre (n)"); ax.set_ylabel("Mejor aptitud $F_o$")
+ax.set_title("Mejor aptitud $F_o$ según el tamaño del enjambre (Tmax = 50)", fontsize=11)
+ax.set_xticks(_ns)
 charts["pso"] = fig_to_b64(fig)
 
 # tabla 5x5 del barrido (F* por configuracion)
@@ -139,7 +138,7 @@ tabla_grid = ('<table class="chica"><tr><th class="l">Partículas \\ Iteraciones
               + "".join(f"<th>T = {T}</th>" for T in [10, 20, 30, 40, 50])
               + f'</tr>{"".join(filas_grid)}</table>')
 
-key = ["Qabf", "Nabf", "SSIM", "SCD"]
+key = ["SSIM", "SF", "MI_ir", "PSNR"]
 fig, axes = plt.subplots(1, 4, figsize=(12.0, 2.9))
 for ax, mk in zip(axes, key):
     vals = [means.loc[m, mk] for m in ORDEN]
@@ -147,7 +146,7 @@ for ax, mk in zip(axes, key):
     ax.bar(range(len(ORDEN)), vals, color=cols, width=0.62)
     for i, v in enumerate(vals):
         ax.text(i, v, f"{v:.3f}", ha="center", va="bottom", fontsize=6.3)
-    ax.set_title(f'{mk} ({"menor mejor" if mk == "Nabf" else "mayor mejor"})', fontsize=9)
+    ax.set_title(f'{mk} (mayor mejor)', fontsize=9)
     ax.set_xticks(range(len(ORDEN)))
     ax.set_xticklabels([SHORT[m] for m in ORDEN], fontsize=6.5, rotation=30, ha="right")
     ax.margins(y=0.18)
@@ -162,16 +161,16 @@ ax.set_yticks(range(len(rk)))
 ax.set_yticklabels([LBL.get(n, n) for n in rk.index], fontsize=8)
 for i, v in enumerate(rk.values):
     ax.text(v + 0.05, i, f"{v:.2f}", va="center", fontsize=7.5)
-ax.set_xlabel("Ranking promedio en 12 métricas (menor = mejor)", fontsize=9)
+ax.set_xlabel("Ranking promedio en 9 métricas (menor = mejor)", fontsize=9)
 ax.margins(x=0.12)
 charts["ranking"] = fig_to_b64(fig)
 
 # --- detección LLVIP: barras mAP por método ---
 _dord = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT", "Curvelet",
-         "TopHat_Clasico", "Propuesta_Novedosa", "Propuesta_Fo"]
+         "TopHat_Clasico", "Propuesta_Novedosa"]
 _dshort = {"VIS": "VIS", "IR": "IR", "PiramideLaplace": "LP", "RatioPiramide": "RP",
            "DWT": "DWT", "DTCWT": "DTCWT", "Curvelet": "CVT", "TopHat_Clasico": "TH clás.",
-           "Propuesta_Novedosa": "Prop. F_apt", "Propuesta_Fo": "Prop. Fo"}
+           "Propuesta_Novedosa": "Propuesta"}
 dd = det.loc[_dord]
 fig, ax = plt.subplots(figsize=(7.4, 3.0))
 x = np.arange(len(_dord)); w = 0.4
@@ -223,7 +222,8 @@ F = {
  "fuse_src": r"WTH^{F}(x,y)=\max\!\left(WTH^{VIS}(x,y),\;WTH^{IR}(x,y)\right) \qquad BTH^{F}(x,y)=\max\!\left(BTH^{VIS}(x,y),\;BTH^{IR}(x,y)\right)",
  "recon": r"F = I_{base} + m\cdot WTH^{F} - m\cdot BTH^{F}\,,\qquad I_{base}=\frac{VIS+IR}{2}\,,\qquad m>0",
  "pso_v": r"v_k^{t+1}=\omega\, v_k^{t}+c_1 r_1\left(p_k-x_k^{t}\right)+c_2 r_2\left(g-x_k^{t}\right) \qquad x_k^{t+1}=x_k^{t}+v_k^{t+1}",
- "pso_fit": r"F_{apt}(r,m)= SSIM + Q^{AB/F} + 0.5\cdot SCD - N^{AB/F} \;\longrightarrow\; \max",
+ "pso_fit": r"F_{o}(r,m)= SSIM_{avg} + E_{n} + PSNR_{n} \;\longrightarrow\; \max",
+ "psnr": r"PSNR=10\,\log_{10}\frac{1}{MSE}\,,\qquad MSE=\frac{1}{2}\left[MSE(F,VIS)+MSE(F,IR)\right]",
  "th_clasico": r"F_{TH}=\frac{VIS+IR}{2}+\max\!\left(WTH^{VIS}_{B_5},WTH^{IR}_{B_5}\right)-\max\!\left(BTH^{VIS}_{B_5},BTH^{IR}_{B_5}\right)",
  "en": r"EN=-\sum_{l=0}^{255} p_l\,\log_2 p_l \qquad SD=\sqrt{\frac{1}{MN}\sum_{i,j}\left(F(i,j)-\mu\right)^2}",
  "mg_sf": r"MG=\frac{1}{MN}\sum_{i,j}\sqrt{\frac{(\nabla_x F)^2+(\nabla_y F)^2}{2}} \qquad SF=\sqrt{RF^2+CF^2}",
@@ -272,10 +272,9 @@ def tabla_friedman():
             f'<th>p-valor</th><th>Significativa (α = 0,05)</th></tr>{rows}</table>')
 
 DET_ORDEN = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT",
-             "Curvelet", "TopHat_Clasico", PROP, "Propuesta_Fo"]
+             "Curvelet", "TopHat_Clasico", PROP]
 DET_LBL = {**LBL, "VIS": "VIS (solo)", "IR": "IR (solo)",
-           "Propuesta_Novedosa": "Propuesta · F_apt (r=25, m=0,070)",
-           "Propuesta_Fo": "Propuesta · Fo (r=1, m=0,30)"}
+           "Propuesta_Novedosa": "Propuesta Novedosa (r=25, m=0,070)"}
 def tabla_det():
     best50 = det["mAP50"].idxmax(); best5095 = det["mAP50_95"].idxmax()
     bestp = det["precision"].idxmax(); bestr = det["recall"].idxmax()
@@ -371,7 +370,7 @@ H.append(f"""
   <p>La evaluación compara la propuesta contra <b>seis métodos</b>: cinco representativos del estado del
   arte en fusión multiescala —Pirámide de Laplace (LP), Ratio of low-pass Pyramid (RP), Wavelet discreta
   (DWT), Dual-Tree Complex Wavelet (DTCWT) y Curvelet (CVT)— más la <b>metodología clásica de la
-  transformada Top-Hat</b>, sobre los 20 pares del TNO Image Fusion Dataset con 12 métricas sin
+  transformada Top-Hat</b>, sobre los 20 pares del TNO Image Fusion Dataset con nueve métricas sin
   referencia y análisis estadístico no paramétrico.</p>
   <p>El orden del documento:</p>
   <ol>
@@ -384,8 +383,8 @@ H.append(f"""
     <li>Resultados cuantitativos: tabla general y gráficas (sección 8).</li>
     <li>Análisis estadístico: Friedman, Wilcoxon-Holm y ranking (sección 9).</li>
     <li>Resultados cualitativos de las 20 escenas (sección 10).</li>
-    <li>Evaluación orientada a tarea (sección 11), ablación de la función de aptitud (sección 12),
-        clases complementarias en M3FD (sección 13) y conclusiones (sección 14).</li>
+    <li>Evaluación orientada a tarea: detección en LLVIP (sección 11) y clases complementarias en
+        M3FD (sección 12), y conclusiones (sección 13).</li>
   </ol>
   {pie(2)}
 </div>
@@ -481,9 +480,10 @@ H.append(f"""
   p<sub>k</sub> y por la mejor global g, con inercia ω decreciente linealmente de 0,9 a 0,4 y
   c1 = c2 = 1,5:</p>
   {formula("pso_v", 15)}
-  <p>La función de aptitud está orientada a la calidad de fusión: premia estructura (SSIM), bordes
-  transferidos (Q<sup>AB/F</sup>) y correlación de diferencias (SCD), y penaliza los artefactos
-  (N<sup>AB/F</sup>):</p>
+  <p>La función de aptitud es la del trabajo de referencia (Ortega y Espinoza, 2025), orientada a la
+  calidad de fusión: premia la fidelidad estructural con las fuentes (SSIM<sub>avg</sub>), el contenido
+  informativo (entropía normalizada E<sub>n</sub>) y la reducción de la distorsión (PSNR
+  normalizado), sin pesos arbitrarios:</p>
   {formula("pso_fit", 16)}
   <p>Para elegir la configuración del enjambre se replicó el diseño experimental de Ortega y
   Espinoza (2025): se evaluaron sistemáticamente combinaciones con número de partículas variando de
@@ -492,23 +492,24 @@ H.append(f"""
   r ∈ [1, 25]; para el peso se usa m ∈ [0,05; 1,20], porque el operador con suma de cinco respuestas
   inyecta más energía de detalle que el disco único de aquel trabajo y requiere pesos menores. Cada
   configuración se ejecutó con semilla propia sobre las escenas representativas del TNO.</p>
-  <p><b>Tabla 1.</b> Resultado del barrido: mejor aptitud F alcanzada por cada configuración
+  <p><b>Tabla 1.</b> Resultado del barrido: mejor aptitud F<sub>o</sub> alcanzada por cada configuración
   (en negrita las que alcanzan el óptimo global).</p>
   {tabla_grid}
   <p class="lectura">Lectura: los enjambres de 2 partículas quedan atrapados en el óptimo local
-  r = 1 (F ≈ 1,909) en tres de cinco corridas; desde n = 4 el óptimo global aparece de forma
-  esporádica, y con <b>n = 10 y T ≥ 30</b> se alcanza consistentemente. El óptimo global del barrido
-  es <b>r = 25, m = 0,070</b> con F = 1,9843.</p>
+  r = 1; desde n = 4 el óptimo global aparece de forma esporádica, y con <b>n = 10 y T ≥ 30</b> se
+  alcanza consistentemente. El óptimo global del barrido es <b>r = 25, m ≈ 0,07</b> con
+  F<sub>o</sub> = 1,7654; se adopta la configuración operativa r = 25, m = 0,0703 sobre la meseta
+  plana del óptimo.</p>
   {pie(9)}
 </div>
 <div class="page">
   <h2>5. Optimización por PSO (continuación): convergencia y óptimo</h2>
-  {figura(charts["pso"], "Convergencia del mejor global según el número de partículas (Tmax = 50): los enjambres grandes escapan del óptimo local r = 1 y alcanzan F = 1,9843.", 84)}
+  {figura(charts["pso"], "Mejor aptitud Fo alcanzada según el número de partículas (Tmax = 50): los enjambres grandes escapan del óptimo local r = 1 y alcanzan Fo = 1,7654.", 84)}
   <p>El radio óptimo se ubica en el extremo superior del rango del barrido (r = 25, elementos
   estructurantes de 51 píxeles): el operador aprovecha un vecindario amplio para capturar los
-  objetivos térmicos completos (personas, vehículos), mientras el peso m = 0,070 mantiene el realce
-  conservador que la aptitud exige al penalizar artefactos. Estos hiperparámetros definen la
-  configuración final de la propuesta usada en todo el benchmark.</p>
+  objetivos térmicos completos (personas, vehículos), mientras el peso m ≈ 0,07 mantiene el realce
+  conservador que maximiza la fidelidad estructural y controla la distorsión. Estos hiperparámetros
+  definen la configuración final de la propuesta usada en todo el benchmark.</p>
   <p>La comparación con el trabajo de referencia es directa: con el mismo diseño experimental
   y el mismo rango de radio, aquel operador (disco único, aptitud de fidelidad) convergía a un
   realce conservador; el operador propuesto (disco + líneas por suma, aptitud orientada a
@@ -549,20 +550,21 @@ H.append(f"""
 H.append(f"""
 <div class="page">
   <h2>7. Métricas de evaluación</h2>
-  <p>Las 12 métricas, todas sin referencia (no existe imagen fusionada ideal):</p>
+  <p>Se emplean <b>nueve métricas</b> alineadas con la metodología de referencia (Ortega y Espinoza,
+  2025), todas de tipo «mayor es mejor» y calculadas a partir de la imagen fusionada y sus fuentes:
+  entropía (EN), desviación estándar (SD), eficiencia/entropía de bordes (FE), gradiente medio (MG),
+  información mutua con el visible y el infrarrojo (MI_vis, MI_ir), frecuencia espacial (SF),
+  similitud estructural promedio (SSIM) y relación señal-ruido de pico (PSNR).</p>
   <p>Entropía y desviación estándar (información y contraste):</p>
   {formula("en", 18)}
   <p>Gradiente medio y frecuencia espacial (nitidez y actividad):</p>
   {formula("mg_sf", 19)}
   <p>Información mutua con cada fuente:</p>
   {formula("mi", 20)}
-  <p>Preservación de bordes de Xydeas-Petrović (su complemento N<sup>AB/F</sup> mide los artefactos):</p>
-  {formula("qabf", 21)}
-  <p>Similitud estructural y correlación de las diferencias:</p>
-  {formula("ssim", 22)}
-  {formula("scd", 23)}
-  <p>Se agregan la eficiencia de fusión (FE) y la fidelidad de información visual (VIF). Todas se
-  maximizan salvo Nabf, que se minimiza.</p>
+  <p>Similitud estructural promedio con las fuentes:</p>
+  {formula("ssim", 21)}
+  <p>Relación señal-ruido de pico frente a ambas fuentes (MAX = 1):</p>
+  {formula("psnr", 22)}
   {pie(12)}
 </div>
 """)
@@ -570,19 +572,19 @@ H.append(f"""
 H.append(f"""
 <div class="page">
   <h2>8. Resultados cuantitativos</h2>
-  <p><b>Tabla 2.</b> Benchmark completo: los 7 métodos con las 12 métricas (promedio de los 20 pares
+  <p><b>Tabla 2.</b> Benchmark completo: los 7 métodos con las nueve métricas (promedio de los 20 pares
   TNO; en negrita el mejor valor de cada columna).</p>
   {tabla_metodos(ORDEN, resaltar=PROP)}
-  <p class="lectura">Lectura: la propuesta obtiene la <b>menor tasa de artefactos por amplio margen</b>
-  (Nabf {means.loc[PROP, "Nabf"]:.3f}, {means.loc["PiramideLaplace", "Nabf"]/means.loc[PROP, "Nabf"]:.1f} veces menos que el mejor rival) y la <b>mayor similitud
-  estructural</b> (SSIM {means.loc[PROP, "SSIM"]:.3f}); en Qabf ({means.loc[PROP, "Qabf"]:.3f}), SCD
-  ({means.loc[PROP, "SCD"]:.3f}) y VIF ({means.loc[PROP, "VIF"]:.3f}) queda segunda, a milésimas del
-  líder de cada columna. El Top-Hat clásico —la referencia morfológica directa— gana solo en las
-  métricas de actividad bruta (EN, MG, SF) a costa del mayor Nabf del estudio
-  ({means.loc["TopHat_Clasico", "Nabf"]:.3f}) y la peor SSIM ({means.loc["TopHat_Clasico", "SSIM"]:.3f}):
-  la diferencia con la propuesta aísla el aporte del banco disco + líneas y del ajuste (r, m) por
+  <p class="lectura">Lectura: la propuesta alcanza la <b>mayor similitud estructural del estudio</b>
+  (SSIM {means.loc[PROP, "SSIM"]:.3f}), significativamente superior a los cinco métodos del estado del
+  arte, y se ubica segunda en información mutua con las fuentes (MI_ir {means.loc[PROP, "MI_ir"]:.3f});
+  es más conservadora en las métricas de actividad y contraste (EN, SD, SF), lideradas por los
+  operadores de mayor realce. El Top-Hat clásico —la referencia morfológica directa— maximiza la
+  actividad bruta (EN, MG, SF) pero registra la peor SSIM del estudio
+  ({means.loc["TopHat_Clasico", "SSIM"]:.3f}): la diferencia con la propuesta (SSIM
+  {means.loc[PROP, "SSIM"]:.3f}) aísla el aporte del banco disco + líneas y del ajuste (r, m) por
   PSO.</p>
-  {figura(charts["quality"], "Las cuatro métricas de calidad de fusión; la barra azul es la propuesta.", 96)}
+  {figura(charts["quality"], "Cuatro métricas representativas (SSIM, SF, MI_ir, PSNR); la barra azul es la propuesta.", 96)}
   {pie(13)}
 </div>
 """)
@@ -591,7 +593,7 @@ H.append(f"""
 <div class="page">
   <h2>9. Análisis estadístico</h2>
   <p>Primero, el test de Friedman (7 métodos × 20 imágenes, por rangos) para cada métrica:</p>
-  {formula("friedman", 24)}
+  {formula("friedman", 23)}
   <p><b>Tabla 3.</b> Resultados del test de Friedman.</p>
   {tabla_friedman()}
   {pie(14)}
@@ -600,13 +602,14 @@ H.append(f"""
   <h2>9. Análisis estadístico (continuación): Wilcoxon y ranking</h2>
   <p>Wilcoxon pareado de la propuesta contra cada rival (20 imágenes), con corrección de Holm y tamaño
   de efecto rank-biserial:</p>
-  {formula("rb", 25)}
+  {formula("rb", 24)}
   <p><b>Tabla 4.</b> Resumen de los {len(wtab)} contrastes de la propuesta: mejor / peor / sin
   diferencia significativa (≈), α = 0,05.</p>
   {tabla_wilcoxon}
   <p class="lectura">Lectura: la propuesta resulta significativamente mejor en {w_mejor} contrastes,
-  peor en {w_peor} y sin diferencia en {w_emp}.</p>
-  {figura(charts["ranking"], "Ranking promedio global de los 7 métodos (12 métricas, dirección respetada); la barra azul es la propuesta.", 78)}
+  peor en {w_peor} y sin diferencia en {w_emp}; su ventaja más consistente es en similitud
+  estructural (SSIM), mejor que los cinco métodos del estado del arte.</p>
+  {figura(charts["ranking"], "Ranking promedio global de los 7 métodos (9 métricas, dirección respetada); la barra azul es la propuesta.", 78)}
   {pie(15)}
 </div>
 """)
@@ -644,54 +647,10 @@ H.append(f"""
   0,926–0,949, +0,12 a +0,14 puntos); el infrarrojo solo es la modalidad más fuerte (0,957) y ninguna
   fusión lo supera, coherente con que el peatón nocturno es esencialmente térmico; y entre las fusiones,
   en una banda estrecha, la propuesta es competitiva (0,936) —prácticamente empatada con el Top-Hat
-  clásico (0,938)— sin ser la líder. Conclusión honesta: la superioridad de la propuesta en calidad de
-  imagen (Nabf, SSIM) no se traslada automáticamente a la detección; la elección del método depende del
-  criterio operativo prioritario.</p>
+  clásico (0,938)— sin ser la líder. Conclusión honesta: la superioridad de la propuesta en calidad
+  estructural de imagen (SSIM) no se traslada automáticamente a la detección; la elección del método
+  depende del criterio operativo prioritario.</p>
   {figura(charts["det"], "mAP por entrada del detector (YOLOv8n reentrenado por método sobre LLVIP).", 88)}
-  {pie(pg)}
-</div>
-""")
-pg += 1
-
-TAB_ABLA = """<table><thead><tr><th>Variante</th><th>Qabf &uarr;</th><th>Nabf &darr;</th>
-<th>SSIM &uarr;</th><th>SCD &uarr;</th><th>VIF &uarr;</th></tr></thead><tbody>
-<tr><td><b>Propuesta + F_apt (r=25; m=0,070)</b></td><td>0,500</td><td><b>0,041</b></td><td><b>0,782</b></td><td>1,450</td><td>0,368</td></tr>
-<tr><td>Top-Hat clásico + Fo (r=25; m=0,30)</td><td><b>0,534</b></td><td>0,184</td><td>0,745</td><td><b>1,504</b></td><td><b>0,395</b></td></tr>
-<tr><td>Propuesta + Fo (r=1; m=0,30)</td><td>0,448</td><td>0,121</td><td>0,761</td><td>1,353</td><td>0,322</td></tr>
-<tr><td>Top-Hat clásico manual (r=5; m=1)</td><td>0,305</td><td>0,585</td><td>0,578</td><td>1,360</td><td>0,334</td></tr>
-</tbody></table>"""
-
-H.append(f"""
-<div class="page">
-  <h2>12. Ablación de la función de aptitud (pedido de la revisión)</h2>
-  <p>El barrido de 25 configuraciones se repitió con la función objetivo del trabajo de referencia,
-  <b>Fo = SSIM<sub>avg</sub> + E<sub>n</sub> + PSNR<sub>n</sub></b> (Ortega y Espinoza, 2025), con su
-  rango original m &isin; [0,3; 2,0], sobre la propuesta y sobre el operador clásico. En las
-  <b>50 corridas</b> el peso óptimo se ubicó en el límite inferior del rango (<b>m* = 0,30</b>): los dos
-  términos de fidelidad de Fo dominan a la entropía y empujan el realce al mínimo permitido. Sobre la
-  propuesta, Fo seleccionó además <b>r* = 1</b>, un óptimo trivial que desactiva el banco de SE.</p>
-  {figura(EXIST.get("fig_aptitud_vs_m.png"), "Aptitud en función de m (r = 25), sin restricciones de rango: las tres curvas decrecen monótonamente en [0,5-2], y el máximo real de Fo sobre la propuesta coincide con nuestro óptimo (m ≈ 0,07).", 78)}
-  <p><b>Tabla 9.</b> Óptimos de cada aptitud evaluados sobre los 20 pares (medias).</p>
-  {TAB_ABLA}
-  <p class="lectura">Lectura: ninguna configuración del enjambre puede converger dentro de [0,5; 2,0]
-  porque la aptitud decrece monótonamente allí; ambas formulaciones acuerdan el peso adecuado del
-  operador con suma (m ≈ 0,07). Un Wilcoxon pareado entre los dos óptimos de la propuesta favorece a
-  F_apt de forma significativa en <b>8 de 12 métricas</b> (fidelidad estructural y artefactos), y Fo
-  solo supera en actividad de alta frecuencia. La función de aptitud define el perfil del resultado
-  (refuerza H2).</p>
-  {pie(pg)}
-</div>
-""")
-pg += 1
-
-H.append(f"""
-<div class="page">
-  <h2>12. Ablación (continuación): comparación cualitativa</h2>
-  <p>El mismo operador tunado con cada aptitud, sobre tres escenas: la configuración de Fo (r=1, m=0,30)
-  inyecta más textura de alta frecuencia, mientras que la de F_apt (r=25, m=0,070) es más limpia y
-  estructuralmente fiel. Las diferencias son sutiles al ojo —ambas son fusiones razonables del mismo
-  operador— y las cuantifica la tabla anterior.</p>
-  {figura(EXIST.get("comparacion_aptitudes.png"), "Efecto de la función de aptitud sobre el mismo operador (VIS, IR, Fo, F_apt) en tres escenas del TNO.", 82)}
   {pie(pg)}
 </div>
 """)
@@ -707,29 +666,27 @@ TAB_M3FD = """<table><thead><tr><th>Entrada del detector</th><th>AP People &uarr
 <tr><td>DTCWT</td><td>0,159</td><td>0,114</td><td>0,137</td><td>0,229</td></tr>
 <tr><td>Curvelet (CVT)</td><td>0,167</td><td>0,100</td><td>0,133</td><td>0,228</td></tr>
 <tr><td>Top-Hat clásico (r=5; m=1)</td><td>0,125</td><td>0,054</td><td>0,090</td><td>0,198</td></tr>
-<tr><td>PSO FPUNA (clásico + Fo; r=25; m=0,30)</td><td>0,174</td><td>0,118</td><td>0,146</td><td>0,229</td></tr>
-<tr><td>Propuesta + Fo (r=1; m=0,30)</td><td>0,200</td><td>0,110</td><td>0,155</td><td>0,238</td></tr>
-<tr><td><b>Propuesta + F_apt (r=25; m=0,070)</b></td><td>0,207</td><td>0,117</td><td>0,162</td><td>0,239</td></tr>
+<tr><td><b>Propuesta Novedosa (r=25; m=0,070)</b></td><td>0,207</td><td>0,117</td><td>0,162</td><td>0,239</td></tr>
 </tbody></table>"""
 
 H.append(f"""
 <div class="page">
-  <h2>13. Detección con clases complementarias (M3FD)</h2>
+  <h2>12. Detección con clases complementarias (M3FD)</h2>
   <p>Experimento diseñado para aislar el escenario donde la fusión es insustituible: el dataset
   <b>M3FD</b> (Liu et al., 2022; 2.000 pares de entrenamiento y 500 de validación) anota seis clases,
   dos de ellas de <b>visibilidad opuesta</b>: las personas dominan en el infrarrojo (firma térmica) y
   las luces (Lamp) son esencialmente visibles solo en el canal visible. Un <b>único detector YOLOv8n</b>
   se entrenó con las imágenes de ambas modalidades mezcladas (4.000 imágenes, 40 épocas, etiquetas
   compartidas) y se evaluó <b>por inferencia</b> sobre la validación de cada modalidad y de cada método
-  de fusión — incluidos los dos óptimos del PSO (F_apt y Fo).</p>
-  <p><b>Tabla 10.</b> AP@0,5 por clase y mAP global (medias sobre 500 imágenes de validación).</p>
+  de fusión.</p>
+  <p><b>Tabla 9.</b> AP@0,5 por clase y mAP global (medias sobre 500 imágenes de validación).</p>
   {TAB_M3FD}
   <p class="lectura">Lectura: la complementariedad es extrema — el IR domina en personas (0,220) pero es
   prácticamente ciego a las luces (0,018); el VIS presenta el patrón espejo. Las mejores fusiones superan
   en el promedio del par a <b>ambas</b> modalidades individuales (RP 0,165 y propuesta 0,162 vs VIS 0,157
   e IR 0,119): detectan ambas clases en una sola imagen, algo que ninguna modalidad logra por separado.
   La propuesta es la <b>mejor fusión del estudio</b> en mAP global (0,239) y en personas (0,207, cerca del
-  IR puro), y su óptimo F_apt supera al de Fo en las dos clases clave. El VIS conserva el mejor mAP global
+  IR puro), manteniendo las luces cerca del visible. El VIS conserva el mejor mAP global
   de seis clases (0,245) por la abundancia de vehículos diurnos; los valores absolutos son moderados
   (subconjunto de 500, modelo nano).</p>
   {pie(pg)}
@@ -739,7 +696,7 @@ pg += 1
 
 H.append(f"""
 <div class="page">
-  <h2>13. Clases complementarias (continuación): la prueba visual</h2>
+  <h2>12. Clases complementarias (continuación): la prueba visual</h2>
   <p>Dos escenas de la validación con las detecciones del modelo único dibujadas (personas en
   granate, luces en azul). En la escena superior el visible no detecta <b>ninguna persona</b> y la
   fusión las recupera; en la inferior el infrarrojo no detecta <b>ninguna luz</b> y la fusión las
@@ -752,30 +709,31 @@ pg += 1
 
 H.append(f"""
 <div class="page">
-  <h2>14. Conclusiones</h2>
+  <h2>13. Conclusiones</h2>
   <h3>Resumen del planteamiento</h3>
   <ol>
     <li><b>Propuesta:</b> Top-Hat de una sola escala (radio r) con banco de cinco SE; respuestas lineales
         promediadas (ecs. 6–9) <b>sumadas</b> a la respuesta del disco (ecs. 11–12); detalle dominante
         entre fuentes y reconstrucción aditivo-sustractiva con peso m (ecs. 13–14).</li>
     <li><b>Optimización:</b> barrido de 25 configuraciones PSO (partículas 2–10 × iteraciones 10–50,
-        replicando el diseño de Ortega y Espinoza 2025) con aptitud orientada a fusión →
-        <b>r = 25, m = 0,070</b> (F = 1,9843), alcanzado consistentemente con n = 10 y T ≥ 30.</li>
+        replicando el diseño de Ortega y Espinoza 2025) con la aptitud publicada F<sub>o</sub> →
+        <b>r = 25, m ≈ 0,07</b> (F<sub>o</sub> = 1,7654), alcanzado consistentemente con n = 10 y T ≥ 30.</li>
     <li><b>Benchmark:</b> 7 métodos (LP, RP, DWT, DTCWT, CVT, Top-Hat clásico y la propuesta) × 20 pares
-        TNO × 12 métricas sin referencia.</li>
+        TNO × nueve métricas sin referencia.</li>
     <li><b>Estadística:</b> Friedman por métrica y Wilcoxon-Holm pareado de la propuesta contra cada
         rival, con ranking promedio global.</li>
   </ol>
   <h3>Resultados clave</h3>
   <ul>
-    <li>La propuesta es el método más limpio y estructuralmente fiel del benchmark
-        (Nabf {means.loc[PROP, "Nabf"]:.3f} y SSIM {means.loc[PROP, "SSIM"]:.3f}, mejores de los 7
-        métodos) y segunda en Qabf ({means.loc[PROP, "Qabf"]:.3f}), SCD ({means.loc[PROP, "SCD"]:.3f})
-        y VIF ({means.loc[PROP, "VIF"]:.3f}).</li>
+    <li>La propuesta alcanza la <b>mayor similitud estructural del benchmark</b>
+        (SSIM {means.loc[PROP, "SSIM"]:.3f}), significativamente superior a los cinco métodos del estado
+        del arte, y es segunda en información mutua con las fuentes (MI_ir {means.loc[PROP, "MI_ir"]:.3f}).</li>
     <li>En los contrastes de Wilcoxon-Holm la propuesta es significativamente mejor en {w_mejor} de
-        {len(wtab)} comparaciones (peor en {w_peor}, sin diferencia en {w_emp}).</li>
+        {len(wtab)} comparaciones (peor en {w_peor}, sin diferencia en {w_emp}), con su ventaja más
+        consistente en SSIM.</li>
     <li>Frente al Top-Hat clásico, el banco disco + líneas con suma de ramas y el ajuste (r, m) por PSO
-        aportan una mejora consistente en todas las métricas de calidad de fusión.</li>
+        elevan la fidelidad estructural (SSIM {means.loc[PROP, "SSIM"]:.3f} frente a
+        {means.loc["TopHat_Clasico", "SSIM"]:.3f}) a costa de una actividad de contraste más conservadora.</li>
   </ul>
   <h3>Próximos pasos</h3>
   <ul>
