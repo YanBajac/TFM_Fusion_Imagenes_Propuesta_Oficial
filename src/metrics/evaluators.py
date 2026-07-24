@@ -30,7 +30,7 @@ from skimage.metrics import structural_similarity
 
 METRIC_DIRECTION = {
     "EN": "max", "SD": "max", "FE": "max", "MG": "max",
-    "MI_vis": "max", "MI_ir": "max", "SF": "max",
+    "MI_vis": "max", "MI_ir": "max", "SF": "max", "PSNR": "max",
     "Qabf": "max", "Nabf": "min", "SSIM": "max", "SCD": "max", "VIF": "max",
     "FMI": "max", "Q0": "max", "QW": "max", "QE": "max",
 }
@@ -271,9 +271,18 @@ def piella_indices(fused, vis, ir, w=7, alpha=1.0):
     return Q0, QW, QE
 
 
+def psnr_fusion(fused, vis, ir):
+    """PSNR de la fusion respecto a las fuentes (esquema de Ortega y Espinoza,
+    ecs. 26-29): MSE promedio contra VIS e IR, con MAX=1 (imagenes en [0,1]).
+        MSE = 1/2 (MSE_vis + MSE_ir);  PSNR = 10 log10(1 / MSE)."""
+    f = np.clip(fused, 0.0, 1.0).astype(np.float64)
+    mse = 0.5 * (float(np.mean((f - vis) ** 2)) + float(np.mean((f - ir) ** 2)))
+    return float(10.0 * np.log10(1.0 / max(mse, 1e-12)))
+
+
 def evaluate_all(fused, vis, ir):
     """Calcula todas las metricas. Claves: EN, SD, FE, MG, MI_vis, MI_ir,
-    SF, Qabf, Nabf, SSIM, SCD, VIF, FMI, Q0, QW, QE."""
+    SF, SSIM, PSNR, Qabf, Nabf, SCD, VIF, FMI, Q0, QW, QE."""
     qabf, nabf = _qabf_nabf(fused, vis, ir)
     q0, qw, qe = piella_indices(fused, vis, ir)
     return {
@@ -284,9 +293,10 @@ def evaluate_all(fused, vis, ir):
         "MI_vis": mutual_information(fused, vis),
         "MI_ir":  mutual_information(fused, ir),
         "SF":     spatial_frequency(fused),
+        "SSIM":   ssim_fusion(fused, vis, ir),
+        "PSNR":   psnr_fusion(fused, vis, ir),
         "Qabf":   qabf,
         "Nabf":   nabf,
-        "SSIM":   ssim_fusion(fused, vis, ir),
         "SCD":    scd(fused, vis, ir),
         "VIF":    vif_fusion(fused, vis, ir),
         "FMI":    fmi(fused, vis, ir),
