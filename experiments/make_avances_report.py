@@ -271,6 +271,69 @@ def tabla_friedman():
     return ('<table class="chica"><tr><th class="l">Métrica</th><th>χ² de Friedman</th>'
             f'<th>p-valor</th><th>Significativa (α = 0,05)</th></tr>{rows}</table>')
 
+# ------------------------------------------------------------------ tabla por imagen
+# Mismo formato que el Cuadro 2 del trabajo de referencia: una fila por metodo dentro de
+# cada escena, con SSIM_avg, E, SF, SD y PSNR, y en negrita el mejor valor de cada columna.
+allm = pd.read_csv(os.path.join(MR, "all_metrics.csv"))
+COLS_IMG = [("SSIM", "SSIM_avg"), ("EN", "E"), ("SF", "SF"), ("SD", "SD"), ("PSNR", "PSNR")]
+ORDEN_IMG = ["PiramideLaplace", "RatioPiramide", "DWT", "DTCWT", "Curvelet",
+             "TopHat_Clasico", PROP]
+CORTO = {"PiramideLaplace": "LP", "RatioPiramide": "RP", "DWT": "DWT", "DTCWT": "DTCWT",
+         "Curvelet": "CVT", "TopHat_Clasico": "Top-Hat clás.", PROP: "Propuesta"}
+ESCENA = {
+    "APC_1_view_1_fk_06_005": "APC 1 · vista 1",
+    "APC_1_view_2_fk_ref_01_005": "APC 1 · vista 2",
+    "APC_1_view_3_fk_ref_02_005": "APC 1 · vista 3",
+    "APC_3_view_1_fk_bar_06_005": "APC 3 · vista 1",
+    "APC_3_view_2_fk_NL_01_005": "APC 3 · vista 2",
+    "APC_3_view_3_fk_NL_05_005": "APC 3 · vista 3",
+    "Athena_2_men_in_front_of_house_meting003": "2 men in front of house",
+    "Athena_APC_4_fennek01_005": "APC 4 (fennek)",
+    "Athena_heather_IR_hei_vis_g": "heather (IR/vis g)",
+    "Athena_heather_hei_vis": "heather (hei vis)",
+    "Athena_helicopter_helib_011": "helicopter",
+    "Athena_lake_lake": "lake",
+    "Athena_man_in_doorway_maninhuis": "man in doorway",
+    "Athena_soldier_behind_smoke_1_meting012-1200": "soldier behind smoke 1",
+    "Athena_soldier_behind_smoke_2_meting012-1500": "soldier behind smoke 2",
+    "Athena_soldier_behind_smoke_3_meting012-1700": "soldier behind smoke 3",
+    "Athena_soldier_in_trench_1_meting016": "soldier in trench 1",
+    "Athena_soldier_in_trench_2_meting055": "soldier in trench 2",
+    "Triclobs_Bosnia_R": "Bosnia",
+    "Triclobs_jeep_in_smoke_R": "jeep in smoke",
+}
+IMAGENES = list(dict.fromkeys(allm["image"]))
+
+def tabla_por_imagen(imgs):
+    filas = []
+    for img in imgs:
+        sub = allm[allm["image"] == img].set_index("method")
+        mejor = {k: sub.loc[ORDEN_IMG, k].idxmax() for k, _ in COLS_IMG}
+        for j, m in enumerate(ORDEN_IMG):
+            tds = []
+            for k, _ in COLS_IMG:
+                v = float(sub.loc[m, k])
+                b = mejor[k] == m
+                s = f"{v:.5f}".replace(".", ",")
+                tds.append(f'<td>{"<b>" if b else ""}{s}{"</b>" if b else ""}</td>')
+            nom = CORTO[m]
+            if m == PROP:
+                nom = f"<b>{nom}</b>"
+            cls = ' class="ini"' if j == 0 else ""
+            esc = (f'<td class="l esc" rowspan="{len(ORDEN_IMG)}">{ESCENA.get(img, img)}</td>'
+                   if j == 0 else "")
+            filas.append(f'<tr{cls}>{esc}<td class="l">{nom}</td>{"".join(tds)}</tr>')
+    head = "".join(f"<th>{lbl}&nbsp;&uarr;</th>" for _, lbl in COLS_IMG)
+    return ('<table class="porimg"><tr><th class="l">Escena</th><th class="l">Método</th>'
+            f'{head}</tr>{"".join(filas)}</table>')
+
+# cuantas escenas lidera la propuesta en cada columna (para la lectura)
+_lidera = {}
+for k, lbl in COLS_IMG:
+    _lidera[lbl] = sum(1 for img in IMAGENES
+                       if allm[allm["image"] == img].set_index("method").loc[ORDEN_IMG, k].idxmax() == PROP)
+print("propuesta lidera por columna (de 20 escenas):", _lidera)
+
 DET_ORDEN = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT",
              "Curvelet", "TopHat_Clasico", PROP]
 DET_LBL = {**LBL, "VIS": "VIS (solo)", "IR": "IR (solo)",
@@ -323,6 +386,10 @@ p { text-align: justify; margin-bottom: 2.5mm; }
 .cap { font-size: 9pt; margin-top: 1mm; text-align: center; }
 table { border-collapse: collapse; width: 100%; margin: 2.5mm 0; font-size: 8pt; }
 table.chica { width: 78%; margin-left: auto; margin-right: auto; font-size: 9pt; }
+table.porimg { font-size: 7.6pt; }
+table.porimg td, table.porimg th { padding: 0.7mm 0.8mm; }
+table.porimg td.esc { font-weight: bold; vertical-align: middle; font-size: 7.4pt; }
+table.porimg tr.ini td { border-top: 1.2pt solid #000; }
 th, td { border: 1px solid #000; padding: 1.2mm 1mm; text-align: center; }
 th { background: #e8e8e8; font-weight: bold; }
 th.l, td.l { text-align: left; padding-left: 2mm; }
@@ -594,6 +661,38 @@ H.append(f"""
 </div>
 """)
 
+# ---------- 8 (continuación): resultados escena por escena, formato del Cuadro 2 ----------
+_bloques = [IMAGENES[i:i + 4] for i in range(0, len(IMAGENES), 4)]   # 4 escenas por pagina
+for _b, _imgs in enumerate(_bloques, 1):
+    _cab = ("8. Resultados por escena (formato del Cuadro 2 del trabajo de referencia)"
+            if _b == 1 else f"8. Resultados por escena (continuación {_b} de 5)")
+    _intro = ("" if _b > 1 else f"""
+  <p>Además de los promedios, se detallan los resultados <b>escena por escena</b> sobre los 20 pares
+  del TNO, con la misma disposición del Cuadro 2 del trabajo de referencia: una fila por método dentro
+  de cada escena y, en <b>negrita</b>, el mejor valor de cada columna en esa escena. Se incluye también
+  la metodología clásica Top-Hat, que es la referencia morfológica directa de la propuesta.</p>
+  <p class="lectura">Unidades: SSIM<sub>avg</sub> y SD en [0, 1]; E en bits (0–8); SF adimensional;
+  PSNR en dB. La correspondencia con el Cuadro 2 de referencia es directa —allí E y PSNR se reportan
+  normalizados (E/8 y PSNR/100) y SD en la escala 0–255—, de modo que el orden entre métodos es
+  comparable columna por columna.</p>""")
+    _lect = ("" if _b < 5 else f"""
+  <p class="lectura">Lectura del conjunto de las 20 escenas: la propuesta obtiene el mejor valor en
+  <b>{_lidera['E']} de 20</b> escenas en entropía (E) y en <b>{_lidera['SD']} de 20</b> en desviación
+  estándar (SD), frente a <b>{_lidera['SF']} de 20</b> en frecuencia espacial (SF, donde domina el
+  Top-Hat clásico), <b>{_lidera['SSIM_avg']} de 20</b> en SSIM<sub>avg</sub> y
+  <b>{_lidera['PSNR']} de 20</b> en PSNR. El patrón por escena confirma el de los promedios: la
+  propuesta lidera de forma sistemática las métricas de información y contraste, y cede las de
+  fidelidad a las fuentes.</p>""")
+    H.append(f"""
+<div class="page">
+  <h2>{_cab}</h2>{_intro}
+  <p><b>Tabla 2{chr(96 + _b)}.</b> Resultados por escena — escenas {(_b - 1) * 4 + 1} a
+  {(_b - 1) * 4 + len(_imgs)} de 20.</p>
+  {tabla_por_imagen(_imgs)}{_lect}
+  {pie(13 + _b)}
+</div>
+""")
+
 H.append(f"""
 <div class="page">
   <h2>9. Análisis estadístico</h2>
@@ -601,7 +700,7 @@ H.append(f"""
   {formula("friedman", 23)}
   <p><b>Tabla 3.</b> Resultados del test de Friedman.</p>
   {tabla_friedman()}
-  {pie(14)}
+  {pie(19)}
 </div>
 <div class="page">
   <h2>9. Análisis estadístico (continuación): Wilcoxon y ranking</h2>
@@ -615,11 +714,11 @@ H.append(f"""
   peor en {w_peor} y sin diferencia en {w_emp}; su ventaja más consistente es en las
   métricas de actividad e información (EN, FE, MG, SF), mejor que los cinco métodos del estado del arte.</p>
   {figura(charts["ranking"], "Ranking promedio global de los 7 métodos (9 métricas, dirección respetada); la barra azul es la propuesta.", 78)}
-  {pie(15)}
+  {pie(20)}
 </div>
 """)
 
-pg = 16
+pg = 21
 H.append(f"""
 <div class="page">
   <h2>10. Resultados cualitativos: las 20 escenas</h2>
