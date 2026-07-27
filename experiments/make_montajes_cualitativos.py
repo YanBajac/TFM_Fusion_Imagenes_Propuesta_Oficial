@@ -15,8 +15,8 @@ from src.datasets import list_pairs, load_pair
 from src.fusion import (fuse_optimal, laplacian_pyramid_fusion, ratio_pyramid_fusion,
                         dwt_fusion, dtcwt_fusion, curvelet_fusion, tophat_classic_fusion)
 
-# Hiperparametros de la propuesta (PSO, operador con suma de ramas)
-PROP_R, PROP_M = 25, 0.0703
+# Hiperparametros de la propuesta (PSO con la aptitud F_o y el rango publicado)
+PROP_R, PROP_M = 25, 0.30
 
 OUT = "docs/figures/cualitativas/"
 os.makedirs(OUT, exist_ok=True)
@@ -31,7 +31,7 @@ CELLS = [
     ("DTCWT", lambda v, i: dtcwt_fusion(v, i, levels=4)),
     ("Curvelet (CVT)", lambda v, i: curvelet_fusion(v, i, levels=3)),
     ("Top-Hat clásico", lambda v, i: tophat_classic_fusion(v, i, r=5)),
-    (f"Propuesta (r={PROP_R}, m={PROP_M:.3f})".replace(".", ","),
+    (f"Propuesta (r={PROP_R}, m={PROP_M:.2f})".replace(".", ","),
      lambda v, i: fuse_optimal(v, i, r=PROP_R, m=PROP_M, mode="sum")),
 ]
 

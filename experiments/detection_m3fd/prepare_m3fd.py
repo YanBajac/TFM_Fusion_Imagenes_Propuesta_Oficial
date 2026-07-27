@@ -37,9 +37,7 @@ FUSERS = {
     "DTCWT":           lambda v, i: dtcwt_fusion(v, i, levels=4),
     "Curvelet":        lambda v, i: curvelet_fusion(v, i, levels=3),
     "TopHat_Clasico":  lambda v, i: tophat_classic_fusion(v, i, r=5),
-    "PSO_FPUNA_Fo":    lambda v, i: tophat_classic_fusion(v, i, r=25, m=0.30),   # PSO de Ortega & Espinoza
-    "Propuesta_Fapt":  lambda v, i: fuse_optimal(v, i, 25, 0.0703, mode="sum"),  # PSO de la tesis
-    "Propuesta_Fo":    lambda v, i: fuse_optimal(v, i, 1, 0.30, mode="sum"),     # ablacion (optimo trivial)
+    "Propuesta_Novedosa": lambda v, i: fuse_optimal(v, i, 25, 0.30, mode="sum"),  # config oficial (F_o, rango publicado)
 }
 
 def g2d(a):

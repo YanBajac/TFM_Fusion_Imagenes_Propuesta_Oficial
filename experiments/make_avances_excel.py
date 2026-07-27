@@ -57,7 +57,7 @@ fried = pd.read_csv(os.path.join(MR, "friedman_results.csv"))
 wilc  = pd.read_csv(os.path.join(MR, "wilcoxon_results.csv"))
 rankm = pd.read_csv(os.path.join(MR, "ranking_methods.csv"), index_col=0)
 allm  = pd.read_csv(os.path.join(MR, "all_metrics.csv"))
-grid  = pd.read_csv(os.path.join(MR, "pso_grid_search_fo_propuesta_oficial.csv")).rename(
+grid  = pd.read_csv(os.path.join(MR, "pso_grid_search_fo_propuesta.csv")).rename(
     columns={"Fo_opt": "F_opt"})
 
 PROP = "Propuesta_Novedosa"
@@ -65,7 +65,7 @@ ORDEN = ["PiramideLaplace", "RatioPiramide", "DWT", "DTCWT", "Curvelet", "TopHat
 LBL = {"PiramideLaplace": "Pirámide de Laplace (LP)", "RatioPiramide": "Ratio of low-pass Pyramid (RP)",
        "DWT": "Wavelet discreta (DWT)", "DTCWT": "Dual-Tree Complex Wavelet (DTCWT)",
        "Curvelet": "Curvelet (CVT)", "TopHat_Clasico": "Top-Hat clásico",
-       PROP: "PROPUESTA NOVEDOSA (r=25, m=0,070)"}
+       PROP: "PROPUESTA NOVEDOSA (r=25, m=0,30)"}
 DIRECTION = {"EN": 1, "SD": 1, "FE": 1, "MG": 1, "MI_vis": 1, "MI_ir": 1, "SF": 1,
              "SSIM": 1, "PSNR": 1}
 METS = list(DIRECTION.keys())
@@ -83,12 +83,12 @@ info = [
     ("Propuesta central", "Fusión Top-Hat de UNA SOLA ESCALA (radio r): disco B_r + 4 líneas L_{r,θ} (0°, 45°, 90°, 135°, largo 2r+1). "
      "Respuestas lineales promediadas y SUMADAS a la del disco (Bala et al. 2024); entre fuentes máximo; "
      "reconstrucción F = I_base + m·WTH − m·BTH."),
-    ("Optimización", "Barrido de 25 configuraciones PSO (partículas 2-10 × iteraciones 10-50, Cuadro 1 de Ortega & Espinoza 2025) sobre (r, m), r en [1,25]. Óptimo global: r = 25, m ≈ 0,07 (Fo = 1,7654), alcanzado consistentemente con n=10 y T>=30; config operativa m = 0,0703."),
+    ("Optimización", "Barrido de 25 configuraciones PSO (partículas 2-10 × iteraciones 10-50, Cuadro 1 de Ortega & Espinoza 2025) sobre (r, m), r en [1,25]. El peso converge al piso del rango publicado (m* = 0,30) en las 25 configuraciones; el radio se fija en r = 25, que maximiza las nueve métricas de evaluación y activa el banco completo de cinco SE."),
     ("Benchmark", "7 métodos: LP, RP (Toet 1989), DWT, DTCWT, CVT, Top-Hat clásico y la propuesta. "
      "20 pares TNO × nueve métricas sin referencia (EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PSNR)."),
-    ("Resultados clave", "La propuesta alcanza la mayor SSIM del estudio (0,782), significativa frente a los cinco "
-     "métodos del estado del arte, y es 2ª en información mutua (MI_ir 0,909); más conservadora en actividad (EN, SD, SF)."),
-    ("Detección (LLVIP)", "YOLOv8n reentrenado por método. IR solo lidera (mAP@0,5=0,957); toda fusión supera al VIS solo; propuesta competitiva (0,936) sin liderar. Calidad de imagen ≠ detectabilidad (H3 parcial)."),
+    ("Resultados clave", "La propuesta lidera la entropía (6,9888) y el contenido de bordes (1,1045) del estudio y es 2ª en SD, MG y SF, "
+     "con ventaja significativa sobre los cinco métodos del estado del arte en EN, FE, MG y SF; 2º lugar del ranking agregado (3,67)."),
+    ("Detección (LLVIP)", "YOLOv8n reentrenado por método. IR solo lidera (mAP@0,5=0,957); toda fusión supera al VIS solo (0,808); la propuesta queda en el extremo inferior de la banda de fusiones (0,913): el realce que premian las métricas de actividad no mejora la detección (H3 no sostenida)."),
 ]
 for k, v in info:
     ws.cell(f, 1, k).font = F_TXTB
@@ -126,13 +126,13 @@ f += 1
 conf = [
     ("Método optimizado", "Propuesta: Top-Hat 1 escala, disco + 4 líneas, ramas SUMADAS (Bala et al. 2024)"),
     ("Variables", "(r, m) — radio del SE y peso de contraste"),
-    ("Rango de búsqueda", "r ∈ [1, 25] (rango del libro FPUNA) · m ∈ [0,05; 1,20] (ajustado al operador con suma)"),
+    ("Rango de búsqueda", "r ∈ [1, 25] · m ∈ [0,30; 2,00] (ambos del libro FPUNA, sin modificaciones)"),
     ("Configuraciones evaluadas", "25: partículas n ∈ {2,4,6,8,10} × iteraciones T ∈ {10,20,30,40,50} (Cuadro 1 del libro)"),
     ("Función de aptitud", "Fo = SSIM_avg + E_n + PSNR_n (Ortega y Espinoza, 2025; ecuación 14)"),
     ("Evaluada sobre", "3 escenas representativas del TNO (1 de cada 7)"),
-    ("Óptimo global hallado", "r* = 25 · m ≈ 0,07 (alcanzado por 3 de las 25 configuraciones; consistente con n=10 y T≥30); config operativa m = 0,0703"),
+    ("Óptimo global hallado", "r* = 25 · m* = 0,30 (el peso al que convergen las 25 configuraciones con el rango publicado)"),
     ("Aptitud alcanzada", f"Fo = {grid['F_opt'].max():.4f}"),
-    ("Estado guardado en", "metrics_reports/pso_grid_search_fo_propuesta_oficial.csv"),
+    ("Estado guardado en", "metrics_reports/pso_grid_search_fo_propuesta.csv"),
 ]
 for k, v in conf:
     celda(ws, f, 1, k, bold=True, align=CL)
@@ -140,7 +140,7 @@ for k, v in conf:
     f += 1
 f += 1
 f = nota(ws, f, "Con la suma de ramas se inyecta más energía de detalle que con el máximo; el enjambre lo compensa "
-         "con un peso de contraste bajo (m 0,070). El radio se ubica en el tope del rango del libro (r = 25): "
+         "con el peso del rango publicado (m = 0,30). El radio se ubica en el tope del rango del libro (r = 25): "
          "el operador aprovecha un vecindario amplio para capturar los objetivos térmicos completos.")
 
 
@@ -148,7 +148,7 @@ f = nota(ws, f, "Con la suma de ramas se inyecta más energía de detalle que co
 ws = wb.create_sheet("PSO_Barrido")
 ws.sheet_view.showGridLines = False
 f = titulo(ws, 1, "Barrido de configuraciones PSO — 25 combinaciones (Cuadro 1 de Ortega & Espinoza, 2025)",
-           "Cada fila es una corrida PSO independiente (semilla propia). En negrita las configuraciones que alcanzan el óptimo global Fo = 1,7654.")
+           "Cada fila es una corrida PSO independiente (semilla propia). Las 25 configuraciones convergen al mismo peso óptimo, m* = 0,30; las diferencias de aptitud reflejan el radio hallado.")
 f = encabezado(ws, f, ["Partículas (n)", "Iteraciones (Tmax)", "Evaluaciones", "r óptimo", "m óptimo",
                        "Aptitud F", "Tiempo (s)"], [14, 16, 13, 10, 11, 11, 11])
 Fmax = grid["F_opt"].max()
@@ -200,7 +200,7 @@ for m in ORDEN:
 # ============================================================ 5. PROPUESTA POR IMAGEN
 ws = wb.create_sheet("Propuesta_por_Imagen")
 ws.sheet_view.showGridLines = False
-f = titulo(ws, 1, "Propuesta novedosa (r=25, m=0,070) — métricas en cada escena del TNO",
+f = titulo(ws, 1, "Propuesta novedosa (r=25, m=0,30) — métricas en cada escena del TNO",
            "Última fila: promedio y desvío estándar con fórmulas; el promedio coincide con la fila de la hoja Benchmark.")
 ws.column_dimensions["A"].width = 40
 for j in range(2, 2 + NM):
@@ -272,8 +272,8 @@ ws = wb.create_sheet("Ranking_Global")
 ws.sheet_view.showGridLines = False
 f = titulo(ws, 1, "Ranking global de los 7 métodos (nueve métricas, dirección respetada)",
            "Rango 1 = mejor en esa métrica. La columna final promedia los nueve rangos con fórmula. La propuesta es 1ª "
-           "en SSIM y 2ª en información mutua; las métricas de actividad (EN, SD, FE, MG, SF), que premian el realce "
-           "agresivo (lideradas por el Top-Hat clásico), bajan su promedio global (7ª).")
+           "en EN y FE y 2ª en SD, MG y SF; cede en las métricas de fidelidad a las fuentes (SSIM, PSNR) y en información "
+           "mutua, lideradas por los métodos multiescala. Queda 2ª en el ranking global (3,67), tras la pirámide de Laplace (3,44).")
 ws.column_dimensions["A"].width = 36
 for j in range(2, 3 + NM):
     ws.column_dimensions[get_column_letter(j)].width = 8.5
@@ -303,7 +303,7 @@ f = encabezado(ws, f, ["Entrada del detector", "mAP@0,5 ↑", "mAP@0,5:0,95 ↑"
 DET_ORDEN = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT",
              "Curvelet", "TopHat_Clasico", PROP]
 DET_LBL = {**LBL, "VIS": "VIS (solo)", "IR": "IR (solo)",
-           "Propuesta_Novedosa": "Propuesta Novedosa (r=25, m=0,070)"}
+           "Propuesta_Novedosa": "Propuesta Novedosa (r=25, m=0,30)"}
 COLS = ["mAP50", "mAP50_95", "precision", "recall"]
 best = {c: det[c].idxmax() for c in COLS}
 for m in DET_ORDEN:
@@ -313,10 +313,10 @@ for m in DET_ORDEN:
         celda(ws, f, j, float(r[c]), fmt="0.000", bold=(best[c] == m or m == PROP))
     f += 1
 f += 1
-f = nota(ws, f, "Lectura: toda fusión supera al visible solo (+0,12 a +0,14 en mAP@0,5); el infrarrojo solo es la "
-         "modalidad más fuerte (0,957) y ninguna fusión lo supera (peatón nocturno = térmico); entre las fusiones, en "
-         "banda estrecha (0,926–0,949), la propuesta es competitiva (0,936) sin ser líder. La superioridad en calidad de "
-         "imagen no se traslada automáticamente a la detección (H3 parcial).")
+f = nota(ws, f, "Lectura: toda fusión supera al visible solo (+0,11 a +0,14 en mAP@0,5); el infrarrojo solo es la "
+         "modalidad más fuerte (0,957) y ninguna fusión lo supera (peatón nocturno = térmico); entre las fusiones "
+         "(banda 0,913–0,949) la propuesta queda en el extremo inferior (0,913). El realce que premian las métricas de "
+         "actividad no mejora la detección: ambos criterios deben reportarse por separado (H3 no sostenida).")
 
 # ============================================================ 11. DETECCION M3FD
 ws = wb.create_sheet("Deteccion_M3FD")
@@ -337,7 +337,7 @@ M3FD = [
     ("Dual-Tree Complex Wavelet (DTCWT)", 0.159, 0.114, 0.137, 0.229),
     ("Curvelet (CVT)", 0.167, 0.100, 0.133, 0.228),
     ("Top-Hat clásico (r=5; m=1)", 0.125, 0.054, 0.090, 0.198),
-    ("Propuesta Novedosa (r=25; m=0,070)", 0.207, 0.117, 0.162, 0.239),
+    ("Propuesta Novedosa (r=25; m=0,30)", 0.146, 0.101, 0.124, 0.211),
 ]
 mejor_m3fd = {1: 0.220, 2: 0.135, 3: 0.165, 4: 0.245}
 for fila_m in M3FD:
@@ -348,9 +348,10 @@ for fila_m in M3FD:
     f += 1
 f += 1
 f = nota(ws, f, "Lectura: complementariedad extrema (IR ciego a Lamp: 0,018; VIS débil en People). Las mejores fusiones "
-         "superan en el promedio del par a ambas modalidades individuales (RP 0,165 y propuesta 0,162 vs VIS 0,157 e "
-         "IR 0,119): detectan ambas clases en una sola imagen. La propuesta es la mejor fusión en mAP global (0,239) y "
-         "en People (0,207), manteniendo las luces cerca del visible. Fuente: metrics_reports/detection_m3fd_map.csv.")
+         "superan en el promedio del par a ambas modalidades individuales: la Ratio Pyramid alcanza 0,165 frente a 0,157 "
+         "del visible y 0,119 del infrarrojo. Todas las fusiones recuperan ambas clases en una sola imagen —algo que el "
+         "infrarrojo no logra—, y la propuesta alcanza un promedio intermedio (0,124; People 0,146 y Lamp 0,101): el "
+         "realce elevado no favorece al detector. Fuente: metrics_reports/detection_m3fd_map.csv.")
 
 wb.save(OUT)
 print("Guardado:", OUT)

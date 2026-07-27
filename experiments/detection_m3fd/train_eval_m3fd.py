@@ -18,8 +18,7 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "experiments" / "results" / "metrics_reports" / "detection_m3fd_map.csv"
 
 METODOS = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT",
-           "Curvelet", "TopHat_Clasico", "PSO_FPUNA_Fo", "Propuesta_Fapt",
-           "Propuesta_Fo"]
+           "Curvelet", "TopHat_Clasico", "Propuesta_Novedosa"]
 
 
 def main():

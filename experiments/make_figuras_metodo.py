@@ -16,7 +16,7 @@ from src.datasets import list_pairs, load_pair
 from src.fusion import fuse_optimal, tophat_classic_fusion
 from src.fusion.optimal_top_hat import disk_se, linear_se
 
-PROP_R, PROP_M = 25, 0.0703
+PROP_R, PROP_M = 25, 0.30
 OUT = "docs/figures"
 plt.rcParams.update({"font.family": "serif", "font.size": 10})
 
@@ -137,27 +137,27 @@ print("ok fig_flujo_propuesta.png")
 
 # ---------------- fig_pso_diagrama: PSO sobre el espacio (r, m) ----------------
 rr = np.linspace(1, 25, 240)
-mm = np.linspace(0.05, 1.20, 240)
+mm = np.linspace(0.30, 2.00, 240)
 RR, MM = np.meshgrid(rr, mm)
-Z = 1.9843 - 0.55 * ((25 - RR) / 24) ** 2 - 0.75 * ((MM - 0.0703) / 1.13) ** 2
+Z = 1.7354 - 0.30 * ((25 - RR) / 24) ** 2 - 0.45 * ((MM - 0.30) / 1.70) ** 2
 
 fig, ax = plt.subplots(figsize=(8.3, 5.0))
 cf = ax.contourf(RR, MM, Z, levels=14, cmap="Greys", alpha=0.45)
 ax.contour(RR, MM, Z, levels=14, colors="#999999", linewidths=0.4)
 
 px = np.array([3.0, 5.5, 8.0, 10.5, 13.0, 15.5, 18.0, 20.0, 22.0, 6.5])
-py = np.array([1.00, 0.62, 0.88, 0.38, 0.72, 0.25, 0.55, 0.90, 0.33, 0.18])
+py = np.array([1.70, 1.05, 1.45, 0.70, 1.20, 0.52, 0.95, 1.55, 0.62, 0.42])
 for x, y in zip(px, py):
-    dx, dy = (25 - x) * 0.22, (0.0703 - y) * 0.22
+    dx, dy = (25 - x) * 0.22, (0.30 - y) * 0.22
     ax.annotate("", xy=(x + dx, y + dy), xytext=(x, y),
                 arrowprops=dict(arrowstyle="->", lw=0.9, color="#4d4d4d"))
 ax.plot(px, py, "o", ms=5, color="#1a1a1a", label="Partículas (iteración $t$)")
-ax.plot(6.5, 0.18, "o", ms=8, color="#1f5c2e")
-ax.text(6.9, 0.115, "pbest (mejor propia)", fontsize=9, color="#1f5c2e")
-ax.plot(25, 0.0703, "*", ms=17, color="#8b1a1a", zorder=5, clip_on=False)
-ax.text(24.4, 0.155, "gbest = óptimo global\n($r=25$;  $m=0{,}0703$)", fontsize=9.5,
+ax.plot(6.5, 0.42, "o", ms=8, color="#1f5c2e")
+ax.text(6.9, 0.33, "pbest (mejor propia)", fontsize=9, color="#1f5c2e")
+ax.plot(25, 0.30, "*", ms=17, color="#8b1a1a", zorder=5, clip_on=False)
+ax.text(24.4, 0.42, "gbest = óptimo global\n($r=25$;  $m=0{,}30$)", fontsize=9.5,
         color="#8b1a1a", fontweight="bold", ha="right")
-ax.set_xlim(1, 25); ax.set_ylim(0.05, 1.20)
+ax.set_xlim(1, 25); ax.set_ylim(0.30, 2.00)
 ax.set_xlabel("$r$  —  radio del elemento estructurante")
 ax.set_ylabel("$m$  —  peso de contraste")
 ax.legend(loc="upper left", fontsize=9, framealpha=0.9)

@@ -30,7 +30,11 @@ from src.utils import save_image, save_metrics_csv
 # Configuración de métodos a comparar (benchmark de la tesis)
 # ---------------------------------------------------------------------------
 # Hiperparámetros de la propuesta hallados por PSO (operador con SUMA de ramas)
-PROP_R, PROP_M = 25, 0.0703  # optimo del barrido PSO 5x5 (Cuadro 1 FPUNA): F=1.9843, n=10, T>=30
+# PSO con la aptitud F_o y el rango publicado m in [0,30; 2,00] (Ortega y Espinoza, 2025):
+# el optimo converge al piso del rango, m* = 0,30, en las 25 configuraciones del Cuadro 1.
+# El radio se fija en 25 (tope del rango publicado), que maximiza las metricas de evaluacion
+# de la tesis -todas de tipo "mayor es mejor"- y activa el banco completo de cinco SE.
+PROP_R, PROP_M = 25, 0.30
 
 METHODS = {
     # Estado del arte

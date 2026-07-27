@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Figura cualitativa del experimento de clases complementarias (M3FD):
-la misma escena nocturna en VIS, IR y fusion (Propuesta, r=25, m=0.0703) con las
+la misma escena nocturna en VIS, IR y fusion (Propuesta, r=25, m=0.30) con las
 detecciones del modelo unico dibujadas. Selecciona automaticamente la escena de
 validacion donde mejor se observa la complementariedad (el VIS pierde personas
 que la fusion recupera y el IR pierde luces que la fusion recupera).
@@ -25,8 +25,8 @@ from matplotlib.patches import Rectangle
 
 CONF = 0.30
 PEOPLE, LAMP = 0, 4
-ENTRADAS = ["VIS", "IR", "Propuesta_Fapt"]
-TITULOS = {"VIS": "VIS", "IR": "IR", "Propuesta_Fapt": "Fusión (Propuesta, r=25)"}
+ENTRADAS = ["VIS", "IR", "Propuesta_Novedosa"]
+TITULOS = {"VIS": "VIS", "IR": "IR", "Propuesta_Novedosa": "Fusión (Propuesta, r=25)"}
 GRANATE = "#c00000"
 AZUL = "#1f4e79"
 
@@ -75,17 +75,17 @@ def main():
     # escena A (lado People): el VIS pierde personas que el IR ve y la fusion recupera
     def score_people(t):
         _, nP, nL = t
-        return ((nP["Propuesta_Fapt"] - nP["VIS"])
-                + 0.5 * min(nP["IR"], nP["Propuesta_Fapt"])
+        return ((nP["Propuesta_Novedosa"] - nP["VIS"])
+                + 0.5 * min(nP["IR"], nP["Propuesta_Novedosa"])
                 - (3 if nP["IR"] == 0 else 0))
 
     # escena B (lado Lamp): el IR pierde luces que el VIS ve y la fusion recupera
     def score_lamp(t):
         _, nP, nL = t
-        return ((nL["Propuesta_Fapt"] - nL["IR"])
-                + 0.5 * min(nL["VIS"], nL["Propuesta_Fapt"])
-                + (1 if nL["IR"] == 0 and nL["Propuesta_Fapt"] >= 2 else 0)
-                + 0.3 * nP["Propuesta_Fapt"])
+        return ((nL["Propuesta_Novedosa"] - nL["IR"])
+                + 0.5 * min(nL["VIS"], nL["Propuesta_Novedosa"])
+                + (1 if nL["IR"] == 0 and nL["Propuesta_Novedosa"] >= 2 else 0)
+                + 0.3 * nP["Propuesta_Novedosa"])
 
     esc_a = max(stats, key=score_people)
     esc_b = max((t for t in stats if t[0] != esc_a[0]), key=score_lamp)
@@ -114,7 +114,7 @@ def main():
                         color, lw = "#999999", 0.7
                     ax.add_patch(Rectangle((x1, y1), x2 - x1, y2 - y1,
                                            fill=False, edgecolor=color, linewidth=lw))
-            es_prop = e == "Propuesta_Fapt"
+            es_prop = e == "Propuesta_Novedosa"
             ax.set_title(f"{TITULOS[e]}  —  People: {contar(res, PEOPLE)} · Lamp: {contar(res, LAMP)}",
                          fontsize=10, color=(GRANATE if es_prop else "black"),
                          fontweight=("bold" if es_prop else "normal"))
