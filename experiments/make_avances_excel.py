@@ -102,6 +102,7 @@ hojas = [
     ("PSO_Barrido", "Barrido de 25 configuraciones (partículas × iteraciones) replicando el Cuadro 1 del libro FPUNA"),
     ("Benchmark", "Los 7 métodos × nueve métricas (promedio de los 20 pares TNO)"),
     ("Benchmark_por_Escena", "Los 7 métodos en cada una de las 20 escenas (140 filas, con filtro y mejor por escena)"),
+    ("PSO_por_Escena", "Las 25 configuraciones del PSO en cada escena (500 filas) — equivale a los Anexos 1-20"),
     ("Propuesta_por_Imagen", "Métricas de la propuesta en cada escena, con promedio y desvío por fórmula"),
     ("Friedman", "Test global por métrica (7 métodos × 20 imágenes)"),
     ("Wilcoxon", "90 contrastes pareados (propuesta y Top-Hat clásico vs. los 5 del estado del arte)"),
@@ -234,6 +235,45 @@ f = nota(ws, f, "Recuento sobre las 20 escenas — la propuesta obtiene el mejor
          + " · ".join(f"{mk} {v}/20" for mk, v in _lidera.items())
          + ". Confirma el patrón de los promedios: lidera las métricas de información y contraste, "
            "y cede las de fidelidad a las fuentes.")
+
+# ============================================================ 4c. PSO POR ESCENA (anexos)
+# Las 25 configuraciones del Cuadro 1 ejecutadas sobre CADA imagen (20 x 25 = 500 filas).
+# Es la misma informacion de los Anexos 1-20 del informe de avances.
+_pso_img = pd.read_csv(os.path.join(MR, "pso_por_imagen.csv"))
+ws = wb.create_sheet("PSO_por_Escena")
+ws.sheet_view.showGridLines = False
+f = titulo(ws, 1, "PSO por escena — las 25 configuraciones del Cuadro 1 en cada uno de los 20 pares",
+           "Aptitud Fo = SSIM_avg + E/8 + PSNR/100 sobre el rango publicado r ∈ [1,25], m ∈ [0,30; 2,00]. "
+           "En negrita la configuración de mayor aptitud de cada escena. Fuente: pso_por_imagen.csv.")
+ws.column_dimensions["A"].width = 42
+for j, an in enumerate([9, 9, 7, 9, 12, 12, 12, 12, 12, 12], 2):
+    ws.column_dimensions[get_column_letter(j)].width = an
+_COLS = ["particulas", "iteraciones", "r", "m", "SSIM_avg", "E", "SF", "SD", "PSNR", "FO"]
+f = encabezado(ws, f, ["Escena", "Partículas", "Iteraciones", "r", "m", "SSIM_avg", "E",
+                       "SF", "SD", "PSNR", "FO"])
+_ini = f
+for _img in list(dict.fromkeys(_pso_img["imagen"])):
+    _sub = _pso_img[_pso_img["imagen"] == _img]
+    _best = _sub["FO"].idxmax()
+    for _k, (_i, _r) in enumerate(_sub.iterrows()):
+        _neg = (_i == _best)
+        celda(ws, f, 1, _img if _k == 0 else "", align=CL, bold=(_k == 0))
+        for j, c in enumerate(_COLS, 2):
+            _v = _r[c]
+            _fmt = "0" if c in ("particulas", "iteraciones", "r") else (
+                "0.000" if c == "m" else "0.000000")
+            celda(ws, f, j, (int(_v) if _fmt == "0" else round(float(_v), 6)),
+                  fmt=_fmt, bold=_neg)
+        f += 1
+ws.freeze_panes = "B5"
+ws.auto_filter.ref = f"A{_ini - 1}:K{f - 1}"
+f += 1
+_mej = _pso_img.loc[_pso_img.groupby("imagen")["FO"].idxmax()]
+f = nota(ws, f, f"Lectura: en las 20 escenas el peso óptimo converge al límite inferior del rango "
+         f"publicado (m* = 0,30 en {int((_mej['m'] == 0.30).sum())} de 20) y el radio que maximiza Fo "
+         f"es r = 1 en {int((_mej['r'] == 1).sum())} de 20. Fo premia la fidelidad a las fuentes y por "
+         f"tanto el mínimo realce; la configuración adoptada (r = 25) proviene del criterio de "
+         f"evaluación de la tesis —las nueve métricas, todas «mayor es mejor»—, no de Fo.")
 
 # ============================================================ 5. PROPUESTA POR IMAGEN
 ws = wb.create_sheet("Propuesta_por_Imagen")

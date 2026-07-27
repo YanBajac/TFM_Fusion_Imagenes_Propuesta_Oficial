@@ -357,6 +357,31 @@ def tabla_det():
             '<th>mAP@0,5:0,95 ↑</th><th>Precisión ↑</th><th>Recall ↑</th></tr>'
             f'{"".join(rows)}</table>')
 
+# ------------------------------------------------------------------ anexos: PSO por escena
+_pso_img = pd.read_csv(os.path.join(MR, "pso_por_imagen.csv"))
+COLS_ANEXO = [("particulas", "Part.", 0), ("iteraciones", "Iter.", 0), ("r", "r", 0),
+              ("m", "m", 3), ("SSIM_avg", "SSIM_avg", 6), ("E", "E", 6),
+              ("SF", "SF", 6), ("SD", "SD", 6), ("PSNR", "PSNR", 6), ("FO", "FO", 6)]
+
+def tabla_anexo(img):
+    sub = _pso_img[_pso_img["imagen"] == img]
+    idx_mejor = sub["FO"].idxmax()
+    filas = []
+    for i, r in sub.iterrows():
+        neg = (i == idx_mejor)
+        tds = []
+        for col, _, dec in COLS_ANEXO:
+            v = r[col]
+            txt = f"{int(v)}" if dec == 0 else f"{float(v):.{dec}f}".replace(".", ",")
+            tds.append(f'<td>{"<b>" if neg else ""}{txt}{"</b>" if neg else ""}</td>')
+        filas.append(f'<tr>{"".join(tds)}</tr>')
+    head = "".join(f"<th>{lbl}</th>" for _, lbl, _ in COLS_ANEXO)
+    return f'<table class="anexo"><tr>{head}</tr>{"".join(filas)}</table>'
+
+_mej = _pso_img.loc[_pso_img.groupby("imagen")["FO"].idxmax()]
+_r1 = int((_mej["r"] == 1).sum())
+_m30 = int((_mej["m"] == 0.30).sum())
+
 # ------------------------------------------------------------------ HTML
 def formula(key, num):
     return (f'<div class="formula"><img src="{FORM[key]}"><span class="eq">({num})</span></div>')
@@ -387,6 +412,8 @@ p { text-align: justify; margin-bottom: 2.5mm; }
 table { border-collapse: collapse; width: 100%; margin: 2.5mm 0; font-size: 8pt; }
 table.chica { width: 78%; margin-left: auto; margin-right: auto; font-size: 9pt; }
 table.porimg { font-size: 7.6pt; }
+table.anexo { font-size: 7.8pt; width: 96%; margin-left: auto; margin-right: auto; }
+table.anexo td, table.anexo th { padding: 0.75mm 0.6mm; }
 table.porimg td, table.porimg th { padding: 0.7mm 0.8mm; }
 table.porimg td.esc { font-weight: bold; vertical-align: middle; font-size: 7.4pt; }
 table.porimg tr.ini td { border-top: 1.2pt solid #000; }
@@ -452,6 +479,7 @@ H.append(f"""
     <li>Resultados cualitativos de las 20 escenas (sección 10).</li>
     <li>Evaluación orientada a tarea: detección en LLVIP (sección 11) y clases complementarias en
         M3FD (sección 12), y conclusiones (sección 13).</li>
+    <li>Anexos 1-20: las 25 configuraciones del PSO en cada una de las 20 escenas.</li>
   </ol>
   {pie(2)}
 </div>
@@ -801,10 +829,11 @@ H.append(f"""
 <div class="page">
   <h2>12. Clases complementarias (continuación): la prueba visual</h2>
   <p>Dos escenas de la validación con las detecciones del modelo único dibujadas (personas en
-  granate, luces en azul). En la escena superior el visible no detecta <b>ninguna persona</b> y la
-  fusión las recupera; en la inferior el infrarrojo no detecta <b>ninguna luz</b> y la fusión las
-  conserva junto con las personas: <b>ambas clases en una sola imagen</b>.</p>
-  {figura(EXIST.get("fig_m3fd_detecciones.png"), "Detecciones del modelo único VIS+IR sobre las escenas 02129 y 02229 de M3FD (conf ≥ 0,25).", 92)}
+  granate, luces en azul). En la escena superior la fusión detecta <b>seis personas</b> frente a dos
+  del visible y dos del infrarrojo; en la inferior el infrarrojo no detecta <b>ninguna luz ni
+  persona</b> y la fusión conserva las <b>cuatro luces</b> junto con dos personas: <b>ambas clases en
+  una sola imagen</b>.</p>
+  {figura(EXIST.get("fig_m3fd_detecciones.png"), "Detecciones del modelo único VIS+IR sobre las escenas 02486 y 02229 de M3FD (conf ≥ 0,25).", 92)}
   {pie(pg)}
 </div>
 """)
@@ -849,6 +878,34 @@ H.append(f"""
   {pie(pg)}
 </div>
 """)
+
+pg += 1
+
+# ---------- Anexos 1-20: las 25 configuraciones del PSO en cada escena ----------
+_nota_anexo = f"""
+  <p class="lectura">Nota metodológica: en las <b>20 escenas</b> el peso óptimo converge al límite
+  inferior del rango publicado (<b>m* = 0,30</b> en {_m30} de 20) y el radio que maximiza
+  F<sub>o</sub> es <b>r = 1</b> en {_r1} de 20 imágenes. Es el mismo comportamiento del barrido
+  agregado: F<sub>o</sub> premia la fidelidad a las fuentes y, por lo tanto, el mínimo realce. La
+  configuración adoptada (<b>r = 25</b>) no proviene de F<sub>o</sub> sino del criterio de evaluación
+  de esta tesis —las nueve métricas, todas de tipo «mayor es mejor»—, que a igual peso favorece el
+  radio máximo y activa el banco completo de cinco elementos estructurantes.</p>"""
+
+for _i, _img in enumerate(IMAGENES, 1):
+    _nom = ESCENA.get(_img, _img)
+    H.append(f"""
+<div class="page">
+  <h2>Anexo {_i}: resultados para {_nom}</h2>
+  <p><b>Cuadro A{_i}.</b> Resultados experimentales para la imagen <i>{_nom}</i> — las 25
+  configuraciones del PSO (partículas × iteraciones, Cuadro 1 de Ortega y Espinoza 2025) con la
+  aptitud F<sub>o</sub> sobre el rango publicado r &isin; [1, 25], m &isin; [0,30; 2,00]. En negrita
+  la configuración de mayor aptitud.</p>
+  {tabla_anexo(_img)}
+  {_nota_anexo if _i == 1 else ""}
+  {pie(pg)}
+</div>
+""")
+    pg += 1
 
 html = f"""<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
 <title>Presentación de avances — Fusión IR/VIS</title><style>{css}</style></head>
