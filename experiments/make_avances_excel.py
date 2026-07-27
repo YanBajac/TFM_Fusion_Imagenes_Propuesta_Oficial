@@ -261,7 +261,7 @@ for _img in list(dict.fromkeys(_pso_img["imagen"])):
         for j, c in enumerate(_COLS, 2):
             _v = _r[c]
             _fmt = "0" if c in ("particulas", "iteraciones", "r") else (
-                "0.000" if c == "m" else "0.000000")
+                "0.0000" if c == "m" else "0.000000")
             celda(ws, f, j, (int(_v) if _fmt == "0" else round(float(_v), 6)),
                   fmt=_fmt, bold=_neg)
         f += 1

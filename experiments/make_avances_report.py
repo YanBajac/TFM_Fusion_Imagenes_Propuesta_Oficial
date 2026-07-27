@@ -360,7 +360,7 @@ def tabla_det():
 # ------------------------------------------------------------------ anexos: PSO por escena
 _pso_img = pd.read_csv(os.path.join(MR, "pso_por_imagen.csv"))
 COLS_ANEXO = [("particulas", "Part.", 0), ("iteraciones", "Iter.", 0), ("r", "r", 0),
-              ("m", "m", 3), ("SSIM_avg", "SSIM_avg", 6), ("E", "E", 6),
+              ("m", "m", 4), ("SSIM_avg", "SSIM_avg", 6), ("E", "E", 6),
               ("SF", "SF", 6), ("SD", "SD", 6), ("PSNR", "PSNR", 6), ("FO", "FO", 6)]
 
 def tabla_anexo(img):
