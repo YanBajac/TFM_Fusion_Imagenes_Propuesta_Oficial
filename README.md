@@ -10,16 +10,17 @@
 > estructurantes **lineales** (0°, 45°, 90°, 135°, longitud `2r+1`) y se **suman** a la respuesta de un
 > **disco** `B_r` (esquema de Bala et al., 2024); entre fuentes gana el detalle dominante y se
 > reconstruye con `F = I_base + m·WTH − m·BTH`. Los hiperparámetros `(r, m)` se ajustan por
-> **enjambre de partículas (PSO)** con aptitud orientada a fusión, eligiendo la configuración del
-> enjambre mediante un **barrido de 25 combinaciones** (partículas 2–10 × iteraciones 10–50,
-> replicando el diseño de Ortega y Espinoza 2025) → **óptimo global: r = 25, m = 0.070**.
+> **enjambre de partículas (PSO)** con la aptitud publicada `Fo = SSIM_avg + E_n + PSNR_n` (Ortega y
+> Espinoza 2025), eligiendo la configuración del enjambre mediante un **barrido de 25 combinaciones**
+> (partículas 2–10 × iteraciones 10–50, Cuadro 1 del mismo trabajo) sobre su **espacio de búsqueda
+> publicado** `r ∈ [1,25]`, `m ∈ [0.30, 2.00]` → **configuración oficial: r = 25, m = 0.30**.
 > Se compara contra **seis métodos**: cinco del estado del arte —Pirámide de Laplace (LP), Ratio of
 > low-pass Pyramid (RP, Toet 1989), Wavelet discreta (DWT), Dual-Tree Complex Wavelet (DTCWT) y
 > Curvelet (CVT)— más la **metodología clásica de la transformada Top-Hat**, sobre el **TNO Image
-> Fusion Dataset** (20 pares) con **12 métricas sin referencia**. La elección de la aptitud se valida
-> con una **ablación** frente a la `Fo` del trabajo de referencia, y el impacto en **detección de
-> objetos** se evalúa con dos experimentos: YOLOv8 reentrenado por método sobre **LLVIP** (mAP) y un
-> **detector único VIS+IR** sobre **M3FD** con clases complementarias (People/IR, Lamp/VIS).
+> Fusion Dataset** (20 pares) con **nueve métricas sin referencia**, todas de tipo «mayor es mejor».
+> El impacto en **detección de objetos** se evalúa con dos experimentos: YOLOv8 reentrenado por
+> método sobre **LLVIP** (mAP) y un **detector único VIS+IR** sobre **M3FD** con clases
+> complementarias (People/IR, Lamp/VIS).
 
 ---
 
@@ -123,14 +124,20 @@ Ortega y Espinoza (2025).
 
 4. **Optimización por PSO.** La configuración del enjambre se eligió con un **barrido de 25
    combinaciones** (partículas `n ∈ {2,4,6,8,10}` × iteraciones `T ∈ {10,20,30,40,50}`, replicando
-   el Cuadro 1 de Ortega y Espinoza 2025), con `r ∈ [1,25]` (rango del mismo trabajo) y
-   `m ∈ [0.05,1.20]`, maximizando la aptitud orientada a fusión `F = SSIM + Qabf + 0.5·SCD − Nabf`.
-   **Óptimo global:** `r = 25`, `m = 0.070` (F = 1.9843), alcanzado consistentemente con `n = 10` y
-   `T ≥ 30`; los enjambres de 2 partículas caen en el óptimo local `r = 1`. Tabla completa:
-   `experiments/results/metrics_reports/pso_grid_search.csv`.
+   el Cuadro 1 de Ortega y Espinoza 2025), sobre el **espacio de búsqueda publicado**
+   `r ∈ [1,25]` y `m ∈ [0.30, 2.00]`, maximizando la aptitud del mismo trabajo
+   `Fo = SSIM_avg + E_n + PSNR_n`. Las **25 configuraciones convergen al mismo peso**,
+   `m* = 0.30` (límite inferior del rango), porque los dos términos de fidelidad de `Fo` decrecen al
+   aumentar el realce y dominan sobre la entropía normalizada. Para el radio, `Fo` favorece el valor
+   trivial `r = 1` —que desactiva el banco de SE—, mientras que las nueve métricas de evaluación
+   (todas «mayor es mejor») favorecen `r = 25`: a igual peso, `r = 25` supera a `r = 1` en entropía,
+   contraste, contenido de bordes, gradiente medio y frecuencia espacial. **Configuración oficial:**
+   `r = 25`, `m = 0.30`. Tabla completa:
+   `experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv`.
 
 Implementación: `src/fusion/optimal_top_hat.py` (`fuse_optimal(vis, ir, r, m, mode="sum")`);
-barrido en `experiments/pso_grid_search.py`.
+barrido en `experiments/pso_grid_search_fo.py`. El análisis que sustenta la elección de `m` está en
+`experiments/analisis_aptitud_operador.py`, `barrido_metricas_vs_m.py` y `comparativa_visual_m.py`.
 
 ### 2.5 Métodos comparativos del benchmark
 
@@ -148,22 +155,20 @@ métricas, sobre los mismos 20 pares.
 
 ### 2.6 Métricas de evaluación
 
-Evaluación con **12 métricas sin referencia**: seis de actividad/información y seis estándar de
-calidad de fusión (el evaluador implementa además FMI y los índices de Piella).
+Evaluación con **nueve métricas sin referencia**, alineadas con la metodología de referencia y
+**todas de tipo «mayor es mejor»** (el evaluador implementa además Qabf, Nabf, SCD, VIF, FMI y los
+índices de Piella, que no se reportan en el análisis).
 
 | Símbolo | Nombre | Dirección |
 |---------|--------|-----------|
 | **EN** | Entropía de Shannon | ↑ |
 | **SD** | Desviación estándar (contraste) | ↑ |
-| **FE** | Eficiencia de fusión | ↑ |
+| **FE** | Eficiencia / entropía de bordes | ↑ |
 | **MG** | Gradiente medio | ↑ |
 | **MI_vis / MI_ir** | Información mutua con cada fuente | ↑ |
 | **SF** | Frecuencia espacial | ↑ |
-| **Qabf** | Preservación de bordes (Xydeas-Petrović) | ↑ |
-| **Nabf** | Ruido/artefactos añadidos por la fusión | ↓ |
-| **SSIM** | Similitud estructural con las fuentes | ↑ |
-| **SCD** | Suma de correlaciones de las diferencias | ↑ |
-| **VIF** | Fidelidad de información visual | ↑ |
+| **SSIM** | Similitud estructural promedio con las fuentes | ↑ |
+| **PSNR** | Relación señal-ruido de pico frente a ambas fuentes | ↑ |
 
 Análisis estadístico no paramétrico: **Friedman** global por métrica, **Wilcoxon** pareado con
 corrección de **Holm** y tamaño de efecto rank-biserial, y **ranking promedio** respetando la dirección
@@ -173,33 +178,39 @@ de cada métrica. Implementación: `src/metrics/evaluators.py` y `experiments/ru
 
 ## 3. Resultados principales
 
-**Calidad de imagen — TNO Image Fusion Dataset (20 pares).** La *Propuesta Novedosa* (`r=25, m=0.070`)
-logra la **menor tasa de artefactos por amplio margen** (**Nabf = 0.041**, 2.7 veces menos que el
-mejor rival) y la **mayor similitud estructural** (**SSIM = 0.782**); en Qabf, SCD y VIF queda
-**segunda**, a milésimas del líder de cada columna.
+**Calidad de imagen — TNO Image Fusion Dataset (20 pares).** La *Propuesta Novedosa*
+(`r=25, m=0.30`) **lidera la entropía** (`EN = 6.989`) y el **contenido de bordes**
+(`FE = 1.105`) del benchmark, y queda **segunda** en desviación estándar (`SD = 0.148`), gradiente
+medio (`MG = 0.035`) y frecuencia espacial (`SF = 17.34`); cede, en cambio, en las métricas de
+fidelidad a las fuentes (`SSIM = 0.668`, `PSNR = 17.25`) y en información mutua, lideradas por los
+métodos multiescala.
 
-| Método | Qabf ↑ | Nabf ↓ | SSIM ↑ | SCD ↑ | VIF ↑ |
-|--------|:---:|:---:|:---:|:---:|:---:|
-| Pirámide de Laplace (LP) | 0.442 | 0.108 | 0.721 | 1.322 | **0.410** |
-| Ratio of low-pass Pyramid (RP) | 0.497 | 0.212 | 0.721 | **1.468** | 0.384 |
-| Wavelet discreta (DWT) | 0.489 | 0.229 | 0.716 | 1.322 | 0.303 |
-| Dual-Tree Complex Wavelet (DTCWT) | **0.501** | 0.151 | 0.739 | 1.376 | 0.360 |
-| Curvelet (CVT) | 0.476 | 0.192 | 0.731 | 1.321 | 0.307 |
-| Top-Hat clásico | 0.305 | 0.585 | 0.578 | 1.360 | 0.334 |
-| **Propuesta Novedosa (r=25, m=0.070)** | 0.500 | **0.041** | **0.782** | 1.450 | 0.368 |
+| Método | EN ↑ | SD ↑ | FE ↑ | MG ↑ | MI_vis ↑ | MI_ir ↑ | SF ↑ | SSIM ↑ | PSNR ↑ |
+|--------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Pirámide de Laplace (LP) | 6.835 | **0.155** | 1.079 | 0.025 | **2.118** | **1.072** | 13.04 | 0.721 | 20.27 |
+| Ratio of low-pass Pyramid (RP) | 6.829 | 0.130 | 1.079 | 0.027 | 1.170 | 0.881 | 13.34 | 0.721 | 21.97 |
+| Wavelet discreta (DWT) | 6.700 | 0.120 | 1.059 | 0.027 | 1.285 | 0.881 | 13.93 | 0.716 | 22.78 |
+| Dual-Tree Complex Wavelet (DTCWT) | 6.706 | 0.121 | 1.060 | 0.025 | 1.289 | 0.891 | 13.03 | **0.739** | 22.79 |
+| Curvelet (CVT) | 6.665 | 0.117 | 1.053 | 0.026 | 1.304 | 0.884 | 13.15 | 0.731 | **22.84** |
+| Top-Hat clásico | 6.933 | 0.139 | 1.096 | **0.047** | 0.872 | 0.586 | **22.86** | 0.578 | 17.49 |
+| **Propuesta Novedosa (r=25, m=0.30)** | **6.989** | 0.148 | **1.105** | 0.035 | 0.962 | 0.671 | 17.34 | 0.668 | 17.25 |
 
-El **Top-Hat clásico** —la referencia morfológica directa— solo gana en actividad bruta (EN, MG, SF) a
-costa del mayor Nabf del estudio (0.585): la diferencia con la propuesta aísla el aporte del banco
-disco + líneas y del ajuste `(r, m)` por PSO. En el **ranking global** (7 métodos, 12 métricas) la
-propuesta es 1ª en Nabf y SSIM y 2ª en Qabf/SCD/VIF; las métricas de actividad, que premian el realce
-agresivo, bajan su promedio. En los contrastes de **Wilcoxon-Holm** (60, propuesta vs. los 5 del
-estado del arte) resulta significativamente mejor en 25, peor en 27 (concentrados en las métricas de
-actividad) y sin diferencia en 8.
+En el **ranking agregado** de las nueve métricas la propuesta ocupa el **2.º lugar (3.67)**, detrás de
+la pirámide de Laplace (3.44) y por delante de DTCWT y del Top-Hat clásico (4.00). En los contrastes
+de **Wilcoxon-Holm** (45, propuesta vs. los cinco métodos del estado del arte) resulta
+significativamente **mejor en 24**, peor en 19 y sin diferencia en 2: gana a **los cinco** en `EN`,
+`FE`, `MG` y `SF`, y a cuatro de cinco en `SD`.
+
+Frente al **Top-Hat clásico** —la referencia morfológica directa— la propuesta gana de forma
+significativa en **seis de las nueve métricas** (`EN`, `SD`, `FE`, `MI_vis`, `MI_ir` y `SSIM`:
+0.668 vs 0.578) y cede solo en gradiente medio y frecuencia espacial, donde el disco único inyecta el
+detalle sin ponderación. La diferencia entre ambos aísla el aporte del banco disco + líneas y del
+ajuste `(r, m)` por PSO. Los resultados **escena por escena** (las 20 imágenes) están en el informe de
+avances, con el formato del Cuadro 2 del trabajo de referencia.
 
 **Detección — LLVIP (YOLOv8n reentrenado por método, mismas etiquetas, solo cambia la fusión).**
 Toda fusión supera con claridad al VIS solo, pero ninguna al IR solo (el peatón nocturno es
-esencialmente térmico); entre las fusiones, la propuesta es competitiva sin ser la líder. *La
-superioridad en calidad de imagen no se traslada automáticamente a la detección* (H3 parcial).
+esencialmente térmico); la propuesta queda en el **extremo inferior de la banda de fusiones**.
 
 | Entrada | mAP@0.5 ↑ | mAP@0.5:0.95 ↑ |
 |---------|:---:|:---:|
@@ -209,26 +220,29 @@ superioridad en calidad de imagen no se traslada automáticamente a la detecció
 | Wavelet discreta (DWT) | 0.946 | 0.614 |
 | Curvelet (CVT) | 0.941 | 0.639 |
 | Top-Hat clásico | 0.938 | 0.609 |
-| **Propuesta Novedosa (r=25, m=0.070)** | 0.936 | 0.609 |
 | Ratio Pyramid (RP) | 0.926 | 0.538 |
+| **Propuesta Novedosa (r=25, m=0.30)** | 0.913 | 0.617 |
 | VIS (solo) | 0.808 | 0.451 |
 
-**Ablación de la función de aptitud.** El barrido 5×5 se repitió con la función objetivo del trabajo
-de referencia (`Fo = SSIM_avg + E_n + PSNR_n`, rango `m ∈ [0.3, 2.0]`): en las **50 corridas** el
-óptimo cayó al piso del rango (`m* = 0.30`) y, sobre la propuesta, `Fo` eligió `r* = 1` (óptimo
-trivial que desactiva el banco de SE). La curva aptitud-vs-m sin restricciones
-(`docs/figures/fig_aptitud_vs_m.png`) muestra que las tres curvas decrecen monótonamente en
-`[0.5, 2]` — ningún tamaño de enjambre puede converger allí — y que el máximo real de `Fo` sobre la
-propuesta está en `m ≈ 0.07`, coincidente con el óptimo de `F_apt`. Resultados:
-`fo_ablacion_comparativa.csv` y `pso_grid_search_fo_*.csv`.
+**El peso de contraste: métricas de actividad vs. desempeño en tarea.** El análisis de `m`
+(`docs/figures/fig_aptitud_vs_operador.png` y `fig_comparativa_m.png`) documenta el hallazgo
+metodológico central del trabajo: (a) el operador propuesto extrae **4.3 veces** más energía de
+detalle que el disco único, de modo que su peso óptimo es proporcionalmente menor —`m·|W|` es lo que
+fija el realce—; (b) `Fo` decrece de forma **monótona** al aumentar `m` en ambos operadores, por lo
+que su óptimo cae siempre en el piso del rango permitido; y (c) las métricas de actividad crecen con
+el realce hasta que la **saturación** degrada la imagen (12–20 % de píxeles saturados en `m = 2`
+frente a ~1 % en `m = 0.30`). En consecuencia, **optimizar las métricas de actividad y optimizar el
+desempeño de detección son objetivos distintos**, y ambos criterios deben reportarse por separado.
 
 **Detección — M3FD (clases complementarias, un único detector VIS+IR).** Con dos clases de
 visibilidad opuesta (**People** domina en IR: 0.220 vs 0.178; **Lamp** solo se ve en VIS: 0.135 vs
-0.018), las mejores fusiones superan en el promedio del par a **ambas** modalidades individuales
-(propuesta 0.162, RP 0.165 vs VIS 0.157 e IR 0.119): detectan ambas clases en una sola imagen. La
-**propuesta es la mejor fusión** en mAP global (0.239) y en People (0.207), y su óptimo `F_apt`
-supera al de `Fo` en las dos clases clave. La prueba visual con las detecciones dibujadas está en
-`docs/figures/fig_m3fd_detecciones.png`. Resultados: `detection_m3fd_map.csv` (ver §8.1).
+0.018), **todas las fusiones recuperan ambas clases en una sola imagen** —algo que el IR no logra, al
+ser ciego a las luces—. La Ratio Pyramid alcanza el mejor promedio del par (0.165), el único valor que
+supera a **ambas** modalidades individuales (VIS 0.157, IR 0.119); la propuesta alcanza un promedio
+intermedio (0.124; People 0.146 y Lamp 0.101). La prueba visual con las detecciones dibujadas
+(`docs/figures/fig_m3fd_detecciones.png`) es elocuente: en una escena la fusión detecta **seis
+personas** frente a dos del VIS y dos del IR, y en otra conserva las **cuatro luces** que el IR no
+detecta en absoluto. Resultados: `detection_m3fd_map.csv` (ver §8.1).
 
 ---
 
@@ -243,16 +257,19 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 ├── src/
 │   ├── datasets.py                 # Carga y emparejado VIS/IR
 │   ├── fusion/
-│   │   ├── optimal_top_hat.py      # fuse_optimal (PROPUESTA NOVEDOSA, mode="sum", r=25, m=0.0703)
+│   │   ├── optimal_top_hat.py      # fuse_optimal (PROPUESTA NOVEDOSA, mode="sum", r=25, m=0.30)
 │   │   └── comparatives.py         # LP / RP / DWT / DTCWT / CVT / Top-Hat clásico
 │   ├── metrics/
-│   │   └── evaluators.py           # 16 métricas + METRIC_DIRECTION (incl. FMI, Q0/QW/QE)
+│   │   └── evaluators.py           # evaluador completo; el análisis reporta nueve métricas
 │   └── utils/                      # io, visualización, reorganización del dataset
 │
 ├── experiments/
 │   ├── run_all_fusions.py          # Benchmark: los 7 métodos sobre el dataset -> all_metrics.csv
 │   ├── run_stats_analysis.py       # Friedman + Wilcoxon(Holm) + ranking
-│   ├── pso_grid_search.py          # Barrido PSO 5x5 (Cuadro 1 FPUNA) -> r=25, m=0.0703
+│   ├── pso_grid_search_fo.py       # Barrido PSO 5x5 con Fo y rango publicado -> m* = 0.30
+│   ├── analisis_aptitud_operador.py # Ganancia del operador y descomposición de Fo
+│   ├── barrido_metricas_vs_m.py    # Las nueve métricas en función de m
+│   ├── comparativa_visual_m.py     # Control visual de saturación por peso m
 │   ├── make_montajes_cualitativos.py # 20 montajes por escena (propuesta en rojo)
 │   ├── make_figuras_metodo.py      # Figuras del método (banco de SE, ejemplo de modalidades)
 │   ├── make_figura_detecciones_m3fd.py # Prueba visual M3FD (detecciones VIS/IR/fusión)
@@ -310,10 +327,10 @@ pairs = list_pairs()
 vis, ir = load_pair(*pairs[0])
 
 # Propuesta Novedosa (configuración óptima del PSO, operador con suma de ramas)
-fused = fuse_optimal(vis, ir, r=25, m=0.0703, mode="sum")
+fused = fuse_optimal(vis, ir, r=25, m=0.30, mode="sum")
 
 metrics = evaluate_all(fused, vis, ir)
-print(metrics)   # EN, SD, FE, MG, MI_vis, MI_ir, SF, Qabf, Nabf, SSIM, SCD, VIF, FMI, Q0, QW, QE
+print(metrics)   # el análisis usa: EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PSNR
 ```
 
 ---
@@ -327,8 +344,8 @@ python experiments/run_all_fusions.py
 # 2. Análisis estadístico (Friedman, Wilcoxon+Holm, ranking)
 python experiments/run_stats_analysis.py
 
-# 3. Barrido de configuraciones PSO (25 combinaciones, reanudable) -> r=25, m=0.0703
-python experiments/pso_grid_search.py
+# 3. Barrido de configuraciones PSO con Fo y el rango publicado -> m* = 0.30
+python experiments/pso_grid_search_fo.py --operator propuesta
 
 # 4. Montajes cualitativos (20 escenas, propuesta en rojo)
 python experiments/make_montajes_cualitativos.py
@@ -361,10 +378,9 @@ Experimento complementario sobre **M3FD** (TarDAL, CVPR 2022; 4.200 pares VIS/IR
 YOLO): un **único** YOLOv8 se entrena con imágenes VIS **e** IR mezcladas (con sus etiquetas) y se
 evalúa **por inferencia** sobre la validación en cada modalidad y en cada método de fusión. Las
 clases son complementarias —**People** domina en IR (firma térmica) y **Lamp** en VIS—, de modo que
-solo la imagen fusionada permite detectar ambas a la vez. Se comparan, además de los métodos del
-benchmark, los dos óptimos del PSO sobre la propuesta: `Propuesta_Fapt` (aptitud de la tesis,
-r=25, m=0.0703) y `Propuesta_Fo` (aptitud del libro FPUNA, r=1, m=0.30), más la réplica completa
-del método FPUNA (`PSO_FPUNA_Fo`: disco único, r=25, m=0.30).
+solo la imagen fusionada permite detectar ambas a la vez. Se comparan las dos modalidades
+individuales y los siete métodos del benchmark, incluida la propuesta en su configuración oficial
+(`Propuesta_Novedosa`: r=25, m=0.30).
 
 ```powershell
 # Requiere M3FD (Detection) descargado: https://github.com/JinyuanLiu-CV/TarDAL
@@ -373,10 +389,11 @@ powershell -ExecutionPolicy Bypass -File .\ejecutar_m3fd.ps1 -M3FD "data\M3FD"
 
 **Resultados** (`detection_m3fd_map.csv`): la complementariedad es extrema — el IR domina People
 (AP@0.5 = 0.220) pero es prácticamente ciego a Lamp (0.018); el VIS presenta el patrón espejo
-(0.178 / 0.135). Las mejores fusiones superan en el promedio del par a ambas modalidades
-individuales (propuesta 0.162, RP 0.165 vs VIS 0.157 e IR 0.119): detectan ambas clases en una
-sola imagen. La **propuesta es la mejor fusión** en mAP global (0.239) y en People (0.207), y su
-óptimo F_apt supera al de F_o en las dos clases clave.
+(0.178 / 0.135). **Todas las fusiones recuperan ambas clases en una sola imagen**, algo que el IR no
+logra. La Ratio Pyramid alcanza el mejor promedio del par (0.165) y es la única entrada que supera a
+ambas modalidades individuales (VIS 0.157, IR 0.119); la propuesta alcanza un promedio intermedio
+(0.124; People 0.146 y Lamp 0.101): el realce elevado que optimiza las métricas de actividad no
+favorece al detector.
 
 ---
 
