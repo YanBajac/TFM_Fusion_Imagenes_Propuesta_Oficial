@@ -883,13 +883,20 @@ pg += 1
 
 # ---------- Anexos 1-20: las 25 configuraciones del PSO en cada escena ----------
 _nota_anexo = f"""
-  <p class="lectura">Nota metodológica: en las <b>20 escenas</b> el peso óptimo converge al límite
-  inferior del rango publicado (<b>m* = 0,30</b> en {_m30} de 20) y el radio que maximiza
-  F<sub>o</sub> es <b>r = 1</b> en {_r1} de 20 imágenes. Es el mismo comportamiento del barrido
-  agregado: F<sub>o</sub> premia la fidelidad a las fuentes y, por lo tanto, el mínimo realce. La
-  configuración adoptada (<b>r = 25</b>) no proviene de F<sub>o</sub> sino del criterio de evaluación
-  de esta tesis —las nueve métricas, todas de tipo «mayor es mejor»—, que a igual peso favorece el
-  radio máximo y activa el banco completo de cinco elementos estructurantes.</p>"""
+  <p class="lectura">Nota metodológica sobre el comportamiento de (r, m). Las 25 configuraciones de
+  cada escena se ejecutan sobre el <b>mismo rango publicado</b> r &isin; [1, 25], m &isin; [0,30; 2,00].
+  El <b>radio sí varía</b> con la configuración del enjambre: en el conjunto de los anexos aparecen 18
+  radios distintos y entre 2 y 6 valores diferentes por escena. El <b>peso, en cambio, se fija en
+  m = 0,30</b> (en {_m30} de 20 escenas) porque F<sub>o</sub> <b>decrece de forma estrictamente
+  monótona</b> al aumentar m en todo el rango publicado —verificado con un barrido de paso 0,05: cero
+  tramos crecientes en 34, tanto con r = 1 como con r = 25—, de modo que el máximo se ubica
+  necesariamente en el <b>límite inferior del intervalo</b>. No es una limitación de la búsqueda: las
+  únicas 16 filas (de 500) con m &ne; 0,30 corresponden a configuraciones de pocas partículas o
+  iteraciones que no alcanzaron el óptimo. El radio que maximiza F<sub>o</sub> es r = 1 en {_r1} de 20
+  imágenes, coherente con que la aptitud premia la fidelidad a las fuentes y por lo tanto el mínimo
+  realce; la configuración adoptada (<b>r = 25</b>) no proviene de F<sub>o</sub> sino del criterio de
+  evaluación de esta tesis —las nueve métricas, todas de tipo «mayor es mejor»—, que a igual peso
+  favorece el radio máximo y activa el banco completo de cinco elementos estructurantes.</p>"""
 
 for _i, _img in enumerate(IMAGENES, 1):
     _nom = ESCENA.get(_img, _img)
