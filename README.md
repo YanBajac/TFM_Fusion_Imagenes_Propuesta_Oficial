@@ -206,7 +206,21 @@ significativa en **seis de las nueve métricas** (`EN`, `SD`, `FE`, `MI_vis`, `M
 0.668 vs 0.578) y cede solo en gradiente medio y frecuencia espacial, donde el disco único inyecta el
 detalle sin ponderación. La diferencia entre ambos aísla el aporte del banco disco + líneas y del
 ajuste `(r, m)` por PSO. Los resultados **escena por escena** (las 20 imágenes) están en el informe de
-avances, con el formato del Cuadro 2 del trabajo de referencia.
+avances (Tablas 2a-2e, con el formato del Cuadro 2 del trabajo de referencia) y en la hoja
+`Benchmark_por_Escena` del libro de tablas.
+
+**PSO por escena (Anexos 1-20).** Replicando los anexos del trabajo de referencia, el Cuadro 1
+completo se ejecuta sobre **cada** par: 20 escenas × 25 configuraciones = 500 corridas
+(`experiments/pso_por_imagen.py` → `pso_por_imagen.csv`; los anexos del informe de avances y la hoja
+`PSO_por_Escena`). Dos observaciones sobre el comportamiento de `(r, m)`:
+
+- El **radio varía** con la configuración del enjambre: 18 radios distintos en el conjunto de los
+  anexos, entre 2 y 6 valores diferentes por escena.
+- El **peso se fija en `m = 0.30`** (en 20 de 20 escenas) porque `Fo` **decrece de forma estrictamente
+  monótona** al aumentar `m` en todo el rango publicado —barrido de paso 0.05: cero tramos crecientes
+  en 34, con `r = 1` y con `r = 25`—, de modo que el máximo se ubica necesariamente en el límite
+  inferior del intervalo. No es una limitación de la búsqueda: las únicas 16 filas de 500 con
+  `m ≠ 0.30` corresponden a configuraciones de pocas partículas o iteraciones que no convergieron.
 
 **Detección — LLVIP (YOLOv8n reentrenado por método, mismas etiquetas, solo cambia la fusión).**
 Toda fusión supera con claridad al VIS solo, pero ninguna al IR solo (el peatón nocturno es
@@ -270,11 +284,12 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 │   ├── analisis_aptitud_operador.py # Ganancia del operador y descomposición de Fo
 │   ├── barrido_metricas_vs_m.py    # Las nueve métricas en función de m
 │   ├── comparativa_visual_m.py     # Control visual de saturación por peso m
+│   ├── pso_por_imagen.py           # Cuadro 1 completo sobre cada par -> 500 corridas (Anexos 1-20)
 │   ├── make_montajes_cualitativos.py # 20 montajes por escena (propuesta en rojo)
 │   ├── make_figuras_metodo.py      # Figuras del método (banco de SE, ejemplo de modalidades)
 │   ├── make_figura_detecciones_m3fd.py # Prueba visual M3FD (detecciones VIS/IR/fusión)
 │   ├── make_avances_report.py      # Regenera docs/Avances_Tesis.pdf (HTML -> PDF con Edge)
-│   ├── make_avances_excel.py       # Regenera docs/Avances_Tesis_Tablas.xlsx (10 hojas)
+│   ├── make_avances_excel.py       # Regenera docs/Avances_Tesis_Tablas.xlsx (12 hojas)
 │   ├── detection_llvip/            # Reentrenamiento de detección con LLVIP (mAP concluyente)
 │   │   ├── prepare_llvip.py        #   genera datasets YOLO fusionados por método (labels compartidas)
 │   │   └── train_eval_llvip.py     #   entrena YOLOv8 por método y compara mAP (CSV acumulativo)
@@ -283,7 +298,8 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 ├── notebooks/                      # 01 (EDA) y 03 (análisis estadístico)
 ├── docs/
 │   ├── Tesis_Borrador_V3.docx      # Documento principal (propuesta suma r=25; formato UCOM/Villalba)
-│   ├── Avances_Tesis.pdf           # Informe de avances · Avances_Tesis_Tablas.xlsx (tablas)
+│   ├── Avances_Tesis.pdf           # Informe de avances (54 págs, incluye Anexos 1-20)
+│   ├── Avances_Tesis_Tablas.xlsx   # Libro de tablas (12 hojas, detalle por escena)
 │   ├── Tesis_Defensa_Presentacion.pptx # Presentación de defensa (19 láminas, notas del orador)
 │   └── figures/                    # Figuras del libro (fuente y montajes cualitativos)
 │
@@ -346,6 +362,9 @@ python experiments/run_stats_analysis.py
 
 # 3. Barrido de configuraciones PSO con Fo y el rango publicado -> m* = 0.30
 python experiments/pso_grid_search_fo.py --operator propuesta
+
+# 3b. PSO por escena: el Cuadro 1 completo sobre cada par (500 corridas, ~3 min con 10 procesos)
+python experiments/pso_por_imagen.py --procesos 10
 
 # 4. Montajes cualitativos (20 escenas, propuesta en rojo)
 python experiments/make_montajes_cualitativos.py
