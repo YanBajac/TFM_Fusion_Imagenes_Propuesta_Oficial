@@ -101,6 +101,7 @@ hojas = [
     ("PSO_Configuracion", "Parámetros del PSO de la propuesta (algoritmo, rangos, aptitud Fo, óptimo)"),
     ("PSO_Barrido", "Barrido de 25 configuraciones (partículas × iteraciones) replicando el Cuadro 1 del libro FPUNA"),
     ("Benchmark", "Los 7 métodos × nueve métricas (promedio de los 20 pares TNO)"),
+    ("Benchmark_por_Escena", "Los 7 métodos en cada una de las 20 escenas (140 filas, con filtro y mejor por escena)"),
     ("Propuesta_por_Imagen", "Métricas de la propuesta en cada escena, con promedio y desvío por fórmula"),
     ("Friedman", "Test global por métrica (7 métodos × 20 imágenes)"),
     ("Wilcoxon", "90 contrastes pareados (propuesta y Top-Hat clásico vs. los 5 del estado del arte)"),
@@ -196,6 +197,43 @@ for m in ORDEN:
         celda(ws, f, j, round(float(means.loc[m, mk]), 4), fmt="0.000",
               bold=(best[mk] == m or es_prop))
     f += 1
+
+# ============================================================ 4b. BENCHMARK POR ESCENA
+# Los 7 metodos en cada una de las 20 escenas (misma informacion que las Tablas 2a-2e del
+# informe de avances, con el formato del Cuadro 2 de referencia, pero con las nueve metricas).
+ws = wb.create_sheet("Benchmark_por_Escena")
+ws.sheet_view.showGridLines = False
+f = titulo(ws, 1, "Benchmark escena por escena — los 7 métodos en cada uno de los 20 pares del TNO",
+           "En negrita el mejor valor de cada métrica dentro de cada escena. Todas las métricas son "
+           "de tipo «mayor es mejor». Equivale a las Tablas 2a-2e del informe de avances, ampliado a "
+           "las nueve métricas.")
+ws.column_dimensions["A"].width = 42
+ws.column_dimensions["B"].width = 24
+for j in range(3, 3 + NM):
+    ws.column_dimensions[get_column_letter(j)].width = 9.5
+f = encabezado(ws, f, ["Escena", "Método"] + METS)
+_fila_ini = f
+ESCENAS = list(dict.fromkeys(allm["image"]))
+for _img in ESCENAS:
+    _sub = allm[allm["image"] == _img].set_index("method")
+    _mejor = {mk: _sub.loc[ORDEN, mk].idxmax() for mk in METS}
+    for _k, _m in enumerate(ORDEN):
+        celda(ws, f, 1, _img if _k == 0 else "", align=CL, bold=(_k == 0))
+        celda(ws, f, 2, LBL[_m], align=CL, bold=(_m == PROP))
+        for j, mk in enumerate(METS, 3):
+            celda(ws, f, j, round(float(_sub.loc[_m, mk]), 5), fmt="0.00000",
+                  bold=(_mejor[mk] == _m))
+        f += 1
+ws.freeze_panes = "C5"
+ws.auto_filter.ref = f"A{_fila_ini - 1}:{get_column_letter(2 + NM)}{f - 1}"
+f += 1
+_lidera = {mk: sum(1 for im in ESCENAS
+                   if allm[allm["image"] == im].set_index("method").loc[ORDEN, mk].idxmax() == PROP)
+           for mk in METS}
+f = nota(ws, f, "Recuento sobre las 20 escenas — la propuesta obtiene el mejor valor en: "
+         + " · ".join(f"{mk} {v}/20" for mk, v in _lidera.items())
+         + ". Confirma el patrón de los promedios: lidera las métricas de información y contraste, "
+           "y cede las de fidelidad a las fuentes.")
 
 # ============================================================ 5. PROPUESTA POR IMAGEN
 ws = wb.create_sheet("Propuesta_por_Imagen")
