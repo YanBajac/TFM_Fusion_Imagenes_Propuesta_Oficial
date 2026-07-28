@@ -13,10 +13,20 @@ import base64
 import io
 import os
 import subprocess
+import sys
 import warnings
+from pathlib import Path
 
+import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 warnings.filterwarnings("ignore")
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from src.datasets import list_pairs, load_pair          # noqa: E402
+from src.fusion.optimal_top_hat import fuse_optimal      # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 MR = os.path.join(ROOT, "experiments", "results", "metrics_reports")
@@ -89,6 +99,62 @@ def tabla_comparativa(a, b, orden):
             f'{"".join(filas)}</table>')
 
 
+plt.rcParams.update({"font.family": "serif", "font.serif": ["Times New Roman", "DejaVu Serif"]})
+ROJO = "#8b1a1a"
+
+
+def _b64(fig, dpi=135):
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=dpi, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
+
+
+def _sat(f):
+    """Fraccion de pixeles saturados (indicador de realce excesivo)."""
+    return float(np.mean((f >= 0.999) | (f <= 0.001))) * 100
+
+
+def figura_cualitativa(A, B, escenas):
+    """Por escena: VIS, IR y la fusion en cada uno de los dos optimos."""
+    pares = {Path(v).stem: (v, i) for v, i in list_pairs()}
+    fig, axes = plt.subplots(len(escenas), 4, figsize=(9.4, 2.28 * len(escenas)))
+    if len(escenas) == 1:
+        axes = np.array([axes])
+    for fila, img in enumerate(escenas):
+        v, i = load_pair(*pares[img])
+        ra, ma = int(A.loc[img, "r"]), float(A.loc[img, "m"])
+        rb, mb = int(B.loc[img, "r"]), float(B.loc[img, "m"])
+        fa = fuse_optimal(v, i, ra, ma, mode="sum")
+        fb = fuse_optimal(v, i, rb, mb, mode="sum")
+        paneles = [
+            ("VIS", v, "black"),
+            ("IR", i, "black"),
+            (f"A)  r={ra}, m={ma:.2f}".replace(".", ","), fa, "black"),
+            (f"B)  r={rb}, m={mb:.4f}".replace(".", ","), fb, ROJO),
+        ]
+        for col, (tit, im, color) in enumerate(paneles):
+            ax = axes[fila, col]
+            ax.imshow(np.clip(im, 0, 1), cmap="gray", vmin=0, vmax=1)
+            ax.set_xticks([]); ax.set_yticks([])
+            for s in ax.spines.values():
+                s.set_color(ROJO if col == 3 else "#bfbfbf")
+                s.set_linewidth(1.3 if col == 3 else 0.6)
+            if fila == 0:
+                ax.set_title(tit, fontsize=9.5, color=color,
+                             fontweight=("bold" if col == 3 else "normal"))
+            else:
+                ax.set_title(tit, fontsize=8.8, color=color,
+                             fontweight=("bold" if col == 3 else "normal"), pad=2.5)
+            if col >= 2:
+                ax.set_xlabel(f"saturado {_sat(im):.1f} %".replace(".", ","),
+                              fontsize=7.2, color="#666666", labelpad=1.5)
+        axes[fila, 0].set_ylabel(ESCENA.get(img, img), fontsize=8.5, rotation=90,
+                                 labelpad=4, va="center")
+    fig.tight_layout(h_pad=1.0, w_pad=0.35)
+    return _b64(fig)
+
+
 CSS = """
 @page { size: A4; margin: 0; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -104,6 +170,8 @@ th { background: #e8e8e8; font-weight: bold; }
 th.l, td.l { text-align: left; padding-left: 1.5mm; }
 .lectura { font-size: 9.5pt; font-style: italic; margin: 2mm 0 3mm 0; text-align: justify; }
 .pie { position: absolute; bottom: 8mm; left: 18mm; right: 18mm; text-align: center; font-size: 9pt; }
+.figc { text-align: center; margin: 3mm 0 2mm 0; }
+.figc img { width: 100%; }
 .sub { font-size: 10.5pt; text-align: center; color: #444; margin-bottom: 6mm; }
 """
 
@@ -182,6 +250,46 @@ def main():
   <div class="pie">3</div>
 </div>
 """]
+    # ---------- D) diferencias cualitativas ----------
+    tipicas = [k for k in orden if int(B.loc[k, "r"]) == 25]
+    atipicas = [k for k in orden if int(B.loc[k, "r"]) != 25]
+    sel1 = tipicas[:3]
+    sel2 = (tipicas[3:5] + atipicas)[:3]
+    H.append(f"""
+<div class="page">
+  <h2>D) Diferencias cualitativas entre ambos óptimos</h2>
+  <p>Para las mismas escenas se muestra la fusión obtenida en cada óptimo: <b>A)</b> el del rango
+  publicado (radio pequeño con m = 0,30) y <b>B)</b> el del rango ampliado (radio grande con un peso
+  bajo, recuadro rojo). Las dos alcanzan una aptitud F<sub>o</sub> parecida, pero producen imágenes
+  claramente distintas.</p>
+  <div class="figc"><img src="{figura_cualitativa(A, B, sel1)}"></div>
+  <p class="lectura">Las diferencias son sutiles a simple vista, pero sistemáticas y medibles. El óptimo
+  A, con radio de uno o dos píxeles y peso alto, transfiere detalle de <b>grano fino</b>: mayor
+  frecuencia espacial (SF media 12,55 frente a 8,86 de B) a costa de la fidelidad. El óptimo B, con
+  r = 25 y un peso unas seis veces menor, transfiere <b>estructura de gran escala</b> con un realce
+  suave: mayor similitud estructural en <b>19 de las 20 escenas</b> (SSIM media 0,787 frente a 0,759) y
+  mayor PSNR en 15 de 20, con saturación prácticamente nula. La cantidad total de realce es comparable
+  —el producto del peso por la energía del operador—; lo que cambia es la <b>escala</b> de las
+  estructuras transferidas y, con ella, el balance entre fidelidad y actividad.</p>
+  <div class="pie">4</div>
+</div>
+
+<div class="page">
+  <h2>D) Diferencias cualitativas (continuación)</h2>
+  <div class="figc"><img src="{figura_cualitativa(A, B, sel2)}"></div>
+  <p class="lectura">Las últimas escenas incluyen los casos atípicos del escenario B, donde el óptimo
+  libre no fue r = 25 sino un radio intermedio o mínimo. En conjunto, la comparación respalda la lectura
+  cuantitativa y aclara <b>por qué</b> F<sub>o</sub> elige el radio grande en 17 de 20 escenas: no
+  porque agregue más detalle, sino porque un elemento estructurante amplio con un peso bajo transfiere
+  la estructura de la escena de forma <b>más suave y más fiel a las fuentes</b> —y F<sub>o</sub>, al
+  estar dominada por SSIM y PSNR, premia precisamente eso (la prefiere en las 20 escenas). La
+  restricción m &ge; 0,30 fuerza el efecto contrario: obliga a un realce intenso, que solo resulta
+  tolerable para la aptitud si el radio se reduce al mínimo. Es decir, el rango de búsqueda no solo
+  desplaza el óptimo numérico: <b>determina el carácter de la fusión resultante</b>.</p>
+  <div class="pie">5</div>
+</div>
+""")
+
     html = (f'<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">'
             f'<title>Resultados óptimos por imagen</title><style>{CSS}</style></head>'
             f'<body>{"".join(H)}</body></html>')
