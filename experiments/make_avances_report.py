@@ -18,6 +18,12 @@ CUAL = os.path.join(FIG, "cualitativas")
 # --------------------------------------------------------------- variante
 # VARIANTE_AVANCES=restringido -> configuracion con el rango publicado m en [0,30; 2,00]
 # VARIANTE_AVANCES=libre       -> configuracion con el rango de m ampliado
+from datetime import date as _date
+_MESES = ("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
+          "septiembre", "octubre", "noviembre", "diciembre")
+_h = _date.today()
+FECHA = f"{_h.day} de {_MESES[_h.month - 1]} de {_h.year}"
+
 VARIANTE = os.environ.get("VARIANTE_AVANCES", "restringido").strip().lower()
 assert VARIANTE in ("restringido", "libre"), f"VARIANTE_AVANCES invalida: {VARIANTE}"
 LIBRE = (VARIANTE == "libre")
@@ -27,8 +33,9 @@ V = {
     "rango": "[0,05; 1,20]" if LIBRE else "[0,30; 2,00]",
     "rango_anexo": "[0,01; 2,00]" if LIBRE else "[0,30; 2,00]",
     "etiqueta": ("configuración LIBRE — rango del peso ampliado"
-                 if LIBRE else "configuración RESTRINGIDA — rango publicado"),
-    "sufijo": "_libre" if LIBRE else "_restringido",
+                 if LIBRE else "configuración oficial — rango publicado del peso"),
+    # La variante oficial ocupa el nombre canonico; la alternativa lleva sufijo.
+    "sufijo": "_libre" if LIBRE else "",
 }
 
 MR = os.path.join(ROOT, "experiments", "results",
@@ -787,7 +794,7 @@ H.append(f"""
   <div class="datos">
     Autores: Lic. Juan Pablo Bazán — Ing. Yan Bajac<br>
     Director: D.Sc. Julio César Mello<br>
-    13 de julio de 2026
+    {FECHA}
   </div>
 </div>
 """)
