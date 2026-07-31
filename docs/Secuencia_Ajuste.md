@@ -49,8 +49,8 @@ Ordenados por lo que cada uno responde en la defensa.
 |---|---|---|---|
 | 2.1 | **Ablación del banco** con (r, m) fijos en 25 y 0,30: disco solo / suma / promedio / máximo entre ramas, con las 17 métricas | 4 | *«¿Su banco de cinco elementos le gana a un solo disco con los mismos parámetros?»* — Riesgo 2. Aviso: en la configuración oficial **empatan** (1,500 vs 1,500 sin FE); el resultado ya se conoce y hay que reportarlo |
 | 2.2 | **Barrido de parámetros de los comparativos** (niveles en LP, RP, DWT, DTCWT, CVT; radio en el Top-Hat clásico), versionado como script | 3 | *«¿Y si le doy r = 25 al Top-Hat clásico?»* — Riesgo 1. Ya se midió: pasa a 3,517 y la propuesta a 3,622, segundo puesto. Hay que versionarlo y declararlo, no esconderlo |
-| 2.3 | Ampliar el análisis oficial a las **17 métricas** ya calculadas | 3 | Deja de haber ocho columnas medidas y sin analizar en el propio CSV. La propuesta pasa a 3.ª (3,459) |
-| 2.4 | **Control negativo con ruido**: `(VIS+IR)/2 + N(0,σ)` con σ ∈ {0,02; 0,05; 0,10; 0,20}, más base sola y base desenfocada | 5 | Sostiene el aporte metodológico: el conjunto de 9 métricas premia el ruido. Hoy este experimento **no está versionado** |
+| 2.3 | ~~Ampliar el análisis oficial a las 17 métricas~~ — **DESCARTADO por decisión del autor (31/07)**: el análisis se mantiene en las nueve métricas del trabajo de referencia, por fidelidad metodológica. En su lugar, **declarar en una frase** que el evaluador calcula además Qabf, Nabf, SCD, VIF, FMI y los índices de Piella y que no se incorporan al análisis, para que no se lea como selección de resultados. Nota: con las 17 la propuesta sería 3.ª (3,459); pierde en Nabf (6.ª) pero gana en SCD y VIF (1.ª en ambas) | 0,5 | Cierra la objeción de haber elegido las métricas convenientes, sin rehacer el análisis |
+| 2.4 | **Control negativo con ruido**: `(VIS+IR)/2 + N(0,σ)` con σ ∈ {0,02; 0,05; 0,10; 0,20}, más base sola y base desenfocada | 5 | **Prioridad alta tras la decisión 2.3.** Al mantener las nueve métricas —todas «mayor es mejor»— el conjunto premia el realce sin castigo; este control lo demuestra y permite declararlo como limitación propia en lugar de dejarlo como flanco. Hoy el experimento **no está versionado** |
 | 2.5 | **Test ampliado de complementariedad**: repreparar M3FD concentrando el test en los 574 pares que tienen ambas clases anotadas (~414 útiles frente a 68 hoy) | 6 | Es el único camino a significancia estadística en el objetivo declarado. Hoy ninguna diferencia lo alcanza (mejor caso p = 0,070) |
 
 **No hacer:** semillas múltiples de detección. El límite de precisión son las 68 escenas con
@@ -101,6 +101,9 @@ de 2026 hay margen incluso para el escenario completo.
    como propio. Recomendación: sí, corregirla — es el tipo de cosa que un examinador encuentra.
 2. **¿Curvelet: renombrar (2 h) o instalar `curvelops` y recomputar (15-20 h)?**
    Recomendación: renombrar. Los resultados no cambian y el crédito queda correcto.
+2b. **RESUELTO (31/07): el análisis se mantiene en las nueve métricas clásicas.** Decisión del
+   autor, por fidelidad a la metodología del trabajo de referencia. Queda pendiente la frase que
+   declara las ocho métricas calculadas y no analizadas (ver 2.3).
 3. **¿Cuál de los tres encuadres?** Auditoría del protocolo (7,8/10), caracterización del
    compromiso (7,7) o cambio mínimo (6,7).
 4. **¿Test ampliado de complementariedad (2.5)?** Es lo único que puede dar significancia al
