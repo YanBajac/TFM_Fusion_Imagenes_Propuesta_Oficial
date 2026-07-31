@@ -12,6 +12,15 @@ import numpy as np
 RAW_DIR = Path(__file__).resolve().parents[1] / "data" / "raw"
 PROCESSED_DIR = Path(__file__).resolve().parents[1] / "data" / "processed"
 
+# Pares excluidos del corpus por defectos verificados en los archivos de origen.
+# Athena_heather_IR_hei_vis_g: el archivo del slot VIS es una copia byte a byte del
+# IR del mismo nombre (md5 056b42a579c2ddbc28d325f5ca909bb0, que ademas coincide con
+# IR/Athena_heather_hei_vis.bmp). No es un par VIS/IR: es la misma imagen dos veces,
+# de modo que MSE(VIS,IR)=0 y todo metodo que devuelva la entrada sin modificarla
+# obtiene SSIM=1 y un PSNR infinito, lo que invalida cualquier promedio de fidelidad.
+# El corpus efectivo queda en 19 pares.
+PARES_EXCLUIDOS = {"Athena_heather_IR_hei_vis_g"}
+
 
 def load_image(path: str | Path, grayscale: bool = True) -> np.ndarray:
     """Carga una imagen desde disco."""
@@ -29,10 +38,15 @@ def load_pair(vis_path: str | Path, ir_path: str | Path) -> tuple[np.ndarray, np
     return vis, ir
 
 
-def list_pairs(vis_dir: str | Path = None, ir_dir: str | Path = None) -> list[tuple[Path, Path]]:
+def list_pairs(vis_dir: str | Path = None, ir_dir: str | Path = None,
+               incluir_excluidos: bool = False) -> list[tuple[Path, Path]]:
     """
     Retorna una lista de tuplas (vis_path, ir_path) buscando imágenes
     con el mismo nombre en los subdirectorios VIS e IR dentro de raw/.
+
+    Los pares de PARES_EXCLUIDOS se omiten por defecto (ver el comentario de esa
+    constante). Con incluir_excluidos=True se devuelve el corpus completo, lo que
+    sirve para auditar o documentar el defecto, no para producir resultados.
     """
     vis_dir = Path(vis_dir) if vis_dir else RAW_DIR / "VIS"
     ir_dir = Path(ir_dir) if ir_dir else RAW_DIR / "IR"
@@ -42,6 +56,8 @@ def list_pairs(vis_dir: str | Path = None, ir_dir: str | Path = None) -> list[tu
     ir_files = {f.stem: f for f in ir_dir.iterdir() if f.suffix.lower() in extensions}
 
     common = sorted(vis_files.keys() & ir_files.keys())
+    if not incluir_excluidos:
+        common = [k for k in common if k not in PARES_EXCLUIDOS]
     return [(vis_files[k], ir_files[k]) for k in common]
 
 

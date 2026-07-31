@@ -3,8 +3,13 @@
 venv/
 env/
 
-# Dataset raw (imágenes originales – demasiado grandes para git)
-data/raw/
+# Dataset raw (imágenes originales del TNO, ~15 MB)
+data/raw/*
+# (se excluye el CONTENIDO y no el directorio: git no desciende a un directorio excluido,
+#  de modo que una negacion dentro de el nunca se aplicaria)
+# ...pero SÍ se versiona el manifiesto: md5 y procedencia exacta de cada archivo en el
+# TNO original (figshare 1008029), para que el corpus sea verificable y reconstruible.
+!data/raw/MANIFIESTO_CORPUS.csv
 
 # Imágenes procesadas y resultados generados
 data/processed/
@@ -74,3 +79,7 @@ data/**/infrared/
 
 # Documentos pesados/locales (no versionar)
 docs/_local/
+
+# Respaldos locales de CSV antes de un recomputo (su contenido queda documentado en
+# docs/Auditoria_Interna.md y docs/Auditoria_Metodologia.md)
+experiments/results/metrics_reports/*.bak_*
