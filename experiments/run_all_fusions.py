@@ -43,18 +43,41 @@ from src.utils import save_image, save_metrics_csv
 # cruz 3x3 y las cuatro lineas son cuatro mascaras 3x3 distintas-.
 PROP_R, PROP_M = 25, 0.30
 
-METHODS = {
+# Parametros de cada metodo, declarados de forma EXPLICITA y en un solo lugar. De aqui se
+# derivan tanto las funciones de fusion como la huella de configuracion que usa el checkpoint,
+# de modo que no puedan quedar desalineados.
+CONFIG = {
     # Estado del arte
-    "PiramideLaplace":  lambda v, i: laplacian_pyramid_fusion(v, i, levels=4),
-    "RatioPiramide":    lambda v, i: ratio_pyramid_fusion(v, i, levels=4),
-    "DWT":              lambda v, i: dwt_fusion(v, i, levels=3),
-    "DTCWT":            lambda v, i: dtcwt_fusion(v, i, levels=4),
-    "Curvelet":         lambda v, i: curvelet_fusion(v, i, levels=3),
+    "PiramideLaplace":  {"levels": 4},
+    "RatioPiramide":    {"levels": 4},
+    "DWT":              {"levels": 3},
+    "DTCWT":            {"levels": 4},
+    # Nota: "Curvelet" es una APROXIMACION por wavelet 2D con base db4, no la transformada
+    # curvelet de Candes et al. Comparte algoritmo con DWT y solo cambia la base.
+    "Curvelet":         {"levels": 3, "wavelet": "db4"},
     # Metodologia clasica de la transformada Top-Hat (basico)
-    "TopHat_Clasico":   lambda v, i: tophat_classic_fusion(v, i, r=5),
-    # PROPUESTA CENTRAL: Top-Hat una escala, disco + 4 lineales por SUMA, PSO
-    "Propuesta_Novedosa": lambda v, i: fuse_optimal(v, i, r=PROP_R, m=PROP_M, mode="sum"),
+    "TopHat_Clasico":   {"r": 5},
+    # PROPUESTA CENTRAL: Top-Hat una escala, disco + 4 lineales por SUMA
+    "Propuesta_Novedosa": {"r": PROP_R, "m": PROP_M, "mode": "sum"},
 }
+
+METHODS = {
+    "PiramideLaplace":  lambda v, i: laplacian_pyramid_fusion(v, i, **CONFIG["PiramideLaplace"]),
+    "RatioPiramide":    lambda v, i: ratio_pyramid_fusion(v, i, **CONFIG["RatioPiramide"]),
+    "DWT":              lambda v, i: dwt_fusion(v, i, **CONFIG["DWT"]),
+    "DTCWT":            lambda v, i: dtcwt_fusion(v, i, **CONFIG["DTCWT"]),
+    "Curvelet":         lambda v, i: curvelet_fusion(v, i, **CONFIG["Curvelet"]),
+    "TopHat_Clasico":   lambda v, i: tophat_classic_fusion(v, i, **CONFIG["TopHat_Clasico"]),
+    "Propuesta_Novedosa": lambda v, i: fuse_optimal(v, i, **CONFIG["Propuesta_Novedosa"]),
+}
+
+
+def huella_config():
+    """Huella de la configuracion de los metodos, para invalidar el checkpoint."""
+    import hashlib
+    import json
+    crudo = json.dumps(CONFIG, sort_keys=True, default=str)
+    return hashlib.sha256(crudo.encode("utf-8")).hexdigest()[:16]
 
 RESULTS_DIR   = ROOT / "experiments" / "results"
 FUSED_DIR     = RESULTS_DIR / "fused_images"
@@ -63,25 +86,53 @@ METRICS_CSV   = METRICS_DIR / "all_metrics.csv"
 
 
 def main():
+    import argparse
+    import json
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--rehacer", action="store_true",
+                    help="ignora el checkpoint y recalcula todo desde cero")
+    args = ap.parse_args()
+
     pairs = list_pairs()
     if not pairs:
         print("No se encontraron pares VIS/IR en data/raw/VIS y data/raw/IR.")
         return
 
+    hc = huella_config()
+    SIDECAR = METRICS_CSV.with_suffix(".config.json")
+    print(f"huella de configuracion: {hc}")
+
     # Checkpoint: cargar registros previos y saltar (metodo, imagen) ya hechos.
+    #
+    # El checkpoint indexaba SOLO por (metodo, imagen), de modo que al cambiar un
+    # hiperparametro del operador -por ejemplo el peso m- las filas viejas se daban por
+    # hechas y el CSV conservaba las metricas de la configuracion anterior sin ningun aviso.
+    # Ahora se guarda junto al CSV la huella de CONFIG y solo se reanuda si coincide.
     records = []
     done = set()
-    if METRICS_CSV.exists() and METRICS_CSV.stat().st_size > 0:
+    if args.rehacer:
+        print("--rehacer: se ignora el checkpoint y se recalcula todo.")
+    elif METRICS_CSV.exists() and METRICS_CSV.stat().st_size > 0:
         import pandas as pd
         try:
             prev = pd.read_csv(METRICS_CSV)
         except Exception:
             prev = None
-        # Solo reanudar si el CSV tiene el esquema nuevo (incluye Qabf).
-        if prev is not None and "Qabf" in prev.columns:
+        hc_prev = None
+        if SIDECAR.exists():
+            try:
+                hc_prev = json.loads(SIDECAR.read_text(encoding="utf-8")).get("huella")
+            except Exception:
+                hc_prev = None
+        # Solo reanudar si el CSV tiene el esquema nuevo (incluye Qabf) Y la configuracion
+        # de los metodos es la misma con la que se produjo.
+        if prev is not None and "Qabf" in prev.columns and hc_prev == hc:
             records = prev.to_dict("records")
             done = {(r["method"], r["image"]) for r in records}
-            print(f"Reanudando: {len(done)} registros previos encontrados.")
+            print(f"Reanudando: {len(done)} registros previos con la misma configuracion.")
+        elif prev is not None and hc_prev != hc:
+            print(f"AVISO: la configuracion cambio (huella previa {hc_prev}, actual {hc}).")
+            print("       El checkpoint se descarta y se recalcula todo desde cero.")
 
     print(f"Procesando {len(pairs)} pares con {len(METHODS)} metodos...\n")
 
@@ -107,10 +158,13 @@ def main():
 
             print(f"  OK  {method_name:25s} | {image_name}  EN={metrics['EN']:.4f}")
 
-        # Guardar tras cada par (checkpoint).
+        # Guardar tras cada par (checkpoint), junto con la huella de la configuracion.
         save_metrics_csv(records, METRICS_CSV)
+        SIDECAR.write_text(json.dumps({"huella": hc, "config": CONFIG}, indent=2,
+                                      sort_keys=True, default=str), encoding="utf-8")
 
     print(f"\nDone. {len(records)} registros guardados en {METRICS_CSV}")
+    print(f"Configuracion registrada en {SIDECAR.name}")
 
 
 if __name__ == "__main__":
