@@ -33,19 +33,47 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--skip-train", action="store_true",
                     help="usa runs/m3fd/mixto/weights/best.pt ya entrenado")
+    ap.add_argument("--pesos", choices=["best", "last"], default="best",
+                    help="checkpoint a evaluar: best.pt (elegido en el val) o last.pt")
     a = ap.parse_args()
     from ultralytics import YOLO
     import pandas as pd
 
     dd = Path(a.datasets_dir)
 
-    def hallar_best():
-        """Localiza el best.pt del mixto (ultralytics puede anidar la carpeta runs)."""
-        cands = sorted(ROOT.glob("runs/**/mixto/weights/best.pt"),
+    def hallar_pesos(cual="best"):
+        """Localiza best.pt o last.pt del mixto (ultralytics puede anidar runs/)."""
+        cands = sorted(ROOT.glob(f"runs/**/mixto/weights/{cual}.pt"),
                        key=lambda p: p.stat().st_mtime)
         return cands[-1] if cands else None
 
-    best = hallar_best()
+    def informe_convergencia(pesos):
+        """Verifica que el val haya mejorado con las epocas y a que epoca corresponde
+        el checkpoint elegido. Si el maximo del val esta en la epoca 1, la seleccion
+        no esta midiendo aprendizaje y el experimento no es interpretable."""
+        res = pesos.parent.parent / "results.csv"
+        if not res.exists():
+            print("[AVISO] no encuentro results.csv; no puedo verificar convergencia")
+            return
+        h = pd.read_csv(res)
+        h.columns = [c.strip() for c in h.columns]
+        col = next((c for c in h.columns if "mAP50(B)" in c and "95" not in c), None)
+        if col is None:
+            print("[AVISO] results.csv sin columna de mAP50; salto la verificacion")
+            return
+        mejor_ep = int(h.loc[h[col].idxmax(), "epoch"])
+        print(f"\n--- convergencia del val ({len(h)} epocas) ---")
+        print(f"  mAP50 del val: epoca 1 = {h[col].iloc[0]:.5f} | "
+              f"ultima = {h[col].iloc[-1]:.5f} | maximo = {h[col].max():.5f} (epoca {mejor_ep})")
+        if mejor_ep <= 1:
+            print("  ATENCION: el maximo del val esta en la primera epoca. El modelo no mejora\n"
+                  "  sobre el val, de modo que la seleccion de checkpoint no mide aprendizaje.\n"
+                  "  Revisar el split antes de reportar estas cifras.")
+        else:
+            print(f"  OK: el val mejora durante el entrenamiento (maximo en la epoca {mejor_ep}"
+                  f" de {len(h)}).")
+
+    best = hallar_pesos(a.pesos)
 
     # ---------- 1. entrenamiento unico sobre el mixto VIS+IR ----------
     if a.skip_train and best is not None:
@@ -62,11 +90,12 @@ def main():
         if a.device != "":
             kw["device"] = a.device
         model.train(**kw)
-        best = hallar_best()
+        best = hallar_pesos(a.pesos)
 
     # ---------- 2. inferencia sobre cada set de prueba ----------
-    assert best is not None, "no se encontró best.pt bajo runs/**/mixto/weights/"
-    print("Pesos:", best)
+    assert best is not None, f"no se encontró {a.pesos}.pt bajo runs/**/mixto/weights/"
+    print(f"Pesos ({a.pesos}):", best)
+    informe_convergencia(best)
     modelo = YOLO(str(best))
     nombres = modelo.names          # {idx: nombre}
     filas = []
@@ -91,9 +120,21 @@ def main():
         print(f"  {m}: mAP50={fila['mAP50']} | " +
               " ".join(f"{c}={v}" for c, v in fila.items() if c.startswith("AP50_")))
 
-    import pandas as pd
     df = pd.DataFrame(filas)
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    # FUSION en lugar de sobrescritura: si se corre con --methods para reevaluar solo
+    # algunos metodos, la version anterior borraba las filas de todos los demas.
+    # Las filas nuevas reemplazan a las viejas del mismo metodo; el resto se conserva.
+    if OUT.exists():
+        previo = pd.read_csv(OUT)
+        nuevos = set(df["method"])
+        conserva = previo[~previo["method"].isin(nuevos)]
+        if len(conserva):
+            print(f"\nConservo {len(conserva)} fila(s) previa(s) de metodos no reevaluados: "
+                  + ", ".join(conserva["method"]))
+        df = pd.concat([conserva, df], ignore_index=True)
+    orden = {m: k for k, m in enumerate(METODOS)}
+    df = df.sort_values("method", key=lambda s: s.map(lambda x: orden.get(x, 99))).reset_index(drop=True)
     df.to_csv(OUT, index=False)
     print("\n===== M3FD: mAP por metodo (modelo unico VIS+IR) =====")
     print(df.to_string(index=False))

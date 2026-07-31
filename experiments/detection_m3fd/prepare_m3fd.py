@@ -8,14 +8,23 @@ cada modalidad y en cada metodo de fusion.
 Descarga del dataset (M3FD Detection: carpetas de imagenes ir/vi + labels YOLO):
   https://github.com/JinyuanLiu-CV/TarDAL  (enlaces M3FD en el README)
 
+La particion es ALEATORIA, ESTRATIFICADA por presencia de People/Lamp, y consta de
+TRES conjuntos DISJUNTOS:
+  train -> ajuste de pesos
+  val   -> seleccion del checkpoint y monitoreo; nunca se reporta
+  test  -> unica particion sobre la que se miden las metricas por metodo
+(La version anterior partia de forma secuencial y usaba el mismo conjunto como val y
+como test; ver el docstring de particionar() para el efecto que eso tenia.)
+
 Genera:
-  <out>/m3fd_mixto/                      train = VIS+IR mezcladas (2N imagenes)
-  <out>/m3fd_test_<METODO>/              val fusionada por metodo (labels compartidas)
+  <out>/m3fd_mixto/                      train y val = VIS+IR mezcladas (2N imagenes)
+  <out>/m3fd_test_<METODO>/              TEST fusionado por metodo (labels compartidas)
 
 Clases (orden de TarDAL): People, Car, Bus, Motorcycle, Lamp, Truck
   - People -> dominante en IR (firma termica)  |  Lamp -> dominante en VIS
 Uso:
-  python experiments\detection_m3fd\prepare_m3fd.py --m3fd_root data\M3FD --train-n 2000 --val-n 500
+  python experiments\detection_m3fd\prepare_m3fd.py --m3fd_root data\M3FD_Detection \
+      --train-n 2000 --val-n 500 --test-n 500 --seed 0
 """
 import argparse, sys, shutil
 from pathlib import Path
@@ -127,12 +136,110 @@ def leer_label(lb):
         return lb.read_text(encoding="utf-8", errors="replace")
     return voc_a_yolo(lb, 1024, 768)
 
+
+# --------------------------------------------------------------------------- split
+IDX_PEOPLE = NAMES.index("People")
+IDX_LAMP = NAMES.index("Lamp")
+
+
+def clases_presentes(lb):
+    """Conjunto de indices de clase presentes en una etiqueta."""
+    cs = set()
+    for ln in leer_label(lb).strip().splitlines():
+        ln = ln.strip()
+        if ln:
+            try:
+                cs.add(int(ln.split()[0]))
+            except (ValueError, IndexError):
+                pass
+    return cs
+
+
+def _reparto(n, fracs):
+    """Reparte n en len(fracs) partes segun fracs, con metodo de resto mayor."""
+    crudo = [n * f for f in fracs]
+    base = [int(x) for x in crudo]
+    falta = n - sum(base)
+    orden = sorted(range(len(fracs)), key=lambda i: crudo[i] - base[i], reverse=True)
+    for i in orden[:falta]:
+        base[i] += 1
+    return base
+
+
+def particionar(pares, n_train, n_val, n_test, semilla=0):
+    """Particion ALEATORIA, ESTRATIFICADA y DISJUNTA en train / val / test.
+
+    Por que no un corte secuencial: M3FD esta ordenado por captura, de modo que
+    `pares[:2000]` y `pares[2000:2500]` caen en escenas distintas y con
+    distribuciones de clase incompatibles (en el corte original el train tenia
+    People 55,1 % / Lamp 4,3 % y el val People 9,4 % / Lamp 13,1 %). Con ese
+    desplazamiento de prior el modelo preentrenado en COCO puntuaba mejor en el val
+    que cualquier modelo ajustado al train, y la seleccion de checkpoint se quedaba
+    con la epoca 1 de 40.
+
+    Se estratifica por la presencia de las dos clases complementarias que reporta la
+    tesis (People, dominante en IR; Lamp, dominante en VIS) para que las tres
+    particiones tengan proporciones comparables de ambas.
+
+    Las tres particiones son disjuntas y cumplen roles distintos:
+      train -> ajuste de pesos
+      val   -> seleccion de checkpoint y monitoreo (nunca se reporta)
+      test  -> unica particion sobre la que se reportan metricas por metodo
+    """
+    rng = np.random.default_rng(semilla)
+    estratos = {}
+    for k, (_, _, lb) in enumerate(pares):
+        cs = clases_presentes(lb)
+        estratos.setdefault((IDX_PEOPLE in cs, IDX_LAMP in cs), []).append(k)
+    total = n_train + n_val + n_test
+    N = len(pares)
+    fr = [n_train / total, n_val / total, n_test / total]
+    tr, va, te = [], [], []
+    for clave, idxs in sorted(estratos.items()):
+        idxs = list(idxs)
+        rng.shuffle(idxs)
+        cupo = min(len(idxs), int(round(total * len(idxs) / N)))
+        sel = idxs[:cupo]
+        a, b, c = _reparto(len(sel), fr)
+        tr += sel[:a]
+        va += sel[a:a + b]
+        te += sel[a + b:a + b + c]
+    for nombre, parte in (("train", tr), ("val", va), ("test", te)):
+        rng.shuffle(parte)
+    assert not (set(tr) & set(va)), "train y val se solapan"
+    assert not (set(tr) & set(te)), "train y test se solapan"
+    assert not (set(va) & set(te)), "val y test se solapan"
+    return ([pares[k] for k in tr], [pares[k] for k in va], [pares[k] for k in te])
+
+
+def resumen_clases(nombre, parte):
+    """Imprime el reparto de objetos por clase de una particion."""
+    cuenta = {n: 0 for n in NAMES}
+    tot = 0
+    for _, _, lb in parte:
+        for ln in leer_label(lb).strip().splitlines():
+            ln = ln.strip()
+            if not ln:
+                continue
+            try:
+                cuenta[NAMES[int(ln.split()[0])]] += 1
+                tot += 1
+            except (ValueError, IndexError):
+                pass
+    det = "  ".join(f"{n} {100.0 * c / max(1, tot):4.1f}%" for n, c in cuenta.items() if c)
+    print(f"  {nombre:5s} {len(parte):5d} pares | {tot:6d} objetos | {det}")
+    return cuenta, tot
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--m3fd_root", required=True)
     ap.add_argument("--out", default="datasets")
     ap.add_argument("--train-n", type=int, default=2000)
-    ap.add_argument("--val-n", type=int, default=500)
+    ap.add_argument("--val-n", type=int, default=500,
+                    help="particion de SELECCION de checkpoint (no se reporta)")
+    ap.add_argument("--test-n", type=int, default=500,
+                    help="particion de REPORTE, disjunta del val")
+    ap.add_argument("--seed", type=int, default=0)
     a = ap.parse_args()
     root = Path(a.m3fd_root)
     vdir = hallar_dir(root, ["vi", "Vis", "visible", "vis", "Visible", "RGB"])
@@ -157,16 +264,23 @@ def main():
         if ip is not None and lb is not None:
             pares.append((vp, ip, lb))
     print(f"pares VIS/IR con label: {len(pares)}")
-    if len(pares) < a.train_n + a.val_n:
-        print(f"AVISO: menos pares que train+val pedidos; uso {len(pares)}")
-    pares = pares[: a.train_n + a.val_n]
-    train, val = pares[: a.train_n], pares[a.train_n:]
-    print(f"train: {len(train)} pares (x2 modalidades) | val: {len(val)} pares")
+    pedido = a.train_n + a.val_n + a.test_n
+    if len(pares) < pedido:
+        print(f"AVISO: hay {len(pares)} pares y se pidieron {pedido}; se reparte lo disponible")
+    print(f"\nParticion estratificada y disjunta (semilla {a.seed}):")
+    train, val, test = particionar(pares, a.train_n, a.val_n, a.test_n, semilla=a.seed)
+    for nombre, parte in (("train", train), ("val", val), ("test", test)):
+        resumen_clases(nombre, parte)
+    print("  val  = seleccion de checkpoint (no se reporta) | test = unica particion reportada\n")
 
     out = Path(a.out)
     # ---------- dataset mixto de entrenamiento ----------
     mixto = out / "m3fd_mixto"
+    # Se borra el contenido previo: con un split nuevo, los archivos del anterior
+    # quedarian mezclados y podrian filtrar imagenes de test dentro del train.
     for sp in ("train", "val"):
+        shutil.rmtree(mixto / "images" / sp, ignore_errors=True)
+        shutil.rmtree(mixto / "labels" / sp, ignore_errors=True)
         (mixto / "images" / sp).mkdir(parents=True, exist_ok=True)
         (mixto / "labels" / sp).mkdir(parents=True, exist_ok=True)
     for k, (vp, ip, lb) in enumerate(train):
@@ -191,13 +305,18 @@ def main():
     data_yaml(mixto, "images/train", "images/val")
     print("mixto OK ->", mixto)
 
-    # ---------- sets de prueba por metodo (solo val) ----------
+    # ---------- sets de prueba por metodo: se construyen sobre TEST ----------
+    # Antes se construian sobre el mismo `val` que servia para elegir el checkpoint,
+    # de modo que el modelo se seleccionaba midiendo en las imagenes que luego se
+    # reportaban. Ahora `test` es disjunto de `val` y de `train`.
     metodos = ["VIS", "IR"] + list(FUSERS.keys())
     for m in metodos:
         d = out / f"m3fd_test_{m}"
+        for sp in ("images", "labels"):
+            shutil.rmtree(d / sp / "val", ignore_errors=True)
         (d / "images" / "val").mkdir(parents=True, exist_ok=True)
         (d / "labels" / "val").mkdir(parents=True, exist_ok=True)
-    for k, (vp, ip, lb) in enumerate(val):
+    for k, (vp, ip, lb) in enumerate(test):
         v = load_gray01(vp); i = load_gray01(ip)
         if v is None or i is None:
             continue
@@ -210,7 +329,7 @@ def main():
             save_uint8(img, d / "images" / "val" / f"{vp.stem}.jpg")
             (d / "labels" / "val" / f"{vp.stem}.txt").write_text(lab, encoding="utf-8")
         if (k + 1) % 50 == 0:
-            print(f"  val fusionada {k+1}/{len(val)}...", flush=True)
+            print(f"  test fusionado {k+1}/{len(test)}...", flush=True)
     for m in metodos:
         data_yaml(out / f"m3fd_test_{m}", "images/val", "images/val")
     print("LISTO. Mixto +", len(metodos), "sets de prueba en", out.resolve())

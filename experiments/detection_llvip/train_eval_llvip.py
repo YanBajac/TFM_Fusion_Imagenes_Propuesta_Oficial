@@ -26,25 +26,53 @@ def main():
     ap.add_argument("--batch", type=int, default=16)
     ap.add_argument("--device", default="")     # "0" GPU, "cpu", "" auto
     ap.add_argument("--seed", type=int, default=0)
+    # Protocolo de seleccion del checkpoint. LLVIP no tiene particion de test separada:
+    # el val cumple los dos roles. Con best.pt se reporta el MAXIMO sobre las epocas
+    # medido en el mismo conjunto que se reporta, lo que introduce un sesgo optimista
+    # del orden de las diferencias entre metodos. last.pt no depende del val y por eso
+    # es el protocolo honesto mientras no exista un test disjunto.
+    ap.add_argument("--pesos", choices=["best","last"], default="last",
+                    help="checkpoint a evaluar (last = sin seleccion sobre el val)")
+    ap.add_argument("--skip-train", action="store_true",
+                    help="no reentrena: evalua los pesos ya existentes en runs/**/llvip/<metodo>")
     a=ap.parse_args()
     from ultralytics import YOLO
     import pandas as pd
     dd=Path(a.datasets_dir); rows=[]
+
+    def hallar_pesos(metodo, cual):
+        c=sorted(ROOT.glob(f"runs/**/llvip/{metodo}/weights/{cual}.pt"),
+                 key=lambda p: p.stat().st_mtime)
+        return c[-1] if c else None
+
     for m in [x.strip() for x in a.methods.split(",") if x.strip()]:
         data=dd/f"llvip_{m}"/"data.yaml"
         if not data.exists():
             print(f"[AVISO] falta {data}; salto {m}"); continue
-        print(f"\n===== Entrenando {m} =====")
-        model=YOLO(a.model)
-        kw=dict(data=str(data), epochs=a.epochs, imgsz=a.imgsz, batch=a.batch,
-                seed=a.seed, deterministic=True, project="runs/llvip", name=m,
-                exist_ok=True, verbose=False)
-        if a.device!="" : kw["device"]=a.device
-        model.train(**kw)
-        met=model.val(data=str(data), split="val", verbose=False)
+        if a.skip_train:
+            w=hallar_pesos(m, a.pesos)
+            if w is None:
+                print(f"[AVISO] no encuentro {a.pesos}.pt de {m}; salto"); continue
+            print(f"\n===== Evaluando {m} ({a.pesos}.pt, sin reentrenar) =====")
+            model=YOLO(str(w))
+        else:
+            print(f"\n===== Entrenando {m} =====")
+            model=YOLO(a.model)
+            kw=dict(data=str(data), epochs=a.epochs, imgsz=a.imgsz, batch=a.batch,
+                    seed=a.seed, deterministic=True, project="runs/llvip", name=m,
+                    exist_ok=True, verbose=False)
+            if a.device!="" : kw["device"]=a.device
+            model.train(**kw)
+            w=hallar_pesos(m, a.pesos)
+            if w is not None:
+                model=YOLO(str(w))       # tras train(), el objeto trae best.pt cargado
+        kwv=dict(data=str(data), split="val", verbose=False)
+        if a.device!="" : kwv["device"]=a.device
+        met=model.val(**kwv)
         rows.append({"method":m, "mAP50":round(float(met.box.map50),4),
                      "mAP50_95":round(float(met.box.map),4),
-                     "precision":round(float(met.box.mp),4), "recall":round(float(met.box.mr),4)})
+                     "precision":round(float(met.box.mp),4), "recall":round(float(met.box.mr),4),
+                     "checkpoint":a.pesos})
         print(f"  {m}: mAP50={rows[-1]['mAP50']}  mAP50-95={rows[-1]['mAP50_95']}")
     new=pd.DataFrame(rows)
     OUT.parent.mkdir(parents=True, exist_ok=True)
