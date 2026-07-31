@@ -134,7 +134,7 @@ Ortega y Espinoza (2025).
    estrictamente monótona en `m` sobre todo el rango, de modo que el óptimo del peso está forzado por
    la forma de la aptitud y no es un artefacto del enjambre.
    **El radio, en cambio, no lo fija el PSO:** dentro de este rango `Fo` prefiere `r = 1`
-   (1.7354 frente a 1.7039 en `r = 25`), de manera que `r = 25` es una **decisión de diseño** tomada
+   (1.7350 frente a 1.7057 en `r = 25`), de manera que `r = 25` es una **decisión de diseño** tomada
    sobre las métricas de evaluación. De las nueve métricas, **cinco favorecen `r = 25`** (EN, SD, FE,
    MG, SF) y las **cuatro de fidelidad favorecen `r = 1`** (SSIM, PSNR, MI_vis, MI_ir), todas con
    `p < 1e-5`. Conviene precisar que `r = 1` **no** desactiva el banco de SE: con `r = 1` el disco es

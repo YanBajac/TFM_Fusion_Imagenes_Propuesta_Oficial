@@ -62,6 +62,13 @@ grid  = pd.read_csv(os.path.join(MR, "pso_grid_search_fo_propuesta.csv")).rename
     columns={"Fo_opt": "F_opt"})
 
 PROP = "Propuesta_Novedosa"
+# Aptitud del barrido, derivada del CSV (no escrita a mano): las escenas sobre las que se
+# optimiza dependen del corpus, de modo que estos valores cambian si el corpus cambia.
+_col_fo = "F_opt" if "F_opt" in grid.columns else "Fo_opt"
+FO_MEJOR = f"{grid[_col_fo].max():.4f}".replace(".", ",")
+_r_mejor = int(grid.loc[grid[_col_fo].idxmax(), "r_opt"])
+_fo25 = grid.loc[grid["r_opt"] == 25, _col_fo]
+FO_R25 = f"{_fo25.max():.4f}".replace(".", ",") if len(_fo25) else "-"
 # Posicion de la propuesta en el ranking agregado, tomada del dato (promedio de rangos
 # intra-bloque, el acompanante estandar de Friedman) y no fijada a mano.
 _rk = rankm["avg_rank"].sort_values()
@@ -90,7 +97,7 @@ info = [
     ("Propuesta central", "Fusión Top-Hat de UNA SOLA ESCALA (radio r): disco B_r + 4 líneas L_{r,θ} (0°, 45°, 90°, 135°, largo 2r+1). "
      "Respuestas lineales promediadas y SUMADAS a la del disco (Bala et al. 2024); entre fuentes máximo; "
      "reconstrucción F = I_base + m·WTH − m·BTH."),
-    ("Optimización", "Barrido de 25 configuraciones PSO (partículas 2-10 × iteraciones 10-50, Cuadro 1 de Ortega & Espinoza 2025) sobre (r, m), r en [1,25]. El peso converge al piso del rango publicado (m* = 0,30) en las 25 configuraciones, porque Fo decrece de forma estrictamente monótona en m. El radio NO lo fija el PSO: dentro de ese rango Fo prefiere r = 1 (1,7354 frente a 1,7039 en r = 25), de modo que r = 25 es una decisión de diseño tomada sobre las métricas de evaluación, de las cuales cinco lo favorecen (EN, SD, FE, MG, SF) y cuatro prefieren r = 1 (SSIM, PSNR, MI_vis, MI_ir)."),
+    ("Optimización", "Barrido de 25 configuraciones PSO (partículas 2-10 × iteraciones 10-50, Cuadro 1 de Ortega & Espinoza 2025) sobre (r, m), r en [1,25]. El peso converge al piso del rango publicado (m* = 0,30) en las 25 configuraciones, porque Fo decrece de forma estrictamente monótona en m. El radio NO lo fija el PSO: dentro de ese rango "+f"Fo prefiere r = {_r_mejor} ({FO_MEJOR} frente a {FO_R25} en r = 25)"+", de modo que r = 25 es una decisión de diseño tomada sobre las métricas de evaluación, de las cuales cinco lo favorecen (EN, SD, FE, MG, SF) y cuatro prefieren r = 1 (SSIM, PSNR, MI_vis, MI_ir)."),
     ("Benchmark", "7 métodos: LP, RP (Toet 1989), DWT, DTCWT, CVT, Top-Hat clásico y la propuesta. "
      f"{N_ESC} pares TNO × nueve métricas sin referencia (EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PSNR)."),
     ("Resultados clave", f"La propuesta lidera la entropía ({means.loc[PROP,'EN']:.4f}) del estudio, "

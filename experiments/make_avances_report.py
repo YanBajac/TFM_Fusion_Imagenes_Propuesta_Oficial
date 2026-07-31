@@ -268,7 +268,7 @@ else:
         "m sobre todo el rango, de manera que el óptimo del peso está forzado por la forma de la "
         "aptitud y no es un artefacto del enjambre. "
         "<b>El radio, en cambio, no lo fija el PSO:</b> dentro de este rango la aptitud F<sub>o</sub> "
-        "prefiere r = 1 (1,7354 frente a 1,7039 en r = 25), de modo que r = 25 es una "
+        f"prefiere r = {R_PREFERIDO} ({FO_MEJOR} frente a {FO_R25} en r = 25), de modo que r = 25 es una "
         "<b>decisión de diseño</b> tomada sobre las métricas de evaluación y no el resultado de la "
         "optimización. De las nueve métricas, <b>cinco favorecen r = 25</b> (EN, SD, FE, MG y SF) y "
         "las <b>cuatro de fidelidad favorecen r = 1</b> (SSIM, PSNR, MI<sub>vis</sub> y "
@@ -286,6 +286,20 @@ else:
         "barrido con la metodología de referencia y mantiene la saturación por debajo del 2 % de los "
         "píxeles. Estos hiperparámetros definen la configuración de la propuesta usada en todo el "
         "benchmark de esta variante.")
+
+# ------------------------------------------------------------------ aptitud del barrido
+# Los dos valores de F_o que se citan en la lectura del barrido se derivan del CSV y no se
+# escriben a mano: al sustituir un par del corpus cambian las escenas sobre las que se
+# optimiza (list_pairs()[::7]) y con ellas la aptitud.
+_g = grid.copy()
+_col_fo = "F_opt" if "F_opt" in _g.columns else "Fo_opt"
+FO_MEJOR = f"{_g[_col_fo].max():.4f}".replace(".", ",")
+_r_mejor = int(_g.loc[_g[_col_fo].idxmax(), "r_opt"])
+_fo25 = _g.loc[_g["r_opt"] == 25, _col_fo]
+FO_R25 = f"{_fo25.max():.4f}".replace(".", ",") if len(_fo25) else "-"
+R_PREFERIDO = _r_mejor
+N_R1 = int((_g["r_opt"] == 1).sum())
+N_M_PISO = int((_g["m_opt"] == _g["m_opt"].min()).sum())
 
 # ------------------------------------------------------------------ posicion por metrica
 _NOM_MET = {"EN": "la entropía", "SD": "el contraste", "FE": "la ganancia de entropía sobre las fuentes",

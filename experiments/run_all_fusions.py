@@ -34,8 +34,8 @@ from src.utils import save_image, save_metrics_csv
 # (Ortega y Espinoza, 2025): el optimo converge al piso del rango, m* = 0,30, en las 25
 # configuraciones del Cuadro 1, porque F_o decrece de forma estrictamente monotona en m.
 #
-# El RADIO no lo fija el PSO: dentro de ese rango F_o prefiere r = 1 (1,7354 frente a
-# 1,7039 en r = 25). r = 25 es una DECISION DE DISENO tomada sobre las metricas de
+# El RADIO no lo fija el PSO: dentro de ese rango F_o prefiere r = 1 (1.7350 frente a
+# 1.7057 en r = 25). r = 25 es una DECISION DE DISENO tomada sobre las metricas de
 # evaluacion, de las cuales cinco lo favorecen (EN, SD, FE, MG, SF) y cuatro favorecen
 # r = 1 (SSIM, PSNR, MI_vis, MI_ir). Se adopta priorizando la capacidad de realce; la
 # limitacion (elegir el radio con parte del criterio con que luego se evalua) esta
