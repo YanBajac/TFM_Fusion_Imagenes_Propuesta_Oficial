@@ -246,6 +246,98 @@ else:
         "anotación contiene ambas clases complementarias.")
     PIE_DETECCIONES = "Detecciones del modelo único VIS+IR sobre dos escenas de M3FD."
 
+# --------------------------------------------------------- robustez: ajuste y ablacion
+# Cifras del ajuste simetrico de los comparativos (run_ajuste_comparativos.py) y de la
+# ablacion del banco (run_ablacion_banco.py). Se derivan del CSV: si se rehacen los
+# experimentos, la seccion se actualiza sola.
+_ajr = pd.read_csv(os.path.join(MR, "ajuste_comparativos_ranking.csv"), index_col=0)
+_ajm = pd.read_csv(os.path.join(MR, "ajuste_comparativos_mejores.csv"))
+_abl = pd.read_csv(os.path.join(MR, "ablacion_banco_resumen.csv"), index_col=0)
+
+_ESC = {"A_todos_por_defecto": "A. Cada método en su configuración estándar",
+        "B_comparativos_ajustados": "B. Comparativos ajustados; propuesta fija en r = 25",
+        "C_todos_ajustados": "C. Todos ajustados, incluida la propuesta",
+        "D_comparativos_ajustados_17": "D. Como B, pero rankeando con las 17 métricas"}
+
+
+def _pos(col):
+    s_ = _ajr[col].sort_values()
+    return list(s_.index).index(PROP) + 1, s_[PROP], s_.index[0], s_.iloc[0]
+
+
+POS_A, VAL_A, LID_A, VLID_A = _pos("A_todos_por_defecto")
+POS_B, VAL_B, LID_B, VLID_B = _pos("B_comparativos_ajustados")
+POS_D, VAL_D, LID_D, VLID_D = _pos("D_comparativos_ajustados_17")
+# los cinco del estado del arte, ya ajustados
+_SOTA = ["RatioPiramide", "PiramideLaplace", "DWT", "DTCWT", "Curvelet"]
+_sota_b = _ajr.loc[_SOTA, "B_comparativos_ajustados"].sort_values()
+SOTA_MEJOR, SOTA_MEJOR_VAL = _sota_b.index[0], _sota_b.iloc[0]
+# parametro elegido para cada metodo
+_elg = _ajm[_ajm.elegida].set_index("metodo")["valor"].to_dict()
+_dfl = _ajm[_ajm.por_defecto].set_index("metodo")["valor"].to_dict()
+# control de peso igualado
+_ctrl = pd.read_csv(os.path.join(MR, "control_tophat_igual_peso.csv"))
+
+# Control de peso igualado: se rearma el escenario B agregando el Top-Hat clasico con
+# r = 25 y m = 0,30 (el mismo peso de la propuesta) y se recalculan los rangos. Asi las
+# cifras del parrafo no quedan escritas a mano.
+_ajd = pd.read_csv(os.path.join(MR, "ajuste_comparativos.csv"))
+_ctrl = pd.read_csv(os.path.join(MR, "control_tophat_igual_peso.csv"))
+_sel = _ajm[_ajm.elegida].set_index("metodo")["valor"].to_dict()
+_tz = [_ajd[(_ajd.metodo == _m) & (_ajd.valor == _v)].assign(clave=_m) for _m, _v in _sel.items()]
+_comb = pd.concat(_tz + [_ctrl], ignore_index=True)
+_NUEVE = ["EN", "SD", "FE", "MG", "MI_vis", "MI_ir", "SF", "SSIM", "PSNR"]
+_rr = {}
+for _m in _NUEVE:
+    _p = _comb.pivot(index="imagen", columns="clave", values=_m)
+    _rr[_m] = _p.rank(axis=1, ascending=(DIRECTION[_m] == "min") if isinstance(DIRECTION.get(_m), str)
+                      else False, method="average").mean(axis=0)
+_rc = pd.DataFrame(_rr).mean(axis=1)
+CTRL_TH_M1 = _rc["TopHat_Clasico"]
+CTRL_TH_M030 = _rc["TopHat_r25_m030"]
+CTRL_PROP = _rc[PROP]
+CTRL_VENTAJA = CTRL_TH_M030 - CTRL_PROP      # a igual peso, cuanto gana la propuesta
+CTRL_VALE_PESO = CTRL_TH_M030 - CTRL_TH_M1   # cuanto le vale al clasico subir m de 0,30 a 1,00
+
+# tabla de los cuatro escenarios
+_fil = []
+_ord_b = _ajr["A_todos_por_defecto"].sort_values().index
+for _k in _ord_b:
+    _nom = LBL.get(_k, _k).split(" (")[0]
+    _tds = ""
+    for _c in _ESC:
+        _v = _ajr.loc[_k, _c]
+        _es_lider = (_v == _ajr[_c].min())
+        _txt = f"{_v:.3f}".replace(".", ",")
+        _tds += f"<td>{'<b>' if _es_lider or _k == PROP else ''}{_txt}"                 f"{'</b>' if _es_lider or _k == PROP else ''}</td>"
+    _par = f"{_elg.get(_k, '-')}" if _k in _elg else "-"
+    _fil.append(f"<tr><td class='l'>{'<b>' if _k == PROP else ''}{_nom}"
+                f"{'</b>' if _k == PROP else ''}</td><td>{_dfl.get(_k, '-')}</td>"
+                f"<td>{_par}</td>{_tds}</tr>")
+TAB_ESCENARIOS = ('<table class="chica"><thead><tr><th class="l">Método</th>'
+                  '<th>Par. estándar</th><th>Par. ajustado</th>'
+                  + "".join(f"<th>{c[0]}</th>" for c in _ESC)
+                  + '</tr></thead><tbody>' + "".join(_fil) + '</tbody></table>')
+
+# tabla de la ablacion
+_ABL_LBL = {"base": "Sin operador — la imagen (VIS+IR)/2",
+            "disco": "Solo el disco B_r (operador clásico, mismo r y m)",
+            "lineas": "Solo el promedio de las cuatro líneas",
+            "suma": "Disco + promedio de líneas (la propuesta)",
+            "promedio": "Media de disco y líneas", "maximo": "Máximo entre disco y líneas"}
+_fa = []
+for _k in _abl.sort_values("rango_9").index:
+    _es = (_k == "suma")
+    _tds = "".join(f"<td>{('<b>' if _abl[c].min() == _abl.loc[_k, c] else '')}"
+                   f"{_abl.loc[_k, c]:.3f}".replace(".", ",")
+                   + f"{('</b>' if _abl[c].min() == _abl.loc[_k, c] else '')}</td>"
+                   for c in ("rango_9", "rango_9_sin_FE", "rango_17"))
+    _fa.append(f"<tr><td class='l'>{'<b>' if _es else ''}{_ABL_LBL.get(_k, _k)}"
+               f"{'</b>' if _es else ''}</td>{_tds}</tr>")
+TAB_ABLACION = ('<table class="chica"><thead><tr><th class="l">Brazo del operador</th>'
+                '<th>9 métricas</th><th>8 sin FE</th><th>17 métricas</th>'
+                '</tr></thead><tbody>' + "".join(_fa) + '</tbody></table>')
+
 # ------------------------------------------------------------------ aptitud del barrido
 # Los dos valores de F_o que se citan en la lectura del barrido se derivan del CSV y no se
 # escriben a mano: al sustituir un par del corpus cambian las escenas sobre las que se
@@ -723,9 +815,10 @@ H.append(f"""
     <li>Métricas de evaluación con sus fórmulas (sección 7).</li>
     <li>Resultados cuantitativos: tabla general y gráficas (sección 8).</li>
     <li>Análisis estadístico: Friedman, Wilcoxon-Holm y ranking (sección 9).</li>
-    <li>Resultados cualitativos de las {N_ESC} escenas (sección 10).</li>
-    <li>Evaluación orientada a tarea: detección en LLVIP (sección 11) y clases complementarias en
-        M3FD (sección 12), y conclusiones (sección 13).</li>
+    <li>Robustez: ajuste simétrico de los comparativos y ablación del operador (sección 10).</li>
+    <li>Resultados cualitativos de las {N_ESC} escenas (sección 11).</li>
+    <li>Evaluación orientada a tarea: detección en LLVIP (sección 12) y clases complementarias en
+        M3FD (sección 13), y conclusiones (sección 14).</li>
     <li>Anexos 1-{N_ESC}: las 25 configuraciones del PSO en cada una de las {N_ESC} escenas.</li>
   </ol>
   {pie(2)}
@@ -981,7 +1074,78 @@ H.append(f"""
 pg = 21
 H.append(f"""
 <div class="page">
-  <h2>10. Resultados cualitativos: las {N_ESC} escenas</h2>
+  <h2>10. Robustez del resultado: ajuste simétrico y ablación del operador</h2>
+  <p>El resultado del apartado anterior se obtiene con cada método comparativo en su
+  <b>configuración estándar</b>, que es el protocolo habitual de la literatura. Cabe sin embargo una
+  objeción legítima: el radio de la propuesta (r = 25) se eligió observando las nueve métricas de
+  evaluación, mientras los seis comparativos corrieron con su parámetro por defecto. Para responderla
+  se barrió el parámetro principal de cada método —número de niveles en los multiescala, radio en el
+  Top-Hat clásico— y se seleccionó su mejor valor con <b>el mismo criterio</b> aplicado a la propuesta:
+  el promedio de rangos intra-bloque sobre las nueve métricas, calculado entre las configuraciones del
+  propio método. Son {len(_ajm)} configuraciones evaluadas sobre los {N_ESC} pares.</p>
+  <p><b>Tabla 5.</b> Ranking en cuatro escenarios de ajuste (promedio de rangos intra-bloque; menor es
+  mejor; en negrita el líder de cada columna y la fila de la propuesta).</p>
+  {TAB_ESCENARIOS}
+  <p class="lectura">Lectura, en cuatro puntos. <b>Primero</b>, en la configuración estándar la
+  propuesta es <b>{POS_A}.ª de {len(_ajr)}</b> ({f"{VAL_A:.3f}".replace(".", ",")}).
+  <b>Segundo</b>, el criterio de ajuste elige para la propuesta <b>r = {_elg.get(PROP, 25)}</b>, es
+  decir el mismo valor publicado entre los once candidatos evaluados: no es un valor arbitrario, y por
+  eso los escenarios B y C coinciden. <b>Tercero</b>, y es el punto central,
+  <b>ninguno de los cinco métodos del estado del arte alcanza a la propuesta ni siquiera ajustado</b>:
+  el mejor de ellos es {LBL.get(SOTA_MEJOR, SOTA_MEJOR).split(" (")[0]} con
+  {f"{SOTA_MEJOR_VAL:.3f}".replace(".", ",")} frente a
+  {f"{VAL_B:.3f}".replace(".", ",")} de la propuesta. <b>Cuarto</b>, el único método que la supera
+  es el <b>Top-Hat clásico</b> —que no pertenece al estado del arte sino a la misma familia
+  morfológica— por {f"{VAL_B - VLID_B:.3f}".replace(".", ",")}, y el párrafo siguiente muestra que
+  esa diferencia no proviene del operador.</p>
+  <p>Con las diecisiete métricas disponibles (escenario D) la propuesta pasa al
+  {POS_D}.º puesto ({f"{VAL_D:.3f}".replace(".", ",")}), detrás de
+  {LBL.get(LID_D, LID_D).split(" (")[0]}. La composición del conjunto de métricas, y no solo el
+  método, determina el orden: es el hallazgo que se discute en el apartado 14.</p>
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>10. Robustez (continuación): el peso de realce y el aporte del banco</h2>
+  <p><b>El origen de la ventaja del Top-Hat clásico en el escenario B.</b> Ese método se ejecuta con
+  <b>m = 1</b> por definición de la metodología clásica, frente a <b>m = 0,30</b> de la propuesta: no
+  compiten dos operadores, compiten dos pesos de realce, con el clásico inyectando <b>3,3 veces más</b>.
+  Igualando el peso —Top-Hat clásico con r = 25 y m = 0,30— su rango se degrada de
+  {f"{CTRL_TH_M1:.3f}".replace(".", ",")} a {f"{CTRL_TH_M030:.3f}".replace(".", ",")} mientras la
+  propuesta queda en {f"{CTRL_PROP:.3f}".replace(".", ",")}: <b>a igual peso la propuesta gana por
+  {f"{CTRL_VENTAJA:.3f}".replace(".", ",")}</b>. Dicho de otro modo, subirle el peso de 0,30 a 1,00 al
+  clásico le vale <b>{f"{CTRL_VALE_PESO:.3f}".replace(".", ",")}</b> de rango,
+  {f"{CTRL_VALE_PESO / abs(VAL_B - VLID_B):.0f}"} veces el margen de
+  {f"{abs(VAL_B - VLID_B):.3f}".replace(".", ",")} con el que lo pone por delante. La diferencia del
+  escenario B mide el peso, no el operador.</p>
+  <p><b>Aporte del banco de cinco elementos estructurantes.</b> La comparación contra el Top-Hat
+  clásico no lo aísla, porque los dos operadores no comparten hiperparámetros. La ablación fija
+  (r, m) = (25; 0,30) y varía únicamente la regla de combinación de las respuestas.</p>
+  <p><b>Tabla 6.</b> Ablación del operador con (r, m) fijos (promedio de rangos intra-bloque entre los
+  seis brazos; menor es mejor).</p>
+  {TAB_ABLACION}
+  <p class="lectura">Lectura: con las nueve métricas del trabajo, <b>la suma de ramas —la propuesta— es
+  el mejor brazo</b> ({f"{_abl.loc['suma','rango_9']:.3f}".replace(".", ",")} frente a
+  {f"{_abl.loc['disco','rango_9']:.3f}".replace(".", ",")} del disco único con idénticos r y m), de
+  modo que el banco <b>sí</b> aporta sobre el disco. Con las diecisiete el orden se invierte y el mejor
+  brazo es el máximo entre ramas. El contraste directo suma frente a disco es significativo a favor de
+  la propuesta en seis métricas (EN, SD, FE, MG, SF y VIF) y en contra en nueve, todas de fidelidad o
+  de artefactos: el banco <b>desplaza el punto de operación</b> hacia la actividad espacial en lugar de
+  dominar en todo el espectro. Un dato en favor del operador: la imagen base (VIS+IR)/2 <b>sin
+  operador</b> queda última de los seis brazos con las diecisiete métricas
+  ({f"{_abl.loc['base','rango_17']:.3f}".replace(".", ",")}), de modo que el mérito no proviene de
+  la imagen de partida.</p>
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>11. Resultados cualitativos: las {N_ESC} escenas</h2>
   <p>Para cada escena se muestran las fuentes VIS e IR, los seis comparativos y la propuesta (recuadro
   rojo). Se sugiere observar: la visibilidad del objetivo térmico, la conservación de la textura del
   fondo visible y la ausencia de halos en los bordes.</p>
@@ -993,13 +1157,13 @@ H.append(f"""
 pg += 1
 for i in range(2, 20, 2):
     blk = mont_html[i] + (mont_html[i + 1] if i + 1 < 20 else "")
-    H.append(f'<div class="page"><h2>10. Resultados cualitativos (escenas {i+1} y {min(i+2,N_ESC)} de {N_ESC})</h2>'
+    H.append(f'<div class="page"><h2>11. Resultados cualitativos (escenas {i+1} y {min(i+2,N_ESC)} de {N_ESC})</h2>'
              f'{blk}{pie(pg)}</div>')
     pg += 1
 
 H.append(f"""
 <div class="page">
-  <h2>11. Evaluación orientada a tarea: detección en LLVIP</h2>
+  <h2>12. Evaluación orientada a tarea: detección en LLVIP</h2>
   <p>Para medir el efecto práctico de la fusión se reentrenó el mismo detector <b>YOLOv8n</b> (40 épocas,
   misma configuración y semilla) sobre cada versión fusionada del dataset etiquetado <b>LLVIP</b>
   (peatones nocturnos; subconjunto de 2.000 imágenes de entrenamiento y 500 de validación). Como los
@@ -1045,7 +1209,7 @@ TAB_M3FD = ('<table><thead><tr><th>Entrada del detector</th><th>AP People &uarr;
 
 H.append(f"""
 <div class="page">
-  <h2>12. Detección con clases complementarias (M3FD)</h2>
+  <h2>13. Detección con clases complementarias (M3FD)</h2>
   <p>Experimento diseñado para aislar el escenario donde la fusión es insustituible: el dataset
   <b>M3FD</b> (Liu et al., 2022) anota seis clases, dos de ellas de <b>visibilidad opuesta</b>: las
   personas dominan en el infrarrojo (firma térmica) y las luces (Lamp) son esencialmente visibles solo
@@ -1070,7 +1234,7 @@ pg += 1
 
 H.append(f"""
 <div class="page">
-  <h2>12. Clases complementarias (continuación): la prueba visual</h2>
+  <h2>13. Clases complementarias (continuación): la prueba visual</h2>
   <p>{PARRAFO_DETECCIONES}</p>
   {figura(EXIST.get("fig_m3fd_detecciones.png"), PIE_DETECCIONES, 92)}
   {pie(pg)}
@@ -1080,7 +1244,7 @@ pg += 1
 
 H.append(f"""
 <div class="page">
-  <h2>13. Conclusiones</h2>
+  <h2>14. Conclusiones</h2>
   <h3>Resumen del planteamiento</h3>
   <ol>
     <li><b>Propuesta:</b> Top-Hat de una sola escala (radio r) con banco de cinco SE; respuestas lineales
