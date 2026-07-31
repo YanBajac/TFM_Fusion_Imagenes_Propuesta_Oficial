@@ -135,34 +135,58 @@ fig.savefig(os.path.join(OUT, "fig_flujo_propuesta.png"), dpi=170,
 plt.close(fig)
 print("ok fig_flujo_propuesta.png")
 
-# ---------------- fig_pso_diagrama: PSO sobre el espacio (r, m) ----------------
-rr = np.linspace(1, 25, 240)
-mm = np.linspace(0.30, 2.00, 240)
-RR, MM = np.meshgrid(rr, mm)
-Z = 1.7354 - 0.30 * ((25 - RR) / 24) ** 2 - 0.45 * ((MM - 0.30) / 1.70) ** 2
+# ---------------- fig_pso_diagrama: superficie REAL de la aptitud sobre (r, m) ----------------
+# Esta figura dibujaba una superficie SINTETICA cuyo maximo estaba en (r = 25, m = 0,30) y
+# rotulaba ese punto como "gbest = optimo global", con trayectorias de particulas inventadas.
+# Los datos dicen lo contrario: la aptitud publicada F_o prefiere r = 1, y r = 25 se adopta por
+# decision de diseno sobre las metricas de evaluacion. Ahora se grafica la superficie medida
+# (experiments/superficie_aptitud.py) y se distinguen los dos puntos por lo que son.
+import pandas as _pd
+_sup = os.path.join(os.path.dirname(OUT), "..", "experiments", "results",
+                    "metrics_reports", "superficie_aptitud_fo.csv")
+_sup = os.path.normpath(os.path.join(ROOT, "experiments", "results", "metrics_reports",
+                                     "superficie_aptitud_fo.csv")) \
+    if "ROOT" in dir() else _sup
+_S = _pd.read_csv(_sup)
+_piv = _S.pivot(index="m", columns="r", values="Fo").sort_index()
+RR, MM = np.meshgrid(_piv.columns.values.astype(float), _piv.index.values.astype(float))
+Z = _piv.values
+
+_gmax = _S.loc[_S.Fo.idxmax()]
+_e25 = _S[_S.r == 25]
+_b25 = _e25.loc[_e25.Fo.idxmax()]
 
 fig, ax = plt.subplots(figsize=(8.3, 5.0))
-cf = ax.contourf(RR, MM, Z, levels=14, cmap="Greys", alpha=0.45)
-ax.contour(RR, MM, Z, levels=14, colors="#999999", linewidths=0.4)
+cf = ax.contourf(RR, MM, Z, levels=16, cmap="Greys", alpha=0.55)
+ax.contour(RR, MM, Z, levels=16, colors="#999999", linewidths=0.4)
+cb = fig.colorbar(cf, ax=ax, pad=0.02)
+cb.set_label("$F_o = \\mathrm{SSIM}_{avg} + E/8 + \\mathrm{PSNR}/100$", fontsize=9)
 
-px = np.array([3.0, 5.5, 8.0, 10.5, 13.0, 15.5, 18.0, 20.0, 22.0, 6.5])
-py = np.array([1.70, 1.05, 1.45, 0.70, 1.20, 0.52, 0.95, 1.55, 0.62, 0.42])
-for x, y in zip(px, py):
-    dx, dy = (25 - x) * 0.22, (0.30 - y) * 0.22
-    ax.annotate("", xy=(x + dx, y + dy), xytext=(x, y),
-                arrowprops=dict(arrowstyle="->", lw=0.9, color="#4d4d4d"))
-ax.plot(px, py, "o", ms=5, color="#1a1a1a", label="Partículas (iteración $t$)")
-ax.plot(6.5, 0.42, "o", ms=8, color="#1f5c2e")
-ax.text(6.9, 0.33, "pbest (mejor propia)", fontsize=9, color="#1f5c2e")
-ax.plot(25, 0.30, "*", ms=17, color="#8b1a1a", zorder=5, clip_on=False)
-ax.text(24.4, 0.42, "gbest = óptimo global\n($r=25$;  $m=0{,}30$)", fontsize=9.5,
-        color="#8b1a1a", fontweight="bold", ha="right")
-ax.set_xlim(1, 25); ax.set_ylim(0.30, 2.00)
+# maximo real de la aptitud
+ax.plot(_gmax.r, _gmax.m, "*", ms=18, color="#8b1a1a", zorder=6, clip_on=False)
+ax.annotate(f"máximo de $F_o$\n($r={int(_gmax.r)}$;  $m={_gmax.m:.2f}$".replace(".", "{,}")
+            + f";  $F_o={_gmax.Fo:.4f}$)".replace(".", "{,}"),
+            xy=(_gmax.r, _gmax.m), xytext=(_gmax.r + 3.2, _gmax.m + 0.30),
+            fontsize=9.5, color="#8b1a1a", fontweight="bold",
+            arrowprops=dict(arrowstyle="->", lw=1.0, color="#8b1a1a"))
+# configuracion adoptada
+ax.plot(_b25.r, _b25.m, "o", ms=11, mfc="none", mew=2.2, color="#1f3b57", zorder=6,
+        clip_on=False)
+ax.annotate(f"configuración adoptada\n($r=25$;  $m={_b25.m:.2f}$".replace(".", "{,}")
+            + f";  $F_o={_b25.Fo:.4f}$)".replace(".", "{,}"),
+            xy=(_b25.r, _b25.m), xytext=(_b25.r - 4.0, _b25.m + 0.62),
+            fontsize=9.5, color="#1f3b57", fontweight="bold", ha="right",
+            arrowprops=dict(arrowstyle="->", lw=1.0, color="#1f3b57"))
+
+ax.set_xlim(float(_piv.columns.min()), float(_piv.columns.max()))
+ax.set_ylim(float(_piv.index.min()), float(_piv.index.max()))
 ax.set_xlabel("$r$  —  radio del elemento estructurante")
 ax.set_ylabel("$m$  —  peso de contraste")
-ax.legend(loc="upper left", fontsize=9, framealpha=0.9)
+ax.set_title("Aptitud $F_o$ medida sobre el espacio de búsqueda "
+             "(promedio de las escenas del barrido)", fontsize=10)
 ax.grid(False)
 fig.tight_layout()
 fig.savefig(os.path.join(OUT, "fig_pso_diagrama.png"), dpi=170, facecolor="white")
 plt.close(fig)
-print("ok fig_pso_diagrama.png")
+print(f"ok fig_pso_diagrama.png  (maximo real r={int(_gmax.r)} m={_gmax.m:.2f} "
+      f"Fo={_gmax.Fo:.4f}; adoptada r=25 Fo={_b25.Fo:.4f})")
