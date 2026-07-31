@@ -58,7 +58,15 @@ def std_dev(img):
 
 
 def fusion_efficiency(fused, vis, ir):
-    """FE = EN(fusionada) / promedio EN(fuentes). (mayor mejor)"""
+    """FE = EN(fusionada) / promedio EN(fuentes). (mayor mejor)
+
+    ADVERTENCIA: dentro de un mismo par VIS/IR el denominador es constante (no depende
+    del metodo de fusion), de modo que FE es la entropia EN reescalada por una constante
+    por escena. En consecuencia FE produce los MISMOS rangos intra-bloque que EN, el
+    mismo chi2 de Friedman y los mismos signos de Wilcoxon: NO es evidencia independiente
+    de EN y no debe contarse como una metrica adicional en recuentos ni en rankings
+    agregados. Se conserva porque el trabajo de referencia la reporta.
+    """
     en_f = entropy(fused)
     en_sources = (entropy(vis) + entropy(ir)) / 2.0
     return float(en_f / (en_sources + 1e-12))
@@ -277,7 +285,14 @@ def psnr_fusion(fused, vis, ir):
         MSE = 1/2 (MSE_vis + MSE_ir);  PSNR = 10 log10(1 / MSE)."""
     f = np.clip(fused, 0.0, 1.0).astype(np.float64)
     mse = 0.5 * (float(np.mean((f - vis) ** 2)) + float(np.mean((f - ir) ** 2)))
-    return float(10.0 * np.log10(1.0 / max(mse, 1e-12)))
+    if mse <= 0.0:
+        # MSE nulo solo ocurre si la fusion es identica a AMBAS fuentes, es decir si
+        # VIS e IR son la misma imagen: un par degenerado. Antes se recortaba con
+        # max(mse, 1e-12), lo que devolvia un techo silencioso de 120 dB y contaminaba
+        # los promedios de fidelidad. Ahora el caso se propaga como infinito para que
+        # falle de forma visible en lugar de pasar por un valor plausible.
+        return float("inf")
+    return float(10.0 * np.log10(1.0 / mse))
 
 
 def evaluate_all(fused, vis, ir):
