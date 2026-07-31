@@ -70,7 +70,14 @@ def combined_top_hat(f: np.ndarray, r: int, mode: str = "sum"):
         return 0.5 * (wth_disk + wth_lin), 0.5 * (bth_disk + bth_lin)
     if mode == "max":
         return np.maximum(wth_disk, wth_lin), np.maximum(bth_disk, bth_lin)
-    raise ValueError("mode debe ser 'sum', 'avg' o 'max'")
+    # Brazos de ablacion que aislan la contribucion de cada mitad del banco: permiten
+    # contrastar el banco completo contra el disco unico con los MISMOS (r, m), que es lo
+    # que la comparacion contra el Top-Hat clasico no hace (aquel usa r = 5, m = 1).
+    if mode == "disco":
+        return wth_disk, bth_disk
+    if mode == "lineas":
+        return wth_lin, bth_lin
+    raise ValueError("mode debe ser 'sum', 'avg', 'max', 'disco' o 'lineas'")
 
 
 def fuse_optimal(vis: np.ndarray, ir: np.ndarray, r: int = 3, m: float = 1.0,
