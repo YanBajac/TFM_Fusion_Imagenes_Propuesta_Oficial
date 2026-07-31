@@ -1,0 +1,15 @@
+brazo,rango_9,rango_9_mas_Nabf,rango_17
+Propuesta_Novedosa,6.383,6.76,5.344
+PiramideLaplace,6.561,6.325,4.876
+ruido_0.20,6.767,7.49,10.138
+RatioPiramide,6.95,7.015,5.844
+ruido_0.10,6.972,7.565,9.685
+TopHat_Clasico,7.106,7.6,7.229
+DTCWT,7.117,6.96,5.079
+DWT,7.261,7.405,6.565
+base,7.322,6.69,6.521
+Curvelet,7.556,7.525,6.685
+ruido_0.05,7.85,8.155,9.462
+desenfoque_5,8.417,7.785,8.524
+ruido_0.02,8.917,8.595,8.994
+desenfoque_11,9.822,9.13,10.053
