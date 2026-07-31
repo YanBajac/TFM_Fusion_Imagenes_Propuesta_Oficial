@@ -29,11 +29,18 @@ from src.utils import save_image, save_metrics_csv
 # ---------------------------------------------------------------------------
 # Configuración de métodos a comparar (benchmark de la tesis)
 # ---------------------------------------------------------------------------
-# Hiperparámetros de la propuesta hallados por PSO (operador con SUMA de ramas)
-# PSO con la aptitud F_o y el rango publicado m in [0,30; 2,00] (Ortega y Espinoza, 2025):
-# el optimo converge al piso del rango, m* = 0,30, en las 25 configuraciones del Cuadro 1.
-# El radio se fija en 25 (tope del rango publicado), que maximiza las metricas de evaluacion
-# de la tesis -todas de tipo "mayor es mejor"- y activa el banco completo de cinco SE.
+# Hiperparametros de la propuesta (operador con SUMA de ramas).
+# El PESO lo fija el PSO con la aptitud F_o sobre el rango publicado m in [0,30; 2,00]
+# (Ortega y Espinoza, 2025): el optimo converge al piso del rango, m* = 0,30, en las 25
+# configuraciones del Cuadro 1, porque F_o decrece de forma estrictamente monotona en m.
+#
+# El RADIO no lo fija el PSO: dentro de ese rango F_o prefiere r = 1 (1,7354 frente a
+# 1,7039 en r = 25). r = 25 es una DECISION DE DISENO tomada sobre las metricas de
+# evaluacion, de las cuales cinco lo favorecen (EN, SD, FE, MG, SF) y cuatro favorecen
+# r = 1 (SSIM, PSNR, MI_vis, MI_ir). Se adopta priorizando la capacidad de realce; la
+# limitacion (elegir el radio con parte del criterio con que luego se evalua) esta
+# declarada en el libro. Nota: r = 1 no desactiva el banco de cinco SE -el disco es la
+# cruz 3x3 y las cuatro lineas son cuatro mascaras 3x3 distintas-.
 PROP_R, PROP_M = 25, 0.30
 
 METHODS = {
