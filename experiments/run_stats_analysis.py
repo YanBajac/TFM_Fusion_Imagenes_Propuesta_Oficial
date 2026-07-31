@@ -19,7 +19,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from src.metrics.evaluators import METRIC_DIRECTION
 
-MDIR = ROOT / "experiments" / "results" / "metrics_reports"
+# Directorio de metricas: por defecto el oficial; se puede pasar otro como argumento
+# (util para generar variantes del informe con otra configuracion del operador).
+MDIR = Path(sys.argv[1]) if len(sys.argv) > 1 else (
+    ROOT / "experiments" / "results" / "metrics_reports")
 df = pd.read_csv(MDIR / "all_metrics.csv")
 
 # Set de métricas del análisis (alineado con Ortega y Espinoza: clásicas de
@@ -39,15 +42,33 @@ means = df.groupby("method")[METRICS].mean().round(4)
 means.to_csv(MDIR / "descriptive_means.csv")
 
 # ---------------------------------------------------------------- ranking
-# Para cada metrica, rankear metodos por la media (1 = mejor).
+# Ranking por PROMEDIO DE RANGOS INTRA-BLOQUE: para cada metrica se rankean los
+# metodos dentro de cada imagen (1 = mejor) y se promedian los rangos sobre las
+# imagenes. Es el acompanante estandar de la prueba de Friedman, que opera
+# exactamente sobre esos rangos.
+#
+# La version anterior rankeaba las MEDIAS (7 numeros por metrica), lo que descarta
+# la estructura de bloques y da un resultado distinto; se conserva en la columna
+# avg_rank_medias solo para trazabilidad con los informes previos.
+#
+# FE es la entropia EN reescalada por una constante por escena (ver
+# src.metrics.evaluators.fusion_efficiency), de modo que en el promedio de las nueve
+# metricas la entropia pesa 2/9. Por eso se publica tambien avg_rank_sin_FE, que
+# promedia solo las ocho metricas independientes.
 rank_tbl = pd.DataFrame(index=methods)
 for m in METRICS:
     asc = (METRIC_DIRECTION[m] == "min")  # si min es mejor, ascendente
-    # rank de las medias; menor rank = mejor
-    r = means[m].rank(ascending=asc, method="average")
-    rank_tbl[m] = r
+    mat = metric_matrix(m)                # [imagenes x metodos]
+    rk = mat.rank(axis=1, ascending=asc, method="average")
+    rank_tbl[m] = rk.mean(axis=0)
+
+METRICS_INDEP = [m for m in METRICS if m != "FE"]
 rank_tbl["avg_rank"] = rank_tbl[METRICS].mean(axis=1).round(3)
-rank_tbl = rank_tbl.round(2).sort_values("avg_rank")
+rank_tbl["avg_rank_sin_FE"] = rank_tbl[METRICS_INDEP].mean(axis=1).round(3)
+rank_tbl["avg_rank_medias"] = pd.concat(
+    [means[m].rank(ascending=(METRIC_DIRECTION[m] == "min"), method="average")
+     for m in METRICS], axis=1).mean(axis=1).round(3)
+rank_tbl = rank_tbl.round(3).sort_values("avg_rank")
 rank_tbl.to_csv(MDIR / "ranking_methods.csv")
 
 # ---------------------------------------------------------------- Friedman
@@ -76,12 +97,18 @@ def rank_biserial(a, b):
     total = rpos + rneg
     return float((rpos - rneg) / total) if total > 0 else 0.0
 
+# Contrastes: cada morfologico contra cada baseline, MAS el contraste entre los dos
+# morfologicos (Propuesta vs Top-Hat clasico), que es el que aisla el aporte del banco
+# de cinco elementos estructurantes y que la version anterior del script no producia.
+CONTRASTES = [(th, bl) for th in tophats for bl in baselines]
+if "Propuesta_Novedosa" in methods and "TopHat_Clasico" in methods:
+    CONTRASTES.append(("Propuesta_Novedosa", "TopHat_Clasico"))
+
 wx_rows = []
 for m in METRICS:
     mat = metric_matrix(m)
     block = []
-    for th in tophats:
-        for bl in baselines:
+    for th, bl in CONTRASTES:
             a = mat[th].values
             b = mat[bl].values
             try:
@@ -106,7 +133,9 @@ for m in METRICS:
         adj = min(1.0, (n - rank_i) * bdf["p_value"].fillna(1.0).iloc[idx])
         prev = max(prev, adj)
         holm[idx] = prev
-    bdf["p_holm"] = holm.round(4)
+    # Sin redondear: un round(4) aplastaba a 0,0 todo p ajustado menor que 5e-05, y los
+    # informes publicaban p-valores de exactamente cero, que son imposibles.
+    bdf["p_holm"] = holm
     bdf["sig_holm_05"] = bdf["p_holm"] < 0.05
     wx_rows.append(bdf)
 
