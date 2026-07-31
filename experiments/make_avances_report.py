@@ -246,6 +246,20 @@ else:
         "anotación contiene ambas clases complementarias.")
     PIE_DETECCIONES = "Detecciones del modelo único VIS+IR sobre dos escenas de M3FD."
 
+# ------------------------------------------------------------------ aptitud del barrido
+# Los dos valores de F_o que se citan en la lectura del barrido se derivan del CSV y no se
+# escriben a mano: al sustituir un par del corpus cambian las escenas sobre las que se
+# optimiza (list_pairs()[::7]) y con ellas la aptitud.
+_g = grid.copy()
+_col_fo = "F_opt" if "F_opt" in _g.columns else "Fo_opt"
+FO_MEJOR = f"{_g[_col_fo].max():.4f}".replace(".", ",")
+_r_mejor = int(_g.loc[_g[_col_fo].idxmax(), "r_opt"])
+_fo25 = _g.loc[_g["r_opt"] == 25, _col_fo]
+FO_R25 = f"{_fo25.max():.4f}".replace(".", ",") if len(_fo25) else "-"
+R_PREFERIDO = _r_mejor
+N_R1 = int((_g["r_opt"] == 1).sum())
+N_M_PISO = int((_g["m_opt"] == _g["m_opt"].min()).sum())
+
 if LIBRE:
     LECTURA_PSO = (
         "Lectura: con el límite inferior del peso ampliado, el óptimo de F<sub>o</sub> deja de estar "
@@ -286,20 +300,6 @@ else:
         "barrido con la metodología de referencia y mantiene la saturación por debajo del 2 % de los "
         "píxeles. Estos hiperparámetros definen la configuración de la propuesta usada en todo el "
         "benchmark de esta variante.")
-
-# ------------------------------------------------------------------ aptitud del barrido
-# Los dos valores de F_o que se citan en la lectura del barrido se derivan del CSV y no se
-# escriben a mano: al sustituir un par del corpus cambian las escenas sobre las que se
-# optimiza (list_pairs()[::7]) y con ellas la aptitud.
-_g = grid.copy()
-_col_fo = "F_opt" if "F_opt" in _g.columns else "Fo_opt"
-FO_MEJOR = f"{_g[_col_fo].max():.4f}".replace(".", ",")
-_r_mejor = int(_g.loc[_g[_col_fo].idxmax(), "r_opt"])
-_fo25 = _g.loc[_g["r_opt"] == 25, _col_fo]
-FO_R25 = f"{_fo25.max():.4f}".replace(".", ",") if len(_fo25) else "-"
-R_PREFERIDO = _r_mejor
-N_R1 = int((_g["r_opt"] == 1).sum())
-N_M_PISO = int((_g["m_opt"] == _g["m_opt"].min()).sum())
 
 # ------------------------------------------------------------------ posicion por metrica
 _NOM_MET = {"EN": "la entropía", "SD": "el contraste", "FE": "la ganancia de entropía sobre las fuentes",
