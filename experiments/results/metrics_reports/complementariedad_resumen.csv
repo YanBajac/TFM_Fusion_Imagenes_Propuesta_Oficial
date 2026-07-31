@@ -1,0 +1,10 @@
+entrada,escenas,recupera_ambas,pct_ambas,recupera_People,recupera_Lamp,criticas,resuelve_criticas,gana_vs_VIS,pierde_vs_VIS,gana_vs_IR,pierde_vs_IR
+VIS,68,29,42.6,46,44,33,0,,,,
+IR,68,29,42.6,53,33,33,0,,,,
+PiramideLaplace,68,34,50.0,50,45,33,2,5.0,0.0,8.0,3.0
+RatioPiramide,68,32,47.1,53,40,33,1,4.0,1.0,7.0,4.0
+DWT,68,33,48.5,50,43,33,2,6.0,2.0,7.0,3.0
+DTCWT,68,35,51.5,50,45,33,3,7.0,1.0,9.0,3.0
+Curvelet,68,32,47.1,50,41,33,2,5.0,2.0,8.0,5.0
+TopHat_Clasico,68,27,39.7,45,36,33,1,2.0,4.0,4.0,6.0
+Propuesta_Novedosa,68,30,44.1,50,38,33,0,2.0,1.0,6.0,5.0
