@@ -113,7 +113,29 @@ def main():
     STATE = Path(f'experiments/results/pso/pso_grid_fo_{suf}_state.json')
     OUT_CSV = Path(f'experiments/results/metrics_reports/pso_grid_search_fo_{suf}.csv')
     fitness = hacer_fitness(a.operator)
+
+    # Huella de las condiciones del barrido: escenas usadas, rango de m y operador.
+    #
+    # El estado reanudable marcaba cada configuracion como done sin registrar sobre QUE
+    # se habia calculado, de modo que un cambio de corpus o de rango hacia que el script
+    # reescribiera el CSV desde el estado guardado sin recalcular nada (detectado porque
+    # incluso la columna de segundos salia identica). Como el barrido optimiza sobre
+    # list_pairs()[::7], al sustituir un par del corpus los indices se desplazan y una de
+    # las tres escenas cambia: el resultado ya no corresponde.
+    import hashlib
+    from src.datasets import list_pairs as _lp
+    _escenas = [p[0].stem for p in _lp()[::7]]
+    _cond = {"escenas": _escenas, "m_lo": a.m_lo, "m_hi": a.m_hi, "operador": a.operator}
+    huella = hashlib.sha256(json.dumps(_cond, sort_keys=True).encode()).hexdigest()[:16]
+    print(f"escenas del barrido: {', '.join(_escenas)}")
+    print(f"huella de condiciones: {huella}")
+
     s = json.load(open(STATE)) if STATE.exists() else {"configs": {}}
+    if s.get("huella") != huella:
+        if s.get("configs"):
+            print(f"AVISO: las condiciones cambiaron (huella previa {s.get('huella')}).")
+            print("       Se descarta el estado guardado y se recalcula el barrido completo.")
+        s = {"configs": {}, "huella": huella, "condiciones": _cond}
     t0 = time.time()
 
     for n in PARTICULAS:
