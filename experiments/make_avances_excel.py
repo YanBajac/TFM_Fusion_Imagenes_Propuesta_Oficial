@@ -57,10 +57,17 @@ fried = pd.read_csv(os.path.join(MR, "friedman_results.csv"))
 wilc  = pd.read_csv(os.path.join(MR, "wilcoxon_results.csv"))
 rankm = pd.read_csv(os.path.join(MR, "ranking_methods.csv"), index_col=0)
 allm  = pd.read_csv(os.path.join(MR, "all_metrics.csv"))
+_det_llvip = pd.read_csv(os.path.join(MR, "detection_llvip_map.csv")).set_index("method")
 grid  = pd.read_csv(os.path.join(MR, "pso_grid_search_fo_propuesta.csv")).rename(
     columns={"Fo_opt": "F_opt"})
 
 PROP = "Propuesta_Novedosa"
+# Posicion de la propuesta en el ranking agregado, tomada del dato (promedio de rangos
+# intra-bloque, el acompanante estandar de Friedman) y no fijada a mano.
+_rk = rankm["avg_rank"].sort_values()
+POS_RK = list(_rk.index).index(PROP) + 1
+VAL_RK = f"{_rk[PROP]:.3f}".replace(".", ",")
+N_ESC = int(allm["image"].nunique())
 ORDEN = ["PiramideLaplace", "RatioPiramide", "DWT", "DTCWT", "Curvelet", "TopHat_Clasico", PROP]
 LBL = {"PiramideLaplace": "Pirámide de Laplace (LP)", "RatioPiramide": "Ratio of low-pass Pyramid (RP)",
        "DWT": "Wavelet discreta (DWT)", "DTCWT": "Dual-Tree Complex Wavelet (DTCWT)",
@@ -83,12 +90,19 @@ info = [
     ("Propuesta central", "Fusión Top-Hat de UNA SOLA ESCALA (radio r): disco B_r + 4 líneas L_{r,θ} (0°, 45°, 90°, 135°, largo 2r+1). "
      "Respuestas lineales promediadas y SUMADAS a la del disco (Bala et al. 2024); entre fuentes máximo; "
      "reconstrucción F = I_base + m·WTH − m·BTH."),
-    ("Optimización", "Barrido de 25 configuraciones PSO (partículas 2-10 × iteraciones 10-50, Cuadro 1 de Ortega & Espinoza 2025) sobre (r, m), r en [1,25]. El peso converge al piso del rango publicado (m* = 0,30) en las 25 configuraciones; el radio se fija en r = 25, que maximiza las nueve métricas de evaluación y activa el banco completo de cinco SE."),
+    ("Optimización", "Barrido de 25 configuraciones PSO (partículas 2-10 × iteraciones 10-50, Cuadro 1 de Ortega & Espinoza 2025) sobre (r, m), r en [1,25]. El peso converge al piso del rango publicado (m* = 0,30) en las 25 configuraciones, porque Fo decrece de forma estrictamente monótona en m. El radio NO lo fija el PSO: dentro de ese rango Fo prefiere r = 1 (1,7354 frente a 1,7039 en r = 25), de modo que r = 25 es una decisión de diseño tomada sobre las métricas de evaluación, de las cuales cinco lo favorecen (EN, SD, FE, MG, SF) y cuatro prefieren r = 1 (SSIM, PSNR, MI_vis, MI_ir)."),
     ("Benchmark", "7 métodos: LP, RP (Toet 1989), DWT, DTCWT, CVT, Top-Hat clásico y la propuesta. "
-     "20 pares TNO × nueve métricas sin referencia (EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PSNR)."),
-    ("Resultados clave", "La propuesta lidera la entropía (6,9888) y el contenido de bordes (1,1045) del estudio y es 2ª en SD, MG y SF, "
-     "con ventaja significativa sobre los cinco métodos del estado del arte en EN, FE, MG y SF; 2º lugar del ranking agregado (3,67)."),
-    ("Detección (LLVIP)", "YOLOv8n reentrenado por método. IR solo lidera (mAP@0,5=0,957); toda fusión supera al VIS solo (0,808); la propuesta queda en el extremo inferior de la banda de fusiones (0,913): el realce que premian las métricas de actividad no mejora la detección (H3 no sostenida)."),
+     f"{N_ESC} pares TNO × nueve métricas sin referencia (EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PSNR)."),
+    ("Resultados clave", f"La propuesta lidera la entropía ({means.loc[PROP,'EN']:.4f}) del estudio, "
+     f"con ventaja significativa sobre los cinco métodos del estado del arte en EN, MG y SF; "
+     f"{POS_RK}º lugar del ranking agregado ({VAL_RK}) por promedio de rangos intra-bloque. "
+     "Nota: FE es la entropía EN reescalada por una constante por escena, de modo que no constituye "
+     "evidencia independiente de EN."),
+    ("Detección (LLVIP)", f"YOLOv8n reentrenado por método, evaluado con el checkpoint final (last.pt) para no "
+     f"heredar el sesgo de elegirlo sobre el mismo conjunto que se reporta. El IR solo lidera "
+     f"(mAP@0,5 = {_det_llvip.loc['IR','mAP50']:.4f}); toda fusión supera al VIS solo "
+     f"({_det_llvip.loc['VIS','mAP50']:.4f}); la propuesta alcanza {_det_llvip.loc[PROP,'mAP50']:.4f}: "
+     f"el realce que premian las métricas de actividad no mejora la detección (H3 no sostenida)."),
 ]
 for k, v in info:
     ws.cell(f, 1, k).font = F_TXTB
@@ -100,12 +114,12 @@ ws.cell(f, 1, "Contenido del libro").font = F_SUB; f += 1
 hojas = [
     ("PSO_Configuracion", "Parámetros del PSO de la propuesta (algoritmo, rangos, aptitud Fo, óptimo)"),
     ("PSO_Barrido", "Barrido de 25 configuraciones (partículas × iteraciones) replicando el Cuadro 1 del libro FPUNA"),
-    ("Benchmark", "Los 7 métodos × nueve métricas (promedio de los 20 pares TNO)"),
-    ("Benchmark_por_Escena", "Los 7 métodos en cada una de las 20 escenas (140 filas, con filtro y mejor por escena)"),
-    ("PSO_por_Escena", "Las 25 configuraciones del PSO en cada escena (500 filas) — equivale a los Anexos 1-20"),
+    ("Benchmark", f"Los 7 métodos × nueve métricas (promedio de los {N_ESC} pares TNO)"),
+    ("Benchmark_por_Escena", f"Los 7 métodos en cada una de las {N_ESC} escenas ({N_ESC*7} filas, con filtro y mejor por escena)"),
+    ("PSO_por_Escena", f"Las 25 configuraciones del PSO en cada escena ({N_ESC*25} filas) — equivale a los Anexos 1-{N_ESC}"),
     ("Propuesta_por_Imagen", "Métricas de la propuesta en cada escena, con promedio y desvío por fórmula"),
-    ("Friedman", "Test global por métrica (7 métodos × 20 imágenes)"),
-    ("Wilcoxon", "90 contrastes pareados (propuesta y Top-Hat clásico vs. los 5 del estado del arte)"),
+    ("Friedman", f"Test global por métrica (7 métodos × {N_ESC} imágenes)"),
+    ("Wilcoxon", f"{len(wilc)} contrastes pareados (los dos morfológicos vs. los 5 del estado del arte, más Propuesta vs Top-Hat clásico)"),
     ("Ranking_Global", "Ranking promedio de los 7 métodos (nueve métricas)"),
     ("Deteccion_LLVIP", "mAP de YOLOv8n reentrenado por método sobre LLVIP (evaluación orientada a tarea)"),
     ("Deteccion_M3FD", "Clases complementarias en M3FD: AP por clase con un detector único VIS+IR (People/IR, Lamp/VIS)"),
@@ -181,7 +195,7 @@ f = nota(ws, f, "Lectura: n = 2 cae en el óptimo local r = 1 en 2 de 5 corridas
 # ============================================================ 4. BENCHMARK
 ws = wb.create_sheet("Benchmark")
 ws.sheet_view.showGridLines = False
-f = titulo(ws, 1, "Benchmark — 7 métodos × nueve métricas (promedio de 20 pares TNO)",
+f = titulo(ws, 1, f"Benchmark — 7 métodos × nueve métricas (promedio de {N_ESC} pares TNO)",
            "Negrita = mejor de la columna (todas las métricas de tipo «mayor es mejor»).")
 ws.column_dimensions["A"].width = 36
 for j in range(2, 14):
@@ -204,7 +218,7 @@ for m in ORDEN:
 # informe de avances, con el formato del Cuadro 2 de referencia, pero con las nueve metricas).
 ws = wb.create_sheet("Benchmark_por_Escena")
 ws.sheet_view.showGridLines = False
-f = titulo(ws, 1, "Benchmark escena por escena — los 7 métodos en cada uno de los 20 pares del TNO",
+f = titulo(ws, 1, f"Benchmark escena por escena — los 7 métodos en cada uno de los {N_ESC} pares del TNO",
            "En negrita el mejor valor de cada métrica dentro de cada escena. Todas las métricas son "
            "de tipo «mayor es mejor». Equivale a las Tablas 2a-2e del informe de avances, ampliado a "
            "las nueve métricas.")
@@ -231,7 +245,7 @@ f += 1
 _lidera = {mk: sum(1 for im in ESCENAS
                    if allm[allm["image"] == im].set_index("method").loc[ORDEN, mk].idxmax() == PROP)
            for mk in METS}
-f = nota(ws, f, "Recuento sobre las 20 escenas — la propuesta obtiene el mejor valor en: "
+f = nota(ws, f, f"Recuento sobre las {N_ESC} escenas — la propuesta obtiene el mejor valor en: "
          + " · ".join(f"{mk} {v}/20" for mk, v in _lidera.items())
          + ". Confirma el patrón de los promedios: lidera las métricas de información y contraste, "
            "y cede las de fidelidad a las fuentes.")
@@ -242,7 +256,7 @@ f = nota(ws, f, "Recuento sobre las 20 escenas — la propuesta obtiene el mejor
 _pso_img = pd.read_csv(os.path.join(MR, "pso_por_imagen.csv"))
 ws = wb.create_sheet("PSO_por_Escena")
 ws.sheet_view.showGridLines = False
-f = titulo(ws, 1, "PSO por escena — las 25 configuraciones del Cuadro 1 en cada uno de los 20 pares",
+f = titulo(ws, 1, f"PSO por escena — las 25 configuraciones del Cuadro 1 en cada uno de los {N_ESC} pares",
            "Aptitud Fo = SSIM_avg + E/8 + PSNR/100 sobre el rango publicado r ∈ [1,25], m ∈ [0,30; 2,00]. "
            "En negrita la configuración de mayor aptitud de cada escena. Fuente: pso_por_imagen.csv.")
 ws.column_dimensions["A"].width = 42
@@ -269,9 +283,9 @@ ws.freeze_panes = "B5"
 ws.auto_filter.ref = f"A{_ini - 1}:K{f - 1}"
 f += 1
 _mej = _pso_img.loc[_pso_img.groupby("imagen")["FO"].idxmax()]
-f = nota(ws, f, f"Lectura: en las 20 escenas el peso óptimo converge al límite inferior del rango "
-         f"publicado (m* = 0,30 en {int((_mej['m'] == 0.30).sum())} de 20) y el radio que maximiza Fo "
-         f"es r = 1 en {int((_mej['r'] == 1).sum())} de 20. Fo premia la fidelidad a las fuentes y por "
+f = nota(ws, f, f"Lectura: en las {N_ESC} escenas el peso óptimo converge al límite inferior del rango "
+         f"publicado (m* = 0,30 en {int((_mej['m'] == 0.30).sum())} de {N_ESC}) y el radio que maximiza Fo "
+         f"es r = 1 en {int((_mej['r'] == 1).sum())} de {N_ESC}. Fo premia la fidelidad a las fuentes y por "
          f"tanto el mínimo realce; la configuración adoptada (r = 25) proviene del criterio de "
          f"evaluación de la tesis —las nueve métricas, todas «mayor es mejor»—, no de Fo.")
 
@@ -292,7 +306,7 @@ for _, r in pi.iterrows():
         celda(ws, f, j, round(float(r[mk]), 4), fmt="0.000")
     f += 1
 last_data = f - 1
-celda(ws, f, 1, "PROMEDIO (20 escenas)", bold=True, align=CL)
+celda(ws, f, 1, f"PROMEDIO ({N_ESC} escenas)", bold=True, align=CL)
 for j in range(2, 2 + NM):
     L = get_column_letter(j)
     celda(ws, f, j, f"=AVERAGE({L}{first_data}:{L}{last_data})", fmt="0.000", bold=True)
@@ -306,7 +320,7 @@ ws.freeze_panes = "B4"
 # ============================================================ 6. FRIEDMAN
 ws = wb.create_sheet("Friedman")
 ws.sheet_view.showGridLines = False
-f = titulo(ws, 1, "Test de Friedman por métrica (7 métodos × 20 imágenes, por rangos)",
+f = titulo(ws, 1, f"Test de Friedman por métrica (7 métodos × {N_ESC} imágenes, por rangos)",
            "H0: no hay diferencias entre métodos. Significativa = p < 0,05.")
 f = encabezado(ws, f, ["Métrica", "χ² de Friedman", "p-valor", "Significativa (α=0,05)"], [14, 16, 14, 20])
 for r in fried.itertuples():
@@ -319,7 +333,7 @@ for r in fried.itertuples():
 # ============================================================ 7. WILCOXON
 ws = wb.create_sheet("Wilcoxon")
 ws.sheet_view.showGridLines = False
-f = titulo(ws, 1, "Wilcoxon pareado (20 imágenes) — métodos morfológicos vs. estado del arte",
+f = titulo(ws, 1, f"Wilcoxon pareado ({N_ESC} imágenes) — métodos morfológicos vs. estado del arte",
            "Corrección de Holm por métrica. Resultado por fórmula: ≈ si p_holm ≥ 0,05; si no, mejor/peor según "
            "(media método − media rival) × dirección (columna D; todas las métricas +1).")
 cols = ["Método", "Rival", "Métrica", "Dirección", "Media método", "Media rival",
@@ -351,7 +365,8 @@ ws.sheet_view.showGridLines = False
 f = titulo(ws, 1, "Ranking global de los 7 métodos (nueve métricas, dirección respetada)",
            "Rango 1 = mejor en esa métrica. La columna final promedia los nueve rangos con fórmula. La propuesta es 1ª "
            "en EN y FE y 2ª en SD, MG y SF; cede en las métricas de fidelidad a las fuentes (SSIM, PSNR) y en información "
-           "mutua, lideradas por los métodos multiescala. Queda 2ª en el ranking global (3,67), tras la pirámide de Laplace (3,44).")
+           f"mutua, lideradas por los métodos multiescala. Queda {POS_RK}ª en el ranking global "
+           f"({VAL_RK}), calculado como promedio de rangos intra-bloque.")
 ws.column_dimensions["A"].width = 36
 for j in range(2, 3 + NM):
     ws.column_dimensions[get_column_letter(j)].width = 8.5
@@ -400,36 +415,56 @@ f = nota(ws, f, "Lectura: toda fusión supera al visible solo (+0,11 a +0,14 en 
 ws = wb.create_sheet("Deteccion_M3FD")
 ws.sheet_view.showGridLines = False
 f = titulo(ws, 1, "Clases complementarias en M3FD — un detector único VIS+IR",
-           "YOLOv8n entrenado con las imágenes de ambas modalidades mezcladas (4.000 imágenes, 40 épocas) y evaluado "
-           "por inferencia sobre cada entrada. People domina en IR (térmica); Lamp solo se ve en VIS. En negrita el mejor por columna.")
+           "YOLOv8n entrenado con las imágenes de ambas modalidades mezcladas (etiquetas compartidas, 40 épocas) y evaluado "
+           "por inferencia sobre la partición de PRUEBA de cada entrada, disjunta de la de entrenamiento y de la de "
+           "selección del modelo. People domina en IR (térmica); Lamp solo se ve en VIS. En negrita el mejor por columna.")
 ws.column_dimensions["A"].width = 40
 for j in range(2, 6):
     ws.column_dimensions[get_column_letter(j)].width = 16
 f = encabezado(ws, f, ["Entrada del detector", "AP@0,5 People ↑", "AP@0,5 Lamp ↑", "Promedio del par ↑", "mAP@0,5 (6 clases) ↑"])
-M3FD = [
-    ("VIS (solo)", 0.178, 0.135, 0.157, 0.245),
-    ("IR (solo)", 0.220, 0.018, 0.119, 0.191),
-    ("Pirámide de Laplace (LP)", 0.147, 0.096, 0.122, 0.215),
-    ("Ratio Pyramid (RP)", 0.198, 0.133, 0.165, 0.231),
-    ("Wavelet discreta (DWT)", 0.165, 0.110, 0.137, 0.228),
-    ("Dual-Tree Complex Wavelet (DTCWT)", 0.159, 0.114, 0.137, 0.229),
-    ("Curvelet (CVT)", 0.167, 0.100, 0.133, 0.228),
-    ("Top-Hat clásico (r=5; m=1)", 0.125, 0.054, 0.090, 0.198),
-    ("Propuesta Novedosa (r=25; m=0,30)", 0.146, 0.101, 0.124, 0.211),
-]
-mejor_m3fd = {1: 0.220, 2: 0.135, 3: 0.165, 4: 0.245}
-for fila_m in M3FD:
-    es_prop = fila_m[0].startswith("Propuesta Novedosa")
-    celda(ws, f, 1, fila_m[0], bold=es_prop, align=CL)
-    for j in range(1, 5):
-        celda(ws, f, j + 1, fila_m[j], fmt="0.000", bold=(mejor_m3fd[j] == fila_m[j] or es_prop))
+# Tabla leida del CSV, no escrita a mano: antes los nueve valores estaban tipeados en el
+# codigo mientras la nota declaraba el CSV como fuente, de modo que un recomputo de la
+# deteccion no se reflejaba aqui.
+_m3 = pd.read_csv(os.path.join(MR, "detection_m3fd_map.csv")).set_index("method")
+_m3["par"] = (_m3["AP50_People"] + _m3["AP50_Lamp"]) / 2
+_M3_ORDEN = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT",
+             "Curvelet", "TopHat_Clasico", PROP]
+_M3_LBL = {"VIS": "VIS (solo)", "IR": "IR (solo)",
+           "PiramideLaplace": "Pirámide de Laplace (LP)", "RatioPiramide": "Ratio Pyramid (RP)",
+           "DWT": "Wavelet discreta (DWT)", "DTCWT": "Dual-Tree Complex Wavelet (DTCWT)",
+           "Curvelet": "Curvelet (CVT)", "TopHat_Clasico": "Top-Hat clásico (r=5; m=1)",
+           PROP: "Propuesta Novedosa (r=25; m=0,30)"}
+_M3_COLS = ["AP50_People", "AP50_Lamp", "par", "mAP50"]
+_pres = [k for k in _M3_ORDEN if k in _m3.index]
+_m3_best = {c: _m3.loc[_pres, c].idxmax() for c in _M3_COLS}
+for _k in _pres:
+    es_prop = (_k == PROP)
+    celda(ws, f, 1, _M3_LBL.get(_k, _k), bold=es_prop, align=CL)
+    for j, c in enumerate(_M3_COLS, start=1):
+        celda(ws, f, j + 1, round(float(_m3.loc[_k, c]), 4), fmt="0.000",
+              bold=(_m3_best[c] == _k or es_prop))
     f += 1
 f += 1
-f = nota(ws, f, "Lectura: complementariedad extrema (IR ciego a Lamp: 0,018; VIS débil en People). Las mejores fusiones "
-         "superan en el promedio del par a ambas modalidades individuales: la Ratio Pyramid alcanza 0,165 frente a 0,157 "
-         "del visible y 0,119 del infrarrojo. Todas las fusiones recuperan ambas clases en una sola imagen —algo que el "
-         "infrarrojo no logra—, y la propuesta alcanza un promedio intermedio (0,124; People 0,146 y Lamp 0,101): el "
-         "realce elevado no favorece al detector. Fuente: metrics_reports/detection_m3fd_map.csv.")
+_m3f = _m3.loc[[k for k in _pres if k not in ("VIS", "IR")]]
+_sup = [k for k in _m3f.index if _m3f.loc[k, "par"] > _m3.loc["VIS", "par"]
+        and _m3f.loc[k, "par"] > _m3.loc["IR", "par"]]
+_rec = [k for k in _m3f.index if _m3f.loc[k, "AP50_People"] > 0 and _m3f.loc[k, "AP50_Lamp"] > 0]
+_pos = int(_m3f["par"].rank(ascending=False)[PROP])
+_txt = (f"Lectura: complementariedad de las clases en las modalidades individuales — IR "
+        f"{_m3.loc['IR','AP50_People']:.3f} en People frente a {_m3.loc['IR','AP50_Lamp']:.3f} en Lamp; "
+        f"VIS {_m3.loc['VIS','AP50_People']:.3f} y {_m3.loc['VIS','AP50_Lamp']:.3f}. "
+        f"{len(_rec)} de las {len(_m3f)} fusiones detectan objetos de ambas clases en una sola imagen. ")
+_txt += ((f"En el promedio del par, {len(_sup)} de las {len(_m3f)} "
+          f"fusiones {'supera' if len(_sup)==1 else 'superan'} a ambas modalidades "
+          f"({', '.join(_M3_LBL.get(k,k).split(' (')[0] for k in _sup)}). ")
+         if _sup else
+         (f"Ninguna de las {len(_m3f)} fusiones supera a ambas modalidades en el promedio del par "
+          f"(mejor fusión {_m3f['par'].max():.3f} frente a {_m3.loc['VIS','par']:.3f} del VIS). "))
+_txt += (f"La propuesta obtiene {_m3.loc[PROP,'par']:.3f} en el par (puesto {_pos} de {len(_m3f)} "
+         f"entre las fusiones), People {_m3.loc[PROP,'AP50_People']:.3f} y Lamp "
+         f"{_m3.loc[PROP,'AP50_Lamp']:.3f}. Particiones train/val/test disjuntas y estratificadas; "
+         f"el test es la única partición reportada. Fuente: metrics_reports/detection_m3fd_map.csv.")
+f = nota(ws, f, _txt)
 
 wb.save(OUT)
 print("Guardado:", OUT)

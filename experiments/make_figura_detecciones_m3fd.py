@@ -130,5 +130,20 @@ def main():
     fig.savefig(out, dpi=160, bbox_inches="tight", facecolor="white")
     print("Guardado:", out)
 
+    # Se persiste QUE escenas se eligieron y CUANTOS objetos detecto cada entrada, para
+    # que el informe de avances redacte el parrafo con estos numeros en vez de tenerlos
+    # escritos a mano (con un test distinto, las escenas y los conteos cambian).
+    import json
+    datos = {"conf": CONF, "escenas": []}
+    for etiqueta, (s, nP, nL) in (("people", esc_a), ("lamp", esc_b)):
+        datos["escenas"].append({
+            "lado": etiqueta, "escena": s,
+            "people": {e: int(nP[e]) for e in ENTRADAS},
+            "lamp": {e: int(nL[e]) for e in ENTRADAS}})
+    js = Path("experiments/results/metrics_reports/figura_detecciones_m3fd.json")
+    js.parent.mkdir(parents=True, exist_ok=True)
+    js.write_text(json.dumps(datos, indent=2, ensure_ascii=False), encoding="utf-8")
+    print("Guardado:", js)
+
 if __name__ == "__main__":
     main()

@@ -1,0 +1,33 @@
+{
+  "conf": 0.3,
+  "escenas": [
+    {
+      "lado": "people",
+      "escena": "00118",
+      "people": {
+        "VIS": 6,
+        "IR": 8,
+        "Propuesta_Novedosa": 9
+      },
+      "lamp": {
+        "VIS": 4,
+        "IR": 3,
+        "Propuesta_Novedosa": 4
+      }
+    },
+    {
+      "lado": "lamp",
+      "escena": "03682",
+      "people": {
+        "VIS": 1,
+        "IR": 0,
+        "Propuesta_Novedosa": 0
+      },
+      "lamp": {
+        "VIS": 6,
+        "IR": 1,
+        "Propuesta_Novedosa": 6
+      }
+    }
+  ]
+}
