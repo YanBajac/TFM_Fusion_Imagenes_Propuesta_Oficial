@@ -221,13 +221,13 @@ for m in ORDEN:
     f += 1
 
 # ============================================================ 4b. BENCHMARK POR ESCENA
-# Los 7 metodos en cada una de las 20 escenas (misma informacion que las Tablas 2a-2e del
+# Los 7 metodos en cada una de las 20 escenas (misma informacion que las Tablas 4a-4e del
 # informe de avances, con el formato del Cuadro 2 de referencia, pero con las nueve metricas).
 ws = wb.create_sheet("Benchmark_por_Escena")
 ws.sheet_view.showGridLines = False
 f = titulo(ws, 1, f"Benchmark escena por escena — los 7 métodos en cada uno de los {N_ESC} pares del TNO",
            "En negrita el mejor valor de cada métrica dentro de cada escena. Todas las métricas son "
-           "de tipo «mayor es mejor». Equivale a las Tablas 2a-2e del informe de avances, ampliado a "
+           "de tipo «mayor es mejor». Equivale a las Tablas 4a-4e del informe de avances, ampliado a "
            "las nueve métricas.")
 ws.column_dimensions["A"].width = 42
 ws.column_dimensions["B"].width = 24

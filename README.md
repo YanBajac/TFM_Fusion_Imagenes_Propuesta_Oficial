@@ -243,7 +243,7 @@ solo cruzaba los métodos morfológicos contra el estado del arte y no los compa
 > modo que la diferencia refleja conjuntamente el cambio de operador y el de `(r, m)`. Aislar el
 > aporte del banco requiere un experimento con `(r, m)` idénticos.
 
-Los resultados **escena por escena** (las 20 imágenes) están en el informe de avances (Tablas 2a-2e,
+Los resultados **escena por escena** (las 20 imágenes) están en el informe de avances (Tablas 4a-4e,
 con el formato del Cuadro 2 del trabajo de referencia) y en la hoja `Benchmark_por_Escena` del libro
 de tablas.
 

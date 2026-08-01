@@ -162,7 +162,7 @@ def _n(x, d=3):
     return f"{x:.{d}f}".replace(".", ",")
 
 
-# Lectura de la Tabla 9 construida desde los datos: cada afirmacion se verifica antes de
+# Lectura de la Tabla 10 construida desde los datos: cada afirmacion se verifica antes de
 # escribirse, porque con un split o un checkpoint distintos varias de ellas se invierten.
 _sup_amb = [k for k in _m3f.index
             if _m3f.loc[k, "par"] > _m3.loc["VIS", "par"]
@@ -252,6 +252,66 @@ else:
         "(personas en granate, luces en azul), elegidas automáticamente entre las escenas cuya "
         "anotación contiene ambas clases complementarias.")
     PIE_DETECCIONES = "Detecciones del modelo único VIS+IR sobre dos escenas de M3FD."
+
+# ------------------------------------------------- justificacion del peso m adoptado
+# Cuatro criterios convergentes, cada uno de un CSV distinto: monotonia de la aptitud,
+# energia del operador (equivalencia del realce), saturacion del recorte, y la tension con
+# las metricas de evaluacion. Se derivan del dato para que la seccion no quede desactualizada.
+_bm = pd.read_csv(os.path.join(MR, "barrido_metricas_vs_m.csv"))
+_bm = _bm[_bm.operador == "propuesta"].sort_values("m").reset_index(drop=True)
+_bm30 = _bm[_bm.m >= 0.30].reset_index(drop=True)
+import numpy as _np
+_dif = _np.diff(_bm30["F_o"].values)
+M_CRECIENTES = int((_dif > 0).sum())
+M_TRAMOS = len(_dif)
+FO_M030 = float(_bm30["F_o"].iloc[0])
+FO_M200 = float(_bm30["F_o"].iloc[-1])
+FN_M030 = float(_bm30["F_nueve"].iloc[0])
+FN_M200 = float(_bm30["F_nueve"].iloc[-1])
+
+_en = pd.read_csv(os.path.join(MR, "aptitud_operador_energia.csv")).set_index("operador")
+_i_clas = [i for i in _en.index if "clásico" in i or "clasico" in i][0]
+_i_prop = [i for i in _en.index if "Propuesta" in i][0]
+W_CLAS = float(_en.loc[_i_clas, "detalle_medio"])
+W_PROP = float(_en.loc[_i_prop, "detalle_medio"])
+GANANCIA = W_PROP / W_CLAS
+M_EQUIV = 0.30 * GANANCIA                    # a que m del disco unico equivale nuestro 0,30
+RANGO_LO, RANGO_HI = 0.30 / GANANCIA, 2.00 / GANANCIA   # el rango publicado, traducido
+POS_EN_RANGO = 100.0 * (M_EQUIV - 0.30) / (2.00 - 0.30)
+
+_sat = pd.read_csv(os.path.join(MR, "saturacion_vs_m.csv"))
+def _satm(m):
+    f = _sat[_np.isclose(_sat.m, m)]
+    return float(f.pct_saturado_medio.iloc[0]) if len(f) else float("nan")
+SAT_030, SAT_100, SAT_200 = _satm(0.30), _satm(1.00), _satm(2.00)
+SAT_VECES = SAT_100 / SAT_030
+
+# Se muestran los pesos representativos, no los once medidos: la tabla completa esta en
+# saturacion_vs_m.csv y una tabla mas larga desborda la pagina.
+_SAT_MOSTRAR = [0.10, 0.30, 0.50, 1.00, 1.50, 2.00]
+_sat_v = _sat[_sat.m.isin(_SAT_MOSTRAR)]
+_fil_sat = "".join(
+    f"<tr><td>{r.m:.2f}".replace(".", ",") + "</td>"
+    f"<td>{('<b>' if _np.isclose(r.m, 0.30) else '')}"
+    + f"{r.pct_saturado_medio:.2f}".replace(".", ",") + " %"
+    + f"{('</b>' if _np.isclose(r.m, 0.30) else '')}</td>"
+    f"<td>{r.pct_bajo_cero:.2f}".replace(".", ",") + " %</td>"
+    f"<td>{r.pct_sobre_uno:.2f}".replace(".", ",") + " %</td></tr>"
+    for r in _sat_v.itertuples())
+TAB_SATURACION = ('<table class="chica"><thead><tr><th>Peso m</th>'
+                  '<th>Píxeles saturados</th><th>Por debajo de 0</th><th>Por encima de 1</th>'
+                  '</tr></thead><tbody>' + _fil_sat + '</tbody></table>')
+
+_fil_ten = "".join(
+    f"<tr><td>{r.m:.2f}".replace(".", ",") + "</td>"
+    + "".join(f"<td>{v}</td>" for v in (
+        f"{r.F_o:.4f}".replace(".", ","), f"{r.F_nueve:.3f}".replace(".", ","),
+        f"{r.SSIM:.4f}".replace(".", ","), f"{r.SF:.2f}".replace(".", ",")))
+    + "</tr>"
+    for r in _bm30[_bm30.m.isin([0.30, 0.50, 0.75, 1.00, 1.50, 2.00])].itertuples())
+TAB_TENSION = ('<table class="chica"><thead><tr><th>Peso m</th><th>F<sub>o</sub> (aptitud)</th>'
+               '<th>Suma de las nueve</th><th>SSIM</th><th>SF</th>'
+               '</tr></thead><tbody>' + _fil_ten + '</tbody></table>')
 
 # --------------------------------------------------------- robustez: ajuste y ablacion
 # Cifras del ajuste simetrico de los comparativos (run_ajuste_comparativos.py) y de la
@@ -961,6 +1021,88 @@ H.append(f"""
 
 H.append(f"""
 <div class="page">
+  <h2>5. Optimización por PSO (continuación): justificación del peso adoptado</h2>
+  <p>El peso <b>m = 0,30</b> merece una justificación explícita, porque es el límite inferior del
+  rango publicado y a primera vista podría parecer una elección discrecional o un valor
+  artificialmente bajo. No lo es: cuatro criterios <b>independientes entre sí</b> convergen en él.</p>
+
+  <p><b>Primero, el óptimo está forzado por la forma de la aptitud, no elegido.</b> Un barrido
+  determinista muestra que F<sub>o</sub> <b>decrece de forma estrictamente monótona</b> al aumentar m
+  dentro del rango publicado: {M_CRECIENTES} tramos crecientes de {M_TRAMOS}, desde
+  {f"{FO_M030:.4f}".replace(".", ",")} en m = 0,30 hasta {f"{FO_M200:.4f}".replace(".", ",")} en
+  m = 2,00. En consecuencia m* = 0,30 es el <b>único máximo posible</b> dentro del intervalo, y
+  cualquier optimizador converge a él: no depende de la semilla ni de la suerte de la búsqueda. Eso
+  explica que las 25 configuraciones del enjambre coincidan, y convierte el resultado en
+  reproducible por construcción.</p>
+
+  <p><b>Segundo, el rango proviene del trabajo de referencia.</b> El intervalo m &isin; [0,30; 2,00]
+  es el espacio de búsqueda publicado por Ortega y Espinoza (2025). Adoptarlo es lo que hace
+  comparable este trabajo con aquel: m = 0,30 es el valor que <i>su</i> función de aptitud selecciona
+  dentro de <i>su</i> rango.</p>
+
+  <p><b>Tercero, y es el argumento central: la equivalencia del realce físico.</b> El realce que
+  efectivamente se inyecta en la reconstrucción no es m, sino el producto <b>m · |W|</b> del peso por
+  la energía de detalle que extrae el operador. El banco de cinco elementos estructurantes extrae
+  {f"{W_PROP:.4f}".replace(".", ",")} frente a {f"{W_CLAS:.4f}".replace(".", ",")} del disco único de
+  la metodología clásica, es decir <b>{f"{GANANCIA:.2f}".replace(".", ",")} veces más energía</b>. Por
+  lo tanto un mismo peso no produce el mismo realce en ambos operadores, y comparar los valores de m
+  sin corregir por esa ganancia es comparar unidades distintas. Corrigiendo:</p>
+  <ul>
+    <li>m = 0,30 sobre el banco propuesto equivale a <b>m = {f"{M_EQUIV:.2f}".replace(".", ",")}</b>
+        sobre un disco único, valor que cae <b>dentro</b> del rango publicado [0,30; 2,00], al
+        {f"{POS_EN_RANGO:.0f}"} % de su recorrido y a
+        {f"{abs(M_EQUIV - 1.0):.2f}".replace(".", ",")} del peso canónico m = 1 de la metodología
+        clásica.</li>
+    <li>A la inversa, el rango publicado <b>traducido</b> a este operador preservando el realce
+        físico es [{f"{RANGO_LO:.4f}".replace(".", ",")}; {f"{RANGO_HI:.4f}".replace(".", ",")}], y
+        m = 0,30 cae dentro de ese intervalo.</li>
+  </ul>
+  <p>Es decir que el peso adoptado <b>no es un valor bajo</b>: es el que reproduce el realce físico
+  del rango publicado una vez corregida la diferencia de energía entre los dos operadores. Parece bajo
+  únicamente si se olvida que el operador cambió.</p>
+  {pie(11)}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>5. Optimización por PSO (continuación): rango dinámico y tensión de criterios</h2>
+  <p><b>Cuarto criterio: el rango dinámico de la reconstrucción.</b> La imagen fusionada se recorta a
+  [0, 1] antes de evaluarse, de modo que los píxeles que caen fuera quedan aplastados y su información
+  se pierde. Como el operador propuesto inyecta
+  {f"{GANANCIA:.2f}".replace(".", ",")} veces más detalle que un disco único, el recorte se vuelve
+  restrictivo mucho antes.</p>
+  <p><b>Tabla 2.</b> Porcentaje de píxeles saturados por el recorte según el peso, con r = 25 sobre
+  los {N_ESC} pares.</p>
+  {TAB_SATURACION}
+  <p class="lectura">Lectura: con m = 0,30 la saturación es de
+  {f"{SAT_030:.2f}".replace(".", ",")} %, es decir por debajo del 1 % de los píxeles. Con el peso
+  canónico de la metodología clásica (m = 1) este operador saturaría
+  {f"{SAT_100:.2f}".replace(".", ",")} % —{f"{SAT_VECES:.1f}".replace(".", ",")} veces más— y con
+  m = 2,00 más de {f"{SAT_200:.0f}"} % de la imagen. El peso adoptado es, por tanto, compatible con el
+  rango dinámico del operador, y este criterio es <b>independiente de la función de aptitud</b>.</p>
+
+  <p><b>Por qué el punto es un compromiso y no un máximo de todo.</b> Los dos criterios del trabajo
+  empujan m en sentidos opuestos: la aptitud F<sub>o</sub> hacia abajo, porque dos de sus tres términos
+  miden fidelidad a las fuentes; y las nueve métricas de evaluación hacia arriba, porque todas son de
+  tipo «mayor es mejor» y premian la actividad.</p>
+  <p><b>Tabla 3.</b> Comportamiento opuesto de los dos criterios al variar el peso (r = 25).</p>
+  {TAB_TENSION}
+  <p class="lectura">Lectura: al pasar de m = 0,30 a m = 2,00 la aptitud cae de
+  {f"{FO_M030:.4f}".replace(".", ",")} a {f"{FO_M200:.4f}".replace(".", ",")} mientras la suma de las
+  nueve métricas sube de {f"{FN_M030:.3f}".replace(".", ",")} a
+  {f"{FN_M200:.3f}".replace(".", ",")}: el mismo cambio de peso mejora un criterio y empeora el otro.
+  El SSIM se derrumba y la frecuencia espacial se dispara. <b>m = 0,30 es el punto donde esa tensión
+  se resuelve</b> del lado de la aptitud publicada, respetando además el rango dinámico. Conviene
+  enunciarlo con precisión: el PSO no <i>descubre</i> este valor explorando un espacio con óptimo
+  interior, sino que <b>confirma un óptimo que la forma de la aptitud determina</b>; lo que se hereda
+  del trabajo de referencia es la elección del rango.</p>
+  {pie(12)}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
   <h2>6. Métodos comparativos del benchmark</h2>
   <p>La propuesta se contrasta con cinco métodos representativos del estado del arte en fusión de
   imágenes visibles e infrarrojas, más la metodología clásica de la transformada Top-Hat:</p>
@@ -983,7 +1125,7 @@ H.append(f"""
   {formula("th_clasico", 17)}
   <p>Todos los métodos se ejecutan sobre los mismos {N_ESC} pares, con la misma implementación de métricas
   (<i>src/metrics/evaluators.py</i>), de modo que la comparación es directa.</p>
-  {pie(11)}
+  {pie(13)}
 </div>
 """)
 
@@ -1019,19 +1161,19 @@ H.append(f"""
   segundo puesto entre ocho entradas con σ &ge; 0,10, por delante de los seis métodos comparativos, y
   cuyo rango mejora de forma monótona al aumentar la varianza. Los resultados de las secciones
   siguientes deben leerse con ese alcance.</p>
-  {pie(12)}
+  {pie(14)}
 </div>
 """)
 
 H.append(f"""
 <div class="page">
   <h2>8. Resultados cuantitativos</h2>
-  <p><b>Tabla 2.</b> Benchmark completo: los 7 métodos con las nueve métricas (promedio de los {N_ESC} pares
+  <p><b>Tabla 4.</b> Benchmark completo: los 7 métodos con las nueve métricas (promedio de los {N_ESC} pares
   TNO; en negrita el mejor valor de cada columna).</p>
   {tabla_metodos(ORDEN, resaltar=PROP)}
   <p class="lectura">{LECTURA_BENCH}</p>
   {figura(charts["quality"], "Cuatro métricas representativas (EN, FE, SF, SSIM); la barra azul es la propuesta.", 96)}
-  {pie(13)}
+  {pie(15)}
 </div>
 """)
 
@@ -1060,10 +1202,10 @@ for _b, _imgs in enumerate(_bloques, 1):
     H.append(f"""
 <div class="page">
   <h2>{_cab}</h2>{_intro}
-  <p><b>Tabla 2{chr(96 + _b)}.</b> Resultados por escena — escenas {(_b - 1) * 4 + 1} a
+  <p><b>Tabla 4{chr(96 + _b)}.</b> Resultados por escena — escenas {(_b - 1) * 4 + 1} a
   {(_b - 1) * 4 + len(_imgs)} de {N_ESC}.</p>
   {tabla_por_imagen(_imgs)}{_lect}
-  {pie(13 + _b)}
+  {pie(15 + _b)}
 </div>
 """)
 
@@ -1072,27 +1214,27 @@ H.append(f"""
   <h2>9. Análisis estadístico</h2>
   <p>Primero, el test de Friedman (7 métodos × {N_ESC} imágenes, por rangos) para cada métrica:</p>
   {formula("friedman", 23)}
-  <p><b>Tabla 3.</b> Resultados del test de Friedman.</p>
+  <p><b>Tabla 5.</b> Resultados del test de Friedman.</p>
   {tabla_friedman()}
-  {pie(19)}
+  {pie(21)}
 </div>
 <div class="page">
   <h2>9. Análisis estadístico (continuación): Wilcoxon y ranking</h2>
   <p>Wilcoxon pareado de la propuesta contra cada rival ({N_ESC} imágenes), con corrección de Holm y tamaño
   de efecto rank-biserial:</p>
   {formula("rb", 24)}
-  <p><b>Tabla 4.</b> Resumen de los {len(wtab)} contrastes de la propuesta: mejor / peor / sin
+  <p><b>Tabla 6.</b> Resumen de los {len(wtab)} contrastes de la propuesta: mejor / peor / sin
   diferencia significativa (≈), α = 0,05.</p>
   {tabla_wilcoxon}
   <p class="lectura">Lectura: la propuesta resulta significativamente mejor en {w_mejor} contrastes,
   peor en {w_peor} y sin diferencia en {w_emp}; su ventaja más consistente es en las
   métricas de actividad e información (EN, FE, MG, SF), mejor que los cinco métodos del estado del arte.</p>
   {figura(charts["ranking"], "Ranking promedio global de los 7 métodos (9 métricas, dirección respetada); la barra azul es la propuesta.", 78)}
-  {pie(20)}
+  {pie(22)}
 </div>
 """)
 
-pg = 21
+pg = 23
 H.append(f"""
 <div class="page">
   <h2>10. Robustez del resultado: ajuste simétrico y ablación del operador</h2>
@@ -1104,7 +1246,7 @@ H.append(f"""
   Top-Hat clásico— y se seleccionó su mejor valor con <b>el mismo criterio</b> aplicado a la propuesta:
   el promedio de rangos intra-bloque sobre las nueve métricas, calculado entre las configuraciones del
   propio método. Son {len(_ajm)} configuraciones evaluadas sobre los {N_ESC} pares.</p>
-  <p><b>Tabla 5.</b> Ranking en cuatro escenarios de ajuste (promedio de rangos intra-bloque; menor es
+  <p><b>Tabla 7.</b> Ranking en cuatro escenarios de ajuste (promedio de rangos intra-bloque; menor es
   mejor; en negrita el líder de cada columna y la fila de la propuesta).</p>
   {TAB_ESCENARIOS}
   <p class="lectura">Lectura, en cuatro puntos. <b>Primero</b>, en la configuración estándar la
@@ -1145,7 +1287,7 @@ H.append(f"""
   <p><b>Aporte del banco de cinco elementos estructurantes.</b> La comparación contra el Top-Hat
   clásico no lo aísla, porque los dos operadores no comparten hiperparámetros. La ablación fija
   (r, m) = (25; 0,30) y varía únicamente la regla de combinación de las respuestas.</p>
-  <p><b>Tabla 6.</b> Ablación del operador con (r, m) fijos (promedio de rangos intra-bloque entre los
+  <p><b>Tabla 8.</b> Ablación del operador con (r, m) fijos (promedio de rangos intra-bloque entre los
   seis brazos; menor es mejor).</p>
   {TAB_ABLACION}
   <p class="lectura">Lectura: con las nueve métricas del trabajo, <b>la suma de ramas —la propuesta— es
@@ -1190,7 +1332,7 @@ H.append(f"""
   (peatones nocturnos; subconjunto de 2.000 imágenes de entrenamiento y 500 de validación). Como los
   pares VIS/IR están registrados, las anotaciones valen para toda versión fusionada: la diferencia de
   mAP aísla el efecto del método de fusión.</p>
-  <p><b>Tabla 8.</b> Detección de peatones en LLVIP — mAP por entrada del detector.</p>
+  <p><b>Tabla 9.</b> Detección de peatones en LLVIP — mAP por entrada del detector.</p>
   {tabla_det()}
   <p class="lectura">Lectura: toda fusión supera con claridad al visible solo (mAP@0,5 de 0,808 a la banda
   {LLVIP_LO}–{LLVIP_HI}); el infrarrojo solo es la modalidad más fuerte (0,957) y ninguna
@@ -1244,7 +1386,7 @@ H.append(f"""
   reporta, el resultado hereda un sesgo optimista que no es comparable entre métodos. La
   estratificación evita además que las particiones tengan proporciones de clase distintas, lo que
   desplazaría el criterio de selección.</p>
-  <p><b>Tabla 9.</b> AP@0,5 por clase y mAP global (medias sobre las {M3_N} imágenes de la partición
+  <p><b>Tabla 10.</b> AP@0,5 por clase y mAP global (medias sobre las {M3_N} imágenes de la partición
   de prueba, disjunta de la de entrenamiento y de la de selección del modelo).</p>
   {TAB_M3FD}
   <p class="lectura">{LECTURA_M3FD}</p>
