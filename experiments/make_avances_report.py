@@ -869,7 +869,7 @@ H.append(f"""
   hiperparámetros (r, m) se optimizan por enjambre de partículas (PSO).</p>
   <p>La evaluación compara la propuesta contra <b>seis métodos</b>: cinco representativos del estado del
   arte en fusión multiescala —Pirámide de Laplace (LP), Ratio of low-pass Pyramid (RP), Wavelet discreta
-  (DWT), Dual-Tree Complex Wavelet (DTCWT) y Curvelet (CVT)— más la <b>metodología clásica de la
+  (DWT), Dual-Tree Complex Wavelet (DTCWT) y wavelet db4 (rotulada CVT)— más la <b>metodología clásica de la
   transformada Top-Hat</b>, sobre los {N_ESC} pares del TNO Image Fusion Dataset con nueve métricas sin
   referencia y análisis estadístico no paramétrico.</p>
   <p>El orden del documento:</p>
@@ -1104,7 +1104,7 @@ H.append(f"""
 H.append(f"""
 <div class="page">
   <h2>6. Métodos comparativos del benchmark</h2>
-  <p>La propuesta se contrasta con cinco métodos representativos del estado del arte en fusión de
+  <p>La propuesta se contrasta con cinco configuraciones de referencia del estado del arte en fusión de
   imágenes visibles e infrarrojas, más la metodología clásica de la transformada Top-Hat:</p>
   <ul>
     <li><b>Pirámide de Laplace (LP)</b> — Burt y Adelson: separa frecuencias mediante filtros gaussianos
@@ -1117,8 +1117,16 @@ H.append(f"""
     <li><b>Dual-Tree Complex Wavelet (DTCWT)</b> — Kingsbury: mejora la DWT con invariancia al
         desplazamiento y seis subbandas direccionales complejas por nivel (4 niveles); fusión por máxima
         magnitud compleja.</li>
-    <li><b>Curvelet (CVT)</b> — Candès et al.: captura estructuras anisótropas y curvas mediante
-        elementos base direccionales (aproximación vía wavelet db4, 3 niveles).</li>
+    <li><b>Wavelet Daubechies db4 (rotulada CVT)</b>: descomposición wavelet 2D con base db4 y 3
+        niveles, con la misma regla de fusión que la DWT. Corresponde señalar con precisión qué es y
+        qué no es este comparativo: la implementación empleada <b>no es la transformada curvelet</b> de
+        Candès et al. (2006) —que utiliza elementos base anisótropos y direccionales que una wavelet
+        separable no posee— sino una aproximación por wavelet 2D, y comparte algoritmo con la DWT
+        difiriendo únicamente en la base (db4 frente a Haar). Igualando la base, ambas producen
+        resultados idénticos. Se conserva en el banco por comparabilidad con la literatura que emplea
+        esta aproximación, pero <b>no debe leerse como una cuarta familia independiente</b>: los cinco
+        métodos de referencia cubren en rigor cuatro familias (pirámides, wavelets separables, wavelets
+        complejas y morfología).</li>
     <li><b>Top-Hat clásico</b>: la fusión morfológica básica con un único disco B<sub>5</sub>, detalle
         entre fuentes por máximo y reconstrucción sin ponderación (m = 1):</li>
   </ul>

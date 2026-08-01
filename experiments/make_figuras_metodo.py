@@ -41,6 +41,16 @@ axes[5].set_title("Respuesta combinada", fontsize=10, color="#8b1a1a", fontweigh
 axes[5].set_xticks([]); axes[5].set_yticks([])
 fig.suptitle("Banco de 5 elementos estructurantes (disco + 4 líneas) — respuestas lineales "
              "promediadas y sumadas a la del disco", fontsize=11, y=1.02)
+# Se declara la convencion angular y la digitalizacion de las diagonales. Sin esto, un lector
+# que use el convenio matematico (eje vertical hacia arriba) lee 45 y 135 intercambiados,
+# porque en coordenadas de imagen la fila crece hacia abajo. La eleccion no afecta al operador
+# -el banco usa las cuatro orientaciones- pero conviene dejarla explicita.
+fig.text(0.5, -0.10,
+         "Ángulos medidos en coordenadas de imagen (el eje de filas crece hacia abajo). "
+         "Los segmentos tienen longitud $2r+1$; a 45° y 135° la digitalización usa "
+         "menos píxeles para esa misma longitud euclídea "
+         "(37 de 51 con $r=25$). Se ilustra con $r=5$; la configuración adoptada usa $r=25$.",
+         ha="center", va="top", fontsize=8.5, color="#444444", wrap=True)
 fig.tight_layout()
 fig.savefig(os.path.join(OUT, "fig_cinco_se.png"), dpi=160, bbox_inches="tight",
             facecolor="white")
@@ -123,7 +133,7 @@ caja(ax, 50, 31.5, 62, 8.0, "Reconstrucción ponderada (ec. 11)\n"
      fill=RELLENO, bold=True)
 flecha(ax, 50, 39.7, 50, 35.7)
 
-caja(ax, 50, 19.5, 64, 5.5, "PSO ajusta $(r, m)$: barrido 5×5 → $r=25$;  $m=0{,}0703$",
+caja(ax, 50, 19.5, 64, 5.5, "El PSO ajusta $m$; el radio es decisión de diseño → $r=25$;  $m=0{,}30$",
      dashed=True, fs=9.2)
 flecha(ax, 50, 27.4, 50, 22.4, dashed=True)
 

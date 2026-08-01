@@ -18,7 +18,7 @@
 > **Configuración oficial: r = 25, m = 0.30.**
 > Se compara contra **seis métodos**: cinco del estado del arte —Pirámide de Laplace (LP), Ratio of
 > low-pass Pyramid (RP, Toet 1989), Wavelet discreta (DWT), Dual-Tree Complex Wavelet (DTCWT) y
-> Curvelet (CVT)— más la **metodología clásica de la transformada Top-Hat**, sobre el **TNO Image
+> wavelet db4 rotulada CVT (ver §2.5)— más la **metodología clásica de la transformada Top-Hat**, sobre el **TNO Image
 > Fusion Dataset** (20 pares) con **nueve métricas sin referencia**, todas de tipo «mayor es mejor».
 > El impacto en **detección de objetos** se evalúa con dos experimentos: YOLOv8 reentrenado por
 > método sobre **LLVIP** (mAP) y un **detector único VIS+IR** sobre **M3FD** con clases
@@ -155,11 +155,16 @@ barrido en `experiments/pso_grid_search_fo.py`. El análisis que sustenta la ele
 | **Ratio of low-pass Pyramid (RP)** | Razones entre niveles gaussianos; se conserva la razón que más se aparta de 1; reconstrucción multiplicativa | Toet (1989) |
 | **Wavelet discreta (DWT)** | Subbandas de detalle/aproximación (Haar, 3 niveles); detalle por máxima magnitud | — |
 | **Dual-Tree Complex Wavelet (DTCWT)** | 6 subbandas direccionales complejas por nivel (4 niveles), invariante al desplazamiento | Kingsbury |
-| **Curvelet (CVT, vía wavelet 2D)** | Subbandas direccionales (db4, 3 niveles); máxima magnitud en detalle | Candès et al. (2006) |
+| **Wavelet Daubechies db4 (rotulada CVT)** | Descomposición wavelet 2D (db4, 3 niveles); máxima magnitud en detalle, promedio en aproximación. **No es la transformada curvelet**: comparte algoritmo con la DWT y solo cambia la base — igualando la base, ambas dan resultados idénticos | Daubechies (1992); la aproximación por wavelet se emplea en la literatura en lugar de Candès et al. (2006) |
 | **Top-Hat clásico** | Fusión morfológica básica: disco `B_5`, `F = I_base + máx(WTH) − máx(BTH)` sin ponderación | — |
 
 Implementación: `src/fusion/comparatives.py`. Todos se evalúan con la misma implementación de
 métricas, sobre los mismos 20 pares.
+
+> **Sobre el recuento de familias.** Los cinco métodos de referencia cubren en rigor **cuatro
+> familias**: pirámides (LP, RP), wavelets separables (DWT y el comparativo rotulado CVT, que
+> comparten algoritmo), wavelets complejas (DTCWT) y morfología (Top-Hat clásico). Conviene
+> declararlo así y no hablar de cinco familias independientes.
 
 ### 2.6 Métricas de evaluación
 
@@ -216,7 +221,7 @@ lideradas por los métodos multiescala.
 | Ratio of low-pass Pyramid (RP) | 6.810 | 0.127 | 1.077 | 0.028 | 0.949 | 0.650 | 13.62 | 0.705 | 17.37 |
 | Wavelet discreta (DWT) | 6.682 | 0.117 | 1.057 | 0.028 | 1.076 | 0.666 | 14.19 | 0.701 | 17.59 |
 | Dual-Tree Complex Wavelet (DTCWT) | 6.688 | 0.117 | 1.058 | 0.025 | 1.078 | 0.673 | 13.20 | **0.725** | 17.60 |
-| Curvelet (CVT) | 6.644 | 0.113 | 1.051 | 0.026 | 1.096 | 0.669 | 13.34 | 0.716 | **17.65** |
+| Wavelet db4 (CVT) | 6.644 | 0.113 | 1.051 | 0.026 | 1.096 | 0.669 | 13.34 | 0.716 | **17.65** |
 | Top-Hat clásico | 6.922 | 0.135 | 1.095 | **0.048** | 0.787 | 0.493 | **23.10** | 0.564 | 16.87 |
 | **Propuesta Novedosa (r=25, m=0.30)** | **6.986** | 0.144 | **1.105** | 0.035 | 0.897 | 0.600 | 17.44 | 0.658 | 16.84 |
 
@@ -271,7 +276,7 @@ esencialmente térmico); la propuesta queda en el **extremo inferior de la banda
 | Pirámide de Laplace (LP) | 0.949 | 0.651 |
 | Dual-Tree Complex Wavelet (DTCWT) | 0.948 | 0.633 |
 | Wavelet discreta (DWT) | 0.946 | 0.614 |
-| Curvelet (CVT) | 0.941 | 0.639 |
+| Wavelet db4 (CVT) | 0.941 | 0.639 |
 | Top-Hat clásico | 0.938 | 0.609 |
 | Ratio Pyramid (RP) | 0.926 | 0.538 |
 | **Propuesta Novedosa (r=25, m=0.30)** | 0.913 | 0.617 |
@@ -479,7 +484,8 @@ La detección con YOLO/RF-DETR requiere `ultralytics` / `rfdetr` (preferentement
 - Serra, J. (1982). *Image Analysis and Mathematical Morphology*. Academic Press.
 - Soille, P. (2003). *Morphological Image Analysis*. Springer.
 - Burt, P. & Adelson, E. (1983). The Laplacian Pyramid as a Compact Image Code. *IEEE Trans. Commun.*
-- Candès, E. et al. (2006). Fast Discrete Curvelet Transforms. *SIAM Multiscale Model. Simul.*
+- Daubechies, I. (1992). *Ten Lectures on Wavelets.* SIAM. (base db4 del comparativo rotulado CVT)
+- Candès, E. et al. (2006). Fast Discrete Curvelet Transforms. *SIAM Multiscale Model. Simul.* (transformada curvelet propiamente dicha, **no** implementada en este trabajo)
 - Kennedy, J. & Eberhart, R. (1995). Particle Swarm Optimization. *Proc. ICNN*.
 - Xydeas, C. & Petrović, V. (2000). Objective image fusion performance measure. *Electronics Letters*.
 - Piella, G. & Heijmans, H. (2003). A new quality metric for image fusion. *Proc. ICIP*.

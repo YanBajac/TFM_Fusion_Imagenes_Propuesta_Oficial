@@ -78,7 +78,7 @@ N_ESC = int(allm["image"].nunique())
 ORDEN = ["PiramideLaplace", "RatioPiramide", "DWT", "DTCWT", "Curvelet", "TopHat_Clasico", PROP]
 LBL = {"PiramideLaplace": "Pirámide de Laplace (LP)", "RatioPiramide": "Ratio of low-pass Pyramid (RP)",
        "DWT": "Wavelet discreta (DWT)", "DTCWT": "Dual-Tree Complex Wavelet (DTCWT)",
-       "Curvelet": "Curvelet (CVT)", "TopHat_Clasico": "Top-Hat clásico",
+       "Curvelet": "Wavelet db4 (CVT)", "TopHat_Clasico": "Top-Hat clásico",
        PROP: "PROPUESTA NOVEDOSA (r=25, m=0,30)"}
 DIRECTION = {"EN": 1, "SD": 1, "FE": 1, "MG": 1, "MI_vis": 1, "MI_ir": 1, "SF": 1,
              "SSIM": 1, "PSNR": 1}
@@ -439,7 +439,7 @@ _M3_ORDEN = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT",
 _M3_LBL = {"VIS": "VIS (solo)", "IR": "IR (solo)",
            "PiramideLaplace": "Pirámide de Laplace (LP)", "RatioPiramide": "Ratio Pyramid (RP)",
            "DWT": "Wavelet discreta (DWT)", "DTCWT": "Dual-Tree Complex Wavelet (DTCWT)",
-           "Curvelet": "Curvelet (CVT)", "TopHat_Clasico": "Top-Hat clásico (r=5; m=1)",
+           "Curvelet": "Wavelet db4 (CVT)", "TopHat_Clasico": "Top-Hat clásico (r=5; m=1)",
            PROP: "Propuesta Novedosa (r=25; m=0,30)"}
 _M3_COLS = ["AP50_People", "AP50_Lamp", "par", "mAP50"]
 _pres = [k for k in _M3_ORDEN if k in _m3.index]
