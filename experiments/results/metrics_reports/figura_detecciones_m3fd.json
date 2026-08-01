@@ -3,30 +3,30 @@
   "escenas": [
     {
       "lado": "people",
-      "escena": "00118",
+      "escena": "00389",
       "people": {
-        "VIS": 6,
-        "IR": 8,
-        "Propuesta_Novedosa": 9
+        "VIS": 3,
+        "IR": 10,
+        "Propuesta_Novedosa": 11
       },
       "lamp": {
-        "VIS": 4,
-        "IR": 3,
-        "Propuesta_Novedosa": 4
+        "VIS": 2,
+        "IR": 1,
+        "Propuesta_Novedosa": 1
       }
     },
     {
       "lado": "lamp",
-      "escena": "03682",
+      "escena": "00231",
       "people": {
-        "VIS": 1,
-        "IR": 0,
-        "Propuesta_Novedosa": 0
+        "VIS": 4,
+        "IR": 10,
+        "Propuesta_Novedosa": 8
       },
       "lamp": {
-        "VIS": 6,
+        "VIS": 5,
         "IR": 1,
-        "Propuesta_Novedosa": 6
+        "Propuesta_Novedosa": 7
       }
     }
   ]

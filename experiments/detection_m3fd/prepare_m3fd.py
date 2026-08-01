@@ -341,9 +341,16 @@ def main():
     # Antes se construian sobre el mismo `val` que servia para elegir el checkpoint,
     # de modo que el modelo se seleccionaba midiendo en las imagenes que luego se
     # reportaban. Ahora `test` es disjunto de `val` y de `train`.
+    # Prefijo distinto segun el proposito del test, para que ambos puedan coexistir:
+    #   m3fd_test_<M> -> particion estratificada, representativa; es la del mAP
+    #   m3fd_comp_<M> -> particion de escenas con las dos clases; es la del conteo por escena
+    # Antes ambos escribian el mismo prefijo, de modo que preparar uno destruia el otro y el
+    # mAP publicado quedaba referido a un conjunto que ya no existia en disco.
+    PREFIJO = "m3fd_comp" if a.test_complementario else "m3fd_test"
+    print(f"conjuntos de prueba -> {PREFIJO}_<METODO>")
     metodos = ["VIS", "IR"] + list(FUSERS.keys())
     for m in metodos:
-        d = out / f"m3fd_test_{m}"
+        d = out / f"{PREFIJO}_{m}"
         for sp in ("images", "labels"):
             shutil.rmtree(d / sp / "val", ignore_errors=True)
         (d / "images" / "val").mkdir(parents=True, exist_ok=True)
@@ -357,13 +364,13 @@ def main():
         lab = leer_label(lb)
         for m in metodos:
             img = v if m == "VIS" else (i if m == "IR" else FUSERS[m](v, i))
-            d = out / f"m3fd_test_{m}"
+            d = out / f"{PREFIJO}_{m}"
             save_uint8(img, d / "images" / "val" / f"{vp.stem}.jpg")
             (d / "labels" / "val" / f"{vp.stem}.txt").write_text(lab, encoding="utf-8")
         if (k + 1) % 50 == 0:
             print(f"  test fusionado {k+1}/{len(test)}...", flush=True)
     for m in metodos:
-        data_yaml(out / f"m3fd_test_{m}", "images/val", "images/val")
+        data_yaml(out / f"{PREFIJO}_{m}", "images/val", "images/val")
     print("LISTO. Mixto +", len(metodos), "sets de prueba en", out.resolve())
 
 if __name__ == "__main__":

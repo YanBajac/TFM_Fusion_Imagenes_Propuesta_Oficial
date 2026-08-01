@@ -5,7 +5,8 @@ detecciones del modelo unico dibujadas. Selecciona automaticamente la escena de
 validacion donde mejor se observa la complementariedad (el VIS pierde personas
 que la fusion recupera y el IR pierde luces que la fusion recupera).
 
-Requiere: datasets/m3fd_test_* generados por prepare_m3fd.py y el modelo
+Requiere: datasets/m3fd_comp_* (conjunto de escenas con las dos clases complementarias,
+generado por prepare_m3fd.py --test-complementario) y el modelo
 entrenado (runs/**/mixto/weights/best.pt).
 Salida: docs/figures/fig_m3fd_detecciones.png
 Uso:    python experiments/make_figura_detecciones_m3fd.py
@@ -37,7 +38,7 @@ def hallar_best():
     return str(cands[-1])
 
 def gt_clases(stem):
-    lab = Path(f"datasets/m3fd_test_VIS/labels/val/{stem}.txt")
+    lab = Path(f"datasets/m3fd_comp_VIS/labels/val/{stem}.txt")
     cls = [int(l.split()[0]) for l in lab.read_text().splitlines() if l.strip()]
     return cls
 
@@ -53,7 +54,7 @@ def main():
     modelo = YOLO(hallar_best())
 
     # -------- candidatas: escenas con GT de ambas clases --------
-    stems = sorted(p.stem for p in Path("datasets/m3fd_test_VIS/images/val").glob("*.jpg"))
+    stems = sorted(p.stem for p in Path("datasets/m3fd_comp_VIS/images/val").glob("*.jpg"))
     cand = []
     for s in stems:
         cls = gt_clases(s)
@@ -64,7 +65,7 @@ def main():
     # -------- medir todas las candidatas una sola vez --------
     stats = []
     for k, s in enumerate(cand):
-        rs = {e: modelo.predict(f"datasets/m3fd_test_{e}/images/val/{s}.jpg",
+        rs = {e: modelo.predict(f"datasets/m3fd_comp_{e}/images/val/{s}.jpg",
                                 conf=CONF, verbose=False)[0] for e in ENTRADAS}
         nP = {e: contar(rs[e], PEOPLE) for e in ENTRADAS}
         nL = {e: contar(rs[e], LAMP) for e in ENTRADAS}
@@ -98,7 +99,7 @@ def main():
     for fila, (s, _, _) in enumerate((esc_a, esc_b)):
         for col, e in enumerate(ENTRADAS):
             ax = axes[fila, col]
-            ruta = f"datasets/m3fd_test_{e}/images/val/{s}.jpg"
+            ruta = f"datasets/m3fd_comp_{e}/images/val/{s}.jpg"
             img = cv2.imread(ruta, cv2.IMREAD_GRAYSCALE)
             res = modelo.predict(ruta, conf=CONF, verbose=False)[0]
             ax.imshow(img, cmap="gray", vmin=0, vmax=255)

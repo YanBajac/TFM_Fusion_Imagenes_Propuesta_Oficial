@@ -51,6 +51,7 @@ PEOPLE, LAMP = NAMES.index("People"), NAMES.index("Lamp")
 ENTRADAS = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT",
             "Curvelet", "TopHat_Clasico", "Propuesta_Novedosa"]
 SALIDA = ROOT / "experiments" / "results" / "metrics_reports"
+PREF = "m3fd_comp"
 
 
 def hallar_pesos():
@@ -62,7 +63,7 @@ def hallar_pesos():
 
 def leer_gt(stem, ancho, alto):
     """Devuelve {clase: [ (x1,y1,x2,y2), ... ]} desde la etiqueta YOLO compartida."""
-    lb = ROOT / "datasets" / "m3fd_test_VIS" / "labels" / "val" / f"{stem}.txt"
+    lb = ROOT / "datasets" / f"{PREF}_VIS" / "labels" / "val" / f"{stem}.txt"
     cajas = {}
     if not lb.exists():
         return cajas
@@ -113,21 +114,29 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--conf", type=float, default=0.25)
     ap.add_argument("--iou", type=float, default=0.5)
+    # Hay dos particiones de prueba y miden cosas distintas:
+    #   m3fd_comp_<M> -> escenas que tienen las DOS clases complementarias; es la de este
+    #                    analisis, porque el conteo por escena solo tiene sentido ahi
+    #   m3fd_test_<M> -> muestra estratificada representativa; es la del mAP
+    ap.add_argument("--prefijo", default="m3fd_comp", choices=["m3fd_comp", "m3fd_test"],
+                    help="conjunto de prueba a usar (por defecto el de ambas clases)")
     a = ap.parse_args()
+    global PREF
+    PREF = a.prefijo
 
     from ultralytics import YOLO
     pesos = hallar_pesos()
     print("pesos:", pesos)
     modelo = YOLO(str(pesos))
 
-    base = ROOT / "datasets" / "m3fd_test_VIS" / "images" / "val"
+    base = ROOT / "datasets" / f"{PREF}_VIS" / "images" / "val"
     stems = sorted(p.stem for p in base.glob("*.jpg"))
-    print(f"escenas en la particion de prueba: {len(stems)}")
+    print(f"conjunto: {PREF}_<METODO> | escenas en la particion: {len(stems)}")
 
     filas = []
     for k, s in enumerate(stems):
         # las etiquetas son compartidas entre entradas, asi que el GT se lee una vez
-        img0 = ROOT / "datasets" / "m3fd_test_VIS" / "images" / "val" / f"{s}.jpg"
+        img0 = ROOT / "datasets" / f"{PREF}_VIS" / "images" / "val" / f"{s}.jpg"
         import cv2
         im = cv2.imread(str(img0), cv2.IMREAD_GRAYSCALE)
         if im is None:
@@ -138,7 +147,7 @@ def main():
         if not (gt.get(PEOPLE) and gt.get(LAMP)):
             continue
         for e in ENTRADAS:
-            ruta = ROOT / "datasets" / f"m3fd_test_{e}" / "images" / "val" / f"{s}.jpg"
+            ruta = ROOT / "datasets" / f"{PREF}_{e}" / "images" / "val" / f"{s}.jpg"
             if not ruta.exists():
                 continue
             r = modelo.predict(str(ruta), conf=a.conf, verbose=False)[0]

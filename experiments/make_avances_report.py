@@ -1005,6 +1005,20 @@ H.append(f"""
   {formula("ssim", 21)}
   <p>Relación señal-ruido de pico frente a ambas fuentes (MAX = 1):</p>
   {formula("psnr", 22)}
+  <p class="lectura">Alcance del conjunto y su limitación, declarados. El evaluador implementado
+  calcula además <b>ocho métricas que no se incorporan al análisis</b> —Qabf, Nabf, SCD, VIF, FMI y
+  los tres índices de Piella (Q0, QW, QE)—, y sus valores están disponibles en
+  <i>all_metrics.csv</i> junto a los de las nueve reportadas. La decisión de restringir el análisis a
+  estas nueve responde a la <b>fidelidad metodológica</b> con el trabajo de referencia, no a una
+  selección de resultados: con las diecisiete la propuesta cede el primer puesto del ranking agregado
+  y pasa al tercero, aunque lidera dos de las ocho excluidas (SCD y VIF). La limitación que importa
+  es otra y conviene enunciarla con precisión: las nueve son <b>todas de tipo «mayor es mejor»</b>, de
+  modo que ninguna penaliza el ruido ni los artefactos —la única métrica implementada con dirección
+  inversa, Nabf, queda fuera del conjunto—. En consecuencia el criterio premia la magnitud del realce:
+  se verificó con un control negativo en el que una fusión artificial de ruido gaussiano alcanza el
+  segundo puesto entre ocho entradas con σ &ge; 0,10, por delante de los seis métodos comparativos, y
+  cuyo rango mejora de forma monótona al aumentar la varianza. Los resultados de las secciones
+  siguientes deben leerse con ese alcance.</p>
   {pie(12)}
 </div>
 """)
