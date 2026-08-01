@@ -240,6 +240,14 @@ def main():
     ap.add_argument("--test-n", type=int, default=500,
                     help="particion de REPORTE, disjunta del val")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--test-complementario", action="store_true",
+                    help="el test se arma con TODOS los pares restantes que tienen anotadas las "
+                         "dos clases complementarias, en lugar de una muestra estratificada. "
+                         "train y val quedan IDENTICOS (misma semilla), de modo que el modelo "
+                         "entrenado se reutiliza sin reentrenar y las cifras son comparables")
+    ap.add_argument("--solo-test", action="store_true",
+                    help="no regenera el dataset mixto de entrenamiento (util cuando train y val "
+                         "no cambiaron y solo hace falta rearmar los conjuntos de prueba)")
     a = ap.parse_args()
     root = Path(a.m3fd_root)
     vdir = hallar_dir(root, ["vi", "Vis", "visible", "vis", "Visible", "RGB"])
@@ -269,6 +277,27 @@ def main():
         print(f"AVISO: hay {len(pares)} pares y se pidieron {pedido}; se reparte lo disponible")
     print(f"\nParticion estratificada y disjunta (semilla {a.seed}):")
     train, val, test = particionar(pares, a.train_n, a.val_n, a.test_n, semilla=a.seed)
+
+    if a.test_complementario:
+        # El mAP promediado sobre una muestra cualquiera no mide el objetivo declarado: lo que
+        # lo mide es cuantas ESCENAS con las dos clases complementarias recupera cada entrada.
+        # De los 500 pares del test estratificado, solo unos 68 tienen ambas clases anotadas, y
+        # con ese n ninguna diferencia alcanza significancia. Aca el test se arma con TODOS los
+        # pares restantes que las tienen.
+        #
+        # Se conservan train y val tal como los devuelve particionar() con la misma semilla, por
+        # dos razones: el modelo entrenado se reutiliza sin reentrenar, y las cifras quedan
+        # comparables con la corrida anterior. La alternativa -reservar los 574 pares con ambas
+        # clases para el test- le quitaria al train el 71 % de sus objetos Lamp, de modo que el
+        # modelo empeoraria en esa clase justamente por el cambio de particion: un confundido.
+        usados = {p[0].stem for p in train} | {p[0].stem for p in val}
+        test = [p for p in pares
+                if p[0].stem not in usados
+                and IDX_PEOPLE in clases_presentes(p[2])
+                and IDX_LAMP in clases_presentes(p[2])]
+        print(f"  --test-complementario: el test pasa a {len(test)} pares, todos con las dos "
+              f"clases anotadas")
+
     for nombre, parte in (("train", train), ("val", val), ("test", test)):
         resumen_clases(nombre, parte)
     print("  val  = seleccion de checkpoint (no se reporta) | test = unica particion reportada\n")
@@ -276,34 +305,37 @@ def main():
     out = Path(a.out)
     # ---------- dataset mixto de entrenamiento ----------
     mixto = out / "m3fd_mixto"
-    # Se borra el contenido previo: con un split nuevo, los archivos del anterior
-    # quedarian mezclados y podrian filtrar imagenes de test dentro del train.
-    for sp in ("train", "val"):
-        shutil.rmtree(mixto / "images" / sp, ignore_errors=True)
-        shutil.rmtree(mixto / "labels" / sp, ignore_errors=True)
-        (mixto / "images" / sp).mkdir(parents=True, exist_ok=True)
-        (mixto / "labels" / sp).mkdir(parents=True, exist_ok=True)
-    for k, (vp, ip, lb) in enumerate(train):
-        lab = leer_label(lb)
-        for tag, src in (("vi", vp), ("ir", ip)):
-            im = load_gray01(src)
-            if im is None:
-                continue
-            save_uint8(im, mixto / "images" / "train" / f"{vp.stem}__{tag}.jpg")
-            (mixto / "labels" / "train" / f"{vp.stem}__{tag}.txt").write_text(lab, encoding="utf-8")
-        if (k + 1) % 200 == 0:
-            print(f"  train {k+1}...", flush=True)
-    # val del mixto: ambas modalidades (solo para monitoreo del entrenamiento)
-    for vp, ip, lb in val:
-        lab = leer_label(lb)
-        for tag, src in (("vi", vp), ("ir", ip)):
-            im = load_gray01(src)
-            if im is None:
-                continue
-            save_uint8(im, mixto / "images" / "val" / f"{vp.stem}__{tag}.jpg")
-            (mixto / "labels" / "val" / f"{vp.stem}__{tag}.txt").write_text(lab, encoding="utf-8")
-    data_yaml(mixto, "images/train", "images/val")
-    print("mixto OK ->", mixto)
+    if a.solo_test:
+        print("--solo-test: no se regenera el mixto (train y val no cambiaron)")
+    else:
+     # Se borra el contenido previo: con un split nuevo, los archivos del anterior
+      # quedarian mezclados y podrian filtrar imagenes de test dentro del train.
+     for sp in ("train", "val"):
+         shutil.rmtree(mixto / "images" / sp, ignore_errors=True)
+         shutil.rmtree(mixto / "labels" / sp, ignore_errors=True)
+         (mixto / "images" / sp).mkdir(parents=True, exist_ok=True)
+         (mixto / "labels" / sp).mkdir(parents=True, exist_ok=True)
+     for k, (vp, ip, lb) in enumerate(train):
+         lab = leer_label(lb)
+         for tag, src in (("vi", vp), ("ir", ip)):
+             im = load_gray01(src)
+             if im is None:
+                 continue
+             save_uint8(im, mixto / "images" / "train" / f"{vp.stem}__{tag}.jpg")
+             (mixto / "labels" / "train" / f"{vp.stem}__{tag}.txt").write_text(lab, encoding="utf-8")
+         if (k + 1) % 200 == 0:
+             print(f"  train {k+1}...", flush=True)
+     # val del mixto: ambas modalidades (solo para monitoreo del entrenamiento)
+     for vp, ip, lb in val:
+         lab = leer_label(lb)
+         for tag, src in (("vi", vp), ("ir", ip)):
+             im = load_gray01(src)
+             if im is None:
+                 continue
+             save_uint8(im, mixto / "images" / "val" / f"{vp.stem}__{tag}.jpg")
+             (mixto / "labels" / "val" / f"{vp.stem}__{tag}.txt").write_text(lab, encoding="utf-8")
+     data_yaml(mixto, "images/train", "images/val")
+     print("mixto OK ->", mixto)
 
     # ---------- sets de prueba por metodo: se construyen sobre TEST ----------
     # Antes se construian sobre el mismo `val` que servia para elegir el checkpoint,
