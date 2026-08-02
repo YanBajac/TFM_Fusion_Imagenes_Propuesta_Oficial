@@ -313,6 +313,56 @@ TAB_TENSION = ('<table class="chica"><thead><tr><th>Peso m</th><th>F<sub>o</sub>
                '<th>Suma de las nueve</th><th>SSIM</th><th>SF</th>'
                '</tr></thead><tbody>' + _fil_ten + '</tbody></table>')
 
+# ------------------------------------------- complementariedad por escena (objetivo declarado)
+# El mAP promediado no mide el objetivo del trabajo: lo mide el conteo por escena de cuantas
+# veces la imagen fusionada recupera las DOS clases complementarias a la vez.
+_cp = pd.read_csv(os.path.join(MR, "complementariedad_por_escena.csv"))
+_cr = pd.read_csv(os.path.join(MR, "complementariedad_resumen.csv")).set_index("entrada")
+_cpv = _cp.pivot(index="escena", columns="entrada", values="recupera_ambas")
+CP_N = len(_cpv)
+CP_CRIT = int(_cr["criticas"].iloc[0])
+_CP_ORDEN = _cr.sort_values("recupera_ambas", ascending=False).index.tolist()
+_CP_LBL = {**LBL, "VIS": "VIS solo", "IR": "IR solo",
+           "TopHat_Clasico": "Top-Hat clásico", PROP: "PROPUESTA"}
+
+from scipy.stats import binomtest as _bt
+def _mcnemar(f, mod):
+    b = int(((_cpv[f] == 1) & (_cpv[mod] == 0)).sum())
+    c = int(((_cpv[f] == 0) & (_cpv[mod] == 1)).sum())
+    p = _bt(b, b + c, 0.5).pvalue if (b + c) else 1.0
+    return b, c, p
+
+_fil_cp = []
+for _k in _CP_ORDEN:
+    _r = _cr.loc[_k]
+    _es = (_k == PROP)
+    _pct = f"{_r.pct_ambas:.1f}".replace(".", ",")
+    if _k in ("VIS", "IR"):
+        _cmp = "<td>—</td><td>—</td>"
+    else:
+        _b, _c, _p = _mcnemar(_k, "VIS")
+        _cmp = (f"<td>{_b} / {_c}</td>"
+                f"<td>{('<b>' if _p < 0.05 else '')}{f'{_p:.3f}'.replace('.', ',')}"
+                f"{('</b>' if _p < 0.05 else '')}</td>")
+    _nom = _CP_LBL.get(_k, _k).split(" (")[0]
+    _fil_cp.append(
+        f"<tr><td class='l'>{'<b>' if _es else ''}{_nom}{'</b>' if _es else ''}</td>"
+        f"<td>{int(_r.recupera_ambas)}</td><td>{_pct} %</td>"
+        f"<td>{int(_r.resuelve_criticas)}</td>{_cmp}</tr>")
+TAB_COMPL = ('<table class="chica"><thead><tr><th class="l">Entrada del detector</th>'
+             f'<th>Recupera ambas<br>(de {CP_N})</th><th>%</th>'
+             f'<th>Críticas resueltas<br>(de {CP_CRIT})</th>'
+             '<th>vs VIS<br>gana / pierde</th><th>McNemar p</th>'
+             '</tr></thead><tbody>' + "".join(_fil_cp) + '</tbody></table>')
+
+CP_PROP = float(_cr.loc[PROP, "pct_ambas"])
+CP_VIS = float(_cr.loc["VIS", "pct_ambas"])
+CP_MEJOR = _CP_ORDEN[0]
+CP_MEJOR_PCT = float(_cr.loc[CP_MEJOR, "pct_ambas"])
+CP_PB, CP_PC, CP_PP = _mcnemar(PROP, "VIS")
+CP_PROP_CRIT = int(_cr.loc[PROP, "resuelve_criticas"])
+CP_MEJOR_CRIT = int(_cr.loc[CP_MEJOR, "resuelve_criticas"])
+
 # --------------------------------------------------------- robustez: ajuste y ablacion
 # Cifras del ajuste simetrico de los comparativos (run_ajuste_comparativos.py) y de la
 # ablacion del banco (run_ablacion_banco.py). Se derivan del CSV: si se rehacen los
@@ -672,6 +722,36 @@ def tabla_friedman():
 # Mismo formato que el Cuadro 2 del trabajo de referencia: una fila por metodo dentro de
 # cada escena, con SSIM_avg, E, SF, SD y PSNR, y en negrita el mejor valor de cada columna.
 allm = pd.read_csv(os.path.join(MR, "all_metrics.csv"))
+import sys as _sys2
+_sys2.path.insert(0, ROOT)
+from src.metrics.evaluators import METRIC_DIRECTION as DIRECTION_TODAS
+
+# ------------------------------------------------- bloques de actividad y fidelidad, y 17 metricas
+# Cifras del encuadre: el recuento por bloques que sostiene H1, y la posicion con el conjunto
+# ampliado que sostiene H2. Se derivan del dato.
+_ACT = ["EN", "SD", "FE", "MG", "SF"]
+_FID = ["MI_vis", "MI_ir", "SSIM", "PSNR"]
+_wb = wilc[(wilc.tophat == PROP) & (wilc.baseline != "TopHat_Clasico")].copy()
+_wb["d"] = _wb["diff"]
+_sg = _wb.p_holm < 0.05
+_sa = _wb[_wb.metric.isin(_ACT)]
+_sf = _wb[_wb.metric.isin(_FID)]
+_H1_ACT_FAV = int(((_sa.p_holm < 0.05) & (_sa.d > 0)).sum())
+_H1_ACT_TOT = len(_sa)
+_H1_FID_ADV = int(((_sf.p_holm < 0.05) & (_sf.d < 0)).sum())
+_H1_FID_TOT = len(_sf)
+
+_TODAS = [c for c in allm.columns if c in DIRECTION_TODAS]
+def _rk17(mets):
+    _o = {}
+    for _m in mets:
+        _p = allm.pivot(index="image", columns="method", values=_m)
+        _o[_m] = _p.rank(axis=1, ascending=(DIRECTION_TODAS[_m] == "min"),
+                         method="average").mean(axis=0)
+    return pd.DataFrame(_o).mean(axis=1).sort_values()
+_r17 = _rk17(_TODAS)
+_POS_17 = list(_r17.index).index(PROP) + 1
+
 # Tamano del corpus tomado del dato, no fijado a mano: el par Athena_heather_IR_hei_vis_g
 # quedo excluido por tener el slot VIS duplicado del IR (ver src/datasets.PARES_EXCLUIDOS).
 N_ESC = int(allm["image"].nunique())
@@ -1415,38 +1495,114 @@ pg += 1
 
 H.append(f"""
 <div class="page">
-  <h2>14. Conclusiones</h2>
-  <h3>Resumen del planteamiento</h3>
+  <h2>13. Clases complementarias (continuación): el objetivo medido por escena</h2>
+  <p>El promedio de precisión (mAP) de la tabla anterior no mide el objetivo declarado, que
+  afirma que la fusión permita <b>detectar objetos que no se detectan en el visible ni en el
+  infrarrojo por separado</b>: eso es un enunciado <b>por escena</b>, no un promedio. Lo que
+  corresponde contar es en cuántas escenas cada entrada recupera <b>simultáneamente</b> al menos
+  un objeto de la clase dominante en infrarrojo (personas) y uno de la dominante en visible
+  (luces), con la caja anotada emparejada con IoU &ge; 0,5 y confianza &ge; 0,25. Para dar
+  potencia a la prueba, la evaluación se concentró en las <b>{CP_N} escenas</b> del corpus que
+  tienen anotadas ambas clases y que no participaron del entrenamiento ni de la selección del
+  modelo; las particiones de ajuste y selección quedaron idénticas, de modo que el modelo es el
+  mismo y la única variable que cambia es el tamaño de la muestra.</p>
+  <p><b>Tabla 11.</b> Recuperación de ambas clases complementarias por escena. Las
+  <b>{CP_CRIT} escenas críticas</b> son aquellas en las que ni el visible ni el infrarrojo lo
+  logran por separado: son las que la hipótesis reclama para la fusión.</p>
+  {TAB_COMPL}
+  <p class="lectura">Lectura: la mejor entrada es
+  <b>{_CP_LBL.get(CP_MEJOR, CP_MEJOR).split(" (")[0]}</b> con
+  {f"{CP_MEJOR_PCT:.1f}".replace(".", ",")} %, y resuelve {CP_MEJOR_CRIT} de las {CP_CRIT}
+  escenas críticas. La propuesta alcanza <b>{f"{CP_PROP:.1f}".replace(".", ",")} %</b>, es decir
+  <b>por debajo del visible solo</b> ({f"{CP_VIS:.1f}".replace(".", ",")} %), con {CP_PB} escenas
+  ganadas frente a {CP_PC} perdidas (McNemar exacto p =
+  {f"{CP_PP:.4f}".replace(".", ",")}) y {CP_PROP_CRIT} escenas críticas resueltas. Aplicando la
+  corrección de Holm a las catorce comparaciones de la familia, el <b>único contraste
+  significativo</b> es la Pirámide de Laplace frente al infrarrojo.</p>
+  <p><b>Conclusión sobre el objetivo declarado.</b> La hipótesis de que una mejor calidad de
+  fusión se traduzca en la detección de objetos complementarios <b>se rechaza</b> para el método
+  propuesto, y con muestra suficiente: no queda como resultado no concluyente por falta de datos.
+  Hay una <b>tendencia</b> a favor de la fusión como técnica —tres comparativos superan al
+  visible— pero ninguna diferencia sobrevive la corrección por multiplicidad. El hallazgo acota
+  el alcance práctico de la fusión morfológica de realce para esta tarea.</p>
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>14. Conclusiones y encuadre del aporte</h2>
+  <p>El trabajo sostiene <b>dos aportes</b>. El primero es el operador y su caracterización; el
+  segundo, la auditoría de la validez discriminativa del protocolo con que se lo evalúa, usando el
+  propio desarrollo como caso de estudio. Ambos se enuncian a continuación con la evidencia que los
+  respalda.</p>
+
+  <h3>Primer aporte: el operador y su punto de operación</h3>
   <ol>
-    <li><b>Propuesta:</b> Top-Hat de una sola escala (radio r) con banco de cinco SE; respuestas lineales
-        promediadas (ecs. 6–9) <b>sumadas</b> a la respuesta del disco (ecs. 11–12); detalle dominante
-        entre fuentes y reconstrucción aditivo-sustractiva con peso m (ecs. 13–14).</li>
-    <li><b>Optimización:</b> barrido de 25 configuraciones PSO (partículas 2–10 × iteraciones 10–50,
-        replicando el diseño de Ortega y Espinoza 2025) con la aptitud publicada F<sub>o</sub> →
-        <b>r = 25, m = {V['m']}</b>, con el rango de búsqueda del peso m &isin; {V['rango']}.</li>
-    <li><b>Benchmark:</b> 7 métodos (LP, RP, DWT, DTCWT, CVT, Top-Hat clásico y la propuesta) × {N_ESC} pares
-        TNO × nueve métricas sin referencia.</li>
-    <li><b>Estadística:</b> Friedman por métrica y Wilcoxon-Holm pareado de la propuesta contra cada
-        rival, con ranking promedio global.</li>
+    <li>El operador <b>desplaza el punto de operación de la fusión</b> y no la mejora de manera
+        uniforme: contra las cinco configuraciones de referencia gana <b>{_H1_ACT_FAV} de
+        {_H1_ACT_TOT}</b> contrastes del bloque de actividad espacial <b>sin ninguno adverso</b>, y
+        cede en <b>{_H1_FID_ADV} de {_H1_FID_TOT}</b> del bloque de fidelidad.</li>
+    <li>Bajo el criterio del trabajo de referencia <b>encabeza el benchmark</b>: puesto
+        {POS_RANK} de 7 con {VAL_RANK}, con separación estadísticamente significativa.</li>
+    <li>El resultado es <b>robusto frente al ajuste de los comparativos</b>: dándoles el mismo paso
+        de ajuste, <b>ninguna de las cinco configuraciones del estado del arte lo alcanza</b>. El
+        Top-Hat clásico lo supera por {f"{VLID_B - VAL_B:.3f}".replace(".", ",")}, pero con m = 1
+        frente a m = 0,30: a igual peso la propuesta gana por
+        {f"{CTRL_VENTAJA:.3f}".replace(".", ",")}.</li>
+    <li>El <b>banco de cinco elementos aporta sobre el disco único</b> con hiperparámetros
+        igualados ({f"{_abl.loc['suma','rango_9']:.3f}".replace(".", ",")} frente a
+        {f"{_abl.loc['disco','rango_9']:.3f}".replace(".", ",")}), y el mérito no proviene de la
+        imagen base, que queda <b>última</b> de los seis brazos
+        ({f"{_abl.loc['base','rango_17']:.3f}".replace(".", ",")}).</li>
+    <li>El <b>peso adoptado está justificado por criterios independientes de la aptitud</b>:
+        m = 0,30 sobre este operador equivale a m = {f"{M_EQUIV:.2f}".replace(".", ",")} sobre un
+        disco único —dentro del rango publicado— y mantiene la saturación en
+        {f"{SAT_030:.2f}".replace(".", ",")} % frente al {f"{SAT_100:.2f}".replace(".", ",")} % que
+        produciría m = 1.</li>
   </ol>
-  <h3>Resultados clave</h3>
-  <ul>
-    <li>{("La propuesta <b>lidera " + _enum(_LID) + "</b> del benchmark") if _LID
-         else ("La propuesta <b>no lidera ninguna de las nueve métricas</b> en esta configuración")};
-        ocupa el <b>puesto {POS_RANK} de 7 del ranking agregado</b> ({VAL_RANK}, frente a
-        {LIDER_RANK} del primero). Advertencia: FE es EN dividida por una constante por escena, de modo
-        que el ranking de nueve métricas pondera la entropía dos veces.</li>
-    <li>En los contrastes de Wilcoxon-Holm la propuesta es significativamente mejor en {w_mejor} de
-        {len(wtab)} comparaciones (peor en {w_peor}, sin diferencia en {w_emp}), con su ventaja más
-        consistente en SSIM.</li>
-    <li>Frente al Top-Hat clásico, la propuesta mejora {len(_VS_TH)} de las nueve métricas y cede
-        en {len(_VS_TH_NO)}. La comparación <b>no aísla</b> el aporte del banco disco + líneas, porque
-        los dos operadores usan (r, m) distintos.</li>
-  </ul>
+
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>14. Conclusiones (continuación): el segundo aporte</h2>
+  <h3>Segundo aporte: validez discriminativa del protocolo</h3>
+  <ol>
+    <li>El <b>orden de mérito depende de la composición del conjunto de métricas</b>: con las nueve
+        del trabajo la propuesta es {POS_RANK}.ª; con las diecisiete que el mismo evaluador calcula,
+        {_POS_17}.ª. No cambia nada del operador ni de las imágenes.</li>
+    <li>La batería de nueve <b>no distingue detalle útil de ruido</b>: una fusión artificial de
+        ruido gaussiano alcanza el segundo puesto entre ocho entradas con σ &ge; 0,10, por delante de
+        los seis métodos comparativos, y su rango <b>mejora monótonamente</b> al aumentar la
+        varianza. Incorporando Nabf, la única métrica con dirección inversa, el control cae como
+        corresponde.</li>
+    <li>La batería <b>contiene redundancia</b>: FE es EN reescalada por una constante por escena, de
+        modo que produce rangos intra-bloque idénticos y el mismo χ² de Friedman. Las dimensiones
+        efectivas son ocho, no nueve.</li>
+    <li>La <b>optimización no determina la configuración evaluada</b>: el argmax de la aptitud es
+        r = {R_PREFERIDO} y el peso queda en el piso del rango de búsqueda.</li>
+    <li>El <b>orden de calidad no predice el orden de utilidad</b> en la tarea posterior, y
+        <b>ninguna fusión supera a la mejor modalidad individual</b>: en el conteo por escena la
+        propuesta queda por debajo del visible solo. La hipótesis de que la mejora de calidad se
+        traslade a la detección <b>se rechaza</b>, con muestra suficiente.</li>
+  </ol>
+  <p class="lectura">Consecuencia metodológica: un protocolo de evaluación de fusión debería incluir
+  al menos una métrica que <b>penalice artefactos</b>, declarar la <b>redundancia</b> entre sus
+  componentes, y <b>separar el ajuste de hiperparámetros del criterio de evaluación</b>. Este
+  trabajo aporta los tres controles que lo verifican, versionados y reproducibles.</p>
+
   <h3>Próximos pasos</h3>
   <ul>
-    <li>Extender la evaluación de detección a otros detectores y a los conjuntos completos de
-        LLVIP y M3FD.</li>
+    <li>Incorporar al conjunto de evaluación al menos una métrica sensible a artefactos y repetir el
+        benchmark con la batería ampliada.</li>
+    <li>Aislar el aporte del banco con un ajuste de hiperparámetros simétrico para todos los
+        operadores morfológicos.</li>
+    <li>Extender la evaluación de detección a otros detectores y a más semillas de entrenamiento.</li>
     <li>Complementar con una validación perceptual por observadores.</li>
   </ul>
   {pie(pg)}
