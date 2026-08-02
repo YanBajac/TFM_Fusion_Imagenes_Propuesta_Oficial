@@ -86,3 +86,6 @@ experiments/results/metrics_reports/*.bak_*
 experiments/results/pso/*.bak_*
 # Respaldos de entregables reemplazados (no circulan)
 docs/_obsoletos/
+
+# PDF de fuentes de terceros: no se redistribuyen en el repo
+docs/fuentes/*.pdf

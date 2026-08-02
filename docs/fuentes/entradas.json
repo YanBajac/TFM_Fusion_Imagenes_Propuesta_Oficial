@@ -1,0 +1,167 @@
+[
+ {
+  "apellido": "Aslantas",
+  "anio": "2015",
+  "cita": "Aslantas, V., y Bendes, E. (2015). A new image quality metric for image fusion: The sum of the correlations of differences. AEU - International Journal of Electronics and Communications, 69(12), 1890–1896."
+ },
+ {
+  "apellido": "Bai",
+  "anio": "2013",
+  "cita": "Bai, X. (2013). Morphological image fusion using the extracted image regions and details based on multi-scale top-hat transform and toggle contrast operator. Digital Signal Processing, 23(1), 244–263."
+ },
+ {
+  "apellido": "Bai",
+  "anio": "2015",
+  "cita": "Bai, X., Zhou, F., y Xue, B. (2015). Image enhancement using multi-scale image features extracted by top-hat transform. Optics & Laser Technology, 65, 145–150."
+ },
+ {
+  "apellido": "Bala",
+  "anio": "2024",
+  "cita": "Bala, A. A., Aruna Priya, P., y Maik, V. (2024). Hybrid technique for fundus image enhancement using modified morphological filter and denoising net. The Journal of Supercomputing, 80, 13317–13340. https://doi.org/10.1007/s11227-024-05952-x"
+ },
+ {
+  "apellido": "Burt",
+  "anio": "1983",
+  "cita": "Burt, P. J., y Adelson, E. H. (1983). The Laplacian pyramid as a compact image code. IEEE Transactions on Communications, 31(4), 532–540."
+ },
+ {
+  "apellido": "Candès",
+  "anio": "2006",
+  "cita": "Candès, E., Demanet, L., Donoho, D., y Ying, L. (2006). Fast discrete curvelet transforms. SIAM Multiscale Modeling & Simulation, 5(3), 861–899."
+ },
+ {
+  "apellido": "Friedman",
+  "anio": "1937",
+  "cita": "Friedman, M. (1937). The use of ranks to avoid the assumption of normality implicit in the analysis of variance. Journal of the American Statistical Association, 32(200), 675–701."
+ },
+ {
+  "apellido": "Gonzalez",
+  "anio": "2018",
+  "cita": "Gonzalez, R. C., y Woods, R. E. (2018). Digital Image Processing (4ª ed.). Pearson."
+ },
+ {
+  "apellido": "Haghighat",
+  "anio": "2011",
+  "cita": "Haghighat, M., Aghagolzadeh, A., y Seyedarabi, H. (2011). A non-reference image fusion metric based on mutual information of image features. Computers & Electrical Engineering, 37(5), 744–756."
+ },
+ {
+  "apellido": "Jia",
+  "anio": "2021",
+  "cita": "Jia, X., Zhu, C., Li, M., Tang, W., y Zhou, W. (2021). LLVIP: A visible-infrared paired dataset for low-light vision. Proceedings of the IEEE/CVF International Conference on Computer Vision Workshops (ICCVW), 3496–3504."
+ },
+ {
+  "apellido": "Kennedy",
+  "anio": "1995",
+  "cita": "Kennedy, J., y Eberhart, R. (1995). Particle swarm optimization. Proceedings of ICNN'95 - International Conference on Neural Networks, 4, 1942–1948."
+ },
+ {
+  "apellido": "Li",
+  "anio": "2017",
+  "cita": "Li, S., Kang, X., Fang, L., Hu, J., y Yin, H. (2017). Pixel-level image fusion: A survey of the state of the art. Information Fusion, 33, 100–112."
+ },
+ {
+  "apellido": "Liu",
+  "anio": "2022",
+  "cita": "Liu, J., Fan, X., Huang, Z., Wu, G., Liu, R., Zhong, W., y Luo, Z. (2022). Target-aware dual adversarial learning and a multi-scenario multi-modality benchmark to fuse infrared and visible for object detection. Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 5802–5811."
+ },
+ {
+  "apellido": "Ma",
+  "anio": "2019",
+  "cita": "Ma, J., Ma, Y., y Li, C. (2019). Infrared and visible image fusion methods and applications: A survey. Information Fusion, 45, 153–178."
+ },
+ {
+  "apellido": "Ma",
+  "anio": "2019",
+  "cita": "Ma, J., Yu, W., Liang, P., Li, C., y Jiang, J. (2019). FusionGAN: A generative adversarial network for infrared and visible image fusion. Information Fusion, 48, 11–26."
+ },
+ {
+  "apellido": "Malviya",
+  "anio": "2014",
+  "cita": "Malviya, P., y Saxena, A. K. (2014). An improved image fusion technique based on texture feature optimization using wavelet transform and particle of swarm optimization (POS). International Journal of Computer Applications, 101(6), 19–22."
+ },
+ {
+  "apellido": "Mukhopadhyay",
+  "anio": "2001",
+  "cita": "Mukhopadhyay, S., y Chanda, B. (2001). A multi-scale morphological approach to local contrast enhancement. Signal Processing, 80(4), 685–696."
+ },
+ {
+  "apellido": "Ortega",
+  "anio": "2025",
+  "cita": "Ortega Rodríguez, M. A., y Espinoza Ríos, G. A. (2025). Optimización de los parámetros de la transformada Top-Hat mediante PSO para la fusión de imágenes visibles e infrarrojas. Proyecto de Trabajo Final de Grado, Facultad Politécnica, Universidad Nacional de Asunción."
+ },
+ {
+  "apellido": "Piella",
+  "anio": "2003",
+  "cita": "Piella, G., y Heijmans, H. (2003). A new quality metric for image fusion. Proceedings IEEE ICIP, vol. 3, 173–176."
+ },
+ {
+  "apellido": "Román",
+  "anio": "2020",
+  "cita": "Román, J. C. M., Vázquez Noguera, J. L., y Legal-Ayala, H. (2020). A multiscale morphological method for visible and infrared images fusion. Proceedings of the 2020 XLVI Latin American Computing Conference (CLEI), 488–495. IEEE."
+ },
+ {
+  "apellido": "Serra",
+  "anio": "1982",
+  "cita": "Serra, J. (1982). Image Analysis and Mathematical Morphology. Academic Press."
+ },
+ {
+  "apellido": "Sheikh",
+  "anio": "2006",
+  "cita": "Sheikh, H. R., y Bovik, A. C. (2006). Image information and visual quality. IEEE Transactions on Image Processing, 15(2), 430–444."
+ },
+ {
+  "apellido": "Singh",
+  "anio": "2023",
+  "cita": "Singh, S., Singh, H., Bueno, G., Deniz, O., Singh, S., Monga, H., Hrisheekesha, P. N., y Pedraza, A. (2023). A review of image fusion: Methods, applications and performance metrics. Digital Signal Processing, 137, 104020."
+ },
+ {
+  "apellido": "Soille",
+  "anio": "2003",
+  "cita": "Soille, P. (2003). Morphological Image Analysis: Principles and Applications (2ª ed.). Springer."
+ },
+ {
+  "apellido": "Tang",
+  "anio": "2022",
+  "cita": "Tang, L., Yuan, J., y Ma, J. (2022). Image fusion in the loop of high-level vision tasks: A semantic-aware real-time infrared and visible image fusion network. Information Fusion, 82, 28–42."
+ },
+ {
+  "apellido": "Tao",
+  "anio": "2010",
+  "cita": "Tao, J., Li, S., y Yang, B. (2010). Multimodal image fusion algorithm using dual-tree complex wavelet transform and particle swarm optimization. En Advanced Intelligent Computing Theories and Applications (Communications in Computer and Information Science, vol. 93, pp. 296–303). Springer."
+ },
+ {
+  "apellido": "Toet",
+  "anio": "1989",
+  "cita": "Toet, A. (1989). Image fusion by a ratio of low-pass pyramid. Pattern Recognition Letters, 9(4), 245–253."
+ },
+ {
+  "apellido": "Toet",
+  "anio": "2014",
+  "cita": "Toet, A. (2014). The TNO multiband image data collection. Data in Brief, 4, 187–192."
+ },
+ {
+  "apellido": "Wang",
+  "anio": "2017",
+  "cita": "Wang, J., Peng, J., Feng, X., He, G., y Fan, J. (2017). Fusion method for infrared and visible images by using non-negative sparse representation. Infrared Physics & Technology, 80, 1–9."
+ },
+ {
+  "apellido": "Wang",
+  "anio": "2004",
+  "cita": "Wang, Z., Bovik, A. C., Sheikh, H. R., y Simoncelli, E. P. (2004). Image quality assessment: From error visibility to structural similarity. IEEE Transactions on Image Processing, 13(4), 600–612."
+ },
+ {
+  "apellido": "Wilcoxon",
+  "anio": "1945",
+  "cita": "Wilcoxon, F. (1945). Individual comparisons by ranking methods. Biometrics Bulletin, 1(6), 80–83."
+ },
+ {
+  "apellido": "Xydeas",
+  "anio": "2000",
+  "cita": "Xydeas, C. S., y Petrović, V. (2000). Objective image fusion performance measure. Electronics Letters, 36(4), 308–309."
+ },
+ {
+  "apellido": "Zhang",
+  "anio": "2023",
+  "cita": "Zhang, X., y Demiris, Y. (2023). Visible and infrared image fusion using deep learning. IEEE Transactions on Pattern Analysis and Machine Intelligence, 45(8), 10535–10554."
+ }
+]

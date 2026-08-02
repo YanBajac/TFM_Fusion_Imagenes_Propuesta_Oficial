@@ -1,0 +1,1086 @@
+[
+ {
+  "n": 1,
+  "cita": "Aslantas, V., y Bendes, E. (2015). A new image quality metric for image fusion: The sum of the correlations of differences. AEU - International Journal of Electronics and Communications, 69(12), 1890–1896.",
+  "anio": "2015",
+  "titulo": "A new image quality metric for image fusion: The sum of the correlations of differences",
+  "apellidos": [
+   "aslantas",
+   "bendes"
+  ],
+  "estado": "verificada",
+  "doi": "10.1016/j.aeue.2015.09.004",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 2,
+  "cr_titulo": "A new image quality metric for image fusion: The sum of the correlations of differences",
+  "cr_anio": "2015",
+  "cr_revista": "AEU - International Journal of Electronics and Communications",
+  "cr_vol": "69",
+  "cr_num": "12",
+  "cr_pag": "1890-1896",
+  "cr_autores": [
+   "Aslantas",
+   "Bendes"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 2,
+  "cita": "Bai, X. (2013). Morphological image fusion using the extracted image regions and details based on multi-scale top-hat transform and toggle contrast operator. Digital Signal Processing, 23(1), 244–263.",
+  "anio": "2013",
+  "titulo": "Morphological image fusion using the extracted image regions and details based on multi-scale top-hat transform and toggle contrast operator",
+  "apellidos": [
+   "bai"
+  ],
+  "estado": "verificada",
+  "doi": "10.1016/j.dsp.2012.11.001",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 1,
+  "cr_titulo": "Morphological image fusion using the extracted image regions and details based on multi-scale top-hat transform and toggle contrast operator",
+  "cr_anio": "2013",
+  "cr_revista": "Digital Signal Processing",
+  "cr_vol": "23",
+  "cr_num": "2",
+  "cr_pag": "542-554",
+  "cr_autores": [
+   "Bai"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [
+   "paginas: fuente 542-554"
+  ],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 3,
+  "cita": "Bai, X., Zhou, F., y Xue, B. (2015). Image enhancement using multi-scale image features extracted by top-hat transform. Optics & Laser Technology, 65, 145–150.",
+  "anio": "2015",
+  "titulo": "Image enhancement using multi-scale image features extracted by top-hat transform",
+  "apellidos": [
+   "bai",
+   "zhou",
+   "xue"
+  ],
+  "estado": "verificada",
+  "doi": "10.1016/j.optlastec.2011.07.009",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 3,
+  "cr_titulo": "Image enhancement using multi scale image features extracted by top-hat transform",
+  "cr_anio": "2012",
+  "cr_revista": "Optics &amp; Laser Technology",
+  "cr_vol": "44",
+  "cr_num": "2",
+  "cr_pag": "328-336",
+  "cr_autores": [
+   "Bai",
+   "Zhou",
+   "Xue"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [
+   "anio: tesis 2015 / fuente 2012",
+   "volumen: fuente 44 no figura",
+   "paginas: fuente 328-336"
+  ],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 4,
+  "cita": "Bala, A. A., Aruna Priya, P., y Maik, V. (2024). Hybrid technique for fundus image enhancement using modified morphological filter and denoising net. The Journal of Supercomputing, 80, 13317–13340. https://doi.org/10.1007/s11227-024-05952-x",
+  "anio": "2024",
+  "titulo": "Hybrid technique for fundus image enhancement using modified morphological filter and denoising net",
+  "apellidos": [
+   "bala",
+   "aruna priya",
+   "maik"
+  ],
+  "estado": "verificada",
+  "doi": "10.1007/s11227-024-05952-x",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 3,
+  "cr_titulo": "Hybrid technique for fundus image enhancement using modified morphological filter and denoising net",
+  "cr_anio": "2024",
+  "cr_revista": "The Journal of Supercomputing",
+  "cr_vol": "80",
+  "cr_num": "9",
+  "cr_pag": "13317-13340",
+  "cr_autores": [
+   "Bala",
+   "Priya",
+   "Maik"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 5,
+  "cita": "Burt, P. J., y Adelson, E. H. (1983). The Laplacian pyramid as a compact image code. IEEE Transactions on Communications, 31(4), 532–540.",
+  "anio": "1983",
+  "titulo": "The Laplacian pyramid as a compact image code",
+  "apellidos": [
+   "burt",
+   "adelson"
+  ],
+  "estado": "verificada",
+  "doi": "10.1515/9781400827268.28",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 2,
+  "cr_titulo": "The Laplacian Pyramid as a Compact Image Code",
+  "cr_anio": "2009",
+  "cr_revista": "Fundamental Papers in Wavelet Theory",
+  "cr_vol": null,
+  "cr_num": null,
+  "cr_pag": "28-36",
+  "cr_autores": [
+   "Burt",
+   "ADELSON"
+  ],
+  "cr_tipo": "book-chapter",
+  "defectos": [
+   "anio: tesis 1983 / fuente 2009",
+   "paginas: fuente 28-36"
+  ],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 6,
+  "cita": "Candès, E., Demanet, L., Donoho, D., y Ying, L. (2006). Fast discrete curvelet transforms. SIAM Multiscale Modeling & Simulation, 5(3), 861–899.",
+  "anio": "2006",
+  "titulo": "Fast discrete curvelet transforms",
+  "apellidos": [
+   "candes",
+   "demanet",
+   "donoho",
+   "ying"
+  ],
+  "estado": "verificada",
+  "doi": "10.1137/05064182x",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 4,
+  "cr_titulo": "Fast Discrete Curvelet Transforms",
+  "cr_anio": "2006",
+  "cr_revista": "Multiscale Modeling &amp; Simulation",
+  "cr_vol": "5",
+  "cr_num": "3",
+  "cr_pag": "861-899",
+  "cr_autores": [
+   "Candès",
+   "Demanet",
+   "Donoho",
+   "Ying"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 7,
+  "cita": "Friedman, M. (1937). The use of ranks to avoid the assumption of normality implicit in the analysis of variance. Journal of the American Statistical Association, 32(200), 675–701.",
+  "anio": "1937",
+  "titulo": "The use of ranks to avoid the assumption of normality implicit in the analysis of variance",
+  "apellidos": [
+   "friedman"
+  ],
+  "estado": "verificada",
+  "doi": "10.1080/01621459.1937.10503522",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 1,
+  "cr_titulo": "The Use of Ranks to Avoid the Assumption of Normality Implicit in the Analysis of Variance",
+  "cr_anio": "1937",
+  "cr_revista": "Journal of the American Statistical Association",
+  "cr_vol": "32",
+  "cr_num": "200",
+  "cr_pag": "675-701",
+  "cr_autores": [
+   "Friedman"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 8,
+  "cita": "Gonzalez, R. C., y Woods, R. E. (2018). Digital Image Processing (4ª ed.). Pearson.",
+  "anio": "2018",
+  "titulo": "Digital Image Processing (4ª ed.)",
+  "apellidos": [
+   "gonzalez",
+   "woods"
+  ],
+  "estado": "no aplica (libro o sin DOI): verificar por catalogo"
+ },
+ {
+  "n": 9,
+  "cita": "Haghighat, M., Aghagolzadeh, A., y Seyedarabi, H. (2011). A non-reference image fusion metric based on mutual information of image features. Computers & Electrical Engineering, 37(5), 744–756.",
+  "anio": "2011",
+  "titulo": "A non-reference image fusion metric based on mutual information of image features",
+  "apellidos": [
+   "haghighat",
+   "aghagolzadeh",
+   "seyedarabi"
+  ],
+  "estado": "verificada",
+  "doi": "10.1016/j.compeleceng.2011.07.012",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 3,
+  "cr_titulo": "A non-reference image fusion metric based on mutual information of image features",
+  "cr_anio": "2011",
+  "cr_revista": "Computers &amp; Electrical Engineering",
+  "cr_vol": "37",
+  "cr_num": "5",
+  "cr_pag": "744-756",
+  "cr_autores": [
+   "Haghighat",
+   "Aghagolzadeh",
+   "Seyedarabi"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 10,
+  "cita": "Jia, X., Zhu, C., Li, M., Tang, W., y Zhou, W. (2021). LLVIP: A visible-infrared paired dataset for low-light vision. Proceedings of the IEEE/CVF International Conference on Computer Vision Workshops (ICCVW), 3496–3504.",
+  "anio": "2021",
+  "titulo": "LLVIP: A visible-infrared paired dataset for low-light vision",
+  "apellidos": [
+   "jia",
+   "zhu",
+   "li",
+   "tang",
+   "zhou"
+  ],
+  "estado": "verificada",
+  "doi": "10.1109/iccvw54120.2021.00389",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 5,
+  "cr_titulo": "LLVIP: A Visible-infrared Paired Dataset for Low-light Vision",
+  "cr_anio": "2021",
+  "cr_revista": "2021 IEEE/CVF International Conference on Computer Vision Workshops (ICCVW)",
+  "cr_vol": null,
+  "cr_num": null,
+  "cr_pag": "3489-3497",
+  "cr_autores": [
+   "Jia",
+   "Zhu",
+   "Li",
+   "Tang",
+   "Zhou"
+  ],
+  "cr_tipo": "proceedings-article",
+  "defectos": [
+   "paginas: fuente 3489-3497"
+  ],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 11,
+  "cita": "Kennedy, J., y Eberhart, R. (1995). Particle swarm optimization. Proceedings of ICNN'95 - International Conference on Neural Networks, 4, 1942–1948.",
+  "anio": "1995",
+  "titulo": "Particle swarm optimization",
+  "apellidos": [
+   "kennedy",
+   "eberhart"
+  ],
+  "estado": "verificada",
+  "doi": "10.5772/5114",
+  "jaccard": 0.6,
+  "apellidos_en_comun": 2,
+  "cr_titulo": "Particle Swarm Optimization in Structural Design",
+  "cr_anio": "2007",
+  "cr_revista": "Swarm Intelligence, Focus on Ant and Particle Swarm Optimization",
+  "cr_vol": null,
+  "cr_num": null,
+  "cr_pag": null,
+  "cr_autores": [
+   "E.",
+   "Behdi"
+  ],
+  "cr_tipo": "book-chapter",
+  "defectos": [
+   "anio: tesis 1995 / fuente 2007"
+  ],
+  "oa": {
+   "es_oa": true,
+   "estado": "gold",
+   "pdf": "https://www.intechopen.com/chapters/510",
+   "landing": "https://doi.org/10.5772/5114",
+   "licencia": "cc-by-nc-sa"
+  }
+ },
+ {
+  "n": 12,
+  "cita": "Li, S., Kang, X., Fang, L., Hu, J., y Yin, H. (2017). Pixel-level image fusion: A survey of the state of the art. Information Fusion, 33, 100–112.",
+  "anio": "2017",
+  "titulo": "Pixel-level image fusion: A survey of the state of the art",
+  "apellidos": [
+   "li",
+   "kang",
+   "fang",
+   "hu",
+   "yin"
+  ],
+  "estado": "verificada",
+  "doi": "10.1016/j.inffus.2016.05.004",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 5,
+  "cr_titulo": "Pixel-level image fusion: A survey of the state of the art",
+  "cr_anio": "2017",
+  "cr_revista": "Information Fusion",
+  "cr_vol": "33",
+  "cr_num": null,
+  "cr_pag": "100-112",
+  "cr_autores": [
+   "Li",
+   "Kang",
+   "Fang",
+   "Hu",
+   "Yin"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 13,
+  "cita": "Liu, J., Fan, X., Huang, Z., Wu, G., Liu, R., Zhong, W., y Luo, Z. (2022). Target-aware dual adversarial learning and a multi-scenario multi-modality benchmark to fuse infrared and visible for object detection. Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 5802–5811.",
+  "anio": "2022",
+  "titulo": "Target-aware dual adversarial learning and a multi-scenario multi-modality benchmark to fuse infrared and visible for object detection",
+  "apellidos": [
+   "liu",
+   "fan",
+   "huang",
+   "wu",
+   "liu",
+   "zhong",
+   "luo"
+  ],
+  "estado": "verificada",
+  "doi": "10.1109/cvpr52688.2022.00571",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 7,
+  "cr_titulo": "Target-aware Dual Adversarial Learning and a Multi-scenario Multi-Modality Benchmark to Fuse Infrared and Visible for Object Detection",
+  "cr_anio": "2022",
+  "cr_revista": "2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)",
+  "cr_vol": null,
+  "cr_num": null,
+  "cr_pag": "5792-5801",
+  "cr_autores": [
+   "Liu",
+   "Fan",
+   "Huang",
+   "Wu",
+   "Liu",
+   "Zhong",
+   "Luo"
+  ],
+  "cr_tipo": "proceedings-article",
+  "defectos": [
+   "paginas: fuente 5792-5801"
+  ],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 14,
+  "cita": "Ma, J., Ma, Y., y Li, C. (2019). Infrared and visible image fusion methods and applications: A survey. Information Fusion, 45, 153–178.",
+  "anio": "2019",
+  "titulo": "Infrared and visible image fusion methods and applications: A survey",
+  "apellidos": [
+   "ma",
+   "ma",
+   "li"
+  ],
+  "estado": "verificada",
+  "doi": "10.1016/j.inffus.2018.02.004",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 3,
+  "cr_titulo": "Infrared and visible image fusion methods and applications: A survey",
+  "cr_anio": "2019",
+  "cr_revista": "Information Fusion",
+  "cr_vol": "45",
+  "cr_num": null,
+  "cr_pag": "153-178",
+  "cr_autores": [
+   "Ma",
+   "Ma",
+   "Li"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 15,
+  "cita": "Ma, J., Yu, W., Liang, P., Li, C., y Jiang, J. (2019). FusionGAN: A generative adversarial network for infrared and visible image fusion. Information Fusion, 48, 11–26.",
+  "anio": "2019",
+  "titulo": "FusionGAN: A generative adversarial network for infrared and visible image fusion",
+  "apellidos": [
+   "ma",
+   "yu",
+   "liang",
+   "li",
+   "jiang"
+  ],
+  "estado": "verificada",
+  "doi": "10.1016/j.inffus.2018.09.004",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 5,
+  "cr_titulo": "FusionGAN: A generative adversarial network for infrared and visible image fusion",
+  "cr_anio": "2019",
+  "cr_revista": "Information Fusion",
+  "cr_vol": "48",
+  "cr_num": null,
+  "cr_pag": "11-26",
+  "cr_autores": [
+   "Ma",
+   "Yu",
+   "Liang",
+   "Li",
+   "Jiang"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 16,
+  "cita": "Malviya, P., y Saxena, A. K. (2014). An improved image fusion technique based on texture feature optimization using wavelet transform and particle of swarm optimization (POS). International Journal of Computer Applications, 101(6), 19–22.",
+  "anio": "2014",
+  "titulo": "An improved image fusion technique based on texture feature optimization using wavelet transform and particle of swarm optimization (POS)",
+  "apellidos": [
+   "malviya",
+   "saxena"
+  ],
+  "estado": "verificada",
+  "doi": "10.5120/17691-8656",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 2,
+  "cr_titulo": "An Improved Image Fusion Technique based on Texture Feature Optimization using Wavelet Transform and Particle of Swarm Optimization (POS)",
+  "cr_anio": "2014",
+  "cr_revista": "International Journal of Computer Applications",
+  "cr_vol": "101",
+  "cr_num": "6",
+  "cr_pag": "19-22",
+  "cr_autores": [
+   "Malviya",
+   "Saxena"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": true,
+   "estado": "bronze",
+   "pdf": "https://doi.org/10.5120/17691-8656",
+   "landing": "https://doi.org/10.5120/17691-8656",
+   "licencia": null
+  }
+ },
+ {
+  "n": 17,
+  "cita": "Mukhopadhyay, S., y Chanda, B. (2001). A multi-scale morphological approach to local contrast enhancement. Signal Processing, 80(4), 685–696.",
+  "anio": "2001",
+  "titulo": "A multi-scale morphological approach to local contrast enhancement",
+  "apellidos": [
+   "mukhopadhyay",
+   "chanda"
+  ],
+  "estado": "verificada",
+  "doi": "10.1016/s0165-1684(99)00161-9",
+  "jaccard": 0.62,
+  "apellidos_en_comun": 2,
+  "cr_titulo": "A multiscale morphological approach to local contrast enhancement",
+  "cr_anio": "2000",
+  "cr_revista": "Signal Processing",
+  "cr_vol": "80",
+  "cr_num": "4",
+  "cr_pag": "685-696",
+  "cr_autores": [
+   "Mukhopadhyay",
+   "Chanda"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [
+   "anio: tesis 2001 / fuente 2000"
+  ],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 18,
+  "cita": "Ortega Rodríguez, M. A., y Espinoza Ríos, G. A. (2025). Optimización de los parámetros de la transformada Top-Hat mediante PSO para la fusión de imágenes visibles e infrarrojas. Proyecto de Trabajo Final de Grado, Facultad Politécnica, Universidad Nacional de Asunción.",
+  "anio": "2025",
+  "titulo": "Optimización de los parámetros de la transformada Top-Hat mediante PSO para la fusión de imágenes visibles e infrarrojas",
+  "apellidos": [
+   "ortega rodriguez",
+   "espinoza rios"
+  ],
+  "estado": "no aplica (libro o sin DOI): verificar por catalogo"
+ },
+ {
+  "n": 19,
+  "cita": "Piella, G., y Heijmans, H. (2003). A new quality metric for image fusion. Proceedings IEEE ICIP, vol. 3, 173–176.",
+  "anio": "2003",
+  "titulo": "A new quality metric for image fusion",
+  "apellidos": [
+   "piella",
+   "heijmans"
+  ],
+  "estado": "verificada",
+  "doi": "10.1109/icip.2003.1247209",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 2,
+  "cr_titulo": "A new quality metric for image fusion",
+  "cr_anio": null,
+  "cr_revista": "Proceedings 2003 International Conference on Image Processing (Cat. No.03CH37429)",
+  "cr_vol": "2",
+  "cr_num": null,
+  "cr_pag": "III-173-6",
+  "cr_autores": [
+   "Piella",
+   "Heijmans"
+  ],
+  "cr_tipo": "proceedings-article",
+  "defectos": [
+   "volumen: fuente 2 no figura"
+  ],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 20,
+  "cita": "Román, J. C. M., Vázquez Noguera, J. L., y Legal-Ayala, H. (2020). A multiscale morphological method for visible and infrared images fusion. Proceedings of the 2020 XLVI Latin American Computing Conference (CLEI), 488–495. IEEE.",
+  "anio": "2020",
+  "titulo": "A multiscale morphological method for visible and infrared images fusion",
+  "apellidos": [
+   "roman",
+   "vazquez noguera",
+   "legal ayala"
+  ],
+  "estado": "verificada",
+  "doi": "10.1109/clei52000.2020.00063",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 3,
+  "cr_titulo": "A Multiscale Morphological Method for Visible and Infrared Images Fusion",
+  "cr_anio": "2020",
+  "cr_revista": "2020 XLVI Latin American Computing Conference (CLEI)",
+  "cr_vol": null,
+  "cr_num": null,
+  "cr_pag": "488-495",
+  "cr_autores": [
+   "Román",
+   "Noguera",
+   "Legal-Ayala"
+  ],
+  "cr_tipo": "proceedings-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 21,
+  "cita": "Serra, J. (1982). Image Analysis and Mathematical Morphology. Academic Press.",
+  "anio": "1982",
+  "titulo": "Image Analysis and Mathematical Morphology",
+  "apellidos": [
+   "serra"
+  ],
+  "estado": "no aplica (libro o sin DOI): verificar por catalogo"
+ },
+ {
+  "n": 22,
+  "cita": "Sheikh, H. R., y Bovik, A. C. (2006). Image information and visual quality. IEEE Transactions on Image Processing, 15(2), 430–444.",
+  "anio": "2006",
+  "titulo": "Image information and visual quality",
+  "apellidos": [
+   "sheikh",
+   "bovik"
+  ],
+  "estado": "verificada",
+  "doi": "10.1109/tip.2005.859378",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 2,
+  "cr_titulo": "Image information and visual quality",
+  "cr_anio": "2006",
+  "cr_revista": "IEEE Transactions on Image Processing",
+  "cr_vol": "15",
+  "cr_num": "2",
+  "cr_pag": "430-444",
+  "cr_autores": [
+   "Sheikh",
+   "Bovik"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 23,
+  "cita": "Singh, S., Singh, H., Bueno, G., Deniz, O., Singh, S., Monga, H., Hrisheekesha, P. N., y Pedraza, A. (2023). A review of image fusion: Methods, applications and performance metrics. Digital Signal Processing, 137, 104020.",
+  "anio": "2023",
+  "titulo": "A review of image fusion: Methods, applications and performance metrics",
+  "apellidos": [
+   "singh",
+   "singh",
+   "bueno",
+   "deniz",
+   "singh",
+   "monga",
+   "hrisheekesha",
+   "pedraza"
+  ],
+  "estado": "verificada",
+  "doi": "10.1016/j.dsp.2023.104020",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 8,
+  "cr_titulo": "A review of image fusion: Methods, applications and performance metrics",
+  "cr_anio": "2023",
+  "cr_revista": "Digital Signal Processing",
+  "cr_vol": "137",
+  "cr_num": null,
+  "cr_pag": "104020",
+  "cr_autores": [
+   "Singh",
+   "Singh",
+   "Bueno",
+   "Deniz",
+   "Singh",
+   "Monga",
+   "Hrisheekesha",
+   "Pedraza"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 24,
+  "cita": "Soille, P. (2003). Morphological Image Analysis: Principles and Applications (2ª ed.). Springer.",
+  "anio": "2003",
+  "titulo": "Morphological Image Analysis: Principles and Applications (2ª ed.)",
+  "apellidos": [
+   "soille"
+  ],
+  "estado": "no aplica (libro o sin DOI): verificar por catalogo"
+ },
+ {
+  "n": 25,
+  "cita": "Tang, L., Yuan, J., y Ma, J. (2022). Image fusion in the loop of high-level vision tasks: A semantic-aware real-time infrared and visible image fusion network. Information Fusion, 82, 28–42.",
+  "anio": "2022",
+  "titulo": "Image fusion in the loop of high-level vision tasks: A semantic-aware real-time infrared and visible image fusion network",
+  "apellidos": [
+   "tang",
+   "yuan",
+   "ma"
+  ],
+  "estado": "verificada",
+  "doi": "10.1016/j.inffus.2021.12.004",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 3,
+  "cr_titulo": "Image fusion in the loop of high-level vision tasks: A semantic-aware real-time infrared and visible image fusion network",
+  "cr_anio": "2022",
+  "cr_revista": "Information Fusion",
+  "cr_vol": "82",
+  "cr_num": null,
+  "cr_pag": "28-42",
+  "cr_autores": [
+   "Tang",
+   "Yuan",
+   "Ma"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 26,
+  "cita": "Tao, J., Li, S., y Yang, B. (2010). Multimodal image fusion algorithm using dual-tree complex wavelet transform and particle swarm optimization. En Advanced Intelligent Computing Theories and Applications (Communications in Computer and Information Science, vol. 93, pp. 296–303). Springer.",
+  "anio": "2010",
+  "titulo": "Multimodal image fusion algorithm using dual-tree complex wavelet transform and particle swarm optimization",
+  "apellidos": [
+   "tao",
+   "li",
+   "yang"
+  ],
+  "estado": "verificada",
+  "doi": "10.1007/978-3-642-14831-6_40",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 3,
+  "cr_titulo": "Multimodal Image Fusion Algorithm Using Dual-Tree Complex Wavelet Transform and Particle Swarm Optimization",
+  "cr_anio": "2010",
+  "cr_revista": "Communications in Computer and Information Science",
+  "cr_vol": null,
+  "cr_num": null,
+  "cr_pag": "296-303",
+  "cr_autores": [
+   "Tao",
+   "Li",
+   "Yang"
+  ],
+  "cr_tipo": "book-chapter",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 27,
+  "cita": "Toet, A. (1989). Image fusion by a ratio of low-pass pyramid. Pattern Recognition Letters, 9(4), 245–253.",
+  "anio": "1989",
+  "titulo": "Image fusion by a ratio of low-pass pyramid",
+  "apellidos": [
+   "toet"
+  ],
+  "estado": "verificada",
+  "doi": "10.1016/0167-8655(89)90003-2",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 1,
+  "cr_titulo": "Image fusion by a ratio of low-pass pyramid",
+  "cr_anio": "1989",
+  "cr_revista": "Pattern Recognition Letters",
+  "cr_vol": "9",
+  "cr_num": "4",
+  "cr_pag": "245-253",
+  "cr_autores": [
+   "Toet"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 28,
+  "cita": "Toet, A. (2014). The TNO multiband image data collection. Data in Brief, 4, 187–192.",
+  "anio": "2014",
+  "titulo": "The TNO multiband image data collection",
+  "apellidos": [
+   "toet"
+  ],
+  "estado": "verificada",
+  "doi": "10.1016/j.dib.2017.09.038",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 1,
+  "cr_titulo": "The TNO Multiband Image Data Collection",
+  "cr_anio": "2017",
+  "cr_revista": "Data in Brief",
+  "cr_vol": "15",
+  "cr_num": null,
+  "cr_pag": "249-251",
+  "cr_autores": [
+   "Toet"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [
+   "anio: tesis 2014 / fuente 2017",
+   "volumen: fuente 15 no figura",
+   "paginas: fuente 249-251"
+  ],
+  "oa": {
+   "es_oa": true,
+   "estado": "gold",
+   "pdf": "https://www.sciencedirect.com/science/article/pii/S2352340917304699/pdf",
+   "landing": "https://doi.org/10.1016/j.dib.2017.09.038",
+   "licencia": "cc-by-nc-nd"
+  }
+ },
+ {
+  "n": 29,
+  "cita": "Wang, J., Peng, J., Feng, X., He, G., y Fan, J. (2017). Fusion method for infrared and visible images by using non-negative sparse representation. Infrared Physics & Technology, 80, 1–9.",
+  "anio": "2017",
+  "titulo": "Fusion method for infrared and visible images by using non-negative sparse representation",
+  "apellidos": [
+   "wang",
+   "peng",
+   "feng",
+   "he",
+   "fan"
+  ],
+  "estado": "verificada",
+  "doi": "10.1016/j.infrared.2014.09.019",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 5,
+  "cr_titulo": "Fusion method for infrared and visible images by using non-negative sparse representation",
+  "cr_anio": "2014",
+  "cr_revista": "Infrared Physics &amp; Technology",
+  "cr_vol": "67",
+  "cr_num": null,
+  "cr_pag": "477-489",
+  "cr_autores": [
+   "Wang",
+   "Peng",
+   "Feng",
+   "He",
+   "Fan"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [
+   "anio: tesis 2017 / fuente 2014",
+   "volumen: fuente 67 no figura",
+   "paginas: fuente 477-489"
+  ],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 30,
+  "cita": "Wang, Z., Bovik, A. C., Sheikh, H. R., y Simoncelli, E. P. (2004). Image quality assessment: From error visibility to structural similarity. IEEE Transactions on Image Processing, 13(4), 600–612.",
+  "anio": "2004",
+  "titulo": "Image quality assessment: From error visibility to structural similarity",
+  "apellidos": [
+   "wang",
+   "bovik",
+   "sheikh",
+   "simoncelli"
+  ],
+  "estado": "verificada",
+  "doi": "10.1109/tip.2003.819861",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 4,
+  "cr_titulo": "Image quality assessment: from error visibility to structural similarity",
+  "cr_anio": "2004",
+  "cr_revista": "IEEE Transactions on Image Processing",
+  "cr_vol": "13",
+  "cr_num": "4",
+  "cr_pag": "600-612",
+  "cr_autores": [
+   "Zhou Wang",
+   "Bovik",
+   "Sheikh",
+   "Simoncelli"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 31,
+  "cita": "Wilcoxon, F. (1945). Individual comparisons by ranking methods. Biometrics Bulletin, 1(6), 80–83.",
+  "anio": "1945",
+  "titulo": "Individual comparisons by ranking methods",
+  "apellidos": [
+   "wilcoxon"
+  ],
+  "estado": "verificada",
+  "doi": "10.2307/3001968",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 1,
+  "cr_titulo": "Individual Comparisons by Ranking Methods",
+  "cr_anio": "1945",
+  "cr_revista": "Biometrics Bulletin",
+  "cr_vol": "1",
+  "cr_num": "6",
+  "cr_pag": "80",
+  "cr_autores": [
+   "Wilcoxon"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 32,
+  "cita": "Xydeas, C. S., y Petrović, V. (2000). Objective image fusion performance measure. Electronics Letters, 36(4), 308–309.",
+  "anio": "2000",
+  "titulo": "Objective image fusion performance measure",
+  "apellidos": [
+   "xydeas",
+   "petrovic"
+  ],
+  "estado": "verificada",
+  "doi": "10.1049/el:20000267",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 2,
+  "cr_titulo": "Objective image fusion performance measure",
+  "cr_anio": "2000",
+  "cr_revista": "Electronics Letters",
+  "cr_vol": "36",
+  "cr_num": "4",
+  "cr_pag": "308-309",
+  "cr_autores": [
+   "Xydeas",
+   "Petrović"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ },
+ {
+  "n": 33,
+  "cita": "Zhang, X., y Demiris, Y. (2023). Visible and infrared image fusion using deep learning. IEEE Transactions on Pattern Analysis and Machine Intelligence, 45(8), 10535–10554.",
+  "anio": "2023",
+  "titulo": "Visible and infrared image fusion using deep learning",
+  "apellidos": [
+   "zhang",
+   "demiris"
+  ],
+  "estado": "verificada",
+  "doi": "10.1109/tpami.2023.3261282",
+  "jaccard": 1.0,
+  "apellidos_en_comun": 2,
+  "cr_titulo": "Visible and Infrared Image Fusion Using Deep Learning",
+  "cr_anio": "2023",
+  "cr_revista": "IEEE Transactions on Pattern Analysis and Machine Intelligence",
+  "cr_vol": "45",
+  "cr_num": "8",
+  "cr_pag": "10535-10554",
+  "cr_autores": [
+   "Zhang",
+   "Demiris"
+  ],
+  "cr_tipo": "journal-article",
+  "defectos": [],
+  "oa": {
+   "es_oa": false,
+   "estado": "closed",
+   "pdf": null,
+   "landing": null,
+   "licencia": null
+  }
+ }
+]
