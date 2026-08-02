@@ -124,8 +124,11 @@ def main():
                 sp.set_edgecolor(GRANATE if es_prop else "#555555")
                 sp.set_linewidth(2.0 if es_prop else 0.6)
         axes[fila, 0].set_ylabel(f"Escena {s}", fontsize=10)
-    fig.suptitle("Detecciones del modelo único VIS+IR — People en granate, Lamp en azul (conf ≥ 0,25)",
-                 fontsize=12, y=0.995)
+    # el umbral se toma de CONF: tenerlo escrito a mano hizo que la figura
+    # declarara 0,25 mientras el codigo predecia con 0,30
+    umbral = f"{CONF:.2f}".replace(".", ",")
+    fig.suptitle("Detecciones del modelo único VIS+IR — People en granate, "
+                 f"Lamp en azul (conf ≥ {umbral})", fontsize=12, y=0.995)
     fig.tight_layout(rect=[0, 0, 1, 0.955])
     out = "docs/figures/fig_m3fd_detecciones.png"
     fig.savefig(out, dpi=160, bbox_inches="tight", facecolor="white")

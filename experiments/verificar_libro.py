@@ -1,6 +1,8 @@
 """Verificacion final del libro contra los CSV y contra si mismo."""
+import hashlib
 import re
 import sys
+import zipfile
 from pathlib import Path
 
 import fitz
@@ -127,6 +129,35 @@ for titulo, pag in lineas:
                 if any(l.strip() == titulo for l in p.splitlines())), None)
     ok(fis is not None and fis + 1 == pag,
        f'«{titulo[:52]}» -> pag {pag} (real {fis+1 if fis is not None else "?"})')
+
+# ---- 9. figuras embebidas identicas a las del repositorio -----------------
+# Las cuatro figuras de datos del libro vivian solo dentro del docx y quedaron
+# con cifras de corridas anteriores: la del ranking llego a mostrar la piramide
+# de Laplace primera, contradiciendo el texto. Este chequeo compara byte a byte.
+print('\n--- 9. figuras embebidas')
+EMBEBIDAS = {
+    'word/media/image8.png': 'fig_libro_boxplots.png',        # Figura 7
+    'word/media/image9.png': 'fig_libro_ranking.png',         # Figura 8
+    'word/media/image13.png': 'fig_libro_propuesta_vs.png',   # Figura 10
+    'word/media/image14.png': 'fig_libro_pso.png',            # Figura 11
+    'word/media/image16.png': 'fig_m3fd_detecciones.png',     # Figura 9
+}
+docx = BASE / 'Tesis_Borrador_V3.docx'
+if not docx.exists():
+    ok(False, f'no encuentro {docx.name} para revisar las figuras')
+else:
+    with zipfile.ZipFile(docx) as z:
+        nombres = set(z.namelist())
+        for interno, fig in EMBEBIDAS.items():
+            ruta = RAIZ / 'docs' / 'figures' / fig
+            if interno not in nombres:
+                ok(False, f'{interno} no esta en el docx')
+            elif not ruta.exists():
+                ok(False, f'falta docs/figures/{fig}')
+            else:
+                h1 = hashlib.md5(z.read(interno)).hexdigest()
+                h2 = hashlib.md5(ruta.read_bytes()).hexdigest()
+                ok(h1 == h2, f'{interno} == docs/figures/{fig}')
 
 # ---- resumen -------------------------------------------------------------
 print(f'\n=== {len(fallos)} fallos ===')
