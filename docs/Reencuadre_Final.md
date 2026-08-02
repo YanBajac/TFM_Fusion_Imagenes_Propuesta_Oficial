@@ -227,7 +227,10 @@ queda **última** de los seis brazos (4,359), de modo que el mérito no proviene
 
 ## 6. Limitaciones a declarar (apartado 1.6)
 
-1. El corpus son 20 pares del TNO que corresponden a unas 11 escenas físicamente distintas; los
+1. El corpus son 20 pares del TNO que corresponden a **13** escenas físicamente distintas
+   (conteo exacto sobre los nombres de archivo: `APC_1` y `APC_3` aportan tres vistas cada una,
+   `soldier_behind_smoke` tres instantes y `soldier_in_trench` dos; las nueve restantes son
+   únicas). La estimación previa de «unas 11» quedó corregida el 2 de agosto de 2026; los
    contrastes pareados asumen independencia entre bloques. Verificado que las conclusiones
    sobreviven al agregar por escena.
 2. Un par del subconjunto original estaba corrupto (el archivo visible era copia del infrarrojo)
