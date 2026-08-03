@@ -273,23 +273,23 @@ esencialmente térmico); la propuesta queda en el **extremo inferior de la banda
 
 | Entrada | mAP@0.5 ↑ | mAP@0.5:0.95 ↑ |
 |---------|:---:|:---:|
-| **IR (solo)** | **0.957** | **0.663** |
-| Pirámide de Laplace (LP) | 0.949 | 0.651 |
-| Dual-Tree Complex Wavelet (DTCWT) | 0.948 | 0.633 |
-| Wavelet discreta (DWT) | 0.946 | 0.614 |
-| Wavelet db4 (CVT) | 0.941 | 0.639 |
-| Top-Hat clásico | 0.938 | 0.609 |
-| Ratio Pyramid (RP) | 0.926 | 0.538 |
-| **Propuesta Novedosa (r=25, m=0.30)** | 0.913 | 0.617 |
-| VIS (solo) | 0.808 | 0.451 |
+| **IR (solo)** | **0.971** | **0.621** |
+| Pirámide de Laplace (LP) | 0.952 | 0.565 |
+| Dual-Tree Complex Wavelet (DTCWT) | 0.949 | 0.603 |
+| Wavelet db4 (CVT) | 0.940 | 0.608 |
+| Wavelet discreta (DWT) | 0.939 | 0.602 |
+| Top-Hat clásico | 0.933 | 0.609 |
+| **Propuesta Novedosa (r=25, m=0.30)** | 0.906 | 0.581 |
+| Ratio Pyramid (RP) | 0.906 | 0.500 |
+| VIS (solo) | 0.813 | 0.450 |
 
 **El peso de contraste: métricas de actividad vs. desempeño en tarea.** El análisis de `m`
 (`docs/figures/fig_aptitud_vs_operador.png` y `fig_comparativa_m.png`) documenta el hallazgo
-metodológico central del trabajo: (a) el operador propuesto extrae **4.3 veces** más energía de
+metodológico central del trabajo: (a) el operador propuesto extrae **4,21** veces más energía de
 detalle que el disco único, de modo que su peso óptimo es proporcionalmente menor —`m·|W|` es lo que
 fija el realce—; (b) `Fo` decrece de forma **monótona** al aumentar `m` en ambos operadores, por lo
 que su óptimo cae siempre en el piso del rango permitido; y (c) las métricas de actividad crecen con
-el realce hasta que la **saturación** degrada la imagen (12–20 % de píxeles saturados en `m = 2`
+el realce hasta que la **saturación** degrada la imagen (del 0,73 % de pixeles saturados en m = 0,30 al 6,50 % en m = 1 y el 21,62 % en m = 2 en `m = 2`
 frente a ~1 % en `m = 0.30`). En consecuencia, **optimizar las métricas de actividad y optimizar el
 desempeño de detección son objetivos distintos**, y ambos criterios deben reportarse por separado.
 
