@@ -699,9 +699,6 @@ for idx, nm in enumerate([p[0].name for p in _list_pairs()], 1):
     pairs_html.append(
         f'<div class="par"><img src="{b64(buf.getvalue(), "image/jpeg")}">'
         f'<div class="cap">Par {idx:02d}: {nm.rsplit(".", 1)[0]} (izq. VIS, der. IR)</div></div>')
-mont_html = []
-for i in range(1, 21):
-    mont_html.append(f'<div class="mont"><img src="{file_img_b64(os.path.join(CUAL, f"montaje_{i:02d}.png"), 1350, 84)}"></div>')
 def fig_file(name, max_w=1350):
     p = os.path.join(FIG, name)
     return file_img_b64(p, max_w=max_w) if os.path.exists(p) else None
@@ -755,6 +752,17 @@ _POS_17 = list(_r17.index).index(PROP) + 1
 # Tamano del corpus tomado del dato, no fijado a mano: el par Athena_heather_IR_hei_vis_g
 # quedo excluido por tener el slot VIS duplicado del IR (ver src/datasets.PARES_EXCLUIDOS).
 N_ESC = int(allm["image"].nunique())
+
+# La galeria cualitativa se arma aqui, despues de conocer N_ESC: antes tenia el 20
+# fijo en el codigo y habria quedado desalineada si cambiaba el tamano del corpus.
+# Se afirma que existe un montaje por escena para que la falta no pase inadvertida.
+mont_html = []
+for i in range(1, N_ESC + 1):
+    ruta = os.path.join(CUAL, f"montaje_{i:02d}.png")
+    assert os.path.exists(ruta), (
+        f"falta {ruta}: corre experiments/make_montajes_cualitativos.py")
+    mont_html.append(f'<div class="mont"><img src="{file_img_b64(ruta, 1350, 84)}"></div>')
+
 COLS_IMG = [("SSIM", "SSIM_avg"), ("EN", "E"), ("SF", "SF"), ("SD", "SD"), ("PSNR", "PSNR")]
 ORDEN_IMG = ["PiramideLaplace", "RatioPiramide", "DWT", "DTCWT", "Curvelet",
              "TopHat_Clasico", PROP]
@@ -1406,8 +1414,8 @@ H.append(f"""
 </div>
 """)
 pg += 1
-for i in range(2, 20, 2):
-    blk = mont_html[i] + (mont_html[i + 1] if i + 1 < 20 else "")
+for i in range(2, N_ESC, 2):
+    blk = mont_html[i] + (mont_html[i + 1] if i + 1 < N_ESC else "")
     H.append(f'<div class="page"><h2>11. Resultados cualitativos (escenas {i+1} y {min(i+2,N_ESC)} de {N_ESC})</h2>'
              f'{blk}{pie(pg)}</div>')
     pg += 1
