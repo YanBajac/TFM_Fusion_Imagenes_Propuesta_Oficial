@@ -37,6 +37,7 @@
    - [Métodos comparativos del benchmark](#25-métodos-comparativos-del-benchmark)
    - [Métricas de evaluación](#26-métricas-de-evaluación)
 3. [Resultados principales](#3-resultados-principales)
+   - [Segundo aporte: auditoría del protocolo de evaluación](#31-segundo-aporte-auditoría-del-protocolo-de-evaluación)
 4. [Estructura del proyecto](#4-estructura-del-proyecto)
 5. [Instalación](#5-instalación)
 6. [Uso rápido](#6-uso-rápido)
@@ -293,14 +294,52 @@ frente a ~1 % en `m = 0.30`). En consecuencia, **optimizar las métricas de acti
 desempeño de detección son objetivos distintos**, y ambos criterios deben reportarse por separado.
 
 **Detección — M3FD (clases complementarias, un único detector VIS+IR).** Con dos clases de
-visibilidad opuesta (**People** domina en IR: 0.220 vs 0.178; **Lamp** solo se ve en VIS: 0.135 vs
-0.018), **todas las fusiones recuperan ambas clases en una sola imagen** —algo que el IR no logra, al
-ser ciego a las luces—. La Ratio Pyramid alcanza el mejor promedio del par (0.165), el único valor que
-supera a **ambas** modalidades individuales (VIS 0.157, IR 0.119); la propuesta alcanza un promedio
-intermedio (0.124; People 0.146 y Lamp 0.101). La prueba visual con las detecciones dibujadas
-(`docs/figures/fig_m3fd_detecciones.png`) es elocuente: en una escena la fusión detecta **seis
-personas** frente a dos del VIS y dos del IR, y en otra conserva las **cuatro luces** que el IR no
-detecta en absoluto. Resultados: `detection_m3fd_map.csv` (ver §8.1).
+visibilidad desigual, la complementariedad es **real pero asimétrica**: el IR domina en **People**
+(`AP@0.5 = 0.779` frente a 0.621 del VIS) y se degrada en **Lamp** (0.348), mientras el VIS sostiene
+ambas clases en un nivel parejo (0.621 y 0.616). **No hay patrón espejo y ninguna modalidad es
+ciega**: el argumento a favor de fusionar es que ninguna es la mejor en las dos clases a la vez.
+La Ratio Pyramid es la única entrada cuyo promedio del par (0.622) supera a las dos modalidades
+(VIS 0.618, IR 0.563); la propuesta alcanza 0.564, al nivel del IR solo y por debajo del VIS.
+
+En el **conteo por escena** —232 escenas que contienen simultáneamente las dos clases, que es la
+operacionalización que pide el objetivo— la propuesta recupera ambas en el **50.0 %** frente al
+**53.0 % del visible solo**, con 8 escenas ganadas y 15 perdidas (McNemar exacto `p = 0.2100`), y
+resuelve 2 de las 90 escenas críticas. El mejor caso es la pirámide de Laplace (57.8 %) y cuatro de
+las siete fusiones quedan por debajo del visible. La prueba visual
+(`docs/figures/fig_m3fd_detecciones.png`) muestra 11 personas en la fusión frente a 3 del VIS y 10
+del IR en una escena, y 7 luces frente a 5 del VIS y 1 del IR en la otra. Resultados:
+`detection_m3fd_map.csv` y `complementariedad_resumen.csv` (ver §8.1).
+
+### 3.1 Segundo aporte: auditoría del protocolo de evaluación
+
+El trabajo no solo propone el operador: **audita el criterio con que se lo juzga**, usando el propio
+desarrollo como caso de estudio. Tres controles, todos versionados y reproducibles:
+
+- **Control negativo** (`run_control_negativo.py`). Con las nueve métricas, una fusión artificial de
+  **ruido gaussiano** con `σ = 0.20` queda **3.ª de 14 entradas** (rango 6.767), por delante de cinco
+  de los seis métodos comparativos, y su rango **mejora** al aumentar el ruido
+  (8.917 → 7.850 → 6.972 → 6.767 para σ = 0.02 / 0.05 / 0.10 / 0.20). El fallo es específico de la
+  varianza: el desenfoque sí se penaliza. Basta incorporar `Nabf` —la única métrica implementada con
+  dirección inversa— para que el ruido caiga al 7.º puesto, y al último con las diecisiete.
+- **Redundancia interna.** `FE = EN(fusión) / media(EN de las fuentes)`, y ese denominador no depende
+  del método: dentro de cada par `FE` es `EN` reescalada, con rangos intra-bloque idénticos y el mismo
+  χ² de Friedman (88.2857). Las dimensiones efectivas son **ocho, no nueve**.
+- **Sensibilidad a la composición del criterio.** Con las nueve métricas la propuesta es 1.ª (3.394);
+  con las diecisiete que el mismo evaluador ya calcula desciende a 3.ª (3.459) y el primer puesto pasa
+  a la pirámide de Laplace (3.147). **No cambia ninguna imagen fusionada**: cambia el conjunto de
+  métricas.
+- **Ajuste simétrico** (`run_ajuste_comparativos.py`). Concediendo a los comparativos el mismo paso de
+  ajuste, ninguna de las cinco configuraciones de referencia alcanza a la propuesta, pero el Top-Hat
+  clásico la supera por 0.061 — con `m = 1`, más del triple del peso. Ejecutándolo a peso igualado
+  (`r = 25, m = 0.30` en ambos) la propuesta conserva el primer lugar: 3.528 frente a 3.694.
+- **Ablación del banco** (`run_ablacion_banco.py`). Con `(r, m)` fijos, la suma de ramas es el mejor de
+  los seis brazos con las nueve métricas (3.222 frente a 3.367 del disco único); al retirar `FE` los
+  brazos se comprimen (3.444–3.631) y la suma baja al 4.º lugar. La imagen base sin operador queda
+  última, de modo que el mérito no proviene de la base.
+
+La conclusión metodológica: un protocolo de evaluación de fusión debe incluir al menos una métrica que
+penalice artefactos, declarar la redundancia entre sus componentes y separar el ajuste de
+hiperparámetros del criterio de evaluación. Detalle en la sección 5.8 del libro.
 
 ---
 
@@ -329,11 +368,20 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 │   ├── barrido_metricas_vs_m.py    # Las nueve métricas en función de m
 │   ├── comparativa_visual_m.py     # Control visual de saturación por peso m
 │   ├── pso_por_imagen.py           # Cuadro 1 completo sobre cada par -> 500 corridas (Anexos 1-20)
+│   ├── run_control_negativo.py     # Auditoría: ruido y desenfoque en el ranking (H3)
+│   ├── run_ablacion_banco.py       # Auditoría: los 6 brazos del banco a (r, m) fijos (H7)
+│   ├── run_ajuste_comparativos.py  # Auditoría: ajuste simétrico de los comparativos
+│   ├── run_saturacion_vs_m.py      # Recorte por saturación en función de m
+│   ├── run_complementariedad_escenas.py # Conteo por escena en M3FD (232 escenas, H6)
 │   ├── make_montajes_cualitativos.py # 20 montajes por escena (propuesta en rojo)
 │   ├── make_figuras_metodo.py      # Figuras del método (banco de SE, ejemplo de modalidades)
+│   ├── make_figuras_libro.py       # Figuras de datos del libro (7, 8, 10 y 11) desde los CSV
+│   ├── make_figuras_deck.py        # Los tres gráficos del deck desde los CSV
 │   ├── make_figura_detecciones_m3fd.py # Prueba visual M3FD (detecciones VIS/IR/fusión)
 │   ├── make_avances_report.py      # Regenera docs/Avances_Tesis.pdf (HTML -> PDF con Edge)
 │   ├── make_avances_excel.py       # Regenera docs/Avances_Tesis_Tablas.xlsx (12 hojas)
+│   ├── verificar_libro.py          # Contrasta el PDF del libro contra los CSV y el índice
+│   ├── verificar_bibliografia.py   # Contrasta las referencias contra Crossref y OpenAlex
 │   ├── detection_llvip/            # Reentrenamiento de detección con LLVIP (mAP concluyente)
 │   │   ├── prepare_llvip.py        #   genera datasets YOLO fusionados por método (labels compartidas)
 │   │   └── train_eval_llvip.py     #   entrena YOLOv8 por método y compara mAP (CSV acumulativo)
@@ -341,12 +389,17 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 │
 ├── notebooks/                      # 01 (EDA) y 03 (análisis estadístico)
 ├── docs/
-│   ├── Tesis_Borrador_V3.docx      # Documento principal (propuesta suma r=25; formato UCOM/Villalba)
-│   ├── Avances_Tesis_restringido.pdf  # Informe de avances (54 págs, incluye Anexos 1-20)
-│   ├── Avances_Tesis_libre.pdf     # Idem con el rango del peso ampliado
-│   ├── Auditoria_Interna.md        # Auditoría del pipeline: defectos, correcciones y alcance
+│   ├── Tesis_Borrador_V3.docx      # Documento principal (72 págs; formato UCOM/Villalba)
+│   ├── Avances_Tesis.pdf           # Informe de avances (60 págs, incluye Anexos 1-20)
 │   ├── Avances_Tesis_Tablas.xlsx   # Libro de tablas (12 hojas, detalle por escena)
-│   ├── Tesis_Defensa_Presentacion.pptx # Presentación de defensa (19 láminas, notas del orador)
+│   ├── Tesis_Defensa_Presentacion.pptx # Defensa (22 láminas + reserva, notas del orador)
+│   ├── Auditoria_Interna.md        # Auditoría del pipeline: defectos, correcciones y alcance
+│   ├── Auditoria_Metodologia.md    # Segunda auditoría, sobre la metodología
+│   ├── Auditoria_Bibliografia.md   # Auditoría de las referencias contra Crossref y OpenAlex
+│   ├── Reencuadre_Final.md         # Encuadre adoptado: objetivos, H1-H7 y conclusiones
+│   ├── Plan_Deck_Defensa.md        # Plan de edición del deck (22 láminas)
+│   ├── Secuencia_Ajuste.md         # Plan de ajuste en cinco fases
+│   ├── fuentes/                    # PDF de las fuentes (no se versionan) y datos de verificación
 │   └── figures/                    # Figuras del libro (fuente y montajes cualitativos)
 │
 ├── ejecutar_llvip.ps1              # Lanzador del pipeline LLVIP en la PC (GPU)
@@ -481,6 +534,11 @@ La detección con YOLO/RF-DETR requiere `ultralytics` / `rfdetr` (preferentement
 
 ## 11. Referencias
 
+Selección. La bibliografía completa son **36 entradas** en el capítulo 7 del libro, auditadas una por
+una contra Crossref, OpenAlex, DataCite y Open Library: ninguna es inventada, se corrigieron siete
+localizadores y se agregaron las tres que faltaban. El detalle, con los DOI verificados y lo que
+quedó pendiente, está en [`docs/Auditoria_Bibliografia.md`](docs/Auditoria_Bibliografia.md).
+
 - Serra, J. (1982). *Image Analysis and Mathematical Morphology*. Academic Press.
 - Soille, P. (2003). *Morphological Image Analysis*. Springer.
 - Burt, P. & Adelson, E. (1983). The Laplacian Pyramid as a Compact Image Code. *IEEE Trans. Commun.*
@@ -492,9 +550,12 @@ La detección con YOLO/RF-DETR requiere `ultralytics` / `rfdetr` (preferentement
 - Haghighat, M. et al. (2011). A non-reference image fusion metric based on mutual information of image features. *Computers & Electrical Engineering*.
 - Ma, J. et al. (2019). Infrared and visible image fusion methods and applications: A survey. *Information Fusion*, 45.
 - Singh, S. et al. (2023). A review of image fusion: methods, applications and performance metrics. *(revisión de referencia del estado del arte)*.
-- Bala, A. A. et al. (2024). Hybrid technique for fundus image enhancement using a modified morphological filter and a denoising net.
-- Román, J. C. M., Vázquez Noguera, J. L. & Legal-Ayala, H. (2024). Algoritmo de realce de contraste multiescala con Top-Hat (SE circulares y lineales).
-- Ortega Rodríguez, M. A. & Espinoza Ríos, G. A. (2025). Optimización de los parámetros de fusión Top-Hat mediante PSO. FPUNA.
+- Kingsbury, N. (2001). Complex wavelets for shift invariant analysis and filtering of signals. *Applied and Computational Harmonic Analysis*, 10(3), 234–253. (base del comparativo DTCWT)
+- Toet, A. (2017). The TNO multiband image data collection. *Data in Brief*, 15, 249–251. (fuente del corpus; la entrada anterior la fechaba en 2014, que corresponde al depósito del dataset en Figshare)
+- Bala, A. A., Aruna Priya, P. & Maik, V. (2024). Hybrid technique for fundus image enhancement using modified morphological filter and denoising net. *The Journal of Supercomputing*, 80(9), 13317–13340. (esquema aditivo-sustractivo que traslada este trabajo)
+- Flores, S., Bujaico, C., Mello-Román, J. C., Vázquez Noguera, J. L. & Legal-Ayala, H. (s. f.). Método de realce de contraste local y nitidez en imágenes mamográficas basado en la transformada top-hat multiescala con elementos estructurantes circulares y lineales. [Manuscrito], Digital Image Processing Research Group, FPUNA. (**antecedente directo del banco circular + lineal**)
+- Bajac Figueredo, Y. C., Bazán, J. P., Mello-Román, J. C., Vázquez Noguera, J. L. & Legal-Ayala, H. (2024). Infrared and visible image fusion using the Top Hat transform. *Proceeding Series of the Brazilian Society of Computational and Applied Mathematics* (CNMAC 2024). (**trabajo previo de los autores de esta tesis**)
+- Ortega Rodríguez, M. A. & Espinoza Ríos, G. A. (2025). Optimización de los parámetros de la transformada Top-Hat mediante PSO para la fusión de imágenes visibles e infrarrojas. Proyecto de Trabajo Final de Grado, Facultad Politécnica, UNA. (**origen de la aptitud `Fo = SSIMavg + En + PSNRn` y del rango `m ∈ [0.30, 2.00]`**; verificado contra el original)
 
 ---
 
