@@ -1,4 +1,4 @@
-# Auditoría de la bibliografía — 33 referencias
+# Auditoría de la bibliografía — 34 referencias
 
 Verificación realizada el 2 de agosto de 2026 contra Crossref, OpenAlex, DataCite y
 arXiv. Método: para cada entrada se buscó el registro exigiendo **coincidencia de
@@ -69,7 +69,7 @@ huérfanas ni entradas sin citar.
 
 | Ref. | Declara | Corresponde | DOI |
 |---|---|---|---|
-| 2 · Bai (2013) | 23(1), 244–263 | **542–554** (vol. 23 tiene un solo trabajo suyo con ese título) | `10.1016/j.dsp.2012.09.013` |
+| 2 · Bai (2013) | 23(1), 244–263 | **23(2), 542–554** | `10.1016/j.dsp.2012.11.001` |
 | 10 · LLVIP (ICCVW 2021) | 3496–3504 | **3489–3497** | `10.1109/ICCVW54120.2021.00389` |
 | 13 · M3FD (CVPR 2022) | 5802–5811 | **5792–5801** | `10.1109/CVPR52688.2022.00571` |
 
@@ -77,7 +77,18 @@ huérfanas ni entradas sin citar.
 
 ### No es un defecto — la ref. 19 se listó aquí por error
 
-**Ref. 19 · Piella y Heijmans.** La tesis declara vol. 3, pp. 173–176 y está **correcta**. Crossref registra «volumen 2» pero su propio campo de paginación dice , que codifica volumen III, páginas 173–176: su metadato se contradice a sí mismo y lo que declara la tesis es lo correcto. Se listó entre los menores en una versión anterior de este informe; no hay nada que corregir.
+**Ref. 19 · Piella y Heijmans.** La tesis declara vol. 3, pp. 173–176 y está
+**correcta**. Crossref registra «volumen 2», pero su propio campo de paginación dice
+`III-173-6`, que codifica volumen III, páginas 173–176: su metadato se contradice a
+sí mismo y lo que declara la tesis es lo correcto. Se listó entre los menores en una
+versión anterior de este informe; no hay nada que corregir.
+
+> **Nota sobre la ref. 2.** Un primer emparejador le asignó el DOI
+> `10.1016/j.dsp.2012.09.013`, que resuelve a *Power quality analysis using Discrete
+> Orthogonal S-transform* de otros autores. Se re-verificó por título y autor: el
+> registro correcto es `10.1016/j.dsp.2012.11.001`, Digital Signal Processing 23(2),
+> 542–554. Las páginas de la tesis sí estaban mal; el DOI del primer intento
+> también.
 
 ### Estructural — cita sin respaldo
 
@@ -152,8 +163,9 @@ en JSTOR, al que muchas bibliotecas suscriben.
 **más importante del trabajo**: de ella provienen la función de aptitud
 `F_o = SSIM_avg + E_n + PSNR_n`, el rango publicado `m ∈ [0,30; 2,00]` y el
 barrido de 25 configuraciones de enjambre. Es un proyecto de trabajo final de
-grado de la Facultad Politécnica de la UNA, sin DOI y sin copia localizada en
-línea.
+grado de la Facultad Politécnica de la UNA, sin DOI y sin copia publica en linea.
+**El autor de esta tesis dispone del PDF** (agosto de 2026); queda archivarlo junto
+al trabajo para que la atribucion sea comprobable por terceros.
 
 Esto tiene una consecuencia que conviene declarar en la defensa: **un lector
 externo no puede hoy comprobar de dónde salen la aptitud ni el rango de *m***, que
@@ -162,7 +174,12 @@ obtener el PDF de la FPUNA y archivarlo junto a la tesis, o —mejor— reproduc
 un apéndice la definición de la aptitud y el cuadro del barrido con atribución
 explícita.
 
-**5.2 · Libros (refs. 8, 21, 24).** Gonzalez y Woods (2018, 4.ª ed.), Serra (1982)
+**5.2 · Libros (refs. 8, 21, 24) — verificados aparte.** Crossref no los indexa como
+registro propio, solo reseñas, de modo que se confirmaron en Open Library:
+Serra (1982, Academic Press) coincide exactamente; Soille figura con 1.ª edición en
+1999 y 2.ª en 2003 por Springer, consistente con lo declarado; y Gonzalez y Woods
+coincide en título, autores y editorial (Pearson), con ediciones desde 1977. No
+requieren corrección. *(Redacción anterior, ya resuelta:)* Gonzalez y Woods (2018, 4.ª ed.), Serra (1982)
 y Soille (2003, 2.ª ed.) no tienen registro propio en Crossref, que solo indexa
 reseñas. Son obras de referencia estándar y sus datos son verosímiles, pero
 conviene confirmar edición y año en el catálogo de la editorial o de una
@@ -184,13 +201,16 @@ texto son:
 
 ---
 
-## 6. Acciones sugeridas, en orden
+## 6. Estado de las acciones
 
-1. Corregir las ocho entradas con defectos (§2) y añadir la entrada de Kingsbury o
-   remitir a Tao et al. (2010).
-2. Conseguir el trabajo de Ortega y Espinoza y archivarlo.
-3. Añadir DOI a las entradas que lo tienen: APA 7 lo exige y hoy solo la ref. 4 lo
-   lleva.
-4. Confirmar los tres libros por catálogo.
+1. **HECHO.** Las siete entradas con defecto quedaron corregidas y se agrego la
+   entrada de Kingsbury, N. (2001), verificada por DOI 10.1006/acha.2000.0343. La
+   celda del DTCWT en la Tabla 3 la cita ahora con anio. La bibliografia pasa a 34
+   entradas.
+2. **PARCIAL.** El PDF de Ortega y Espinoza esta en manos del autor; falta
+   archivarlo en el repositorio y contrastar la aptitud y el rango de m contra el texto.
+3. **PARCIAL.** 15 de las 34 entradas llevan DOI. Completar el resto depende de lo
+   que exija el reglamento de la UCOM.
+4. **HECHO.** Los tres libros se confirmaron en Open Library (ver §5.2).
 5. Con acceso institucional, leer al menos Bala et al. (2024) y las seis de
    métricas para cerrar §5.3.
