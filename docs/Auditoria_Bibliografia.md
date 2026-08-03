@@ -218,3 +218,65 @@ texto son:
 4. **HECHO.** Los tres libros se confirmaron en Open Library (ver §5.2).
 5. Con acceso institucional, leer al menos Bala et al. (2024) y las seis de
    métricas para cerrar §5.3.
+
+---
+
+## 7. Fuentes aportadas por el autor (3 de agosto de 2026)
+
+Cinco PDF quedaron en `docs/fuentes/`. Tres cierran verificaciones abiertas y dos
+revelaron referencias que faltaban.
+
+### 7.1 · Ref. 18 verificada — cierra §5.1
+
+`Libro___Fusion_de_Imagenes___FPUNA__PSO_2.pdf` es el trabajo de Ortega Rodríguez y
+Espinoza Ríos (53 páginas, Licenciatura en Ciencias Informáticas, FPUNA). Confirma
+al pie de la letra las dos atribuciones que gobiernan la configuración adoptada:
+
+- **La función de aptitud**, ecuación (17) del original: «se define como la suma de
+  estos componentes junto con el SSIMavg […] Fo = SSIMavg + En + PSNRn. Esta
+  formulación **sin pesos arbitrarios** busca un balance natural entre la
+  preservación estructural…»
+- **El rango del peso**: «el rango de búsqueda establecido es **m ∈ [0,3, 2,0]**,
+  identificado como un rango adecuado para resaltar las características…»
+
+Los nombres completos son Marian Arami Ortega Rodríguez y Giovana Arami Espinoza
+Ríos, coherentes con las iniciales de la entrada. **Pendiente:** no se localizó en
+el texto la descripción del barrido de 25 configuraciones de enjambre.
+
+### 7.2 · Dos referencias que faltaban, ya incorporadas
+
+**Bajac Figueredo et al. (2024)** — *Infrared and visible image fusion using the Top
+Hat transform*, en las actas de la Sociedad Brasileña de Matemática Computacional y
+Aplicada (CNMAC 2024). Es **trabajo previo de los propios autores de esta tesis**,
+con Mello-Román, Vázquez Noguera y Legal-Ayala, sobre el mismo problema y el mismo
+corpus, y no estaba citado. Se agregó al estado del arte de fusión morfológica.
+
+**Flores et al. (s. f.)** — *Método de realce de contraste local y nitidez en
+imágenes mamográficas basado en la transformada top-hat multiescala con elementos
+estructurantes circulares y lineales*, del Digital Image Processing Research Group de
+la FPUNA. Es el **antecedente directo del banco de elementos circulares y lineales**
+que emplea el operador, y tampoco estaba citado: la tesis atribuía ese esquema solo a
+Bala et al. (2024), sobre imágenes de fondo de ojo. Se agregó donde se introduce el
+banco.
+
+**Localizadores incompletos, a propósito.** Ninguno de los dos figura en Crossref, y
+sus PDF no traen datos de publicación propios: los DOI que aparecen en ellos
+pertenecen a sus listas de referencias. Se citan por tanto con lo verificable
+—título, autoría completa y procedencia— sin inventar volumen, páginas ni DOI. Para
+completarlas hace falta:
+
+| Referencia | Falta | Dónde conseguirlo |
+|---|---|---|
+| Bajac Figueredo et al. (2024) | volumen, páginas y DOI de la serie | página de las actas del CNMAC 2024 (la serie usa DOI de la forma `10.5540/…`) |
+| Flores et al. (s. f.) | revista, año, volumen, páginas y DOI, si ya se publicó | consultar a los coautores de la FPUNA |
+
+### 7.3 · Ref. 4 completada
+
+El PDF de Bala et al. confirma los datos y aporta el fascículo que faltaba: *The
+Journal of Supercomputing*, **80(9)**, 13317–13340. Corregido.
+
+### 7.4 · Otros dos archivos
+
+`Manuscript.pdf` es la versión de manuscrito de Singh et al. (ref. 23) y
+`Hybrid technique…(2).pdf` la publicada de Bala et al. (ref. 4). Ambas coinciden con
+lo declarado; no requieren cambios.
