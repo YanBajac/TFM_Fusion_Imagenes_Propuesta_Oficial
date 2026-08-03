@@ -380,6 +380,7 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 │   ├── make_figura_detecciones_m3fd.py # Prueba visual M3FD (detecciones VIS/IR/fusión)
 │   ├── make_avances_report.py      # Regenera docs/Avances_Tesis.pdf (HTML -> PDF con Edge)
 │   ├── make_avances_excel.py       # Regenera docs/Avances_Tesis_Tablas.xlsx (12 hojas)
+│   ├── verificar_entregables.py    # Contrasta los CUATRO entregables contra los CSV (un comando)
 │   ├── verificar_libro.py          # Contrasta el PDF del libro contra los CSV y el índice
 │   ├── verificar_bibliografia.py   # Contrasta las referencias contra Crossref y OpenAlex
 │   ├── detection_llvip/            # Reentrenamiento de detección con LLVIP (mAP concluyente)
@@ -505,13 +506,21 @@ individuales y los siete métodos del benchmark, incluida la propuesta en su con
 powershell -ExecutionPolicy Bypass -File .\ejecutar_m3fd.ps1 -M3FD "data\M3FD"
 ```
 
-**Resultados** (`detection_m3fd_map.csv`): la complementariedad es extrema — el IR domina People
-(AP@0.5 = 0.220) pero es prácticamente ciego a Lamp (0.018); el VIS presenta el patrón espejo
-(0.178 / 0.135). **Todas las fusiones recuperan ambas clases en una sola imagen**, algo que el IR no
-logra. La Ratio Pyramid alcanza el mejor promedio del par (0.165) y es la única entrada que supera a
-ambas modalidades individuales (VIS 0.157, IR 0.119); la propuesta alcanza un promedio intermedio
-(0.124; People 0.146 y Lamp 0.101): el realce elevado que optimiza las métricas de actividad no
-favorece al detector.
+**Resultados** (`detection_m3fd_map.csv` y `complementariedad_resumen.csv`): la complementariedad es
+real pero **asimétrica**. El IR domina People (`AP@0.5 = 0.779` frente a 0.621 del VIS) y se degrada
+en Lamp (0.348); el VIS sostiene ambas clases en un nivel parejo (0.621 y 0.616). **No hay patrón
+espejo y ninguna modalidad es ciega**: lo que justifica fusionar es que ninguna es la mejor en las
+dos clases a la vez. La Ratio Pyramid es la única entrada cuyo promedio del par (0.622) supera a
+ambas modalidades (VIS 0.618, IR 0.563); la propuesta alcanza 0.564 (People 0.641, Lamp 0.488), al
+nivel del IR solo y por debajo del VIS, y en mAP@0.5 global queda 5.ª de las siete fusiones.
+
+En el **conteo por escena** —232 escenas con ambas clases presentes, que es la operacionalización que
+pide el objetivo— la propuesta recupera las dos en el **50.0 %** frente al **53.0 % del visible
+solo**, con 8 escenas ganadas y 15 perdidas (McNemar exacto `p = 0.2100`), y resuelve 2 de las 90
+escenas críticas. El mejor caso es la pirámide de Laplace (57.8 %); cuatro de las siete fusiones
+quedan por debajo del visible. El realce elevado que optimiza las métricas de actividad **no** favorece
+al detector: la hipótesis de que la mejora de calidad se traslade a la tarea queda **rechazada**, con
+muestra suficiente.
 
 ---
 
