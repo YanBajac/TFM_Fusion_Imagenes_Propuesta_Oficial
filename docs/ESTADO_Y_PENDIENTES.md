@@ -117,3 +117,32 @@ en inglés. Cinco lecciones que costaron caro:
    multiescala, elementos cuadrado y de cruz, profundidad L, radio base r₀, variante
    sin Black Top-Hat—, es decir experimentos que nunca se corrieron. Eso ningún
    verificador automático lo detecta: exige leer.
+
+---
+
+## Lo que nunca se revisó (agregado al cierre)
+
+Distinto de los pendientes de arriba: esto no está en la lista de hallazgos porque
+nadie lo mira todavía.
+
+1. **El Excel** (`docs/Avances_Tesis_Tablas.xlsx`, 12 hojas). Es un entregable
+   rastreado y ningún verificador lo cubre. Se regeneró en esta sesión y aun así
+   contiene `3.67` y `0.913`, las dos cifras retiradas del ranking y del mAP: hay que
+   revisar si `make_avances_excel.py` las calcula de una fuente vieja o las tiene
+   escritas. **Extender `verificar_entregables.py` al Excel es la mejora de mayor
+   rendimiento que queda.**
+2. **Los notebooks** (`notebooks/01` EDA y `03` estadístico). No se abrieron en toda la
+   sesión; pueden contener cifras y conclusiones de corridas anteriores.
+3. **Las Figuras 1 a 6 del libro.** No llevan cifras, así que no pueden contradecir a
+   los datos, pero se dibujaron para el método anterior. Dado que el Marco Conceptual
+   describía un Top-Hat multiescala con elementos cuadrado y de cruz, conviene mirar si
+   la Figura 2, la 3 o la 4 dibujan una cascada multiescala o geometrías que el
+   operador no usa.
+4. **La variante `libre`** (`metrics_reports_libre/` y su informe). Es un conjunto
+   paralelo completo de resultados, nunca auditado. Si no se va a defender, conviene
+   decidir si se archiva o se retira.
+5. **Cumplimiento del reglamento de la UCOM**: márgenes, portada, estilo de cita,
+   orden del frontmatter. Es el pendiente externo y nadie lo verificó.
+6. **La implementación de los comparativos**, más allá de la banda base de la pirámide
+   de Laplace ya declarada. Nadie auditó LP, RP, DWT, DTCWT ni la aproximación CVT
+   buscando otros defectos.
