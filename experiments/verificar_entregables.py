@@ -10,7 +10,7 @@ Todos los valores esperados se DERIVAN de experiments/results/metrics_reports/.
 Nada esta escrito a mano, salvo la lista de afirmaciones retiradas (§4), que por
 definicion no puede derivarse de los datos.
 
-Uso:   python experiments/verificar_entregables.py
+Uso:   .venv\Scripts\python.exe -X utf8 experiments/verificar_entregables.py
 Salida: informe por consola; codigo de salida 1 si hay algun fallo.
 """
 import hashlib

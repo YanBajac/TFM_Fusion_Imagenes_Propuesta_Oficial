@@ -2,7 +2,7 @@
 """Montajes cualitativos (20 escenas TNO): VIS, IR, los 6 comparativos y la propuesta.
 
 Calcula las fusiones directamente con src/fusion (no depende de imagenes pre-fusionadas).
-Uso (desde la raiz del repo):  python experiments/make_montajes_cualitativos.py
+Uso (desde la raiz del repo):  .venv\Scripts\python.exe -X utf8 experiments/make_montajes_cualitativos.py
 """
 import os, sys
 import numpy as np

@@ -22,7 +22,7 @@ Salidas (experiments/results/metrics_reports/):
   ajuste_comparativos_mejores.csv   mejor configuracion de cada metodo y su rango interno
   ajuste_comparativos_ranking.csv   el ranking en los cuatro escenarios
 Uso:
-  python experiments/run_ajuste_comparativos.py
+  .venv\Scripts\python.exe -X utf8 experiments/run_ajuste_comparativos.py
 """
 import sys
 import time

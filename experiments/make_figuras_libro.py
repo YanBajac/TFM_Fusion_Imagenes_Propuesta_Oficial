@@ -13,7 +13,7 @@ Salidas (docs/figures/):
   fig_libro_propuesta_vs.png Figura 10 — propuesta vs clasico y estado del arte
   fig_libro_pso.png         Figura 11 — aptitud vs m y matriz del barrido
 
-Uso: python experiments/make_figuras_libro.py
+Uso: .venv\Scripts\python.exe -X utf8 experiments/make_figuras_libro.py
 """
 import os
 import sys

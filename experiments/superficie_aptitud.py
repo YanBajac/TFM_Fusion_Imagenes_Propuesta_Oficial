@@ -16,7 +16,7 @@ de modo que se precalculan una vez por radio y cada evaluacion queda reducida a 
 reconstruccion y las metricas.
 
 Salida: experiments/results/metrics_reports/superficie_aptitud_fo.csv  (r, m, Fo)
-Uso:    python experiments/superficie_aptitud.py [--paso-m 0.10] [--radios 1,3,5,...]
+Uso:    .venv\Scripts\python.exe -X utf8 experiments/superficie_aptitud.py [--paso-m 0.10] [--radios 1,3,5,...]
 """
 import argparse
 import os

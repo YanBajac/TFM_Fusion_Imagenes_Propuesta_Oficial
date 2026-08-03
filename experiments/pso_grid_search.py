@@ -9,7 +9,7 @@ con suma, que inyecta ~2x mas energia de detalle que el disco unico del libro).
 
 Salida: experiments/results/metrics_reports/pso_grid_search.csv (una fila por configuracion)
         experiments/results/pso/pso_grid_state.json (reanudable)
-Uso:    python experiments/pso_grid_search.py --budget 520
+Uso:    .venv\Scripts\python.exe -X utf8 experiments/pso_grid_search.py --budget 520
 """
 import sys, json, time, argparse
 from pathlib import Path

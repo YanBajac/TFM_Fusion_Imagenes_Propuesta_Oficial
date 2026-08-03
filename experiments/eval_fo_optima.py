@@ -6,7 +6,7 @@ disco unico), y los compara con los metodos del benchmark ya calculados.
 
 Salida: experiments/results/metrics_reports/fo_ablacion_per_image.csv
         experiments/results/metrics_reports/fo_ablacion_comparativa.csv
-Uso:    python experiments/eval_fo_optima.py
+Uso:    .venv\Scripts\python.exe -X utf8 experiments/eval_fo_optima.py
 """
 import sys
 sys.path.insert(0, '.')

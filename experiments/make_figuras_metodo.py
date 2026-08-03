@@ -2,7 +2,7 @@
 """Figuras del metodo para informes y presentacion (operador con SUMA de ramas).
 Genera docs/figures/fig_cinco_se.png (banco de SE + combinacion por suma) y
 docs/figures/ejemplo_modalidades.png (VIS | IR | Top-Hat clasico | Propuesta).
-Uso: python experiments/make_figuras_metodo.py (desde la raiz del repo)."""
+Uso: .venv\Scripts\python.exe -X utf8 experiments/make_figuras_metodo.py (desde la raiz del repo)."""
 import os
 import sys
 import numpy as np

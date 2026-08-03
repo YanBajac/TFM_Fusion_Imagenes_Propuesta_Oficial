@@ -6,7 +6,7 @@ ambas aptitudes decrecen monotonamente con m a partir de valores pequenos.
 
 Salida: experiments/results/metrics_reports/curva_aptitud_vs_m.csv
         docs/figures/fig_aptitud_vs_m.png
-Uso:    python experiments/curva_aptitud_vs_m.py
+Uso:    .venv\Scripts\python.exe -X utf8 experiments/curva_aptitud_vs_m.py
 """
 import sys
 sys.path.insert(0, '.')

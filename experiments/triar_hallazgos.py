@@ -11,7 +11,7 @@ escala. Este script hace la parte mecánica:
 
 No corrige nada. Su salida es la lista de trabajo, ordenada por gravedad.
 
-Uso:   python experiments/triar_hallazgos.py [--gravedad falso] [--doc libro]
+Uso:   .venv\Scripts\python.exe -X utf8 experiments/triar_hallazgos.py [--gravedad falso] [--doc libro]
 Salida: docs/fuentes/triage.json y un resumen por consola.
 """
 import argparse

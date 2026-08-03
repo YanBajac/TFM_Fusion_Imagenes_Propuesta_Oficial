@@ -2,7 +2,7 @@
 """Genera docs/Avances_Tesis.pdf — informe de avances (diseno simple tipo Word).
 Propuesta con SUMA de ramas (r=25, m=0.30) vs 6 comparativos (LP, RP, DWT, DTCWT,
 CVT, Top-Hat clasico) + deteccion LLVIP. Requiere Microsoft Edge para el paso HTML->PDF.
-Uso: python experiments/make_avances_report.py"""
+Uso: .venv\Scripts\python.exe -X utf8 experiments/make_avances_report.py"""
 import base64, io, json, os, warnings
 import numpy as np
 import pandas as pd

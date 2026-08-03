@@ -12,7 +12,7 @@ cinco elementos estructurantes inyecta unas 4,2 veces mas energia de detalle que
 
 Salida: experiments/results/metrics_reports/saturacion_vs_m.csv
         (m, pct_saturado_medio, pct_saturado_min, pct_saturado_max, pct_bajo_cero, pct_sobre_uno)
-Uso:    python experiments/run_saturacion_vs_m.py [--r 25]
+Uso:    .venv\Scripts\python.exe -X utf8 experiments/run_saturacion_vs_m.py [--r 25]
 """
 import argparse
 import sys

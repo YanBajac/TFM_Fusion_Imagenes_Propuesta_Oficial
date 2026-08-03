@@ -10,7 +10,7 @@ Produce:
   2) metrics_reports/comparacion_aptitudes.csv (cuantitativo: 12 metricas, ambos optimos)
   3) metrics_reports/comparacion_aptitudes_wilcoxon.csv (Wilcoxon pareado F_apt vs F_o, 20 pares)
 
-Uso:  python experiments/compara_aptitudes.py
+Uso:  .venv\Scripts\python.exe -X utf8 experiments/compara_aptitudes.py
 """
 import os
 import sys

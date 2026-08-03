@@ -9,7 +9,7 @@ Requiere: datasets/m3fd_comp_* (conjunto de escenas con las dos clases complemen
 generado por prepare_m3fd.py --test-complementario) y el modelo
 entrenado (runs/**/mixto/weights/best.pt).
 Salida: docs/figures/fig_m3fd_detecciones.png
-Uso:    python experiments/make_figura_detecciones_m3fd.py
+Uso:    .venv\Scripts\python.exe -X utf8 experiments/make_figura_detecciones_m3fd.py
 """
 import os
 import sys

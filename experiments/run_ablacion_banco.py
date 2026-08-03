@@ -23,7 +23,7 @@ Salidas (experiments/results/metrics_reports/):
   ablacion_banco.csv           una fila por brazo x imagen
   ablacion_banco_resumen.csv   medias por brazo, rango intra-bloque y contrastes
 Uso:
-  python experiments/run_ablacion_banco.py [--r 25] [--m 0.30]
+  .venv\Scripts\python.exe -X utf8 experiments/run_ablacion_banco.py [--r 25] [--m 0.30]
 """
 import argparse
 import sys

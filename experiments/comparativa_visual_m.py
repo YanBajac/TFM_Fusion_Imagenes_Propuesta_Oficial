@@ -6,7 +6,7 @@ actividad mejoran al aumentar m, pero un realce excesivo satura y genera halos; 
 permite juzgar visualmente hasta donde el aumento de m sigue produciendo una fusion util.
 
 Salida: docs/figures/fig_comparativa_m.png
-Uso: python experiments/comparativa_visual_m.py
+Uso: .venv\Scripts\python.exe -X utf8 experiments/comparativa_visual_m.py
 """
 import os
 import sys

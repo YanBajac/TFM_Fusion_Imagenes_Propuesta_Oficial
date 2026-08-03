@@ -7,7 +7,7 @@ Presenta dos escenarios, porque la eleccion del rango de busqueda determina el r
   B) rango ampliado, m en [0,01; 2,00], donde el optimo de F_o queda en el interior
 
 Entrada: metrics_reports/pso_por_imagen.csv y pso_por_imagen_libre.csv
-Uso: python experiments/make_reporte_optimos.py
+Uso: .venv\Scripts\python.exe -X utf8 experiments/make_reporte_optimos.py
 """
 import base64
 import io

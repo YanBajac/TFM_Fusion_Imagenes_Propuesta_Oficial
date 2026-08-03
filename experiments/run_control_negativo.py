@@ -21,7 +21,7 @@ Salidas (experiments/results/metrics_reports/):
   control_negativo.csv            una fila por brazo x imagen
   control_negativo_ranking.csv    rango intra-bloque de cada brazo, con y sin Nabf
 Uso:
-  python experiments/run_control_negativo.py [--semilla 0]
+  .venv\Scripts\python.exe -X utf8 experiments/run_control_negativo.py [--semilla 0]
 """
 import argparse
 import sys

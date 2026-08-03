@@ -17,7 +17,7 @@ aptitud F_o = SSIM_avg + E_n + PSNR_n cae en m ~ 0,07. Tres evidencias:
 Salidas: docs/figures/fig_aptitud_vs_operador.png
          experiments/results/metrics_reports/aptitud_operador_energia.csv
          experiments/results/metrics_reports/aptitud_operador_terminos.csv
-Uso: python experiments/analisis_aptitud_operador.py
+Uso: .venv\Scripts\python.exe -X utf8 experiments/analisis_aptitud_operador.py
 """
 import os
 import sys

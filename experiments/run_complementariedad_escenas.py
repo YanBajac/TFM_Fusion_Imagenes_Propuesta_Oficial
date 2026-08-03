@@ -34,7 +34,7 @@ Salidas (en experiments/results/metrics_reports/):
   complementariedad_criticas.csv     detalle de las escenas criticas
 
 Uso:
-  python experiments/run_complementariedad_escenas.py [--conf 0.25] [--iou 0.5]
+  .venv\Scripts\python.exe -X utf8 experiments/run_complementariedad_escenas.py [--conf 0.25] [--iou 0.5]
 """
 import argparse
 import sys

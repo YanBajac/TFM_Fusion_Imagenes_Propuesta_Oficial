@@ -15,7 +15,7 @@ reconstruccion y las metricas.
 
 Salida: experiments/results/metrics_reports/pso_por_imagen.csv
         (una fila por imagen x configuracion: 20 x 25 = 500 filas)
-Uso:    python experiments/pso_por_imagen.py [--probe] [--procesos N]
+Uso:    .venv\Scripts\python.exe -X utf8 experiments/pso_por_imagen.py [--probe] [--procesos N]
 """
 import argparse
 import os

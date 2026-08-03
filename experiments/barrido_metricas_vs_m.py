@@ -11,7 +11,7 @@ valores son los mismos que reporta el capitulo de resultados.
 
 Salidas: experiments/results/metrics_reports/barrido_metricas_vs_m.csv
          (una fila por operador x m, con las 9 metricas y los agregados)
-Uso: python experiments/barrido_metricas_vs_m.py
+Uso: .venv\Scripts\python.exe -X utf8 experiments/barrido_metricas_vs_m.py
 """
 import os
 import sys

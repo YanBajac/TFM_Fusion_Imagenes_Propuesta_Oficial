@@ -10,7 +10,7 @@ Salidas (docs/figures/):
   fig_deck_m3fd_clases.png   barras agrupadas AP People / AP Lamp (M3FD)
   fig_deck_pso_barrido.png   matriz de aptitud F_o del barrido n x T
 
-Uso: python experiments/make_figuras_deck.py
+Uso: .venv\Scripts\python.exe -X utf8 experiments/make_figuras_deck.py
 """
 import os
 import sys

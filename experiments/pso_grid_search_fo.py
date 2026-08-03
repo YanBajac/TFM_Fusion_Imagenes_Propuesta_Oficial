@@ -14,7 +14,7 @@ sugerido por el director). Dos operadores:
 
 Salida: experiments/results/metrics_reports/pso_grid_search_fo_<operador>.csv
         experiments/results/pso/pso_grid_fo_<operador>_state.json (reanudable)
-Uso:    python experiments/pso_grid_search_fo.py --operator propuesta --budget 5400
+Uso:    .venv\Scripts\python.exe -X utf8 experiments/pso_grid_search_fo.py --operator propuesta --budget 5400
 """
 import sys, json, time, argparse
 from pathlib import Path
