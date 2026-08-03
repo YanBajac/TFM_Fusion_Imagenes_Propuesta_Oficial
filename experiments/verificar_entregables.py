@@ -197,6 +197,71 @@ for doc in DOCUMENTOS:
     if negadas:
         print(f'        (aparecen negadas, correcto: {negadas})')
 
+# Las cifras retiradas hay que buscarlas en LAS DOS notaciones. El abstract en
+# ingles del libro sobrevivio trece cifras obsoletas porque esta lista solo miraba
+# la coma decimal y el ingles usa punto.
+print('\n=== 4b. cifras retiradas, en coma Y en punto ===')
+# Solo cifras INEQUIVOCAS. Las de tres decimales del M3FD anterior (0,165 · 0,124 ·
+# 0,157 · 0,119 · 0,220 · 0,018 · 0,178 · 0,135) quedan fuera a proposito: colisionan
+# con valores vigentes —0,135 es el SD del Top-Hat (0,1352) redondeado— y darian
+# falsos positivos. Esas afirmaciones ya las cubre el chequeo de frases del punto 4.
+CIFRAS_RETIRADAS = ['6,9888', '1,1045', '0,1477', '17,3435', '0,6677', '17,2546',
+                    '22,8554', '6,9334', '0,1387', '0,5781', '1,7354', '1,7039',
+                    '0,0353', '3,67', '3,44']
+for doc in DOCUMENTOS:
+    t = DOCUMENTOS[doc]['texto']
+    hits = []
+    for v in CIFRAS_RETIRADAS:
+        for var in (v, v.replace(',', '.')):
+            # frontera a la derecha: 3,44 no debe cazar 3,444
+            if re.search(re.escape(var) + r'(?!\d)', t):
+                hits.append(var)
+    ok(not hits, f'{doc}: ninguna cifra retirada, en ninguna notacion {hits[:6]}')
+
+# Las negritas de las tablas se pusieron cuando los valores eran otros y quedaron
+# marcando la celda equivocada: en la Tabla 7 el Global señalaba a la piramide de
+# Laplace, que es la conclusion que el propio capitulo desmiente.
+print('\n=== 4c. negritas de las tablas == optimo de la columna ===')
+docx = DOCS / 'Tesis_Borrador_V3.docx'
+try:
+    import docx as _dx
+    rk_t = pd.read_csv(REP / 'ranking_methods.csv', index_col=0)
+    ETQ = {'Pirámide de Laplace (LP)': 'PiramideLaplace', 'Ratio Pyramid (RP)': 'RatioPiramide',
+           'Wavelet discreta (DWT)': 'DWT', 'DTCWT': 'DTCWT', 'Curvelet (CVT)': 'Curvelet',
+           'Top-Hat clásico': 'TopHat_Clasico', 'Propuesta Novedosa': 'Propuesta_Novedosa'}
+    ESPERA = {
+        ('Método', 'EN', 'SD', 'FE', 'MG', 'MI_vis', 'MI_ir'):
+            ('Tabla 4', ['EN', 'SD', 'FE', 'MG', 'MI_vis', 'MI_ir'], dm, 'max'),
+        ('Método', 'SF ↑', 'SSIM ↑', 'PSNR ↑'):
+            ('Tabla 5', ['SF', 'SSIM', 'PSNR'], dm, 'max'),
+        ('Método', 'SD', 'MG', 'SF', 'SSIM', 'PSNR', 'MI_ir', 'Global'):
+            ('Tabla 7', ['SD', 'MG', 'SF', 'SSIM', 'PSNR', 'MI_ir', 'avg_rank'], rk_t, 'min'),
+    }
+    doc_x = _dx.Document(str(docx))
+    revisadas = 0
+    for tb in doc_x.tables:
+        cab = tuple(c.text.strip() for c in tb.rows[0].cells)
+        if cab not in ESPERA:
+            continue
+        nom, cols, src, modo = ESPERA[cab]
+        gan = {c: (src[c].idxmax() if modo == 'max' else src[c].idxmin()) for c in cols}
+        malas = []
+        for fila in tb.rows[1:]:
+            cel = list(fila.cells)
+            clave = ETQ.get(cel[0].text.strip())
+            if clave is None:
+                continue
+            for j, c in enumerate(cols, start=1):
+                neg = any(r.bold for p in cel[j].paragraphs for r in p.runs if r.bold)
+                if neg != (gan[c] == clave):
+                    malas.append(f'{c}/{clave}')
+        ok(not malas, f'{nom}: la negrita marca el optimo {malas[:6]}')
+        revisadas += 1
+    ok(revisadas == 3, f'se revisaron las 3 tablas con negrita ({revisadas})')
+except ImportError:
+    print('  AVISO python-docx no instalado: no se reviso la negrita')
+    avisos.append('negritas sin revisar (falta python-docx)')
+
 # --------------------------------------------- 5. coherencia entre documentos
 print('\n=== 5. coherencia entre documentos ===')
 CANTIDADES = {
