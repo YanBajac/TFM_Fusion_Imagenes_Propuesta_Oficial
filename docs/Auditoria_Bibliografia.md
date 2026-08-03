@@ -19,7 +19,7 @@ Script: `<scratchpad>/fuentes/v2.py`. Datos crudos: `fuentes/v2.json`.
 | Estado | N.º |
 |---|---|
 | Correctas | 21 |
-| Con defectos confirmados | 8 |
+| Con defectos confirmados | 7 |
 | A verificar por catálogo (libros y tesis sin DOI) | 4 |
 | Inventadas o inexistentes | **0** |
 
@@ -72,7 +72,12 @@ huérfanas ni entradas sin citar.
 | 2 · Bai (2013) | 23(1), 244–263 | **542–554** (vol. 23 tiene un solo trabajo suyo con ese título) | `10.1016/j.dsp.2012.09.013` |
 | 10 · LLVIP (ICCVW 2021) | 3496–3504 | **3489–3497** | `10.1109/ICCVW54120.2021.00389` |
 | 13 · M3FD (CVPR 2022) | 5802–5811 | **5792–5801** | `10.1109/CVPR52688.2022.00571` |
-| 19 · Piella y Heijmans | vol. 3 | Crossref registra vol. **2**, paginación `III-173-6`, año de publicación 2004 (congreso de 2003) | `10.1109/ICIP.2003.1247209` |
+
+
+
+### No es un defecto — la ref. 19 se listó aquí por error
+
+**Ref. 19 · Piella y Heijmans.** La tesis declara vol. 3, pp. 173–176 y está **correcta**. Crossref registra «volumen 2» pero su propio campo de paginación dice , que codifica volumen III, páginas 173–176: su metadato se contradice a sí mismo y lo que declara la tesis es lo correcto. Se listó entre los menores en una versión anterior de este informe; no hay nada que corregir.
 
 ### Estructural — cita sin respaldo
 
