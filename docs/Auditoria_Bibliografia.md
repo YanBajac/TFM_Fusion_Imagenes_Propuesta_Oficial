@@ -1,4 +1,8 @@
-# Auditoría de la bibliografía — 34 referencias
+# Auditoría de la bibliografía — las 33 referencias auditadas
+
+> Tras la auditoría la bibliografía pasó a **34 entradas**: se agregó Kingsbury
+> (2001), que el texto citaba sin respaldo. Los recuentos de este informe se
+> refieren a las 33 originales.
 
 Verificación realizada el 2 de agosto de 2026 contra Crossref, OpenAlex, DataCite y
 arXiv. Método: para cada entrada se buscó el registro exigiendo **coincidencia de
