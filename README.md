@@ -241,7 +241,7 @@ Frente al **Top-Hat clásico** —la referencia morfológica directa— la propu
 significativa en **seis de las nueve métricas** (`EN`, `SD`, `FE`, `MI_vis`, `MI_ir` y `SSIM`:
 0.658 vs 0.564), cede de forma significativa en gradiente medio y frecuencia espacial, donde el disco
 único inyecta el detalle sin ponderación, y no hay diferencia significativa en `PSNR`
-(`p_Holm = 0.92`). Este contraste se publica en `wilcoxon_results.csv`; la versión anterior del script
+(`p_Holm = 0.674`). Este contraste se publica en `wilcoxon_results.csv`; la versión anterior del script
 solo cruzaba los métodos morfológicos contra el estado del arte y no los comparaba entre sí.
 
 > **Alcance de esta comparación.** No aísla el aporte del banco disco + líneas: los dos operadores no
