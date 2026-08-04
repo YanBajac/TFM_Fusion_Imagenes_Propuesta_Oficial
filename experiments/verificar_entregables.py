@@ -170,6 +170,14 @@ RETIRADAS = [
     '36 configuraciones', '90 contrastes', '[0,05; 1,20]', '0,05–1,20',
     'seis personas frente a dos', 'cuatro luces que el IR',
     'Toet, A. (2014)', 'Mukhopadhyay y Chanda (2001)',
+    # El mAP del visible y del infrarrojo en LLVIP estaban escritos a mano en la lectura
+    # de la Tabla 9 del informe de avances, con valores de una corrida anterior, mientras
+    # la tabla de arriba —generada desde el CSV— imprimia los vigentes: 0,813 y 0,971.
+    # Se buscan como frase y no como cifra suelta porque 0,808 y 0,957 colisionan con
+    # valores por imagen que si son vigentes (SSIM, Q0, QW, FE de varios CSV).
+    'de 0,808 a la banda', 'más fuerte (0,957)',
+    # y el argumento que los otros tres documentos ya retiraron
+    'activa el banco completo',
 ]
 NEGADORES = ('no ', 'No ', 'ninguna', 'Ninguna', 'ningún', 'sin ', 'tampoco')
 

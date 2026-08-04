@@ -141,6 +141,43 @@ _fus = det.drop(index=[x for x in ("VIS", "IR") if x in det.index])
 LLVIP_PROP = f"{det.loc[PROP, 'mAP50']:.3f}".replace(".", ",")
 LLVIP_LO = f"{_fus['mAP50'].min():.3f}".replace(".", ",")
 LLVIP_HI = f"{_fus['mAP50'].max():.3f}".replace(".", ",")
+# El visible y el infrarrojo estaban escritos a mano en la lectura de la Tabla 9, con
+# 0,808 y 0,957 de una corrida anterior, mientras la tabla de arriba —generada desde el
+# CSV— imprimia 0,813 y 0,971. Ahora los tres salen del mismo dato.
+LLVIP_VIS = f"{det.loc['VIS', 'mAP50']:.3f}".replace(".", ",")
+LLVIP_IR = f"{det.loc['IR', 'mAP50']:.3f}".replace(".", ",")
+
+# Composicion del corpus: los 20 pares NO son 20 sujetos independientes. Cuatro escenas
+# aportan varias tomas, de modo que los bloques de Friedman y Wilcoxon no son plenamente
+# independientes. El libro lo declara dos veces —una como limitacion— y este informe lo
+# omitia por completo, presentando n = 20 bloques donde hay 13 sujetos.
+import re as _re
+
+
+def _sujeto(nombre):
+    for patron in (r'^(APC_\d+)_view_\d+',
+                   r'^(Athena_soldier_behind_smoke)_\d+',
+                   r'^(Athena_soldier_in_trench)_\d+'):
+        m = _re.match(patron, nombre)
+        if m:
+            return m.group(1)
+    return nombre
+
+
+_grupos = {}
+for _img in pd.read_csv(os.path.join(MR, "all_metrics.csv")).image.unique():
+    _grupos.setdefault(_sujeto(_img), []).append(_img)
+N_SUJETOS = len(_grupos)
+_ETIQ = {'APC_1': 'APC_1', 'APC_3': 'APC_3',
+         'Athena_soldier_behind_smoke': 'el soldado tras la cortina de humo',
+         'Athena_soldier_in_trench': 'el soldado en trinchera'}
+_PALABRA = {2: 'dos tomas', 3: 'tres tomas'}
+SUJETOS_MULTI = '; '.join(
+    f"{_ETIQ.get(k, k)} con {_PALABRA.get(len(v), str(len(v)) + ' tomas')}"
+    for k, v in sorted(_grupos.items(), key=lambda x: (-len(x[1]), x[0])) if len(v) > 1)
+_N_PARES = sum(len(v) for v in _grupos.values())
+assert SUJETOS_MULTI and N_SUJETOS < _N_PARES, \
+    f"se esperaban escenas repetidas y hay {N_SUJETOS} sujetos para {_N_PARES} pares"
 _m3 = pd.read_csv(os.path.join(MR, "detection_m3fd_map.csv")).set_index("method")
 _m3["par"] = (_m3["AP50_People"] + _m3["AP50_Lamp"]) / 2
 _m3f = _m3.drop(index=[x for x in ("VIS", "IR") if x in _m3.index])
@@ -1001,7 +1038,7 @@ H.append(f"""
     <li>Resultados cuantitativos: tabla general y gráficas (sección 8).</li>
     <li>Análisis estadístico: Friedman, Wilcoxon-Holm y ranking (sección 9).</li>
     <li>Robustez: ajuste simétrico de los comparativos y ablación del operador (sección 10).</li>
-    <li>Resultados cualitativos de las {N_ESC} escenas (sección 11).</li>
+    <li>Resultados cualitativos de los {N_ESC} pares (sección 11).</li>
     <li>Evaluación orientada a tarea: detección en LLVIP (sección 12) y clases complementarias en
         M3FD (sección 13), y conclusiones (sección 14).</li>
     <li>Anexos 1-{N_ESC}: las 25 configuraciones del PSO en cada una de las {N_ESC} escenas.</li>
@@ -1016,7 +1053,7 @@ H.append(f"""
 <div class="page">
   <h2>2. Datos de entrada: {N_ESC} pares VIS/IR (TNO)</h2>
   <p>Se trabaja con los {N_ESC} pares registrados del TNO Image Fusion Dataset (escenas de vigilancia
-  nocturna: vehículos, personas, humo). Cada escena tiene una imagen visible (VIS), que aporta textura y
+  nocturna: vehículos, personas, humo). Cada par tiene una imagen visible (VIS), que aporta textura y
   contexto, y una infrarroja (IR), que registra la radiación térmica. Ambas comparten nombre de archivo
   para el emparejado automático. Sobre estos {N_ESC} pares se calculan todas las métricas del informe.</p>
   <p class="lectura">Nota sobre el corpus: el conjunto original contiene 21 archivos emparejables, pero
@@ -1025,6 +1062,11 @@ H.append(f"""
   repetida. Con VIS = IR el error cuadrático medio es nulo y todo método que devuelva la entrada sin
   modificarla obtiene SSIM = 1 y un PSNR que desborda la escala, lo que inflaba artificialmente los
   promedios de fidelidad de los métodos multiescala. El corpus efectivo es de <b>{N_ESC} pares</b>.</p>
+  <p class="lectura">Composición del corpus: los {N_ESC} pares corresponden a <b>{N_SUJETOS} escenas
+  distintas</b>, porque cuatro de ellas aportan varias tomas del mismo sujeto ({SUJETOS_MULTI}). En
+  consecuencia los bloques del test de Friedman y de los contrastes de Wilcoxon <b>no son plenamente
+  independientes</b> y el tamaño de muestra efectivo es menor que {N_ESC}; los resultados de las
+  secciones 8 y 9 deben leerse con ese alcance. El libro lo declara también entre las limitaciones.</p>
   <div class="grid2">{"".join(chunks[0])}</div>
   {pie(3)}
 </div>
@@ -1308,29 +1350,29 @@ H.append(f"""
 # ---------- 8 (continuación): resultados escena por escena, formato del Cuadro 2 ----------
 _bloques = [IMAGENES[i:i + 4] for i in range(0, len(IMAGENES), 4)]   # 4 escenas por pagina
 for _b, _imgs in enumerate(_bloques, 1):
-    _cab = ("8. Resultados por escena (formato del Cuadro 2 del trabajo de referencia)"
-            if _b == 1 else f"8. Resultados por escena (continuación {_b} de 5)")
+    _cab = ("8. Resultados por par (formato del Cuadro 2 del trabajo de referencia)"
+            if _b == 1 else f"8. Resultados por par (continuación {_b} de 5)")
     _intro = ("" if _b > 1 else f"""
-  <p>Además de los promedios, se detallan los resultados <b>escena por escena</b> sobre los {N_ESC} pares
+  <p>Además de los promedios, se detallan los resultados <b>par por par</b> sobre los {N_ESC} pares
   del TNO, con la misma disposición del Cuadro 2 del trabajo de referencia: una fila por método dentro
-  de cada escena y, en <b>negrita</b>, el mejor valor de cada columna en esa escena. Se incluye también
+  de cada par y, en <b>negrita</b>, el mejor valor de cada columna en ese par. Se incluye también
   la metodología clásica Top-Hat, que es la referencia morfológica directa de la propuesta.</p>
   <p class="lectura">Unidades: SSIM<sub>avg</sub> y SD en [0, 1]; E en bits (0–8); SF adimensional;
   PSNR en dB. La correspondencia con el Cuadro 2 de referencia es directa —allí E y PSNR se reportan
   normalizados (E/8 y PSNR/100) y SD en la escala 0–255—, de modo que el orden entre métodos es
   comparable columna por columna.</p>""")
     _lect = ("" if _b < 5 else f"""
-  <p class="lectura">Lectura del conjunto de las {N_ESC} escenas: la propuesta obtiene el mejor valor en
-  <b>{_lidera['E']} de {N_ESC}</b> escenas en entropía (E) y en <b>{_lidera['SD']} de {N_ESC}</b> en desviación
+  <p class="lectura">Lectura del conjunto de los {N_ESC} pares: la propuesta obtiene el mejor valor en
+  <b>{_lidera['E']} de {N_ESC}</b> pares en entropía (E) y en <b>{_lidera['SD']} de {N_ESC}</b> en desviación
   estándar (SD), frente a <b>{_lidera['SF']} de {N_ESC}</b> en frecuencia espacial (SF, donde domina el
   Top-Hat clásico), <b>{_lidera['SSIM_avg']} de {N_ESC}</b> en SSIM<sub>avg</sub> y
-  <b>{_lidera['PSNR']} de {N_ESC}</b> en PSNR. El patrón por escena confirma el de los promedios: la
+  <b>{_lidera['PSNR']} de {N_ESC}</b> en PSNR. El patrón por par confirma el de los promedios: la
   propuesta lidera de forma sistemática las métricas de información y contraste, y cede las de
   fidelidad a las fuentes.</p>""")
     H.append(f"""
 <div class="page">
   <h2>{_cab}</h2>{_intro}
-  <p><b>Tabla 4{chr(96 + _b)}.</b> Resultados por escena — escenas {(_b - 1) * 4 + 1} a
+  <p><b>Tabla 4{chr(96 + _b)}.</b> Resultados por par — pares {(_b - 1) * 4 + 1} a
   {(_b - 1) * 4 + len(_imgs)} de {N_ESC}.</p>
   {tabla_por_imagen(_imgs)}{_lect}
   {pie(15 + _b)}
@@ -1436,7 +1478,7 @@ pg += 1
 
 H.append(f"""
 <div class="page">
-  <h2>11. Resultados cualitativos: las {N_ESC} escenas</h2>
+  <h2>11. Resultados cualitativos: los {N_ESC} pares</h2>
   <p>Para cada escena se muestran las fuentes VIS e IR, los seis comparativos y la propuesta (recuadro
   rojo). Se sugiere observar: la visibilidad del objetivo térmico, la conservación de la textura del
   fondo visible y la ausencia de halos en los bordes.</p>
@@ -1448,7 +1490,7 @@ H.append(f"""
 pg += 1
 for i in range(2, N_ESC, 2):
     blk = mont_html[i] + (mont_html[i + 1] if i + 1 < N_ESC else "")
-    H.append(f'<div class="page"><h2>11. Resultados cualitativos (escenas {i+1} y {min(i+2,N_ESC)} de {N_ESC})</h2>'
+    H.append(f'<div class="page"><h2>11. Resultados cualitativos (pares {i+1} y {min(i+2,N_ESC)} de {N_ESC})</h2>'
              f'{blk}{pie(pg)}</div>')
     pg += 1
 
@@ -1462,8 +1504,8 @@ H.append(f"""
   mAP aísla el efecto del método de fusión.</p>
   <p><b>Tabla 9.</b> Detección de peatones en LLVIP — mAP por entrada del detector.</p>
   {tabla_det()}
-  <p class="lectura">Lectura: toda fusión supera con claridad al visible solo (mAP@0,5 de 0,808 a la banda
-  {LLVIP_LO}–{LLVIP_HI}); el infrarrojo solo es la modalidad más fuerte (0,957) y ninguna
+  <p class="lectura">Lectura: toda fusión supera con claridad al visible solo (mAP@0,5 de {LLVIP_VIS} a la banda
+  {LLVIP_LO}–{LLVIP_HI}); el infrarrojo solo es la modalidad más fuerte ({LLVIP_IR}) y ninguna
   fusión lo supera, coherente con que el peatón nocturno es esencialmente térmico; y entre las fusiones,
   la propuesta alcanza <b>{LLVIP_PROP}</b>. Conclusión honesta: la ventaja de la propuesta en las
   métricas de imagen no se traslada automáticamente a la detección, de modo que ambos criterios deben
@@ -1669,7 +1711,9 @@ _nota_anexo = f"""
   imágenes, coherente con que la aptitud premia la fidelidad a las fuentes y por lo tanto el mínimo
   realce; la configuración adoptada (<b>r = 25</b>) no proviene de F<sub>o</sub> sino del criterio de
   evaluación de esta tesis —las nueve métricas, todas de tipo «mayor es mejor»—, que a igual peso
-  favorece el radio máximo y activa el banco completo de cinco elementos estructurantes.</p>"""
+  favorece el radio máximo, sin que r = 1 desactive el banco: como se precisa en la sección 5, con
+  r = 1 el disco es la cruz de 3×3 y las cuatro líneas orientadas son cuatro máscaras 3×3 distintas,
+  de modo que los cinco elementos siguen operativos.</p>"""
 
 for _i, _img in enumerate(IMAGENES, 1):
     _nom = ESCENA.get(_img, _img)
