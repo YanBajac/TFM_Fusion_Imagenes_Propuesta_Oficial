@@ -496,10 +496,10 @@ método) y `train_eval_llvip.py` (entrena y compara mAP, acumulando en
 Experimento complementario sobre **M3FD** (TarDAL, CVPR 2022; 4.200 pares VIS/IR con 6 clases
 YOLO): un **único** YOLOv8 se entrena con imágenes VIS **e** IR mezcladas (con sus etiquetas) y se
 evalúa **por inferencia** sobre la validación en cada modalidad y en cada método de fusión. Las
-clases son complementarias —**People** domina en IR (firma térmica) y **Lamp** en VIS—, de modo que
-solo la imagen fusionada permite detectar ambas a la vez. Se comparan las dos modalidades
-individuales y los siete métodos del benchmark, incluida la propuesta en su configuración oficial
-(`Propuesta_Novedosa`: r=25, m=0.30).
+clases tienen visibilidad desigual —**People** favorece al IR (firma térmica) y **Lamp** al VIS—, de
+modo que ninguna modalidad es la mejor en las dos clases a la vez y la imagen fusionada busca
+sostener ambas. Se comparan las dos modalidades individuales y los siete métodos del benchmark,
+incluida la propuesta en su configuración oficial (`Propuesta_Novedosa`: r=25, m=0.30).
 
 ```powershell
 # Requiere M3FD (Detection) descargado: https://github.com/JinyuanLiu-CV/TarDAL

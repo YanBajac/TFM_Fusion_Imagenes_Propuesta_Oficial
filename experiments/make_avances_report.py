@@ -261,13 +261,28 @@ _bm = pd.read_csv(os.path.join(MR, "barrido_metricas_vs_m.csv"))
 _bm = _bm[_bm.operador == "propuesta"].sort_values("m").reset_index(drop=True)
 _bm30 = _bm[_bm.m >= 0.30].reset_index(drop=True)
 import numpy as _np
-_dif = _np.diff(_bm30["F_o"].values)
+
+# La aptitud que se publica es la del enjambre (curva_aptitud_vs_m.csv), la misma que
+# reportan la Tabla 1 de este informe, el libro y el deck: 1,7057 en r = 25, m = 0,30.
+# barrido_metricas_vs_m.csv reconstruye Fo con el SSIM y el PSNR de evaluators.py y da
+# 1,6870 sobre las MISMAS tres escenas: son dos implementaciones de la misma aptitud, y
+# publicar la reconstruida hacia que este informe se contradijera consigo mismo.
+_cv = pd.read_csv(os.path.join(MR, "curva_aptitud_vs_m.csv")).sort_values("m")
+_cv["m"] = _cv["m"].round(4)
+_bm30["m"] = _bm30["m"].round(4)
+_cv30 = _cv[_cv.m >= 0.30].reset_index(drop=True)
+_dif = _np.diff(_cv30["Fo_propuesta"].values)
 M_CRECIENTES = int((_dif > 0).sum())
 M_TRAMOS = len(_dif)
-FO_M030 = float(_bm30["F_o"].iloc[0])
-FO_M200 = float(_bm30["F_o"].iloc[-1])
+FO_M030 = float(_cv30["Fo_propuesta"].iloc[0])
+FO_M200 = float(_cv30["Fo_propuesta"].iloc[-1])
 FN_M030 = float(_bm30["F_nueve"].iloc[0])
 FN_M200 = float(_bm30["F_nueve"].iloc[-1])
+# la columna de aptitud de la tabla pasa a ser la del enjambre; el resto de las columnas
+# (suma de las nueve, SSIM, SF) sigue siendo la del barrido determinista
+_bm30 = _bm30.merge(_cv[["m", "Fo_propuesta"]], on="m", how="left")
+assert _bm30["Fo_propuesta"].notna().all(), "hay un m del barrido que la curva no cubre"
+_bm30["F_o"] = _bm30["Fo_propuesta"]
 
 _en = pd.read_csv(os.path.join(MR, "aptitud_operador_energia.csv")).set_index("operador")
 _i_clas = [i for i in _en.index if "clásico" in i or "clasico" in i][0]
@@ -395,26 +410,41 @@ _dfl = _ajm[_ajm.por_defecto].set_index("metodo")["valor"].to_dict()
 # control de peso igualado
 _ctrl = pd.read_csv(os.path.join(MR, "control_tophat_igual_peso.csv"))
 
-# Control de peso igualado: se rearma el escenario B agregando el Top-Hat clasico con
-# r = 25 y m = 0,30 (el mismo peso de la propuesta) y se recalculan los rangos. Asi las
-# cifras del parrafo no quedan escritas a mano.
-_ajd = pd.read_csv(os.path.join(MR, "ajuste_comparativos.csv"))
+# Control de peso igualado, tal como lo calcula el libro (§5.8.4): dentro del benchmark de
+# siete metodos se SUSTITUYE al Top-Hat clasico por su version con r = 25 y m = 0,30 —el
+# mismo peso de la propuesta— y se recalculan los rangos intra-bloque con la formula de
+# run_stats_analysis.py. Asi las cifras no quedan escritas a mano.
+#
+# La version anterior hacia dos cosas mal a la vez: partia del escenario B (comparativos
+# ajustados) en lugar del benchmark, y AGREGABA el clasico a peso igualado como octavo brazo
+# dejando tambien al clasico con m = 1 dentro del pool. El operador clasico competia asi dos
+# veces y los siete rangos se diluian: de ahi salian el 3,961 y el 4,711, que no coinciden
+# con ninguna tabla de este informe ni con el libro, el deck y el README, y un margen de
+# 0,683 en lugar de 0,166.
 _ctrl = pd.read_csv(os.path.join(MR, "control_tophat_igual_peso.csv"))
-_sel = _ajm[_ajm.elegida].set_index("metodo")["valor"].to_dict()
-_tz = [_ajd[(_ajd.metodo == _m) & (_ajd.valor == _v)].assign(clave=_m) for _m, _v in _sel.items()]
-_comb = pd.concat(_tz + [_ctrl], ignore_index=True)
 _NUEVE = ["EN", "SD", "FE", "MG", "MI_vis", "MI_ir", "SF", "SSIM", "PSNR"]
+_am_ct = pd.read_csv(os.path.join(MR, "all_metrics.csv"))
+_base_ct = (_am_ct[_am_ct.method != "TopHat_Clasico"][["image", "method"] + _NUEVE]
+            .rename(columns={"image": "imagen", "method": "clave"}))
+_comb = pd.concat([_base_ct, _ctrl[["imagen", "clave"] + _NUEVE]], ignore_index=True)
 _rr = {}
 for _m in _NUEVE:
     _p = _comb.pivot(index="imagen", columns="clave", values=_m)
     _rr[_m] = _p.rank(axis=1, ascending=(DIRECTION[_m] == "min") if isinstance(DIRECTION.get(_m), str)
                       else False, method="average").mean(axis=0)
 _rc = pd.DataFrame(_rr).mean(axis=1)
-CTRL_TH_M1 = _rc["TopHat_Clasico"]
+assert "TopHat_Clasico" not in _rc.index, "el clasico quedo compitiendo dos veces"
+assert len(_rc) == 7, f"el pool del control tiene {len(_rc)} brazos y deben ser siete"
 CTRL_TH_M030 = _rc["TopHat_r25_m030"]
 CTRL_PROP = _rc[PROP]
-CTRL_VENTAJA = CTRL_TH_M030 - CTRL_PROP      # a igual peso, cuanto gana la propuesta
-CTRL_VALE_PESO = CTRL_TH_M030 - CTRL_TH_M1   # cuanto le vale al clasico subir m de 0,30 a 1,00
+# El margen se calcula sobre los valores REDONDEADOS que se publican, para que la resta le
+# cierre a quien la haga: 3,694 - 3,528 = 0,166. Sobre los rangos sin redondear da 0,167 y el
+# lector encontraria una diferencia de un milesimo que no puede reproducir.
+CTRL_VENTAJA = round(CTRL_TH_M030, 3) - round(CTRL_PROP, 3)
+# el parrafo afirma que a peso igualado la propuesta conserva el primer lugar: si algun dia
+# deja de ser cierto, el informe tiene que fallar y no publicarlo al reves
+assert CTRL_PROP == _rc.min(), \
+    f"a peso igualado la propuesta ya no encabeza el pool: {_rc.sort_values().to_dict()}"
 
 # tabla de los cuatro escenarios
 _fil = []
@@ -1180,6 +1210,8 @@ H.append(f"""
   {f"{FO_M030:.4f}".replace(".", ",")} a {f"{FO_M200:.4f}".replace(".", ",")} mientras la suma de las
   nueve métricas sube de {f"{FN_M030:.3f}".replace(".", ",")} a
   {f"{FN_M200:.3f}".replace(".", ",")}: el mismo cambio de peso mejora un criterio y empeora el otro.
+  La columna de aptitud es la del enjambre —la misma que reporta la Tabla 1—, y las tres restantes
+  provienen del barrido determinista sobre las mismas tres escenas.
   El SSIM se derrumba y la frecuencia espacial se dispara. <b>m = 0,30 es el punto donde esa tensión
   se resuelve</b> del lado de la aptitud publicada, respetando además el rango dinámico. Conviene
   enunciarlo con precisión: el PSO no <i>descubre</i> este valor explorando un espacio con óptimo
@@ -1372,14 +1404,14 @@ H.append(f"""
   <p><b>El origen de la ventaja del Top-Hat clásico en el escenario B.</b> Ese método se ejecuta con
   <b>m = 1</b> por definición de la metodología clásica, frente a <b>m = 0,30</b> de la propuesta: no
   compiten dos operadores, compiten dos pesos de realce, con el clásico inyectando <b>3,3 veces más</b>.
-  Igualando el peso —Top-Hat clásico con r = 25 y m = 0,30— su rango se degrada de
-  {f"{CTRL_TH_M1:.3f}".replace(".", ",")} a {f"{CTRL_TH_M030:.3f}".replace(".", ",")} mientras la
-  propuesta queda en {f"{CTRL_PROP:.3f}".replace(".", ",")}: <b>a igual peso la propuesta gana por
-  {f"{CTRL_VENTAJA:.3f}".replace(".", ",")}</b>. Dicho de otro modo, subirle el peso de 0,30 a 1,00 al
-  clásico le vale <b>{f"{CTRL_VALE_PESO:.3f}".replace(".", ",")}</b> de rango,
-  {f"{CTRL_VALE_PESO / abs(VAL_B - VLID_B):.0f}"} veces el margen de
-  {f"{abs(VAL_B - VLID_B):.3f}".replace(".", ",")} con el que lo pone por delante. La diferencia del
-  escenario B mide el peso, no el operador.</p>
+  Igualando el peso —Top-Hat clásico con r = 25 y m = 0,30, los mismos valores de la propuesta— y
+  <b>sustituyéndolo</b> por esa versión dentro del benchmark de siete métodos, la propuesta conserva el
+  primer lugar del ranking de nueve métricas: {f"{CTRL_PROP:.3f}".replace(".", ",")} frente a
+  {f"{CTRL_TH_M030:.3f}".replace(".", ",")} del clásico, es decir <b>gana por
+  {f"{CTRL_VENTAJA:.3f}".replace(".", ",")}</b>. La ventaja de
+  {f"{abs(VAL_B - VLID_B):.3f}".replace(".", ",")} del escenario B proviene, entonces, de su peso
+  m = 1 —más del triple del de la propuesta— y no del operador: la diferencia del escenario B mide el
+  peso, no el operador.</p>
   <p><b>Aporte del banco de cinco elementos estructurantes.</b> La comparación contra el Top-Hat
   clásico no lo aísla, porque los dos operadores no comparten hiperparámetros. La ablación fija
   (r, m) = (25; 0,30) y varía únicamente la regla de combinación de las respuestas.</p>
@@ -1550,15 +1582,18 @@ H.append(f"""
   <ol>
     <li>El operador <b>desplaza el punto de operación de la fusión</b> y no la mejora de manera
         uniforme: contra las cinco configuraciones de referencia gana <b>{_H1_ACT_FAV} de
-        {_H1_ACT_TOT}</b> contrastes del bloque de actividad espacial <b>sin ninguno adverso</b>, y
+        {_H1_ACT_TOT}</b> contrastes del bloque de actividad espacial <b>sin ninguno adverso con
+        significancia</b>, y
         cede en <b>{_H1_FID_ADV} de {_H1_FID_TOT}</b> del bloque de fidelidad.</li>
     <li>Bajo el criterio del trabajo de referencia <b>encabeza el benchmark</b>: puesto
         {POS_RANK} de 7 con {VAL_RANK}, con separación estadísticamente significativa.</li>
     <li>El resultado es <b>robusto frente al ajuste de los comparativos</b>: dándoles el mismo paso
         de ajuste, <b>ninguna de las cinco configuraciones del estado del arte lo alcanza</b>. El
-        Top-Hat clásico lo supera por {f"{VLID_B - VAL_B:.3f}".replace(".", ",")}, pero con m = 1
-        frente a m = 0,30: a igual peso la propuesta gana por
-        {f"{CTRL_VENTAJA:.3f}".replace(".", ",")}.</li>
+        Top-Hat clásico lo supera por {f"{abs(VAL_B - VLID_B):.3f}".replace(".", ",")}, pero con m = 1
+        frente a m = 0,30: a igual peso, sustituido en el benchmark de siete, la propuesta gana por
+        {f"{CTRL_VENTAJA:.3f}".replace(".", ",")}
+        ({f"{CTRL_PROP:.3f}".replace(".", ",")} frente a
+        {f"{CTRL_TH_M030:.3f}".replace(".", ",")}).</li>
     <li>El <b>banco de cinco elementos aporta sobre el disco único</b> con hiperparámetros
         igualados ({f"{_abl.loc['suma','rango_9']:.3f}".replace(".", ",")} frente a
         {f"{_abl.loc['disco','rango_9']:.3f}".replace(".", ",")}), y el mérito no proviene de la
