@@ -1041,7 +1041,7 @@ H.append(f"""
     <li>Resultados cualitativos de los {N_ESC} pares (sección 11).</li>
     <li>Evaluación orientada a tarea: detección en LLVIP (sección 12) y clases complementarias en
         M3FD (sección 13), y conclusiones (sección 14).</li>
-    <li>Anexos 1-{N_ESC}: las 25 configuraciones del PSO en cada una de las {N_ESC} escenas.</li>
+    <li>Anexos 1-{N_ESC}: las 25 configuraciones del PSO en cada uno de los {N_ESC} pares.</li>
   </ol>
   {pie(2)}
 </div>
@@ -1701,8 +1701,8 @@ _nota_anexo = f"""
   <p class="lectura">Nota metodológica sobre el comportamiento de (r, m). Las 25 configuraciones de
   cada escena se ejecutan sobre el mismo espacio de búsqueda r &isin; [1, 25], m &isin; {V['rango_anexo']}.
   El <b>radio sí varía</b> con la configuración del enjambre: en el conjunto de los anexos aparecen 18
-  radios distintos y entre 2 y 6 valores diferentes por escena. El <b>peso, en cambio, se fija en
-  m = {_m_moda}</b> (en {_m30} de {N_ESC} escenas) porque F<sub>o</sub> <b>decrece de forma estrictamente
+  radios distintos y entre 2 y 6 valores diferentes por par. El <b>peso, en cambio, se fija en
+  m = {_m_moda}</b> (en {_m30} de {N_ESC} pares) porque F<sub>o</sub> <b>decrece de forma estrictamente
   monótona</b> al aumentar m en todo el rango publicado —verificado con un barrido de paso 0,05: cero
   tramos crecientes en 34, tanto con r = 1 como con r = 25—, de modo que el máximo se ubica
   necesariamente en el <b>límite inferior del intervalo</b>. No es una limitación de la búsqueda: las

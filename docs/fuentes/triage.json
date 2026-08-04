@@ -573,13 +573,11 @@
   "dice": "El informe trata sistematicamente los 20 pares como 20 escenas independientes («escenas de vigilancia nocturna», «Resultados por escena - escenas 1 a 4 de 20», «Lectura del conjunt",
   "corresponde": "Los 20 pares corresponden a 13 escenas distintas: APC_1 y APC_3 aportan tres vistas cada una, el soldado tras la cortina de humo tres instantes y el soldado en trinchera dos. Los b",
   "fragmentos": 4,
-  "fragmentos_vivos": 3,
+  "fragmentos_vivos": 1,
   "estado": "A_LEER",
-  "motivo": "3 de 4 pasajes siguen presentes: el hallazgo esta a medio aplicar",
+  "motivo": "1 de 4 pasajes siguen presentes: el hallazgo esta a medio aplicar",
   "vivos": [
-   "escenas de vigilancia nocturna",
-   "Lectura del conjunto de las 20 escenas",
-   "en cada una de las 20 escenas"
+   "escenas de vigilancia nocturna"
   ]
  },
  {
@@ -987,12 +985,9 @@
   "dice": "p. 54: «el radio se fija en r = 25 por maximizar las nueve métricas de evaluación y activar el banco completo de elementos estructurantes». p. 55: «El radio r = 25 se adopta por ma",
   "corresponde": "El deck (lámina 16), el informe de avances (p. 10) y el README declaran explícitamente lo contrario: «r = 1 no desactiva el banco: los cinco elementos siguen activos en una vecinda",
   "fragmentos": 3,
-  "fragmentos_vivos": 1,
-  "estado": "A_LEER",
-  "motivo": "1 de 3 pasajes siguen presentes: el hallazgo esta a medio aplicar",
-  "vivos": [
-   "que a igual peso favorece el radio máximo y activa el banco completo de cinco elementos es"
-  ]
+  "fragmentos_vivos": 0,
+  "estado": "YA_APLICADO",
+  "motivo": "ninguno de los 3 pasajes citados sigue en el documento"
  },
  {
   "n": 76,
