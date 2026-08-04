@@ -331,6 +331,42 @@ M_EQUIV = 0.30 * GANANCIA                    # a que m del disco unico equivale 
 RANGO_LO, RANGO_HI = 0.30 / GANANCIA, 2.00 / GANANCIA   # el rango publicado, traducido
 POS_EN_RANGO = 100.0 * (M_EQUIV - 0.30) / (2.00 - 0.30)
 
+# ------------------------------------------------- el barrido del trabajo de referencia
+# Las 125 corridas de Ortega y Espinoza (2025), extraidas de sus anexos por
+# experiments/referencia_pso_ortega_espinoza.py. Sirven para delimitar a quien corresponde
+# el m = 0,30: con el disco unico y la MISMA aptitud y el MISMO rango, su optimo es
+# interior. El anclaje al piso es una propiedad del operador, no de la aptitud.
+_ref = pd.read_csv(os.path.join(MR, "referencia_pso_ortega_espinoza.csv"))
+REF_N = len(_ref)
+N_CFG = len(grid)                    # las 25 configuraciones de enjambre de esta tesis
+_ref_med = _ref.groupby("escena")["m"].median()
+_ref_piso = _ref.groupby("escena")["m"].apply(lambda s: int((s - 0.30).abs().lt(5e-3).sum()))
+REF_M_MED = f"{_ref.m.median():.3f}".replace(".", ",")
+REF_M_MIN = f"{_ref.m.min():.3f}".replace(".", ",")
+REF_M_MAX = f"{_ref.m.max():.3f}".replace(".", ",")
+REF_M_MED_MIN = f"{_ref_med.min():.3f}".replace(".", ",")
+REF_M_MED_MAX = f"{_ref_med.max():.3f}".replace(".", ",")
+REF_PISO = int(_ref_piso.max())
+REF_ESC_PISO = _ref_piso.idxmax()
+REF_R25 = int((_ref.r == 25).sum())
+REF_R1 = int((_ref.r == 1).sum())
+REF_R25_PCT = f"{100 * REF_R25 / REF_N:.0f}"
+# las afirmaciones del parrafo tienen que ser ciertas sobre el dato
+assert _ref_piso.gt(0).sum() == 1, "ya no es una sola escena la que se ancla en el piso"
+assert (_ref_med > 0.30).sum() == 4, "cambio el numero de escenas con optimo interior"
+_fil_ref = "".join(
+    f"<tr><td class='l'>{_e}</td>"
+    + f"<td>{_ref_med[_e]:.3f}".replace(".", ",") + "</td>"
+    + f"<td>{_ref.loc[_ref.escena == _e, 'm'].min():.3f}".replace(".", ",")
+    + " – " + f"{_ref.loc[_ref.escena == _e, 'm'].max():.3f}".replace(".", ",") + "</td>"
+    + f"<td>{_ref_piso[_e]} de 25</td>"
+    + f"<td>{int(_ref.loc[_ref.escena == _e, 'r'].median())}</td></tr>"
+    for _e in sorted(_ref_med.index))
+TAB_REFERENCIA = ('<table class="chica"><thead><tr><th class="l">Escena</th>'
+                  '<th>m mediana</th><th>m mínimo – máximo</th>'
+                  '<th>corridas en el piso 0,30</th><th>r mediana</th>'
+                  '</tr></thead><tbody>' + _fil_ref + '</tbody></table>')
+
 _sat = pd.read_csv(os.path.join(MR, "saturacion_vs_m.csv"))
 def _satm(m):
     f = _sat[_np.isclose(_sat.m, m)]
@@ -1195,10 +1231,23 @@ H.append(f"""
   explica que las 25 configuraciones del enjambre coincidan, y convierte el resultado en
   reproducible por construcción.</p>
 
-  <p><b>Segundo, el rango proviene del trabajo de referencia.</b> El intervalo m &isin; [0,30; 2,00]
-  es el espacio de búsqueda publicado por Ortega y Espinoza (2025). Adoptarlo es lo que hace
-  comparable este trabajo con aquel: m = 0,30 es el valor que <i>su</i> función de aptitud selecciona
-  dentro de <i>su</i> rango.</p>
+  <p><b>Segundo, el rango proviene del trabajo de referencia, pero el valor no.</b> El intervalo
+  m &isin; [0,30; 2,00] es el espacio de búsqueda publicado por Ortega y Espinoza (2025) —lo acotan
+  para «evitar estos extremos», el escaso realce por un lado y el sobrecontraste con artefactos por
+  el otro— y adoptarlo es lo que hace comparable este trabajo con aquel. Conviene precisar a quién
+  corresponde cada cosa, porque es un punto donde es fácil atribuir de más: <b>con el disco único de
+  la referencia, su PSO no elige el piso del rango sino valores interiores</b>. Sobre las
+  {REF_N} corridas de sus cinco escenas —sus anexos publican las 25 configuraciones de cada una— la
+  mediana del peso es <b>{REF_M_MED}</b>, con recorrido [{REF_M_MIN}; {REF_M_MAX}], y solo una escena
+  ({REF_ESC_PISO}) se ancla en el piso, en {REF_PISO} de sus 25 configuraciones. El anclaje que este
+  trabajo observa en las {N_CFG} configuraciones es, por tanto, <b>una propiedad del operador</b> y no
+  de la función de aptitud ni del rango: la misma aptitud y el mismo intervalo dan óptimo interior
+  sobre un disco y óptimo de borde sobre el banco de cinco.</p>
+
+  <p><b>Tabla 2a.</b> Peso óptimo por escena en el trabajo de referencia (disco único, 25
+  configuraciones de enjambre por escena; extraído de sus anexos con
+  <i>referencia_pso_ortega_espinoza.py</i>).</p>
+  {TAB_REFERENCIA}
 
   <p><b>Tercero, y es el argumento central: la equivalencia del realce físico.</b> El realce que
   efectivamente se inyecta en la reconstrucción no es m, sino el producto <b>m · |W|</b> del peso por
@@ -1220,6 +1269,16 @@ H.append(f"""
   <p>Es decir que el peso adoptado <b>no es un valor bajo</b>: es el que reproduce el realce físico
   del rango publicado una vez corregida la diferencia de energía entre los dos operadores. Parece bajo
   únicamente si se olvida que el operador cambió.</p>
+
+  <p><b>Y la referencia lo confirma con sus propios datos.</b> Si el criterio correcto es el realce
+  físico y no el peso nominal, entonces el equivalente de esta tesis sobre un disco único
+  —m = {f"{M_EQUIV:.2f}".replace(".", ",")}— debería caer en la banda donde la búsqueda de la
+  referencia efectivamente aterrizó, y es lo que ocurre: sus {REF_N} corridas seleccionan pesos entre
+  {REF_M_MIN} y {REF_M_MAX}, con medianas por escena de {REF_M_MED_MIN} a {REF_M_MED_MAX}. Los dos
+  trabajos coinciden entonces en el <b>orden de magnitud del realce</b> y difieren solo en el valor de
+  m que lo expresa. Dicho con precisión, y sin exagerar el acuerdo:
+  {f"{M_EQUIV:.2f}".replace(".", ",")} queda por encima de cuatro de sus cinco medianas por escena, de
+  modo que el realce adoptado aquí es algo <b>mayor</b> que su valor típico, no idéntico a él.</p>
   {pie(11)}
 </div>
 """)
@@ -1259,6 +1318,17 @@ H.append(f"""
   enunciarlo con precisión: el PSO no <i>descubre</i> este valor explorando un espacio con óptimo
   interior, sino que <b>confirma un óptimo que la forma de la aptitud determina</b>; lo que se hereda
   del trabajo de referencia es la elección del rango.</p>
+
+  <p><b>El fenómeno no es exclusivo de este trabajo, y ahí está el alcance del hallazgo.</b> En el
+  trabajo de referencia lo que se apoya en la cota no es el peso sino el radio: <b>r = 25, el límite
+  superior del intervalo, aparece en {REF_R25} de sus {REF_N} corridas</b> ({REF_R25_PCT} %), y r = 1
+  en {REF_R1}. Es decir que también allí uno de los dos hiperparámetros queda determinado por una
+  decisión de acotación —tomada con un argumento cualitativo, «evitar el sobresuavizado y la pérdida
+  de características térmicas»— y no por la búsqueda. La conclusión de aquel trabajo, sin embargo,
+  afirma que el PSO «logró determinar de forma autónoma los valores óptimos» y que «elimina la
+  subjetividad inherente a la parametrización manual». La observación no le quita mérito a la
+  optimización: delimita qué es lo que la optimización decide y qué sigue siendo una decisión de
+  diseño, y es exactamente el punto que esta tesis audita.</p>
   {pie(12)}
 </div>
 """)

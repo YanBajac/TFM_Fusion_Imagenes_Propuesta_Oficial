@@ -31,8 +31,12 @@ OBSOLETOS = ['3,67', '3,44', '6,9888', '1,1045', '0,1477', '17,3435', '0,6677',
              '1,7354', '1,7039', '0,913', '0,957', '22,8554', '6,9334', '0,1387',
              '0,5781', '17,2546', '0,808', '36 configuraciones', '[0,05; 1,20]',
              '0,05–1,20', 'contenido de bordes', 'entropía de bordes',
-             '90 contrastes', 'desactiva el banco', 'segundo lugar del ranking',
+             '90 contrastes', 'segundo lugar del ranking',
              'ciego a las luces', 'presenta el patrón espejo',
+             # «desactiva el banco» salio de esta lista: el libro ahora dice, con razon,
+             # que r = 1 NO desactiva el banco, y aca la busqueda es de subcadena y no
+             # mira la negacion. El bloque 4 de verificar_entregables.py si la mira, y
+             # cubre los cuatro documentos.
              'penaliza los artefactos',
              # --- retirados el 4 de agosto: los tres hallazgos «falso» y los dos
              # pasajes que seguian con la numeracion vieja de tres hipotesis
