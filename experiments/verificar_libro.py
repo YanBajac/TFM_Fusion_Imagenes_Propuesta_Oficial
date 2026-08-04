@@ -33,7 +33,18 @@ OBSOLETOS = ['3,67', '3,44', '6,9888', '1,1045', '0,1477', '17,3435', '0,6677',
              '0,05–1,20', 'contenido de bordes', 'entropía de bordes',
              '90 contrastes', 'desactiva el banco', 'segundo lugar del ranking',
              'ciego a las luces', 'presenta el patrón espejo',
-             'penaliza los artefactos']
+             'penaliza los artefactos',
+             # --- retirados el 4 de agosto: los tres hallazgos «falso» y los dos
+             # pasajes que seguian con la numeracion vieja de tres hipotesis
+             '0,739',                              # el SSIM de DTCWT es 0,7249
+             'fidelidad estructural y limpieza',   # la propuesta tiene el peor SSIM
+             'variante WTH+BTH directa',           # esa variante no existe
+             'H3 no se sostiene',                  # §5.8.2 dice «Se sostiene H3»
+             'quedan sostenidas H1 y H2',          # H2 se contrasta en §5.8, no en §5.6
+             'sostenidas las hipótesis H1 y H2',   # corresponde H1 y H6
+             'pso_grid_state.json',                # el estado de la Fo publicada es otro
+             'pso_grid_search.csv',                # esa tabla es de la aptitud F_apt
+             'pso_grid_search.py']                 # el script es pso_grid_search_fo.py
 for v in OBSOLETOS:
     # los numeros se buscan con frontera para no confundir 3,44 con 3,444
     patron = (re.escape(v) + r'(?!\d)') if re.fullmatch(r'[\d,]+', v) else re.escape(v)
@@ -115,20 +126,43 @@ ok('[0,30; 2,00]' in txt or '0.30' in txt, 'rango de m corregido en el texto')
 ok('Δx' in txt and 'Δy' in txt, 'la ecuacion (18) tiene radicando')
 
 # ---- 8. indice coherente con el PDF --------------------------------------
+# El indice es texto fijo, no un campo de Word: cualquier insercion lo desfasa en
+# silencio. Este chequeo miraba solo las seis entradas de 5.8, y por eso paso
+# inadvertido que un parrafo mas largo en §5.3 empujara §5.4 de la 49 a la 50.
+# Ahora se comprueban las 79, uniendo los titulos que el indice parte en dos lineas.
 print('\n--- 8. indice')
-toc = paginas[[i for i, p in enumerate(paginas) if 'CONTENIDO' in p][0]:]
-lineas = []
-for p in paginas:
-    for l in p.splitlines():
-        m = re.match(r'^(5\.8[.\d]*\s+.+?)\s*\.*\s*(\d{1,3})$', l.strip())
+llanas = [re.sub(r'\s+', ' ', p).strip() for p in paginas]
+GUIA = re.compile(r'\.{3,}\s*\d{1,3}\s*$', re.M)
+espaginas = [i for i, p in enumerate(paginas) if len(GUIA.findall(p)) >= 3]
+ok(bool(espaginas), f'el indice ocupa las paginas {[i + 1 for i in espaginas]}')
+
+entradas = []
+for i in espaginas:
+    resto = ''
+    for linea in paginas[i].splitlines():
+        linea = linea.strip()
+        if not linea:
+            continue
+        m = re.match(r'^(.*?)\.{2,}\s*(\d{1,3})$', linea)
         if m:
-            lineas.append((m.group(1).strip(), int(m.group(2))))
-ok(len(lineas) >= 6, f'el indice lista las {len(lineas)} entradas de 5.8')
-for titulo, pag in lineas:
-    fis = next((i for i, p in enumerate(paginas)
-                if any(l.strip() == titulo for l in p.splitlines())), None)
-    ok(fis is not None and fis + 1 == pag,
-       f'«{titulo[:52]}» -> pag {pag} (real {fis+1 if fis is not None else "?"})')
+            titulo = re.sub(r'\s+', ' ', f'{resto} {m.group(1)}').strip()
+            # la cabecera de la propia pagina del indice no es una entrada
+            titulo = re.sub(r'^CONTENIDO\s*', '', titulo).strip(' .')
+            entradas.append((titulo, int(m.group(2))))
+            resto = ''
+        else:
+            resto = f'{resto} {linea}'.strip()
+ok(len(entradas) >= 70, f'el indice lista {len(entradas)} entradas')
+
+cuerpo = [(i, t) for i, t in enumerate(llanas) if i not in espaginas]
+desfasadas = []
+for titulo, pag in entradas:
+    fis = next((i for i, t in cuerpo if titulo and titulo in t), None)
+    if fis is None or fis + 1 != pag:
+        desfasadas.append(f'«{titulo[:46]}» dice {pag}, real '
+                          f'{fis + 1 if fis is not None else "no hallado"}')
+ok(not desfasadas, f'las {len(entradas)} entradas apuntan a su pagina real'
+                   + (f' — {desfasadas[:6]}' if desfasadas else ''))
 
 # ---- 9. figuras embebidas identicas a las del repositorio -----------------
 # Las cuatro figuras de datos del libro vivian solo dentro del docx y quedaron

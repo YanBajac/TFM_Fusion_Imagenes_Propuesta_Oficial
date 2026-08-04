@@ -286,6 +286,11 @@ EMBEBIDAS = {
         'word/media/image13.png': 'fig_libro_propuesta_vs.png',
         'word/media/image14.png': 'fig_libro_pso.png',
         'word/media/image16.png': 'fig_m3fd_detecciones.png',
+        # el flujograma no llevaba control y quedo rotulando m = 0,0703 —el optimo de la
+        # aptitud paralela— en lugar del peso adoptado, en los DOS entregables
+        'word/media/image5.png': 'fig_flujo_propuesta.png',
+        'word/media/image2.png': 'fig_morfologia_tophat.png',
+        'word/media/image17.png': 'comparacion_aptitudes.png',
     },
     DOCS / 'Tesis_Defensa_Presentacion.pptx': {
         'ppt/media/image-8-2.png': 'fig_deck_pso_barrido.png',
@@ -293,6 +298,8 @@ EMBEBIDAS = {
         'ppt/media/image-14-1.png': 'fig_deck_m3fd_clases.png',
         'ppt/media/image-15-1.png': 'fig_m3fd_detecciones.png',
         'ppt/media/image-10-1.png': 'cualitativas/montaje_07.png',
+        'ppt/media/image-7-1.png': 'fig_flujo_propuesta.png',
+        'ppt/media/image-6-1.png': 'fig_morfologia_tophat.png',
     },
 }
 for contenedor, mapa in EMBEBIDAS.items():
@@ -347,6 +354,78 @@ for doc, patron, total in (('avances', r'\b(\d{1,3}) */ *(\d{1,3})\b', None),
                 desfasados.append((i, m[-1]))
         ok(not desfasados, f'{doc}: contadores sin desfase'
                            + (f' — {desfasados[:4]}' if desfasados else ''))
+
+# --------------------------------------------- 9. desborde del deck
+# LibreOffice recorta en el borde de la lamina: lo que no entra no se dibuja y no deja
+# rastro en el PDF. Asi la lamina 18 perdio entero el parrafo del conteo por escena, que
+# es el resultado de OE5, y nadie lo noto. Comparar el texto de cada shape con el de su
+# pagina detecta el recorte sin mirar geometria. Se comparan solo letras y digitos: los
+# simbolos (-, °, ∈, ·) no sobreviven igual a las dos extracciones.
+print('\n=== 9. texto del deck que no llega al PDF ===')
+PPTX = DOCS / 'Tesis_Defensa_Presentacion.pptx'
+try:
+    from pptx import Presentation
+
+    if 'deck' not in DOCUMENTOS or not PPTX.exists():
+        raise FileNotFoundError(PPTX.name)
+
+    def solo_alfanum(s):
+        return re.sub(r'[^0-9a-z]+', '', sin_tildes(s or '').lower())
+
+    prs = Presentation(str(PPTX))
+    with fitz.open(str(DOCUMENTOS['deck']['ruta'])) as d:
+        ok(len(prs.slides) == d.page_count,
+           f'el PDF trae una pagina por lamina ({d.page_count} y {len(prs.slides)})')
+        perdidos = []
+        for i, (lam, pg) in enumerate(zip(prs.slides, d), start=1):
+            enpdf = solo_alfanum(pg.get_text())
+            for sh in lam.shapes:
+                if not sh.has_text_frame:
+                    continue
+                for par in sh.text_frame.paragraphs:
+                    clave = solo_alfanum(par.text)
+                    if len(clave) >= 20 and clave not in enpdf:
+                        perdidos.append(f'lamina {i} «{sh.name}»')
+        ok(not perdidos, 'ningun parrafo se pierde en el recorte'
+                         + (f' — {perdidos[:5]}' if perdidos else ''))
+except ImportError:
+    print('  AVISO python-pptx no instalado: no se reviso el desborde del deck')
+    avisos.append('desborde del deck sin revisar (falta python-pptx)')
+except FileNotFoundError as e:
+    ok(False, f'falta {e} para revisar el desborde del deck', blando=True)
+
+# --------------------------------------------- 10. texto tapado por una figura
+# Las figuras del deck son PNG con fondo blanco OPACO. Si el orden de shapes las pone
+# despues del cuadro de texto, tapan lo que se solape, y en el PDF el texto sigue estando
+# —se puede seleccionar— asi que el chequeo de recorte del bloque 9 no lo ve. Asi la lamina 8
+# tenia la segunda linea del titulo debajo del flujograma y la 9 perdia el final de un
+# renglon bajo el mapa de calor. Se cruza el bbox de cada span con el de cada imagen.
+print('\n=== 10. texto del deck tapado por una figura ===')
+UMBRAL_TAPADO = 0.005          # discrimina los solapes reales de los meros roces de borde
+if 'deck' in DOCUMENTOS:
+    tapados = []
+    with fitz.open(str(DOCUMENTOS['deck']['ruta'])) as d:
+        for i, pg in enumerate(d, start=1):
+            imgs = [fitz.Rect(im['bbox']) for im in pg.get_image_info()]
+            if not imgs:
+                continue
+            for bl in pg.get_text('dict')['blocks']:
+                if bl['type'] != 0:
+                    continue
+                for ln in bl['lines']:
+                    for sp in ln['spans']:
+                        sr = fitz.Rect(sp['bbox'])
+                        if not sp['text'].strip() or sr.get_area() <= 0:
+                            continue
+                        for ir in imgs:
+                            inter = sr & ir
+                            if inter.is_empty:
+                                continue
+                            if inter.get_area() / sr.get_area() >= UMBRAL_TAPADO:
+                                tapados.append(f'lamina {i}: {sp["text"].strip()[:40]!r}')
+                                break
+    ok(not tapados, 'ningun texto queda debajo de una figura'
+                    + (f' — {tapados[:5]}' if tapados else ''))
 
 # --------------------------------------------- resumen
 print(f'\n=== {len(fallos)} fallos · {len(avisos)} avisos ===')
