@@ -213,9 +213,13 @@ print('\n=== 4b. cifras retiradas, en coma Y en punto ===')
 # 0,157 · 0,119 · 0,220 · 0,018 · 0,178 · 0,135) quedan fuera a proposito: colisionan
 # con valores vigentes —0,135 es el SD del Top-Hat (0,1352) redondeado— y darian
 # falsos positivos. Esas afirmaciones ya las cubre el chequeo de frases del punto 4.
+# 0,5781 · 1,7354 · 1,7039 salieron de la lista el 5 de agosto: dejaron de ser
+# inequivocas. Las dos primeras coinciden con valores por imagen vigentes de
+# pso_por_imagen.csv y la tercera con la aptitud media de las corridas que terminan en
+# r = 22 en el estudio de estabilidad. Las afirmaciones que representaban ya las cubre
+# el chequeo de frases del punto 4.
 CIFRAS_RETIRADAS = ['6,9888', '1,1045', '0,1477', '17,3435', '0,6677', '17,2546',
-                    '22,8554', '6,9334', '0,1387', '0,5781', '1,7354', '1,7039',
-                    '0,0353', '3,67', '3,44']
+                    '22,8554', '6,9334', '0,1387', '0,0353', '3,67', '3,44']
 for doc in DOCUMENTOS:
     t = DOCUMENTOS[doc]['texto']
     hits = []
@@ -434,6 +438,83 @@ if 'deck' in DOCUMENTOS:
                                 break
     ok(not tapados, 'ningun texto queda debajo de una figura'
                     + (f' — {tapados[:5]}' if tapados else ''))
+
+# --------------------------------------------- 11. el Excel
+# El Excel es un entregable rastreado y no tenia ningun chequeo. Llego a publicar «optimo
+# global r* = 25» —lo contrario de H5—, una banda de mAP de una corrida anterior y la
+# numeracion vieja de hipotesis. Se revisa en dos planos: las cadenas de texto contra la
+# misma lista de afirmaciones retiradas que los otros documentos, y las celdas NUMERICAS
+# contra las cifras retiradas, comparando por valor y no por cadena, porque el Excel guarda
+# numeros y no texto formateado.
+print('\n=== 11. el Excel de tablas ===')
+XLSX = DOCS / 'Avances_Tesis_Tablas.xlsx'
+try:
+    from openpyxl import load_workbook
+
+    if not XLSX.exists():
+        raise FileNotFoundError(XLSX.name)
+    wb = load_workbook(XLSX, data_only=True)
+    textos, numeros = [], []
+    for hoja in wb.worksheets:
+        for fila in hoja.iter_rows():
+            for c in fila:
+                if isinstance(c.value, str):
+                    textos.append(c.value)
+                elif isinstance(c.value, (int, float)) and c.value is not None:
+                    numeros.append(float(c.value))
+    blob = plano(' '.join(textos))
+    ok(len(wb.worksheets) >= 10, f'tiene {len(wb.worksheets)} hojas: {", ".join(wb.sheetnames)}')
+
+    presentes = [s for s in RETIRADAS if afirmada(blob, s)]
+    ok(not presentes, f'excel: ninguna afirmacion retirada {presentes}')
+
+    # las cifras retiradas, por valor: se comparan con la tolerancia del formato publicado
+    hits = []
+    for v in CIFRAS_RETIRADAS:
+        try:
+            x = float(v.replace(',', '.'))
+        except ValueError:
+            continue
+        nd = len(v.split(',')[1]) if ',' in v else 0
+        if any(abs(n - x) < 0.5 * 10 ** (-nd) for n in numeros):
+            hits.append(v)
+    ok(not hits, f'excel: ninguna cifra retirada en las celdas numericas {hits[:6]}')
+
+    # y las que el Excel publicaba a mano y ya no deben estar
+    VIEJAS_EXCEL = ['óptimo global', 'H3 no sostenida', 'r=12', 'm=0.069', '0,957', '0,913']
+    quedan = [s for s in VIEJAS_EXCEL if s.lower() in blob.lower()]
+    ok(not quedan, f'excel: sin las afirmaciones que publicaba a mano {quedan}')
+
+    # El rango medio no esta como valor: la hoja lo deja en una formula AVERAGE que Excel
+    # calcula al abrir, de modo que openpyxl no lo ve. Se verifica la materia prima: que el
+    # promedio de los nueve rangos guardados reproduzca el del CSV.
+    rk = pd.read_csv(REP / 'ranking_methods.csv', index_col=0)
+    hoja = wb['Ranking_Global'] if 'Ranking_Global' in wb.sheetnames else None
+    if hoja is None:
+        ok(False, 'excel: falta la hoja Ranking_Global')
+    else:
+        # La fila buscada es la de DATOS, no el subtitulo: este tambien dice «La propuesta»,
+        # de modo que hace falta exigir que la fila traiga los nueve rangos. La ultima
+        # columna es la formula AVERAGE, que openpyxl lee como None.
+        def rangos_de(fila):
+            return [c.value for c in fila[1:] if isinstance(c.value, (int, float))]
+
+        fila_prop = next((f for f in hoja.iter_rows()
+                          if isinstance(f[0].value, str)
+                          and 'PROPUESTA' in f[0].value.upper()
+                          and len(rangos_de(f)) == 9), None)
+        rangos = rangos_de(fila_prop) if fila_prop else []
+        prom = sum(rangos) / len(rangos) if len(rangos) == 9 else None
+        esperado = float(rk['avg_rank'].min())
+        visto = coma(prom, 3) if prom is not None else 'nada'
+        ok(prom is not None and abs(prom - esperado) < 5e-4,
+           f'excel: los nueve rangos de la propuesta promedian {visto} '
+           f'y el CSV publica {coma(esperado, 3)}')
+except ImportError:
+    print('  AVISO openpyxl no instalado: no se reviso el Excel')
+    avisos.append('excel sin revisar (falta openpyxl)')
+except FileNotFoundError as e:
+    ok(False, f'falta {e} para revisar el Excel', blando=True)
 
 # --------------------------------------------- resumen
 print(f'\n=== {len(fallos)} fallos · {len(avisos)} avisos ===')

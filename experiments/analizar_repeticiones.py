@@ -101,8 +101,27 @@ def main():
     if tasa_piso == 100.0:
         print('  -> el anclaje de m NO depende de la semilla: la afirmacion del trabajo se sostiene')
     else:
-        print('  -> el anclaje de m depende de la semilla en alguna medida: hay que matizar la '
-              'afirmacion del trabajo')
+        # Una corrida que no llega al piso puede ser dos cosas muy distintas: un optimo
+        # alternativo (y entonces habria que matizar la afirmacion) o una falla de
+        # convergencia del enjambre (y entonces la refuerza, porque el piso sigue siendo el
+        # maximo). Se distingue mirando si su aptitud quedo por debajo de la mejor.
+        peores = d[~en_piso]
+        if bool((peores.Fo_opt < d.Fo_opt.max()).all()):
+            print(f'  -> las {len(peores)} corridas fuera del piso tienen aptitud MENOR que el maximo '
+                  f'({coma(peores.Fo_opt.max())} contra {coma(d.Fo_opt.max())}): son fallas de '
+                  'convergencia del enjambre, no optimos alternativos. El piso sigue siendo el '
+                  'maximo y la afirmacion del trabajo se sostiene.')
+            print(f'     la peor es n = {int(peores.loc[peores.Fo_opt.idxmin(), "n"])}, '
+                  f'T = {int(peores.loc[peores.Fo_opt.idxmin(), "Tmax"])}, la configuracion con menos '
+                  'evaluaciones del barrido.')
+        else:
+            print('  -> hay corridas fuera del piso que igualan o superan el maximo: son optimos '
+                  'alternativos y HAY QUE MATIZAR la afirmacion del trabajo.')
+    frec = d.groupby('r_opt').size().idxmax()
+    mejor = int(d.loc[d.Fo_opt.idxmax(), 'r_opt'])
+    if frec != mejor:
+        print(f'  el radio mas frecuente (r = {frec}) NO es el de mejor aptitud (r = {mejor}): la '
+              'frecuencia con que el enjambre devuelve un radio no mide su calidad')
     print(f'  Fo maxima global {coma(d.Fo_opt.max())} · minima {coma(d.Fo_opt.min())} · '
           f'recorrido {coma(d.Fo_opt.max() - d.Fo_opt.min())}')
 

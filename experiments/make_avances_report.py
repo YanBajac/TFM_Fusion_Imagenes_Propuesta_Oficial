@@ -465,6 +465,66 @@ DME_SOBRE = ", ".join(f"{r.etiqueta.split(' (')[0]} ({int(r.lamp_detectadas)})"
                       for r in _dme_sobre.itertuples())
 DME_N_SOBRE = len(_dme_sobre)
 
+# ------------------------------------ estabilidad del barrido PSO: 20 repeticiones x 25
+# Pedido del orientador. Hace falta un estudio aparte porque la aptitud es determinista y en
+# el barrido publicado las semillas estaban fijadas por (n, T) y por el numero de iteracion:
+# repetir una celda devolvia el mismo resultado bit a bit.
+_rep = pd.read_csv(os.path.join(MR, "pso_repeticiones_propuesta.csv"))
+REP_N = f"{len(_rep):,}".replace(",", ".")
+REP_REPS = _rep.repeticion.nunique()
+REP_EVALS = f"{int(_rep.evaluaciones.sum()):,}".replace(",", ".")
+_rp = (_rep.m_opt - 0.30).abs() < 5e-4
+REP_PISO = int(_rp.sum())
+REP_PISO_PCT = f"{100 * _rp.mean():.1f}".replace(".", ",")
+REP_R1_PCT = f"{100 * (_rep.r_opt == 1).mean():.1f}".replace(".", ",")
+REP_R25_PCT = f"{100 * (_rep.r_opt == 25).mean():.1f}".replace(".", ",")
+REP_OTROS_PCT = f"{100 * (~_rep.r_opt.isin([1, 25])).mean():.1f}".replace(".", ",")
+_pn = _rep.groupby("n").apply(lambda g: 100 * (g.r_opt == 1).mean(), include_groups=False)
+_pt = _rep.groupby("Tmax").apply(lambda g: 100 * (g.r_opt == 1).mean(), include_groups=False)
+REP_PORN_MIN, REP_PORN_MAX = f"{_pn.min():.0f}", f"{_pn.max():.0f}"
+REP_PORT_MIN, REP_PORT_MAX = f"{_pt.min():.0f}", f"{_pt.max():.0f}"
+# El radio que la busqueda encuentra con MAS frecuencia no es el que maximiza la aptitud:
+# r = 25 es un optimo local ancho que atrae mas inicializaciones, y r = 1 esta en el borde.
+_gr = _rep.groupby("r_opt").agg(k=("Fo_opt", "size"), fo=("Fo_opt", "mean"))
+_r_frec = int(_gr.k.idxmax())
+_r_mejor = int(_rep.loc[_rep.Fo_opt.idxmax(), "r_opt"])
+REP_R_FREC, REP_R_MEJOR = _r_frec, _r_mejor
+REP_FO_FREC = f"{_gr.loc[_r_frec, 'fo']:.4f}".replace(".", ",")
+REP_FO_MEJOR = f"{_gr.loc[_r_mejor, 'fo']:.4f}".replace(".", ",")
+REP_DISOCIA = (_r_frec != _r_mejor)
+_bm = _rep.groupby(["n", "Tmax"]).Fo_opt.mean()
+REP_BANDA = f"{_bm.max() - _bm.min():.4f}".replace(".", ",")
+# El veredicto sobre el peso se DERIVA del dato en lugar de estar escrito: si algun dia
+# alguna corrida deja de anclarse en el piso, el informe lo dice en lugar de publicar la
+# afirmacion al reves.
+if _rp.all():
+    REP_VEREDICTO_PESO = ("y es el único valor observado en todo el estudio. El anclaje al piso "
+                          "del rango <b>no depende de la semilla</b>")
+else:
+    _f = _rep[~_rp].sort_values("Fo_opt")
+    _n_f = len(_f)
+    _peor = _f.iloc[0]
+    _fallan_abajo = bool((_f.Fo_opt < _rep.Fo_opt.max()).all())
+    _cual = ("la corrida restante" if _n_f == 1 else f"las {_n_f} corridas restantes")
+    _v = ("no lo alcanza" if _n_f == 1 else "no lo alcanzan")
+    REP_VEREDICTO_PESO = (
+        f"y {_cual} {_v}: " + ("es" if _n_f == 1 else "son") + " de las configuraciones más "
+        f"pobres del barrido —la peor, {int(_peor.n)} partículas por {int(_peor.Tmax)} iteraciones, "
+        f"apenas {int(_peor.evaluaciones)} evaluaciones— y su aptitud ("
+        + f"{_peor.Fo_opt:.4f}".replace(".", ",") + ") es la más baja de todo el estudio"
+        + (", de modo que se trata de una <b>falla de convergencia</b> del enjambre y no de un óptimo "
+           "alternativo: el piso sigue siendo el máximo que la monotonía de la aptitud determina"
+           if _fallan_abajo else ""))
+    print(f"AVISO: {_n_f} corridas con m* fuera del piso (la peor Fo = {_peor.Fo_opt:.4f})")
+_fil_rr = "".join(
+    f"<tr><td>{int(_r)}</td><td>{int(_k)}</td>"
+    + f"<td>{100 * _k / len(_rep):.1f}".replace(".", ",") + " %</td>"
+    + f"<td>{_rep[_rep.r_opt == _r].Fo_opt.mean():.4f}".replace(".", ",") + "</td></tr>"
+    for _r, _k in _rep.r_opt.value_counts().sort_index().items())
+TAB_REP_RADIO = ('<table class="chica"><thead><tr><th>Radio óptimo r*</th><th>Corridas</th>'
+                 '<th>% del total</th><th>F<sub>o</sub> media</th></tr></thead><tbody>'
+                 + _fil_rr + '</tbody></table>')
+
 _sat = pd.read_csv(os.path.join(MR, "saturacion_vs_m.csv"))
 def _satm(m):
     f = _sat[_np.isclose(_sat.m, m)]
@@ -1436,6 +1496,44 @@ H.append(f"""
 
 H.append(f"""
 <div class="page">
+  <h2>5. Optimización por PSO (continuación): estabilidad del barrido en {REP_N} corridas</h2>
+  <p>El barrido publicado tiene una configuración por celda y una sola semilla, de modo que sus 25
+  resultados <b>no son 25 confirmaciones independientes</b>. Conviene decirlo con precisión: la aptitud
+  es determinista y las semillas estaban fijadas por la configuración y por el número de iteración,
+  así que repetir una celda devolvía el mismo resultado. Para medir de verdad la dispersión se repitió
+  <b>{REP_REPS} veces cada configuración</b> con la semilla en función de (n, T, repetición):
+  <b>{REP_N} corridas</b> y {REP_EVALS} evaluaciones de aptitud. El control de que no cambió nada más
+  que la semilla es que la repetición 0 conserva las semillas originales y reproduce el barrido
+  publicado celda por celda.</p>
+
+  <p><b>Tabla 3a.</b> Distribución del radio óptimo hallado sobre las {REP_N} corridas.</p>
+  {TAB_REP_RADIO}
+
+  <p class="lectura">Lectura, en tres puntos. <b>Primero, el peso es robusto</b>: m* = 0,30 en
+  {REP_PISO} de las {REP_N} corridas ({REP_PISO_PCT} %), {REP_VEREDICTO_PESO}. Queda así confirmado
+  empíricamente el argumento de la página anterior. <b>Segundo, el radio no lo es</b>:
+  la búsqueda se reparte entre los dos bordes del intervalo —r = 1 en el {REP_R1_PCT} % de las
+  corridas y r = 25 en el {REP_R25_PCT} %—, con un {REP_OTROS_PCT} % que queda en radios
+  intermedios. No es que el argmax sea r = 1: es que <b>la optimización no identifica un radio
+  estable</b>, y por lo tanto el r = 25 adoptado no puede atribuirse a ella. Es la evidencia más
+  firme de H5 que contiene el trabajo. Y hay un detalle que conviene subrayar, porque cierra el
+  argumento: <b>el radio que la búsqueda encuentra con más frecuencia no es el que maximiza la
+  aptitud</b>. r = {REP_R_FREC} aparece más veces pero rinde {REP_FO_FREC}, mientras
+  r = {REP_R_MEJOR} rinde {REP_FO_MEJOR}. El mejor óptimo está en el borde del intervalo y atrae
+  menos inicializaciones, de modo que la frecuencia con que el enjambre devuelve un radio no mide
+  su calidad; usar el resultado de la búsqueda como justificación del radio sería, entonces, usar
+  el argumento equivocado dos veces. <b>Tercero, agrandar el enjambre no cambia el cuadro</b>: la
+  proporción de corridas que terminan en r = 1 va del {REP_PORN_MIN} % al {REP_PORN_MAX} % según el
+  número de partículas y del {REP_PORT_MIN} % al {REP_PORT_MAX} % según las iteraciones, sin
+  tendencia, y la aptitud media se mueve en una banda de {REP_BANDA}. La rejilla de {N_CFG}
+  configuraciones del trabajo de referencia no gana estabilidad con más partículas ni más
+  iteraciones.</p>
+  {pie(13)}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
   <h2>6. Métodos comparativos del benchmark</h2>
   <p>La propuesta se contrasta con cinco configuraciones de referencia del estado del arte en fusión de
   imágenes visibles e infrarrojas, más la metodología clásica de la transformada Top-Hat:</p>
@@ -1466,7 +1564,7 @@ H.append(f"""
   {formula("th_clasico", 17)}
   <p>Todos los métodos se ejecutan sobre los mismos {N_ESC} pares, con la misma implementación de métricas
   (<i>src/metrics/evaluators.py</i>), de modo que la comparación es directa.</p>
-  {pie(13)}
+  {pie(14)}
 </div>
 """)
 
@@ -1502,7 +1600,7 @@ H.append(f"""
   segundo puesto entre ocho entradas con σ &ge; 0,10, por delante de los seis métodos comparativos, y
   cuyo rango mejora de forma monótona al aumentar la varianza. Los resultados de las secciones
   siguientes deben leerse con ese alcance.</p>
-  {pie(14)}
+  {pie(15)}
 </div>
 """)
 
@@ -1514,7 +1612,7 @@ H.append(f"""
   {tabla_metodos(ORDEN, resaltar=PROP)}
   <p class="lectura">{LECTURA_BENCH}</p>
   {figura(charts["quality"], "Cuatro métricas representativas (EN, FE, SF, SSIM); la barra azul es la propuesta.", 96)}
-  {pie(15)}
+  {pie(16)}
 </div>
 """)
 
@@ -1546,7 +1644,7 @@ for _b, _imgs in enumerate(_bloques, 1):
   <p><b>Tabla 4{chr(96 + _b)}.</b> Resultados por par — pares {(_b - 1) * 4 + 1} a
   {(_b - 1) * 4 + len(_imgs)} de {N_ESC}.</p>
   {tabla_por_imagen(_imgs)}{_lect}
-  {pie(15 + _b)}
+  {pie(16 + _b)}
 </div>
 """)
 
@@ -1557,7 +1655,7 @@ H.append(f"""
   {formula("friedman", 23)}
   <p><b>Tabla 5.</b> Resultados del test de Friedman.</p>
   {tabla_friedman()}
-  {pie(21)}
+  {pie(22)}
 </div>
 <div class="page">
   <h2>9. Análisis estadístico (continuación): Wilcoxon y ranking</h2>
@@ -1571,11 +1669,11 @@ H.append(f"""
   peor en {w_peor} y sin diferencia en {w_emp}; su ventaja más consistente es en las
   métricas de actividad e información (EN, FE, MG, SF), mejor que los cinco métodos del estado del arte.</p>
   {figura(charts["ranking"], "Ranking promedio global de los 7 métodos (9 métricas, dirección respetada); la barra azul es la propuesta.", 78)}
-  {pie(22)}
+  {pie(23)}
 </div>
 """)
 
-pg = 23
+pg = 24
 H.append(f"""
 <div class="page">
   <h2>10. Robustez del resultado: ajuste simétrico y ablación del operador</h2>

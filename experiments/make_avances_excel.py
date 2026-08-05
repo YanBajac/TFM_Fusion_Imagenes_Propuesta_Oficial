@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Workbook v3 — benchmark replanteado: propuesta (suma, r=12, m=0.069) vs 6 comparativos."""
+"""Workbook v3 — benchmark replanteado: propuesta (suma, r = 25, m = 0,30) contra 6 comparativos.
+
+Las cifras salen de los CSV de experiments/results/metrics_reports. Cuando una nota afirme
+algo sobre los datos, tiene que derivarse de ellos: este libro llego a publicar «optimo
+global r* = 25» y una banda de mAP de una corrida anterior, y ningun verificador lo cubria.
+"""
 import json, os
 import pandas as pd
 from openpyxl import Workbook
@@ -85,6 +90,52 @@ DIRECTION = {"EN": 1, "SD": 1, "FE": 1, "MG": 1, "MI_vis": 1, "MI_ir": 1, "SF": 
 METS = list(DIRECTION.keys())
 NM = len(METS)  # 9
 
+# ------------------------------------------- estabilidad del barrido PSO (500 corridas)
+# La lectura del barrido se DERIVA de este estudio. Antes decia «n = 2 cae en el optimo
+# local r = 1 ... con n = 10 y T >= 30 el optimo global (r = 25, m ~ 0,07) se alcanza de
+# forma consistente», y las tres afirmaciones eran falsas: r = 1 es el argmax, el 0,07 es
+# de la aptitud paralela, y no hay consistencia con n ni con T.
+_rep_csv = os.path.join(MR, "pso_repeticiones_propuesta.csv")
+REP = pd.read_csv(_rep_csv) if os.path.exists(_rep_csv) else None
+if REP is not None and len(REP) >= 100:
+    _piso = ((REP.m_opt - 0.30).abs() < 5e-4)
+    _pr1 = 100 * (REP.r_opt == 1).mean()
+    _pr25 = 100 * (REP.r_opt == 25).mean()
+    _otros = 100 - _pr1 - _pr25
+    _porn = REP.groupby("n").apply(lambda g: 100 * (g.r_opt == 1).mean(), include_groups=False)
+    _cm = lambda v, n=1: f"{v:.{n}f}".replace(".", ",")
+    _fuera = REP[~_piso]
+    if len(_fuera) == 0:
+        _mat = "y es el unico valor observado, de modo que el anclaje no depende de la semilla"
+    elif bool((_fuera.Fo_opt < REP.Fo_opt.max()).all()):
+        _pe = _fuera.loc[_fuera.Fo_opt.idxmin()]
+        _mat = (f"y la{'s' if len(_fuera) > 1 else ''} {len(_fuera)} restante"
+                f"{'s' if len(_fuera) > 1 else ''} tiene" + ("n" if len(_fuera) > 1 else "")
+                + f" aptitud menor que el maximo ({_cm(_pe.Fo_opt, 4)} contra "
+                f"{_cm(REP.Fo_opt.max(), 4)}): son fallas de convergencia del enjambre —la peor es "
+                f"n = {int(_pe.n)}, T = {int(_pe.Tmax)}, la configuracion con menos evaluaciones— y no "
+                "optimos alternativos, de modo que el piso sigue siendo el maximo")
+    else:
+        _mat = "pero hay corridas fuera del piso que igualan el maximo: son optimos alternativos"
+    _rfrec = int(REP.groupby("r_opt").size().idxmax())
+    _rmejor = int(REP.loc[REP.Fo_opt.idxmax(), "r_opt"])
+    LECTURA_BARRIDO = (
+        f"Lectura sobre {len(REP)} corridas ({REP.repeticion.nunique()} repeticiones independientes de "
+        f"cada configuracion): el peso converge al piso del rango en {_piso.sum()} de {len(REP)} corridas "
+        f"({_cm(100 * _piso.mean())} %), {_mat}. El radio, en cambio, se reparte entre los dos bordes: "
+        f"r = 1 en el {_cm(_pr1)} % de las corridas y r = 25 en el {_cm(_pr25)} %, con un {_cm(_otros)} % "
+        f"en radios intermedios. Agrandar el enjambre no estabiliza el resultado: el porcentaje que "
+        f"termina en r = 1 va del {_porn.min():.0f} % al {_porn.max():.0f} % segun el numero de "
+        f"particulas, sin tendencia. Y el radio mas frecuente (r = {_rfrec}) no es el de mejor aptitud "
+        f"(r = {_rmejor}), de modo que la frecuencia con que el enjambre devuelve un radio no mide su "
+        f"calidad. La optimizacion no identifica un radio estable, y el r = 25 adoptado proviene de la "
+        f"bateria de evaluacion (H5).")
+else:
+    REP = None
+    LECTURA_BARRIDO = ("Lectura: las 25 configuraciones convergen al mismo peso, m* = 0,30, el piso del rango "
+                       "publicado. El argmax de la aptitud es r = 1; el radio adoptado (r = 25) proviene de la "
+                       "bateria de evaluacion y no de la optimizacion (H5).")
+
 wb = Workbook()
 
 # ============================================================ 1. RESUMEN
@@ -109,7 +160,8 @@ info = [
      f"heredar el sesgo de elegirlo sobre el mismo conjunto que se reporta. El IR solo lidera "
      f"(mAP@0,5 = {_det_llvip.loc['IR','mAP50']:.4f}); toda fusión supera al VIS solo "
      f"({_det_llvip.loc['VIS','mAP50']:.4f}); la propuesta alcanza {_det_llvip.loc[PROP,'mAP50']:.4f}: "
-     f"el realce que premian las métricas de actividad no mejora la detección (H3 no sostenida)."),
+     f"el realce que premian las métricas de actividad no mejora la detección. Es la hipótesis H6, "
+     f"que SE SOSTIENE: lo que queda rechazado es la traslación de la calidad a la tarea."),
 ]
 for k, v in info:
     ws.cell(f, 1, k).font = F_TXTB
@@ -153,7 +205,8 @@ conf = [
     ("Configuraciones evaluadas", "25: partículas n ∈ {2,4,6,8,10} × iteraciones T ∈ {10,20,30,40,50} (Cuadro 1 del libro)"),
     ("Función de aptitud", "Fo = SSIM_avg + E_n + PSNR_n (Ortega y Espinoza, 2025; ecuación 14)"),
     ("Evaluada sobre", "3 escenas representativas del TNO (1 de cada 7)"),
-    ("Óptimo global hallado", "r* = 25 · m* = 0,30 (el peso al que convergen las 25 configuraciones con el rango publicado)"),
+    ("Argmax de la aptitud", f"r = {int(grid.loc[grid.F_opt.idxmax(), 'r_opt'])} · m = {grid.loc[grid.F_opt.idxmax(), 'm_opt']:.2f}".replace(".", ",") + " (el maximo de Fo dentro del rango publicado)"),
+    ("Configuración adoptada", "r = 25 · m = 0,30 — el radio lo elige el bloque de actividad de la batería de evaluación, NO la optimización (H5)"),
     ("Aptitud alcanzada", f"Fo = {grid['F_opt'].max():.4f}"),
     ("Estado guardado en", "metrics_reports/pso_grid_search_fo_propuesta.csv"),
 ]
@@ -163,8 +216,10 @@ for k, v in conf:
     f += 1
 f += 1
 f = nota(ws, f, "Con la suma de ramas se inyecta más energía de detalle que con el máximo; el enjambre lo compensa "
-         "con el peso del rango publicado (m = 0,30). El radio se ubica en el tope del rango del libro (r = 25): "
-         "el operador aprovecha un vecindario amplio para capturar los objetivos térmicos completos.")
+         "con el peso del piso del rango publicado (m = 0,30). Conviene no confundir dos cosas: el argmax de la "
+         "aptitud dentro del rango es r = 1, y el radio adoptado (r = 25) lo elige el bloque de actividad de la "
+         "batería de evaluación —a igual peso supera a r = 1 en entropía, contraste, eficiencia de fusión, gradiente "
+         "medio y frecuencia espacial— y no la optimización. Esa distinción es la hipótesis H5 del trabajo.")
 
 
 # ============================================================ 2b. PSO BARRIDO
@@ -196,8 +251,7 @@ for n in [2, 4, 6, 8, 10]:
         celda(ws, f, j, v, fmt="0.0000", bold=abs(v - Fmax) < 5e-4)
     f += 1
 f += 1
-f = nota(ws, f, "Lectura: n = 2 cae en el óptimo local r = 1 en 2 de 5 corridas; con n = 10 y T >= 30 "
-         "el óptimo global (r = 25, m ≈ 0,07) se alcanza de forma consistente.")
+f = nota(ws, f, LECTURA_BARRIDO)
 
 # ============================================================ 4. BENCHMARK
 ws = wb.create_sheet("Benchmark")
@@ -413,10 +467,17 @@ for m in DET_ORDEN:
         celda(ws, f, j, float(r[c]), fmt="0.000", bold=(best[c] == m or m == PROP))
     f += 1
 f += 1
-f = nota(ws, f, "Lectura: toda fusión supera al visible solo (+0,11 a +0,14 en mAP@0,5); el infrarrojo solo es la "
-         "modalidad más fuerte (0,957) y ninguna fusión lo supera (peatón nocturno = térmico); entre las fusiones "
-         "(banda 0,913–0,949) la propuesta queda en el extremo inferior (0,913). El realce que premian las métricas de "
-         "actividad no mejora la detección: ambos criterios deben reportarse por separado (H3 no sostenida).")
+# La lectura se deriva del CSV: llego a publicar +0,11 a +0,14, un IR de 0,957 y una banda
+# 0,913-0,949, todas de una corrida anterior, ademas de la numeracion vieja de hipotesis.
+_fus_ll = det.drop(index=[x for x in ("VIS", "IR") if x in det.index])["mAP50"]
+_c = lambda v, n=3: f"{v:.{n}f}".replace(".", ",")
+f = nota(ws, f, f"Lectura: toda fusión supera al visible solo, que alcanza {_c(det.loc['VIS', 'mAP50'])} "
+         f"(+{_c(_fus_ll.min() - det.loc['VIS', 'mAP50'], 3)} a +{_c(_fus_ll.max() - det.loc['VIS', 'mAP50'], 3)} en mAP@0,5); "
+         f"el infrarrojo solo es la modalidad más fuerte ({_c(det.loc['IR', 'mAP50'])}) y ninguna fusión lo supera "
+         f"(el peatón nocturno es esencialmente térmico); entre las fusiones (banda {_c(_fus_ll.min())}-{_c(_fus_ll.max())}) "
+         f"la propuesta queda en el extremo inferior ({_c(det.loc[PROP, 'mAP50'])}). El realce que premian las métricas "
+         f"de actividad no mejora la detección: ambos criterios deben reportarse por separado. Es la hipótesis H6, que "
+         f"SE SOSTIENE —lo que queda rechazado es la traslación de la calidad a la tarea, no la hipótesis—.")
 
 # ============================================================ 11. DETECCION M3FD
 ws = wb.create_sheet("Deteccion_M3FD")
@@ -472,6 +533,44 @@ _txt += (f"La propuesta obtiene {_m3.loc[PROP,'par']:.3f} en el par (puesto {_po
          f"{_m3.loc[PROP,'AP50_Lamp']:.3f}. Particiones train/val/test disjuntas y estratificadas; "
          f"el test es la única partición reportada. Fuente: metrics_reports/detection_m3fd_map.csv.")
 f = nota(ws, f, _txt)
+
+# ==================================================== 12. ESTABILIDAD DEL BARRIDO PSO
+# Pedido del orientador: repetir veinte veces cada configuracion y analizar la dispersion.
+# Con las semillas del barrido publicado —fijadas por (n, T) y por el numero de iteracion—
+# repetir daba el mismo resultado bit a bit; en pso_repeticiones.py la semilla es funcion de
+# (n, T, repeticion) y la repeticion 0 reproduce el barrido publicado celda por celda.
+if REP is not None:
+    ws = wb.create_sheet("PSO_Estabilidad")
+    ws.sheet_view.showGridLines = False
+    f = titulo(ws, 1, f"Estabilidad del barrido PSO — {len(REP)} corridas",
+               f"{REP.repeticion.nunique()} repeticiones independientes de cada una de las 25 configuraciones. "
+               "La repeticion 0 usa las semillas del barrido publicado y lo reproduce celda por celda.")
+    ws.column_dimensions["A"].width = 30
+    for j in range(2, 8):
+        ws.column_dimensions[get_column_letter(j)].width = 15
+    f = encabezado(ws, f, ["Configuración", "Corridas", "Fo media", "Fo mínima", "Fo máxima",
+                           "% con r* = 1", "% con m* = 0,30"])
+    _g = REP.groupby(["n", "Tmax"])
+    for (n_, t_), gg in _g:
+        celda(ws, f, 1, f"n = {n_} · T = {t_}", align=CL)
+        celda(ws, f, 2, len(gg), fmt="0")
+        celda(ws, f, 3, float(gg.Fo_opt.mean()), fmt="0.0000")
+        celda(ws, f, 4, float(gg.Fo_opt.min()), fmt="0.0000")
+        celda(ws, f, 5, float(gg.Fo_opt.max()), fmt="0.0000")
+        celda(ws, f, 6, float(100 * (gg.r_opt == 1).mean()) / 100, fmt="0.0 %")
+        celda(ws, f, 7, float(((gg.m_opt - 0.30).abs() < 5e-4).mean()), fmt="0.0 %")
+        f += 1
+    f += 1
+    ws.cell(f, 1, "Distribución del radio hallado sobre todas las corridas").font = F_SUB; f += 1
+    f = encabezado(ws, f, ["r óptimo", "Corridas", "% del total", "Fo media"], [12, 12, 12, 12])
+    for r_, k_ in REP.r_opt.value_counts().sort_index().items():
+        celda(ws, f, 1, int(r_), fmt="0", bold=(r_ in (1, 25)))
+        celda(ws, f, 2, int(k_), fmt="0", bold=(r_ in (1, 25)))
+        celda(ws, f, 3, float(k_ / len(REP)), fmt="0.0 %", bold=(r_ in (1, 25)))
+        celda(ws, f, 4, float(REP[REP.r_opt == r_].Fo_opt.mean()), fmt="0.0000")
+        f += 1
+    f += 1
+    f = nota(ws, f, LECTURA_BARRIDO)
 
 wb.save(OUT)
 print("Guardado:", OUT)
