@@ -1,0 +1,171 @@
+{
+ "entorno": {
+  "ultralytics": "8.4.68",
+  "torch": "2.5.1+cu121",
+  "cuda": true,
+  "gpu": "NVIDIA GeForce RTX 4050 Laptop GPU"
+ },
+ "modelos": {
+  "m3fd": {
+   "checkpoint": "runs/detect/runs/m3fd/mixto/weights/best.pt",
+   "parametros": 3012018,
+   "modulos": 226,
+   "clases": [
+    "People",
+    "Car",
+    "Bus",
+    "Motorcycle",
+    "Lamp",
+    "Truck"
+   ],
+   "gflops": 8.2,
+   "bloques": {
+    "Conv": 57,
+    "C2f": 8,
+    "Bottleneck": 10,
+    "SPPF": 1,
+    "Concat": 4,
+    "Upsample": 2,
+    "Detect": 1,
+    "DFL": 1
+   }
+  },
+  "llvip": {
+   "checkpoint": "runs/detect/runs/llvip/Propuesta_Novedosa/weights/last.pt",
+   "parametros": 3011043,
+   "modulos": 226,
+   "clases": [
+    "person"
+   ],
+   "gflops": 8.19,
+   "bloques": {
+    "Conv": 57,
+    "C2f": 8,
+    "Bottleneck": 10,
+    "SPPF": 1,
+    "Concat": 4,
+    "Upsample": 2,
+    "Detect": 1,
+    "DFL": 1
+   }
+  }
+ },
+ "hiperparametros": {
+  "m3fd": {
+   "model": "yolov8n.pt",
+   "epochs": 40,
+   "batch": 16,
+   "imgsz": 640,
+   "optimizer": "auto",
+   "lr0": 0.01,
+   "lrf": 0.01,
+   "momentum": 0.937,
+   "weight_decay": 0.0005,
+   "warmup_epochs": 3.0,
+   "iou": 0.7,
+   "max_det": 300,
+   "seed": 0,
+   "deterministic": true,
+   "amp": true,
+   "close_mosaic": 10,
+   "hsv_h": 0.015,
+   "hsv_s": 0.7,
+   "hsv_v": 0.4,
+   "translate": 0.1,
+   "scale": 0.5,
+   "fliplr": 0.5,
+   "mosaic": 1.0,
+   "erasing": 0.4,
+   "patience": 100
+  },
+  "llvip": {
+   "model": "yolov8n.pt",
+   "epochs": 40,
+   "batch": 16,
+   "imgsz": 640,
+   "optimizer": "auto",
+   "lr0": 0.01,
+   "lrf": 0.01,
+   "momentum": 0.937,
+   "weight_decay": 0.0005,
+   "warmup_epochs": 3.0,
+   "iou": 0.7,
+   "max_det": 300,
+   "seed": 0,
+   "deterministic": true,
+   "amp": true,
+   "close_mosaic": 10,
+   "hsv_h": 0.015,
+   "hsv_s": 0.7,
+   "hsv_v": 0.4,
+   "translate": 0.1,
+   "scale": 0.5,
+   "fliplr": 0.5,
+   "mosaic": 1.0,
+   "erasing": 0.4,
+   "patience": 100
+  }
+ },
+ "datos": {
+  "llvip_Propuesta_Novedosa": {
+   "train": 2000,
+   "val": 500
+  },
+  "m3fd_mixto": {
+   "train": 4000,
+   "val": 1002
+  },
+  "m3fd_test_Propuesta_Novedosa": {
+   "val": 499
+  },
+  "m3fd_comp_Propuesta_Novedosa": {
+   "val": 232
+  }
+ },
+ "etiquetas_hiper": {
+  "model": "Pesos iniciales",
+  "epochs": "Épocas",
+  "batch": "Lote",
+  "imgsz": "Resolución de entrada",
+  "optimizer": "Optimizador",
+  "lr0": "Tasa de aprendizaje inicial",
+  "lrf": "Factor final de la tasa",
+  "momentum": "Momento",
+  "weight_decay": "Decaimiento de pesos",
+  "warmup_epochs": "Épocas de calentamiento",
+  "iou": "IoU de la supresión no máxima",
+  "max_det": "Detecciones máximas por imagen",
+  "seed": "Semilla",
+  "deterministic": "Determinista",
+  "amp": "Precisión mixta",
+  "close_mosaic": "Épocas finales sin mosaico",
+  "hsv_h": "Aumento: tono",
+  "hsv_s": "Aumento: saturación",
+  "hsv_v": "Aumento: brillo",
+  "translate": "Aumento: traslación",
+  "scale": "Aumento: escala",
+  "fliplr": "Aumento: espejado horizontal",
+  "mosaic": "Aumento: mosaico",
+  "erasing": "Aumento: borrado aleatorio"
+ },
+ "entrenamientos": {
+  "llvip": [
+   "Curvelet",
+   "DTCWT",
+   "DWT",
+   "IR",
+   "PiramideLaplace",
+   "Promedio",
+   "Propuesta_Fo",
+   "Propuesta_Novedosa",
+   "RatioPiramide",
+   "TopHat_Clasico",
+   "TopHat_disk_L5",
+   "VIS"
+  ],
+  "m3fd": [
+   "mixto",
+   "mixto_old"
+  ]
+ }
+}

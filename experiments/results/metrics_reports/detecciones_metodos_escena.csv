@@ -1,0 +1,10 @@
+escena,entrada,etiqueta,people_detectadas,lamp_detectadas,people_gt,lamp_gt,recupera_ambas
+00231,VIS,VIS,4,5,12,5,True
+00231,IR,IR,10,1,12,5,True
+00231,PiramideLaplace,Pirámide de Laplace,9,9,12,5,True
+00231,RatioPiramide,Ratio Pyramid,9,3,12,5,True
+00231,DWT,DWT,10,5,12,5,True
+00231,DTCWT,DTCWT,10,4,12,5,True
+00231,Curvelet,CVT,7,5,12,5,True
+00231,TopHat_Clasico,Top-Hat clásico,10,9,12,5,True
+00231,Propuesta_Novedosa,"Propuesta (r=25, m=0,30)",8,7,12,5,True

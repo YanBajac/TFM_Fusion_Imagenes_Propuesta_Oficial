@@ -199,7 +199,7 @@ def _n(x, d=3):
     return f"{x:.{d}f}".replace(".", ",")
 
 
-# Lectura de la Tabla 10 construida desde los datos: cada afirmacion se verifica antes de
+# Lectura de la tabla de AP por clase construida desde los datos: cada afirmacion se verifica antes de
 # escribirse, porque con un split o un checkpoint distintos varias de ellas se invierten.
 _sup_amb = [k for k in _m3f.index
             if _m3f.loc[k, "par"] > _m3.loc["VIS", "par"]
@@ -366,6 +366,104 @@ TAB_REFERENCIA = ('<table class="chica"><thead><tr><th class="l">Escena</th>'
                   '<th>m mediana</th><th>m mínimo – máximo</th>'
                   '<th>corridas en el piso 0,30</th><th>r mediana</th>'
                   '</tr></thead><tbody>' + _fil_ref + '</tbody></table>')
+
+# --------------------------------------------------- perfil del detector y cuadro de deteccion
+# Las cifras de arquitectura, entorno y protocolo NO se citan de la documentacion de la
+# biblioteca: las mide experiments/perfil_detector.py sobre los checkpoints entrenados de este
+# trabajo y las lee de los args.yaml de cada corrida.
+_det = json.load(open(os.path.join(MR, "detector_perfil.json"), encoding="utf-8"))
+_dm = _det["modelos"]["m3fd"]
+_hp = _det["hiperparametros"]["m3fd"]
+_env = _det["entorno"]
+_bl = _dm["bloques"]
+
+YOLO_PARAMS = f"{_dm['parametros']:,}".replace(",", ".")
+YOLO_GFLOPS = f"{_dm['gflops']:.1f}".replace(".", ",")
+YOLO_MODULOS = _dm["modulos"]
+YOLO_IMGSZ = _hp["imgsz"]
+YOLO_EPOCAS = _hp["epochs"]
+YOLO_PATIENCE = _hp["patience"]
+YOLO_CLOSE_MOSAIC = _hp["close_mosaic"]
+YOLO_UPSAMPLE = _bl["Upsample"]
+YOLO_CONCAT = _bl["Concat"]
+YOLO_COMPOSICION = (f"{_bl['Conv']} convoluciones, {_bl['C2f']} bloques C2f "
+                    f"—con {_bl['Bottleneck']} cuellos de botella internos—, "
+                    f"{_bl['SPPF']} agrupamiento piramidal SPPF, {_bl['Concat']} concatenaciones, "
+                    f"{_bl['Upsample']} sobremuestreos y {_bl['Detect']} cabezal de detección "
+                    f"con módulo DFL")
+YOLO_ENTORNO = (f"Ultralytics {_env['ultralytics']} sobre PyTorch {_env['torch']}"
+                + (f", en una {_env['gpu']}" if _env.get("gpu") else ", en CPU"))
+
+_dd = _det["datos"]
+LLVIP_TRAIN = f"{_dd['llvip_Propuesta_Novedosa'].get('train', 0):,}".replace(",", ".")
+LLVIP_VAL = f"{_dd['llvip_Propuesta_Novedosa'].get('val', 0):,}".replace(",", ".")
+M3FD_TRAIN = f"{_dd['m3fd_mixto'].get('train', 0):,}".replace(",", ".")
+M3FD_VAL = f"{_dd['m3fd_mixto'].get('val', 0):,}".replace(",", ".")
+M3FD_TEST = f"{_dd['m3fd_test_Propuesta_Novedosa'].get('val', 0):,}".replace(",", ".")
+M3FD_COMP = f"{_dd['m3fd_comp_Propuesta_Novedosa'].get('val', 0):,}".replace(",", ".")
+M3FD_CLASES = ", ".join(_dm["clases"])
+
+# La tabla va en dos columnas de pares: con una sola, sus 24 filas desbordan a una pagina
+# que queda casi vacia. Los valores se dejan LITERALES —con punto decimal— porque son los
+# del archivo de configuracion y alguien puede querer copiarlos tal cual.
+_pares_hp = [(_det["etiquetas_hiper"][k], _hp[k]) for k in _det["etiquetas_hiper"]
+             if k in _hp and _hp[k] is not None]
+_mitad = (len(_pares_hp) + 1) // 2
+_fil_hp = "".join(
+    "<tr>" + "".join(
+        f"<td class='l'>{p[0]}</td><td>{p[1]}</td>" if p else "<td></td><td></td>"
+        for p in (_pares_hp[i], _pares_hp[i + _mitad] if i + _mitad < len(_pares_hp) else None))
+    + "</tr>" for i in range(_mitad))
+TAB_YOLO_HIPER = ('<table class="chica"><thead><tr><th class="l">Parámetro</th><th>Valor</th>'
+                  '<th class="l">Parámetro</th><th>Valor</th></tr></thead><tbody>'
+                  + _fil_hp + '</tbody></table>')
+
+# Cuadro comparativo de la prueba de deteccion: las dos pruebas y el conteo por escena en una
+# sola tabla, que es lo que permite ver que ninguna entrada gana en todo.
+_lld = pd.read_csv(os.path.join(MR, "detection_llvip_map.csv")).set_index("method")
+_m3d = pd.read_csv(os.path.join(MR, "detection_m3fd_map.csv")).set_index("method")
+_cpd = pd.read_csv(os.path.join(MR, "complementariedad_resumen.csv")).set_index("entrada")
+_m3d["par"] = (_m3d.AP50_People + _m3d.AP50_Lamp) / 2
+_ORD_DET = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT", "Curvelet",
+            "TopHat_Clasico", "Propuesta_Novedosa"]
+_COLS_DET = [("LLVIP mAP@0,5", lambda k: _lld.loc[k, "mAP50"], 3),
+             ("LLVIP mAP@0,5:0,95", lambda k: _lld.loc[k, "mAP50_95"], 3),
+             ("M3FD mAP@0,5", lambda k: _m3d.loc[k, "mAP50"], 3),
+             ("AP People", lambda k: _m3d.loc[k, "AP50_People"], 3),
+             ("AP Lamp", lambda k: _m3d.loc[k, "AP50_Lamp"], 3),
+             ("Promedio del par", lambda k: _m3d.loc[k, "par"], 3),
+             ("Escenas con ambas clases", lambda k: _cpd.loc[k, "pct_ambas"], 1)]
+_mejor_det = {nom: max(_ORD_DET, key=f) for nom, f, _ in _COLS_DET}
+_fil_det = ""
+for _k in _ORD_DET:
+    _nom = LBL.get(_k, _k).split(" (")[0]
+    _tds = ""
+    for _nomc, _f, _nd in _COLS_DET:
+        _v = f"{_f(_k):.{_nd}f}".replace(".", ",") + (" %" if "Escenas" in _nomc else "")
+        _es = (_mejor_det[_nomc] == _k)
+        _tds += f"<td>{'<b>' if _es else ''}{_v}{'</b>' if _es else ''}</td>"
+    _fil_det += (f"<tr><td class='l'>{'<b>' if _k == PROP else ''}{_nom}"
+                 f"{'</b>' if _k == PROP else ''}</td>{_tds}</tr>")
+TAB_DETECCION = ('<table class="chica"><thead><tr><th class="l">Entrada</th>'
+                 + "".join(f"<th>{c[0]}</th>" for c in _COLS_DET)
+                 + '</tr></thead><tbody>' + _fil_det + '</tbody></table>')
+DET_LIDERES = "; ".join(
+    f"{_nomc}: {LBL.get(_mejor_det[_nomc], _mejor_det[_nomc]).split(' (')[0]}"
+    for _nomc, _, _ in _COLS_DET)
+
+# la comparativa cualitativa por metodo sobre una escena
+# la columna escena es un identificador con ceros a la izquierda (00231): si se lee como
+# numero, el pie de la figura contradice el rotulo que la propia figura lleva grabado
+_dme = pd.read_csv(os.path.join(MR, "detecciones_metodos_escena.csv"), dtype={"escena": str})
+DME_ESCENA = str(_dme.escena.iloc[0])
+DME_GT_P = int(_dme.people_gt.iloc[0])
+DME_GT_L = int(_dme.lamp_gt.iloc[0])
+DME_AMBAS = int(_dme.recupera_ambas.sum())
+DME_N = len(_dme)
+_dme_sobre = _dme[_dme.lamp_detectadas > _dme.lamp_gt]
+DME_SOBRE = ", ".join(f"{r.etiqueta.split(' (')[0]} ({int(r.lamp_detectadas)})"
+                      for r in _dme_sobre.itertuples())
+DME_N_SOBRE = len(_dme_sobre)
 
 _sat = pd.read_csv(os.path.join(MR, "saturacion_vs_m.csv"))
 def _satm(m):
@@ -808,7 +906,7 @@ def fig_file(name, max_w=1350):
 EXIST = {n: fig_file(n) for n in [
     "fig_morfologia_tophat.png", "fig_cinco_se.png", "fig_pso_diagrama.png",
     "ejemplo_modalidades.png", "fig_aptitud_vs_m.png", "fig_m3fd_detecciones.png",
-    "comparacion_aptitudes.png"]}
+    "comparacion_aptitudes.png", "fig_m3fd_detecciones_metodos.png"]}
 print("imagenes ok")
 
 def tabla_friedman():
@@ -1075,8 +1173,11 @@ H.append(f"""
     <li>Análisis estadístico: Friedman, Wilcoxon-Holm y ranking (sección 9).</li>
     <li>Robustez: ajuste simétrico de los comparativos y ablación del operador (sección 10).</li>
     <li>Resultados cualitativos de los {N_ESC} pares (sección 11).</li>
-    <li>Evaluación orientada a tarea: detección en LLVIP (sección 12) y clases complementarias en
-        M3FD (sección 13), y conclusiones (sección 14).</li>
+    <li>El detector: arquitectura, ejecución y los dos diseños experimentales (sección 12).</li>
+    <li>Evaluación orientada a tarea: detección en LLVIP (sección 13) y clases complementarias en
+        M3FD (sección 14).</li>
+    <li>Cuadro comparativo de las metodologías en la prueba de detección y comparativa cualitativa
+        sobre una escena (sección 15), y conclusiones (sección 16).</li>
     <li>Anexos 1-{N_ESC}: las 25 configuraciones del PSO en cada uno de los {N_ESC} pares.</li>
   </ol>
   {pie(2)}
@@ -1566,7 +1667,94 @@ for i in range(2, N_ESC, 2):
 
 H.append(f"""
 <div class="page">
-  <h2>12. Evaluación orientada a tarea: detección en LLVIP</h2>
+  <h2>12. El detector: arquitectura, ejecución y protocolo de entrenamiento</h2>
+  <p>Las dos pruebas de detección usan el mismo detector, de modo que conviene precisar qué es,
+  cómo está formado y cómo se lo ejecutó, antes de leer sus resultados. Se eligió un detector
+  <b>de una sola etapa</b>: a diferencia de las arquitecturas de dos etapas —que primero proponen
+  regiones y después las clasifican—, YOLO plantea la detección como una única regresión sobre la
+  imagen completa, lo que le da el costo por imagen necesario para evaluar nueve entradas sobre
+  varios miles de imágenes (Redmon et al., 2016). Se usó la versión <b>YOLOv8n</b>, la variante
+  <i>nano</i> de la familia (Jocher et al., 2023).</p>
+
+  <p><b>Cómo está formado.</b> Los datos que siguen no se citan de la documentación: se midieron
+  sobre los propios pesos entrenados de este trabajo. La red tiene
+  <b>{YOLO_PARAMS} parámetros</b> y <b>{YOLO_GFLOPS} GFLOPs</b> a una entrada de {YOLO_IMGSZ}×{YOLO_IMGSZ},
+  repartidos en {YOLO_MODULOS} módulos con esta composición: {YOLO_COMPOSICION}. Los tres bloques
+  cumplen funciones distintas:</p>
+  <ul>
+    <li><b>Columna (backbone).</b> Convoluciones con paso 2 que reducen la resolución en cinco
+        niveles, intercaladas con bloques <i>C2f</i> —conexiones parciales cruzadas, que dividen el
+        canal en dos ramas y concatenan los residuos— y cerradas por un <i>SPPF</i>, que agrupa
+        contexto con ventanas de varios tamaños. Es lo que extrae los rasgos.</li>
+    <li><b>Cuello (neck).</b> Una pirámide con camino descendente y ascendente: los
+        {YOLO_UPSAMPLE} sobremuestreos y las {YOLO_CONCAT} concatenaciones fusionan rasgos de tres
+        escalas, de modo que la red detecta objetos grandes y pequeños con el mismo paso.</li>
+    <li><b>Cabezal (head).</b> Desacoplado y <b>sin cajas ancla</b>: predice el centro y la extensión
+        de cada objeto con una rama de clasificación y otra de regresión, y modela la caja como una
+        distribución discreta sobre las distancias al borde (módulo <i>DFL</i>), más estable que una
+        regresión directa.</li>
+  </ul>
+
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>12. El detector (continuación): con qué se ejecutó</h2>
+  <p>La configuración es la misma en las dos pruebas y quedó registrada en los <i>args.yaml</i> de
+  cada corrida: <b>{YOLO_ENTORNO}</b>. Los valores se transcriben <b>literales</b> del archivo de
+  configuración —con punto decimal— para que puedan copiarse tal cual.</p>
+  <p><b>Tabla 10.</b> Configuración de entrenamiento e inferencia del detector, común a las dos
+  pruebas.</p>
+  {TAB_YOLO_HIPER}
+  <p class="lectura">Nota: se parte del modelo preentrenado en COCO y se reentrena por completo, sin
+  congelar capas; el aumento de datos es el estándar de la biblioteca y se mantuvo igual entre
+  entradas para no introducir una variable más. El mosaico se desactiva en las últimas
+  {YOLO_CLOSE_MOSAIC} épocas, que es la práctica recomendada para que el modelo cierre sobre imágenes
+  sin composición artificial.</p>
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>12. El detector (continuación): los dos diseños experimentales</h2>
+  <p>Las dos pruebas responden preguntas distintas y por eso <b>no comparten diseño</b>. Confundirlas
+  sería el error más fácil de cometer al leer las tablas que siguen.</p>
+
+  <p><b>LLVIP — un detector por entrada.</b> {LLVIP_TRAIN} imágenes de entrenamiento y
+  {LLVIP_VAL} de validación, una sola clase (<i>person</i>). Se entrena un YOLOv8n <b>independiente
+  sobre cada entrada</b> —las dos modalidades y los siete métodos de fusión— con idéntica
+  configuración y semilla. Como los pares VIS/IR están registrados, las anotaciones valen para toda
+  versión fusionada: lo único que cambia entre corridas son los píxeles, de modo que la diferencia de
+  mAP es atribuible al método de fusión. La pregunta que responde es <i>¿cuánto ayuda esta imagen a
+  un detector entrenado sobre ella?</i></p>
+  <p><b>M3FD — un único detector, inferencia por entrada.</b> {M3FD_TRAIN} imágenes de
+  entrenamiento y {M3FD_VAL} de validación con VIS e IR <b>mezcladas</b> y sus seis clases
+  ({M3FD_CLASES}). Se entrena <b>un solo</b> modelo y se lo evalúa por inferencia sobre la validación
+  de cada entrada ({M3FD_TEST} imágenes), y el conteo por escena del objetivo declarado sobre el
+  subconjunto de escenas que contienen las dos clases complementarias ({M3FD_COMP} escenas). La
+  pregunta es otra: <i>¿qué entrada le permite a un mismo detector recuperar las dos clases a la
+  vez?</i></p>
+
+  <p><b>El punto de control, que no es un detalle menor.</b> En LLVIP se reporta <b>last.pt</b>, los
+  pesos de la última época, y no <b>best.pt</b>. La razón es que LLVIP no tiene partición de prueba
+  separada: la validación cumple los dos roles, y elegir la mejor época <i>medida en el mismo conjunto
+  que se reporta</i> introduce un sesgo optimista del orden de las diferencias entre métodos, que es
+  justamente lo que se quiere medir. En M3FD sí se usa <b>best.pt</b>, porque allí la época se elige
+  sobre la validación mixta y se reporta sobre conjuntos distintos. Las {YOLO_EPOCAS} épocas se
+  completaron en todos los casos: con paciencia {YOLO_PATIENCE} no hubo corte temprano.</p>
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>13. Evaluación orientada a tarea: detección en LLVIP</h2>
   <p>Para medir el efecto práctico de la fusión se reentrenó el mismo detector <b>YOLOv8n</b> (40 épocas,
   misma configuración y semilla) sobre cada versión fusionada del dataset etiquetado <b>LLVIP</b>
   (peatones nocturnos; subconjunto de 2.000 imágenes de entrenamiento y 500 de validación). Como los
@@ -1612,7 +1800,7 @@ TAB_M3FD = ('<table><thead><tr><th>Entrada del detector</th><th>AP People &uarr;
 
 H.append(f"""
 <div class="page">
-  <h2>13. Detección con clases complementarias (M3FD)</h2>
+  <h2>14. Detección con clases complementarias (M3FD)</h2>
   <p>Experimento diseñado para aislar el escenario donde la fusión es insustituible: el dataset
   <b>M3FD</b> (Liu et al., 2022) anota seis clases, dos de ellas de <b>visibilidad opuesta</b>: las
   personas dominan en el infrarrojo (firma térmica) y las luces (Lamp) son esencialmente visibles solo
@@ -1626,7 +1814,7 @@ H.append(f"""
   reporta, el resultado hereda un sesgo optimista que no es comparable entre métodos. La
   estratificación evita además que las particiones tengan proporciones de clase distintas, lo que
   desplazaría el criterio de selección.</p>
-  <p><b>Tabla 10.</b> AP@0,5 por clase y mAP global (medias sobre las {M3_N} imágenes de la partición
+  <p><b>Tabla 11.</b> AP@0,5 por clase y mAP global (medias sobre las {M3_N} imágenes de la partición
   de prueba, disjunta de la de entrenamiento y de la de selección del modelo).</p>
   {TAB_M3FD}
   <p class="lectura">{LECTURA_M3FD}</p>
@@ -1637,7 +1825,7 @@ pg += 1
 
 H.append(f"""
 <div class="page">
-  <h2>13. Clases complementarias (continuación): la prueba visual</h2>
+  <h2>14. Clases complementarias (continuación): la prueba visual</h2>
   <p>{PARRAFO_DETECCIONES}</p>
   {figura(EXIST.get("fig_m3fd_detecciones.png"), PIE_DETECCIONES, 92)}
   {pie(pg)}
@@ -1647,7 +1835,7 @@ pg += 1
 
 H.append(f"""
 <div class="page">
-  <h2>13. Clases complementarias (continuación): el objetivo medido por escena</h2>
+  <h2>14. Clases complementarias (continuación): el objetivo medido por escena</h2>
   <p>El promedio de precisión (mAP) de la tabla anterior no mide el objetivo declarado, que
   afirma que la fusión permita <b>detectar objetos que no se detectan en el visible ni en el
   infrarrojo por separado</b>: eso es un enunciado <b>por escena</b>, no un promedio. Lo que
@@ -1658,7 +1846,7 @@ H.append(f"""
   tienen anotadas ambas clases y que no participaron del entrenamiento ni de la selección del
   modelo; las particiones de ajuste y selección quedaron idénticas, de modo que el modelo es el
   mismo y la única variable que cambia es el tamaño de la muestra.</p>
-  <p><b>Tabla 11.</b> Recuperación de ambas clases complementarias por escena. Las
+  <p><b>Tabla 12.</b> Recuperación de ambas clases complementarias por escena. Las
   <b>{CP_CRIT} escenas críticas</b> son aquellas en las que ni el visible ni el infrarrojo lo
   logran por separado: son las que la hipótesis reclama para la fusión.</p>
   {TAB_COMPL}
@@ -1684,7 +1872,61 @@ pg += 1
 
 H.append(f"""
 <div class="page">
-  <h2>14. Conclusiones y encuadre del aporte</h2>
+  <h2>15. Cuadro comparativo de las metodologías en la prueba de detección</h2>
+  <p>Las dos pruebas y el conteo por escena, reunidos por entrada. La tabla es la forma más
+  económica de mostrar el resultado central del capítulo: <b>ninguna entrada gana en todo</b>, y el
+  orden cambia según la columna que se priorice. En negrita, el mejor valor de cada columna.</p>
+  <p><b>Tabla 13.</b> Comparativa de las nueve entradas en la prueba de detección (LLVIP con un
+  detector por entrada; M3FD con un único detector e inferencia por entrada; el conteo por escena
+  sobre las {M3FD_COMP} escenas que contienen las dos clases complementarias).</p>
+  {TAB_DETECCION}
+  <p class="lectura">Lectura: los líderes por columna son {DET_LIDERES}. Es decir que la mejor
+  entrada depende de la pregunta: si el objetivo es detectar peatones nocturnos, el
+  <b>infrarrojo solo</b> es la mejor entrada y ninguna fusión lo alcanza; si el objetivo es sostener
+  las dos clases complementarias a la vez, la mejor entrada es una <b>fusión</b>, pero no la
+  propuesta. La propuesta queda en la mitad inferior de las fusiones en las dos pruebas, lo que es
+  coherente con su perfil: gana en las métricas de actividad de la imagen y cede en las de fidelidad,
+  y la tarea posterior no premia la actividad.</p>
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>15. Comparativa cualitativa: la misma escena en las nueve entradas</h2>
+  <p>El cuadro anterior promedia sobre cientos de imágenes y por eso no muestra <i>qué</i> cambia. La
+  figura siguiente toma una sola escena —la misma de la sección {14}, para que las dos se puedan
+  cruzar— y dibuja las detecciones que el <b>mismo</b> modelo produce sobre cada una de las nueve
+  entradas. Es la comparación directa entre metodologías sobre píxeles idénticos en todo salvo el
+  método de fusión.</p>
+  {figura(EXIST.get("fig_m3fd_detecciones_metodos.png"),
+          f"M3FD, escena {DME_ESCENA}: detecciones del modelo único VIS+IR sobre cada entrada. "
+          f"People en granate, Lamp en azul, umbral de confianza 0,30. Verdad de campo: "
+          f"{DME_GT_P} personas y {DME_GT_L} luces.", 100)}
+  <p class="lectura">Lectura, y conviene que sea honesta en los tres puntos. <b>Primero</b>, las
+  {DME_AMBAS} de las {DME_N} entradas recuperan las dos clases en esta escena, incluido el
+  <b>visible solo</b> —que detecta las {DME_GT_L} luces y {int(_dme[_dme.entrada == 'VIS'].people_detectadas.iloc[0])}
+  de las {DME_GT_P} personas—: la afirmación de que «solo la imagen fusionada permite detectar ambas
+  a la vez» no se sostiene y fue retirada del trabajo. <b>Segundo</b>, el infrarrojo muestra con
+  claridad su límite: recupera
+  {int(_dme[_dme.entrada == 'IR'].people_detectadas.iloc[0])} personas pero solo
+  {int(_dme[_dme.entrada == 'IR'].lamp_detectadas.iloc[0])} luz. <b>Tercero</b>, y es el hallazgo que
+  esta figura aporta y las tablas promediadas esconden: {DME_N_SOBRE} entradas
+  <b>sobredetectan</b> luces por encima de la verdad de campo ({DME_SOBRE} frente a {DME_GT_L}
+  reales), y son las dos morfológicas junto con la pirámide de Laplace. Es coherente con la tasa de
+  artefactos medida sobre la imagen: el realce morfológico crea manchas brillantes puntuales que el
+  detector lee como luces. El costo en artefactos que la sección de métricas mide con Nabf aparece
+  aquí como falsos positivos en la tarea, y ése es un puente entre los dos criterios que el trabajo
+  no tenía documentado.</p>
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>16. Conclusiones y encuadre del aporte</h2>
   <p>El trabajo sostiene <b>dos aportes</b>. El primero es el operador y su caracterización; el
   segundo, la auditoría de la validez discriminativa del protocolo con que se lo evalúa, usando el
   propio desarrollo como caso de estudio. Ambos se enuncian a continuación con la evidencia que los
@@ -1725,7 +1967,7 @@ pg += 1
 
 H.append(f"""
 <div class="page">
-  <h2>14. Conclusiones (continuación): el segundo aporte</h2>
+  <h2>16. Conclusiones (continuación): el segundo aporte</h2>
   <h3>Segundo aporte: validez discriminativa del protocolo</h3>
   <ol>
     <li>El <b>orden de mérito depende de la composición del conjunto de métricas</b>: con las nueve
