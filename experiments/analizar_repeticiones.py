@@ -26,7 +26,7 @@ import pandas as pd
 
 RAIZ = Path(__file__).resolve().parent.parent
 MR = RAIZ / 'experiments' / 'results' / 'metrics_reports'
-PISO, TECHO = 0.30, 2.00
+PISO_POR_DEFECTO, TECHO = 0.30, 2.00
 
 
 def coma(x, nd=4):
@@ -36,12 +36,18 @@ def coma(x, nd=4):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--operator', default='propuesta')
+    # el piso depende del estudio: 0,30 en el del rango publicado y 0,01 en el libre.
+    # Con el valor fijo, el analisis del libre informaba «0 de 500 en el piso» y listaba
+    # las 500 corridas como excepciones.
+    ap.add_argument('--piso', type=float, default=None,
+                    help='piso del rango de m; por omision se toma el minimo observado')
     a = ap.parse_args()
     ruta = MR / f'pso_repeticiones_{a.operator}.csv'
     if not ruta.exists():
         print(f'falta {ruta.name}: correr primero pso_repeticiones.py')
         return 1
     d = pd.read_csv(ruta)
+    PISO = a.piso if a.piso is not None else float(d.m_opt.min())
     reps = sorted(d.repeticion.unique())
     print(f'=== {len(d)} corridas · {d.repeticion.nunique()} repeticiones x '
           f'{len(d.groupby(["n", "Tmax"]))} configuraciones · operador {a.operator} ===\n')

@@ -439,6 +439,29 @@ if 'deck' in DOCUMENTOS:
     ok(not tapados, 'ningun texto queda debajo de una figura'
                     + (f' — {tapados[:5]}' if tapados else ''))
 
+# --------------------------------------------- 8b. la secuencia de pies del informe
+# El bloque 8 busca contadores con la forma «N / M», que es la del deck. El informe de
+# avances numera con el numero solo, de modo que ese chequeo pasaba sin mirar nada: al
+# insertar una pagina en el medio quedaron un pie repetido y otro faltante sin que nadie
+# lo notara. Aca se comprueba que la secuencia sea estrictamente consecutiva.
+print('\n=== 8b. secuencia de pies del informe de avances ===')
+if 'avances' in DOCUMENTOS:
+    with fitz.open(str(DOCUMENTOS['avances']['ruta'])) as d:
+        pies = []
+        for i, pg in enumerate(d, start=1):
+            lineas = [l.strip() for l in pg.get_text().splitlines() if l.strip()]
+            ult = lineas[-1] if lineas else ''
+            pies.append((i, int(ult)) if re.fullmatch(r'\d{1,3}', ult) else (i, None))
+    conp = [(i, v) for i, v in pies if v is not None]
+    saltos = [f'pag {a[0]}: {a[1]} -> {b[1]}'
+              for a, b in zip(conp, conp[1:]) if b[1] != a[1] + 1]
+    ok(not saltos, f'los {len(conp)} pies numerados son consecutivos'
+                   + (f' — {saltos[:5]}' if saltos else ''))
+    rep = [v for _, v in conp]
+    ok(len(rep) == len(set(rep)), 'ningun pie se repite'
+       + ('' if len(rep) == len(set(rep))
+          else f' — repetidos {sorted(v for v in set(rep) if rep.count(v) > 1)}'))
+
 # --------------------------------------------- 11. el Excel
 # El Excel es un entregable rastreado y no tenia ningun chequeo. Llego a publicar «optimo
 # global r* = 25» —lo contrario de H5—, una banda de mAP de una corrida anterior y la

@@ -151,8 +151,20 @@ def main():
     ap.add_argument('--rep-desde', type=int, default=0)
     ap.add_argument('--rep-hasta', type=int, default=None)
     ap.add_argument('--budget', type=float, default=1e9, help='segundos antes de guardar y salir')
+    # El rango de m se puede abrir para contestar una pregunta distinta: si el intervalo
+    # heredado no fuera la restriccion, adonde iria la busqueda. El maximo de Fo sin
+    # restringir esta en m ~ 0,07, fuera del rango publicado, de modo que con el piso en 0,01
+    # el optimo pasa a ser INTERIOR y la dispersion mide otra cosa.
+    ap.add_argument('--m-lo', type=float, default=None, help='piso de m (por omision, 0,30)')
+    ap.add_argument('--m-hi', type=float, default=None, help='techo de m (por omision, 2,00)')
+    ap.add_argument('--tag', default='', help='sufijo de la salida, para no pisar el barrido oficial')
     a = ap.parse_args()
     hasta = a.repeticiones - 1 if a.rep_hasta is None else a.rep_hasta
+    if a.m_lo is not None or a.m_hi is not None:
+        G.LO = np.array([1.0, a.m_lo if a.m_lo is not None else float(G.LO[1])])
+        G.HI = np.array([25.0, a.m_hi if a.m_hi is not None else float(G.HI[1])])
+    print(f'rango de busqueda: r en [{G.LO[0]:.0f}, {G.HI[0]:.0f}] · '
+          f'm en [{G.LO[1]:.2f}, {G.HI[1]:.2f}]')
 
     ESC = escenas()
     fitness, porr = hacer_fitness(a.operator, ESC)
@@ -165,7 +177,10 @@ def main():
     print(f'plan:    {len(PARTICULAS) * len(ITERACIONES)} configuraciones x '
           f'{a.repeticiones} repeticiones = {len(PARTICULAS) * len(ITERACIONES) * a.repeticiones} corridas')
 
-    EST = PSO / f'pso_repeticiones_{a.operator}_state.json'
+    # el sufijo separa las salidas: sin el, correr con otro rango descartaria el estado
+    # del barrido oficial, porque la huella incluye los limites de m
+    suf = a.operator + (f'_{a.tag}' if a.tag else '')
+    EST = PSO / f'pso_repeticiones_{suf}_state.json'
     s = json.loads(EST.read_text()) if EST.exists() else {}
     if s.get('huella') != huella:
         if s.get('filas'):
@@ -199,12 +214,13 @@ def main():
     tabla = pd.DataFrame(sorted(s['filas'].values(),
                                 key=lambda d: (d['repeticion'], d['n'], d['Tmax'])))
     tabla.insert(0, 'operador', a.operator)
-    salida = MR / f'pso_repeticiones_{a.operator}.csv'
+    salida = MR / f'pso_repeticiones_{suf}.csv'
     tabla.to_csv(salida, index=False)
 
     # --- la repeticion 0 tiene que reproducir el barrido publicado, o algo cambio
     pub = MR / f'pso_grid_search_fo_{a.operator}.csv'
-    if pub.exists() and 0 in set(tabla.repeticion):
+    rango_oficial = (abs(float(G.LO[1]) - 0.30) < 1e-9 and abs(float(G.HI[1]) - 2.00) < 1e-9)
+    if pub.exists() and 0 in set(tabla.repeticion) and rango_oficial:
         p = pd.read_csv(pub).rename(columns={'Fo_opt': 'Fo_pub', 'r_opt': 'r_pub',
                                              'm_opt': 'm_pub'})
         z = tabla[tabla.repeticion == 0].merge(p[['n', 'Tmax', 'r_pub', 'm_pub', 'Fo_pub']],

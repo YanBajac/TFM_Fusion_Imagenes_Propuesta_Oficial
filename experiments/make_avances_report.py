@@ -492,6 +492,161 @@ REP_R_FREC, REP_R_MEJOR = _r_frec, _r_mejor
 REP_FO_FREC = f"{_gr.loc[_r_frec, 'fo']:.4f}".replace(".", ",")
 REP_FO_MEJOR = f"{_gr.loc[_r_mejor, 'fo']:.4f}".replace(".", ",")
 REP_DISOCIA = (_r_frec != _r_mejor)
+# ------------------------------------------------ la errata de la ecuacion (29) del PSNR
+# Su PSNR = 10 log10((M x N)^2 / MSE) lleva el numero de pixeles al cuadrado donde va la
+# intensidad maxima al cuadrado. Esta tesis usa la definicion estandar, y eso hace que los
+# valores de Fo no sean comparables con los publicados alli: hay que declararlo donde se
+# define la aptitud, no solo en un comentario del codigo.
+import math as _math
+
+_ERR_M, _ERR_N, _ERR_MAX = 620, 450, 255.0
+ERRATA_OFFSET = f"{10 * _math.log10((_ERR_M * _ERR_N) ** 2 / _ERR_MAX ** 2):.1f}".replace(".", ",")
+ERRATA_PSNR_LO = f"{_ref.PSNR_n.min() * 100:.0f}"
+ERRATA_PSNR_HI = f"{_ref.PSNR_n.max() * 100:.0f}"
+ERRATA_SSIM = f"{_ref.SSIM_avg.median():.4f}".replace(".", ",")
+ERRATA_FO_SUYO = (f"[{_ref.Fo.min():.4f}; {_ref.Fo.max():.4f}]".replace(".", ","))
+
+# ------------------------------------------ por que sus corridas dispersan y las nuestras no
+# El termino que debia penalizar la distorsion queda inerte —recorre 0,048 contra 0,400 del
+# SSIM—, de modo que su criterio efectivo es SSIM + entropia. Los dos tienen tendencias
+# opuestas en m, y por lo tanto un maximo INTERIOR: de ahi la dispersion. En la nuestra el
+# optimo cae en el borde del intervalo y el borde actua como atractor.
+_rec = {'SSIM_avg': _ref.SSIM_avg.max() - _ref.SSIM_avg.min(),
+        'E_n': _ref.E_n.max() - _ref.E_n.min(),
+        'PSNR_n': _ref.PSNR_n.max() - _ref.PSNR_n.min()}
+_rtot = sum(_rec.values())
+REF_REC = {k: (f"{v:.4f}".replace(".", ","), f"{100 * v / _rtot:.1f}".replace(".", ","))
+           for k, v in _rec.items()}
+_fil_rec = "".join(
+    f"<tr><td class='l'>{_nom}</td><td>{REF_REC[_k][0]}</td><td>{REF_REC[_k][1]} %</td></tr>"
+    for _k, _nom in (('SSIM_avg', 'SSIM<sub>avg</sub> (fidelidad)'),
+                     ('E_n', 'E<sub>n</sub> (información)'),
+                     ('PSNR_n', 'PSNR<sub>n</sub> (distorsión)')))
+TAB_REF_RECORRIDO = ('<table class="chica"><thead><tr><th class="l">Término de su aptitud</th>'
+                     '<th>Recorrido en sus 125 corridas</th><th>Aporte a la variación</th>'
+                     '</tr></thead><tbody>' + _fil_rec + '</tbody></table>')
+
+# --------------------------------------------------- el optimo exacto, por enumeracion
+_oe = pd.read_csv(os.path.join(MR, "optimo_exacto_fo.csv"))
+_oe_pub = _oe[_oe.m >= 0.30 - 1e-9]
+_glob = _oe.loc[_oe.Fo.idxmax()]
+_mpub = _oe_pub.loc[_oe_pub.Fo.idxmax()]
+_mejor_libre = _oe.loc[_oe.groupby("r").Fo.idxmax()].sort_values("Fo", ascending=False)
+_mejor_pub = _oe_pub.loc[_oe_pub.groupby("r").Fo.idxmax()].sort_values("Fo", ascending=False)
+OE_N = f"{len(_oe):,}".replace(",", ".")
+OE_PASOS = _oe.m.nunique()
+OE_R_LIBRE, OE_M_LIBRE = int(_glob.r), f"{_glob.m:.3f}".replace(".", ",")
+OE_FO_LIBRE = f"{_glob.Fo:.4f}".replace(".", ",")
+OE_R_PUB, OE_M_PUB = int(_mpub.r), f"{_mpub.m:.2f}".replace(".", ",")
+OE_FO_PUB = f"{_mpub.Fo:.4f}".replace(".", ",")
+OE_COSTO = f"{_glob.Fo - _mpub.Fo:.4f}".replace(".", ",")
+OE_PEOR_LIBRE = int(_mejor_libre.iloc[-1].r)
+OE_FO_PEOR_LIBRE = f"{_mejor_libre.iloc[-1].Fo:.4f}".replace(".", ",")
+OE_PISO_SIEMPRE = bool((_mejor_pub.m <= 0.30 + 1e-9).all())
+_hall = (_rep.Fo_opt - _mpub.Fo).abs() < 5e-4
+OE_HALLADO = int(_hall.sum())
+OE_HALLADO_PCT = f"{100 * _hall.mean():.1f}".replace(".", ",")
+OE_SUPERAN = int((_rep.Fo_opt > _mpub.Fo + 5e-4).sum())
+# el rango de NUESTRA aptitud dentro del intervalo publicado, para el contraste de la errata
+ERRATA_FO_NUESTRO = (f"[{_oe_pub.Fo.min():.4f}; {_oe_pub.Fo.max():.4f}]".replace(".", ","))
+
+# ---------------------------- el mismo barrido con el peso libre, para contrastar los rangos
+# El barrido determinista dice donde esta el optimo; esto comprueba si la busqueda lo
+# encuentra cuando el rango no lo empuja contra la pared. Unico cambio: el piso del peso.
+_lib = pd.read_csv(os.path.join(MR, "pso_repeticiones_propuesta_libre.csv"))
+LIB_N = f"{len(_lib):,}".replace(",", ".")
+LIB_REPS = _lib.repeticion.nunique()
+LIB_PISO = f"{_lib.m_opt.min():.2f}".replace(".", ",")
+_lp = (_lib.m_opt - _lib.m_opt.min()).abs() < 5e-4
+LIB_PISO_N = int(_lp.sum())
+LIB_PISO_PCT = f"{100 * _lp.mean():.1f}".replace(".", ",")
+LIB_M_MED = f"{_lib.m_opt.median():.4f}".replace(".", ",")
+LIB_R25_PCT = f"{100 * (_lib.r_opt == 25).mean():.1f}".replace(".", ",")
+LIB_R1_PCT = f"{100 * (_lib.r_opt == 1).mean():.1f}".replace(".", ",")
+_lib_hall = (_lib.Fo_opt - _glob.Fo).abs() < 5e-4
+# el contraste tiene que ser cierto para que el parrafo se sostenga
+assert (_lib.r_opt == 25).mean() > (_rep.r_opt == 25).mean(), \
+    "con el peso libre la busqueda ya no se concentra mas en r = 25: revisar el parrafo"
+_FILAS_DOS = [
+    ("Piso del peso m", "0,30 (rango publicado)", f"{LIB_PISO} (libre)"),
+    ("Mediana de m*", f"{_rep.m_opt.median():.4f}".replace(".", ","), LIB_M_MED),
+    ("Corridas en el piso del peso", f"{REP_PISO_PCT} %", f"{LIB_PISO_PCT} %"),
+    ("Corridas con r* = 25", f"{REP_R25_PCT} %", f"{LIB_R25_PCT} %"),
+    ("Corridas con r* = 1", f"{REP_R1_PCT} %", f"{LIB_R1_PCT} %"),
+    ("Radios distintos hallados", f"{_rep.r_opt.nunique()} de 25", f"{_lib.r_opt.nunique()} de 25"),
+    ("Que alcanzan su propio óptimo", f"{OE_HALLADO_PCT} %",
+     f"{100 * _lib_hall.mean():.1f}".replace(".", ",") + " %"),
+    ("F<sub>o</sub> máxima alcanzada", f"{_rep.Fo_opt.max():.4f}".replace(".", ","),
+     f"{_lib.Fo_opt.max():.4f}".replace(".", ",")),
+]
+TAB_DOS_RANGOS = ('<table class="chica"><thead><tr><th class="l">Criterio</th>'
+                  '<th>m &isin; [0,30; 2,00]</th><th>m libre</th></tr></thead><tbody>'
+                  + "".join(f"<tr><td class='l'>{a}</td><td>{b}</td><td>{c}</td></tr>"
+                            for a, b, c in _FILAS_DOS) + '</tbody></table>')
+
+
+# --------------------------------- las 500 corridas, una por una, en una sola matriz
+# El trabajo de referencia publica sus 125 corridas en anexos; este publica las 500 en una
+# matriz de 25 configuraciones x 20 repeticiones, de modo que cada celda es una corrida y el
+# lector puede contarlas. Se muestra el radio hallado, que es lo que varia; el peso es 0,30
+# en todas menos una, que se identifica al pie.
+def _matriz_corridas(tab, campo, fmt=lambda v: f'{int(v)}'):
+    reps = sorted(tab.repeticion.unique())
+    piv = tab.pivot_table(index=['n', 'Tmax'], columns='repeticion', values=campo,
+                          aggfunc='first')
+    cab = ('<tr><th>n</th><th>T</th>'
+           + "".join(f'<th>{r + 1}</th>' for r in reps) + '</tr>')
+    filas = ""
+    for (n_, t_), fila in piv.iterrows():
+        celdas = "".join(f'<td>{fmt(fila[r])}</td>' for r in reps)
+        filas += f'<tr><td>{int(n_)}</td><td>{int(t_)}</td>{celdas}</tr>'
+    return (f'<table class="anexo"><thead>{cab}</thead><tbody>{filas}</tbody></table>')
+
+
+TAB_500_RADIO = _matriz_corridas(_rep, 'r_opt')
+_fuera_piso = _rep[(_rep.m_opt - 0.30).abs() >= 5e-4]
+CORRIDAS_EXCEPCION = ("; ".join(
+    f"repetición {int(r.repeticion) + 1}, n = {int(r.n)}, T = {int(r.Tmax)} "
+    f"(m* = {r.m_opt:.4f}".replace(".", ",") + ")"
+    for r in _fuera_piso.itertuples()) or "ninguna")
+CORRIDAS_TOTAL = f"{len(_rep):,}".replace(",", ".")
+CORRIDAS_EVALS = f"{int(_rep.evaluaciones.sum()):,}".replace(",", ".")
+CORRIDAS_HORAS = f"{_rep.segundos.sum() / 3600:.2f}".replace(".", ",")
+_fil_oe = "".join(
+    f"<tr><td>{int(_r.r)}</td>"
+    + f"<td>{_mejor_libre[_mejor_libre.r == _r.r].m.iloc[0]:.2f}".replace(".", ",") + "</td>"
+    + f"<td>{_mejor_libre[_mejor_libre.r == _r.r].Fo.iloc[0]:.4f}".replace(".", ",") + "</td>"
+    + f"<td>{_mejor_pub[_mejor_pub.r == _r.r].Fo.iloc[0]:.4f}".replace(".", ",") + "</td></tr>"
+    for _r in _mejor_libre.head(4).itertuples())
+_fil_oe += "<tr><td colspan='4'>…</td></tr>"
+_fil_oe += "".join(
+    f"<tr><td>{int(_r.r)}</td>"
+    + f"<td>{_mejor_libre[_mejor_libre.r == _r.r].m.iloc[0]:.2f}".replace(".", ",") + "</td>"
+    + f"<td>{_mejor_libre[_mejor_libre.r == _r.r].Fo.iloc[0]:.4f}".replace(".", ",") + "</td>"
+    + f"<td>{_mejor_pub[_mejor_pub.r == _r.r].Fo.iloc[0]:.4f}".replace(".", ",") + "</td></tr>"
+    for _r in _mejor_libre.tail(3).itertuples())
+TAB_OPTIMO_EXACTO = ('<table class="chica"><thead><tr><th>Radio r</th>'
+                     '<th>Mejor m sin restringir</th><th>F<sub>o</sub> con m libre</th>'
+                     '<th>F<sub>o</sub> con m &isin; [0,30; 2,00]</th>'
+                     '</tr></thead><tbody>' + _fil_oe + '</tbody></table>')
+
+# la dispersion por configuracion de las 500 corridas, para mostrarlas en el informe
+_disp = _rep.groupby(["n", "Tmax"]).agg(
+    med=("Fo_opt", "mean"), mn=("Fo_opt", "min"), mx=("Fo_opt", "max"),
+    r1=("r_opt", lambda s: 100 * (s == 1).mean()),
+    piso=("m_opt", lambda s: 100 * ((s - 0.30).abs() < 5e-4).mean())).reset_index()
+_fil_disp = "".join(
+    f"<tr><td>{int(_r.n)}</td><td>{int(_r.Tmax)}</td>"
+    + f"<td>{_r.med:.4f}".replace(".", ",") + "</td>"
+    + f"<td>{_r.mn:.4f}".replace(".", ",") + "</td>"
+    + f"<td>{_r.mx:.4f}".replace(".", ",") + "</td>"
+    + f"<td>{_r.r1:.0f} %</td><td>{_r.piso:.0f} %</td></tr>"
+    for _r in _disp.itertuples())
+TAB_DISPERSION = ('<table class="chica"><thead><tr><th>Partículas</th><th>Iteraciones</th>'
+                  '<th>F<sub>o</sub> media</th><th>F<sub>o</sub> mínima</th>'
+                  '<th>F<sub>o</sub> máxima</th><th>Con r* = 1</th><th>Con m* = 0,30</th>'
+                  '</tr></thead><tbody>' + _fil_disp + '</tbody></table>')
+
 _bm = _rep.groupby(["n", "Tmax"]).Fo_opt.mean()
 REP_BANDA = f"{_bm.max() - _bm.min():.4f}".replace(".", ",")
 # El veredicto sobre el peso se DERIVA del dato en lugar de estar escrito: si algun dia
@@ -1351,6 +1506,17 @@ H.append(f"""
   informativo (entropía normalizada E<sub>n</sub>) y la reducción de la distorsión (PSNR
   normalizado), sin pesos arbitrarios:</p>
   {formula("pso_fit", 16)}
+  <p class="lectura"><b>Una precisión de implementación que conviene declarar.</b> La ecuación (29) del
+  trabajo de referencia define el PSNR como 10·log<sub>10</sub>((M × N)² / MSE), con el <b>número de
+  píxeles</b> al cuadrado en el numerador, donde la definición estándar lleva la <b>intensidad
+  máxima</b> al cuadrado. Para una imagen de 620 × 450 eso desplaza el resultado en
+  {ERRATA_OFFSET} dB, y explica que los valores publicados en sus anexos vayan de
+  {ERRATA_PSNR_LO} a {ERRATA_PSNR_HI} dB —cifras incompatibles con una fusión, porque implicarían que
+  la imagen fusionada es casi idéntica a las dos fuentes a la vez, mientras su propio SSIM<sub>avg</sub>
+  mediano es {ERRATA_SSIM}—. Esta tesis usa la <b>definición estándar</b>,
+  10·log<sub>10</sub>(MAX²/MSE), de modo que sus valores de F<sub>o</sub> no son directamente
+  comparables con los publicados allí: los de este informe se mueven en
+  {ERRATA_FO_NUESTRO} y los suyos en {ERRATA_FO_SUYO}. La diferencia está enteramente en ese término.</p>
   <p>Para elegir la configuración del enjambre se replicó el diseño experimental de Ortega y
   Espinoza (2025): se evaluaron sistemáticamente combinaciones con número de partículas variando de
   2 a 10 en incrementos de 2 y número de iteraciones de 10 a 50 en incrementos de 10, es decir,
@@ -1534,6 +1700,169 @@ H.append(f"""
 
 H.append(f"""
 <div class="page">
+  <h2>5. Optimización por PSO (continuación): las {REP_N} corridas, una por una</h2>
+  <p>La tabla siguiente abre el estudio de estabilidad por configuración, que es lo que permite ver
+  de dónde viene la dispersión. Cada fila resume las {REP_REPS} repeticiones de una celda del
+  barrido.</p>
+  <p><b>Tabla 3b.</b> Dispersión de las {REP_N} corridas por configuración de enjambre.</p>
+  {TAB_DISPERSION}
+  <p class="lectura">Lectura: la aptitud mínima y la máxima de casi todas las filas son las mismas
+  —{OE_FO_PUB} y el valor de r = 25—, porque la búsqueda termina en uno de los dos bordes del
+  intervalo del radio. La excepción es la primera fila, la configuración con menos evaluaciones, que
+  es también la única que no llega al piso del peso en el 100 % de sus repeticiones. La columna del
+  radio confirma lo que la tabla anterior resume: la proporción que termina en r = 1 no sigue
+  ninguna tendencia con el número de partículas ni con las iteraciones.</p>
+  {pie(14)}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>5. Optimización por PSO (continuación): el óptimo exacto, por enumeración</h2>
+  <p>La pregunta de si más corridas mejorarían el resultado no se contesta con más corridas. La
+  aptitud es <b>determinista</b> y el radio es <b>entero</b>: el operador lo redondea al intervalo
+  [1, 25], de modo que el espacio de búsqueda tiene veinticinco valores en una dimensión y un
+  continuo suave en la otra. Se puede entonces dejar de muestrear y <b>enumerarlo</b>:
+  {OE_N} evaluaciones —los 25 radios por {OE_PASOS} pesos— dan el máximo sin azar, a una fracción
+  del costo de mil corridas de enjambre.</p>
+
+  <p><b>Tabla 3c.</b> Mejor peso y mejor aptitud por radio, con el peso libre y con el peso
+  restringido al rango publicado (primeros y últimos radios del orden).</p>
+  {TAB_OPTIMO_EXACTO}
+
+  <p class="lectura">Y el resultado corrige el enunciado de H5 en un punto importante. <b>Con el
+  peso restringido</b> al rango publicado, el máximo está en r = {OE_R_PUB} con
+  F<sub>o</sub> = {OE_FO_PUB}. <b>Con el peso libre</b>, el máximo está en
+  r = {OE_R_LIBRE} —el radio que esta tesis adopta— con m = {OE_M_LIBRE} y
+  F<sub>o</sub> = {OE_FO_LIBRE}; el rango heredado cuesta {OE_COSTO} de aptitud. Y el orden de los
+  radios <b>se invierte</b>: con el peso libre la aptitud decrece al bajar el radio y r =
+  {OE_PEOR_LIBRE} pasa a ser el peor ({OE_FO_PEOR_LIBRE}). El mecanismo es directo: con un peso alto
+  un radio grande inyecta demasiado detalle y la similitud estructural se derrumba, de modo que gana
+  el radio chico; en el óptimo verdadero del peso la inyección es pequeña y el radio grande aporta
+  estructura sin costo de fidelidad.</p>
+
+  <p><b>De modo que la discrepancia no está en el radio, sino en el peso.</b> El
+  r = 25 adoptado <b>es</b> el óptimo de la aptitud del trabajo de referencia una vez que el peso no
+  está atado al piso de un intervalo calibrado para otro operador: el «argmax es r = 1» que se
+  observa dentro del rango publicado es un artefacto de esa restricción, y no un desacuerdo entre la
+  aptitud y la batería de evaluación. Lo que sí queda en desacuerdo es el peso, y ahí la
+  equivalencia de energía cierra el cuadro: el óptimo libre m = {OE_M_LIBRE} equivale a
+  m = {f"{float(OE_M_LIBRE.replace(',', '.')) * GANANCIA:.3f}".replace(".", ",")} sobre un disco
+  único, esencialmente el piso 0,30 que la referencia publicó <b>para su disco</b>. El intervalo
+  estaba calibrado para un operador con {f"{GANANCIA:.2f}".replace(".", ",")} veces menos energía de
+  detalle.</p>
+
+  <p class="lectura">Dos consecuencias sobre el estudio de estabilidad. El PSO encontró este óptimo
+  en <b>{OE_HALLADO} de las {REP_N} corridas</b> ({OE_HALLADO_PCT} %) y
+  <b>{"ninguna lo superó" if OE_SUPERAN == 0 else f"{OE_SUPERAN} lo superaron"}</b>: más corridas no
+  pueden mejorarlo, porque el máximo ya está alcanzado. Y el argumento de monotonía del peso, que
+  hasta aquí estaba medido con r = 25, se verifica ahora en <b>los veinticinco radios</b>: el mejor
+  peso dentro del rango publicado es el piso {"en todos" if OE_PISO_SIEMPRE else "en algunos"}.</p>
+  {pie(15)}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>5. Optimización por PSO (continuación): por qué el barrido de la referencia dispersa</h2>
+  <p>Queda una asimetría por explicar, y explicarla cambia su lectura. El barrido de la referencia
+  devuelve pesos muy distintos entre corridas —mediana {REF_M_MED} y recorrido
+  [{REF_M_MIN}; {REF_M_MAX}] sobre sus {REF_N} corridas— mientras el de esta tesis devuelve
+  {REP_PISO} veces el mismo valor de {REP_N}. Parece una diferencia de calidad de la búsqueda y no lo
+  es: es una diferencia en la <b>forma de la superficie</b>, y su causa se puede medir en sus propios
+  anexos.</p>
+
+  <p><b>Tabla 3d.</b> Recorrido de cada término de la aptitud en las {REF_N} corridas publicadas por
+  el trabajo de referencia.</p>
+  {TAB_REF_RECORRIDO}
+
+  <p class="lectura">El término que debía penalizar la distorsión aporta el
+  {REF_REC['PSNR_n'][1]} % de la variación: con el desplazamiento de la ecuación (29) su PSNR
+  normalizado queda entre 0,94 y 0,99, casi saturado, y suma una constante a cada evaluación sin
+  discriminar entre candidatos. Su criterio efectivo es entonces <b>SSIM + entropía</b>, y esos dos
+  términos tienen tendencias <b>opuestas</b> en el peso: la similitud estructural cae al aumentar el
+  realce y la entropía sube. Dos tendencias opuestas dan un máximo <b>interior</b>, y un máximo
+  interior sobre una superficie plana significa que cada corrida, con presupuesto finito, se detiene
+  en un punto distinto de su vecindad. De ahí la dispersión.</p>
+
+  <p>En esta tesis, con la definición estándar del PSNR, ese término vale alrededor de 0,17 y sí
+  varía, de modo que la similitud estructural domina la variación y la superficie resulta
+  <b>monótona</b> en el peso: el óptimo cae en el borde del intervalo, y el borde actúa como
+  atractor porque el recorte devuelve todas las partículas al mismo valor. <b>La estabilidad de este
+  barrido no es, por tanto, una virtud del método: es el síntoma de un óptimo contra la pared.</b> Y
+  la dispersión del suyo no es un defecto de su búsqueda: es el comportamiento esperable cuando el
+  óptimo es genuinamente interior, que es el caso más difícil. A esto se suma una diferencia de
+  diseño que amplifica el contraste: la referencia optimiza <b>por escena</b>, con una corrida
+  independiente para cada una, mientras este trabajo promedia la aptitud sobre tres escenas, lo que
+  suaviza la superficie y hace que un solo óptimo domine.</p>
+  {pie(16)}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>5. Optimización por PSO (continuación): el mismo barrido con el peso libre</h2>
+  <p>El barrido determinista dice <i>dónde</i> está el óptimo; queda comprobar si la búsqueda lo
+  <i>encuentra</i> cuando el rango no lo empuja contra la pared. Se repitió por tanto el estudio
+  completo —{LIB_REPS} repeticiones de las 25 configuraciones, {LIB_N} corridas— con el único cambio
+  de bajar el piso del peso de 0,30 a {LIB_PISO}. Todo lo demás es idéntico: mismas escenas, mismas
+  semillas, mismo operador.</p>
+
+  <p><b>Tabla 3e.</b> El mismo barrido bajo los dos rangos de búsqueda.</p>
+  {TAB_DOS_RANGOS}
+
+  <p class="lectura">Lectura, y es la confirmación del apartado anterior. <b>El peso</b>: con el rango
+  libre la búsqueda ya no se pega a un borde sino que converge al óptimo interior, con mediana
+  {LIB_M_MED} frente al {OE_M_LIBRE} que la enumeración señala como exacto. No es perfecta:
+  {LIB_PISO_N} corridas ({LIB_PISO_PCT} %) quedan atascadas en el piso nuevo, de modo que un óptimo
+  interior es efectivamente más difícil de alcanzar que un borde. <b>El radio</b>: y acá está el
+  dato que importa. Con el peso libre la búsqueda se concentra en <b>r = 25 en el
+  {LIB_R25_PCT} %</b> de las corridas, contra el {REP_R25_PCT} % del rango publicado, y r = 1 cae del
+  {REP_R1_PCT} % al {LIB_R1_PCT} %. <b>La indefinición del radio era, también, un artefacto del
+  rango.</b></p>
+
+  <p>De modo que el cuadro completo de H5 es el siguiente. El radio r = 25 que esta tesis adopta es
+  el óptimo exacto de la aptitud con el peso libre, y es además la respuesta modal de la búsqueda en
+  esas condiciones: no es una decisión que haya que defender contra la optimización, sino la que la
+  optimización elige cuando no está restringida por un intervalo ajeno. Lo que el intervalo heredado
+  determina es el <b>peso</b>, y lo determina por completo: fija m = 0,30 en el
+  {REP_PISO_PCT} % de las corridas cuando el óptimo real de la aptitud está cuatro veces más abajo.
+  El aporte de la tesis en este punto no es entonces que el PSO falle, sino que <b>el rango de
+  búsqueda heredado, y no el optimizador, es lo que fija uno de los dos hiperparámetros</b>. Es una
+  afirmación sobre el protocolo, y ahora está medida en las dos direcciones.</p>
+  {pie(17)}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>5. Optimización por PSO (continuación): el registro de las {CORRIDAS_TOTAL} corridas</h2>
+  <p>El trabajo de referencia publica sus 125 corridas en anexos, una por fila. Este publica las
+  {CORRIDAS_TOTAL} en la matriz siguiente: <b>cada celda es una corrida</b>, las filas son las 25
+  configuraciones de enjambre y las columnas las {REP_REPS} repeticiones independientes de cada una.
+  El valor de la celda es el <b>radio</b> que esa corrida devolvió, que es lo que varía; el peso
+  resultó m* = 0,30 en todas menos {"una" if len(_fuera_piso) == 1 else str(len(_fuera_piso))}, que se
+  identifica al pie. El total son {CORRIDAS_EVALS} evaluaciones de aptitud y {CORRIDAS_HORAS} horas de
+  cálculo.</p>
+
+  <p><b>Tabla 3f.</b> Radio óptimo devuelto por cada una de las {CORRIDAS_TOTAL} corridas. Filas:
+  partículas (n) e iteraciones (T). Columnas: número de repetición.</p>
+  {TAB_500_RADIO}
+
+  <p class="lectura">La matriz hace visible de un vistazo lo que las tablas anteriores resumen: las
+  celdas alternan entre 1 y 25 sin patrón por fila ni por columna —ni el número de partículas ni el
+  de iteraciones concentran un valor— y los radios intermedios aparecen de forma aislada. La
+  repetición 1 es la que conserva las semillas del barrido publicado, y su columna reproduce ese
+  barrido celda por celda, lo que permite verificar que el estudio no cambió nada más que la semilla.
+  Excepción en el peso: {CORRIDAS_EXCEPCION}. El registro completo, con el peso, la aptitud y el
+  tiempo de cada corrida, está en <i>pso_repeticiones_propuesta.csv</i>; el del barrido con el peso
+  libre, en <i>pso_repeticiones_propuesta_libre.csv</i>.</p>
+  {pie(18)}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
   <h2>6. Métodos comparativos del benchmark</h2>
   <p>La propuesta se contrasta con cinco configuraciones de referencia del estado del arte en fusión de
   imágenes visibles e infrarrojas, más la metodología clásica de la transformada Top-Hat:</p>
@@ -1564,7 +1893,7 @@ H.append(f"""
   {formula("th_clasico", 17)}
   <p>Todos los métodos se ejecutan sobre los mismos {N_ESC} pares, con la misma implementación de métricas
   (<i>src/metrics/evaluators.py</i>), de modo que la comparación es directa.</p>
-  {pie(14)}
+  {pie(19)}
 </div>
 """)
 
@@ -1600,7 +1929,7 @@ H.append(f"""
   segundo puesto entre ocho entradas con σ &ge; 0,10, por delante de los seis métodos comparativos, y
   cuyo rango mejora de forma monótona al aumentar la varianza. Los resultados de las secciones
   siguientes deben leerse con ese alcance.</p>
-  {pie(15)}
+  {pie(20)}
 </div>
 """)
 
@@ -1612,7 +1941,7 @@ H.append(f"""
   {tabla_metodos(ORDEN, resaltar=PROP)}
   <p class="lectura">{LECTURA_BENCH}</p>
   {figura(charts["quality"], "Cuatro métricas representativas (EN, FE, SF, SSIM); la barra azul es la propuesta.", 96)}
-  {pie(16)}
+  {pie(21)}
 </div>
 """)
 
@@ -1644,7 +1973,7 @@ for _b, _imgs in enumerate(_bloques, 1):
   <p><b>Tabla 4{chr(96 + _b)}.</b> Resultados por par — pares {(_b - 1) * 4 + 1} a
   {(_b - 1) * 4 + len(_imgs)} de {N_ESC}.</p>
   {tabla_por_imagen(_imgs)}{_lect}
-  {pie(16 + _b)}
+  {pie(21 + _b)}
 </div>
 """)
 
@@ -1655,7 +1984,7 @@ H.append(f"""
   {formula("friedman", 23)}
   <p><b>Tabla 5.</b> Resultados del test de Friedman.</p>
   {tabla_friedman()}
-  {pie(22)}
+  {pie(27)}
 </div>
 <div class="page">
   <h2>9. Análisis estadístico (continuación): Wilcoxon y ranking</h2>
@@ -1669,11 +1998,11 @@ H.append(f"""
   peor en {w_peor} y sin diferencia en {w_emp}; su ventaja más consistente es en las
   métricas de actividad e información (EN, FE, MG, SF), mejor que los cinco métodos del estado del arte.</p>
   {figura(charts["ranking"], "Ranking promedio global de los 7 métodos (9 métricas, dirección respetada); la barra azul es la propuesta.", 78)}
-  {pie(23)}
+  {pie(28)}
 </div>
 """)
 
-pg = 24
+pg = 29
 H.append(f"""
 <div class="page">
   <h2>10. Robustez del resultado: ajuste simétrico y ablación del operador</h2>
