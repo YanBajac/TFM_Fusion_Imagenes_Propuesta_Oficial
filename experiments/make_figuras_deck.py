@@ -157,8 +157,16 @@ def pso():
     ax.set_xticklabels([f"T={t}" for t in ts], fontsize=11)
     ax.set_yticks(range(len(ns)))
     ax.set_yticklabels([f"n={n}" for n in ns], fontsize=11)
-    ax.set_title("Barrido PSO (rango publicado): todas convergen a m* = 0,30",
-                 fontsize=13)
+    # El titulo dice «una semilla por celda» porque eso es lo que la matriz muestra. Antes decia
+    # «todas convergen a m* = 0,30»: cierto de estas 25 celdas (lo garantiza el assert de arriba),
+    # pero leido al lado del estudio de estabilidad —donde el piso se alcanza en 499 de 500
+    # corridas— sonaba a una propiedad universal del optimizador, que no es.
+    # Dos lineas porque en una sola el titulo se corta al ancho de 961 px: por encima de unos 57
+    # caracteres a este tamano, matplotlib lo recorta sin avisar (se vio en el render del deck).
+    # La segunda linea declara ademas que el resaltado marca r* = 1, que antes no se decia en
+    # ninguna parte de la figura.
+    ax.set_title("Barrido PSO (rango publicado): una semilla por celda\n"
+                 "m* = 0,30 en las 25; resaltado, r* = 1", fontsize=11.5)
     ax.grid(False)
     for lado in ax.spines.values():
         lado.set_visible(False)

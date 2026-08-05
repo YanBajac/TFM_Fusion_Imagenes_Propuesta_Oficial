@@ -1,4 +1,4 @@
-# Estado y pendientes — 4 de agosto de 2026
+# Estado y pendientes — 5 de agosto de 2026
 
 Punto de retomada. Todo lo que sigue está verificado; lo que no, está marcado como tal.
 
@@ -17,7 +17,7 @@ Tres verificadores, todos en 0 fallos al cierre:
 
 | Script | Qué comprueba |
 |---|---|
-| `verificar_entregables.py` | los cuatro entregables contra los CSV: medias, ranking, detección, afirmaciones retiradas, coherencia entre documentos, **quince** figuras embebidas por md5, montajes, paginación, el texto del deck que el PDF recorta y el texto que queda **debajo** de una figura |
+| `verificar_entregables.py` | los cuatro entregables contra los CSV: medias, ranking, detección, afirmaciones retiradas, coherencia entre documentos, **quince** figuras embebidas por md5, montajes, paginación, el texto del deck que el PDF recorta, el texto que queda **debajo** de una figura, las páginas del informe que **derraman** su contenido, las formulaciones retiradas del barrido PSO **leyendo también las notas del orador** y el cruce de **toda cita contra la bibliografía** |
 | `verificar_libro.py` | el libro en detalle: cifras retiradas, medias, rangos, detección, sección 5.8, **las 79 entradas del índice** y las cinco figuras embebidas |
 | `triar_hallazgos.py` | reparte los 106 hallazgos de la reverificación en YA_APLICADO / A_LEER / PENDIENTE; acepta `--gravedad` y `--doc` |
 
@@ -29,6 +29,21 @@ LibreOffice:
 "C:\Program Files\LibreOffice\program\soffice.exe" --headless --convert-to pdf --outdir docs docs\Tesis_Borrador_V3.docx
 ```
 
+El deck se edita con **python-pptx** y su PDF sale por el mismo camino:
+
+```
+"C:\Program Files\LibreOffice\program\soffice.exe" --headless --convert-to pdf --outdir docs docs\Tesis_Defensa_Presentacion.pptx
+```
+
+**LibreOffice es el renderizador con que se produjeron los dos PDF commiteados**: se comprobó el
+5 de agosto reconvirtiendo las versiones de `HEAD` y comparándolas contra los PDF del repo —74 y
+23 páginas, 0 páginas con texto distinto y huellas de píxeles idénticas—. O sea que recompilar no
+repagina nada. Conviene repetir esa comprobación antes de recompilar si alguien edita en Word.
+
+Si se cambia una figura **incrustada** en el deck, regenerarla en `docs/figures` no alcanza: hay
+que reescribir la parte de imagen del paquete. `sh.image` es un envoltorio y asignarle `_blob` no
+persiste; la parte real es `sh.part.related_part(sh._element.blip_rId)`.
+
 **Al terminar hay que revisar el índice**: es texto fijo, no un campo de Word, y un párrafo
 más largo mueve un salto de página y lo desfasa en silencio. Pasó dos veces el 4 de agosto
 —§5.4 de la 49 a la 50 y §6.2 de la 65 a la 66— y las dos las cazó el bloque 8 de
@@ -36,12 +51,14 @@ más largo mueve un salto de página y lo desfasa en silencio. Pasó dos veces e
 
 ## Estado de los entregables
 
+Medido el 5 de agosto sobre los archivos compilados, no copiado de la versión anterior:
+
 | | | |
 |---|---|---|
-| Libro | 73 pág. | 36 referencias auditadas, sección 5.8 de auditoría del protocolo |
-| Deck | 22 láminas + reserva | |
-| Avances | 60 pág. | |
-| README | 563 líneas | |
+| Libro | 74 pág. | **38** referencias auditadas, sección 5.8 de auditoría del protocolo |
+| Deck | 22 láminas + reserva (23 pág. de PDF) | |
+| Avances | 77 pág. | cero derrames de página; la portada es la única sin pie |
+| README | 572 líneas | |
 
 ## Cerrado el 3 de agosto (sesión de la tarde) — el deck
 
@@ -146,6 +163,73 @@ problema —para cada imagen embebida, buscar su gemela por md5 en `docs/figures
 imágenes «solas» en el libro y seis en el deck: son logos, la portada y las ecuaciones
 renderizadas, **pero conviene mirarlas una vez** antes de darlas por buenas.
 
+## Cerrado el 5 de agosto — el deck contra el estudio de estabilidad, y las citas huérfanas
+
+Dos pedidos que parecían chicos y destaparon el triple. El relevamiento previo —en lugar de
+editar directo las dos láminas conocidas— es lo que los encontró.
+
+### El deck todavía argumentaba con el barrido de una sola semilla
+
+El deck decía que el PSO devuelve `r = 1` «en 16 de las 25 configuraciones». Ese reparto sale
+del barrido publicado, que corre **una semilla por celda**. Con 20 repeticiones por celda el
+reparto se da vuelta: `r = 25` en el **51,4 %** de las 500 corridas y `r = 1` en el **45,6 %**.
+Y la cuenta vieja además nunca cerró: 16 + 8 = 24, no 25 — la celda que falta (2 partículas ×
+10 iteraciones) devuelve `r = 14` con Fo = 1,6990. Ese hueco existía desde antes del estudio.
+
+Lo que caduca es la **frecuencia**, no el **argmax**: que `r = 1` maximice Fo dentro del rango
+publicado sigue siendo cierto y es lo que sostiene H5. Con 228 contra 257 el argmax del PSO es
+indistinguible entre los dos bordes, y eso **refuerza** H5: la búsqueda no fija el radio.
+
+Seis lugares corregidos, no dos: cuerpo de las láminas 9, 19 y 20, la línea de contexto de la 9
+y las notas del orador de la 9 y la 19.
+
+- **La nota de la lámina 19 estaba literalmente invertida**: decía «la búsqueda devuelve
+  `r = 1`», y lo que la búsqueda devuelve más seguido es `r = 25`.
+- **La nota de la lámina 9 contradecía al informe.** Afirmaba que el óptimo `r = 25, m ≈ 0,07`
+  es de la aptitud paralela `F_apt` y **no** de `F_o`. Es falso: en
+  `optimo_exacto_fo.csv` el máximo global de Fo está exactamente ahí (1,771465), y la página 16
+  del informe ya lo dice. `r = 1` es el argmax de Fo **restringido** a `m ≥ 0,30`. Las dos
+  aptitudes pican en `m ≈ 0,0703` (`curva_aptitud_vs_m.csv`). Era texto anterior a que se
+  corriera la enumeración exacta.
+- **El título de la figura incrustada** decía «todas convergen a m\* = 0,30». Cierto de esas 25
+  celdas, pero al lado de las 500 corridas sonaba a propiedad del optimizador. Ahora dice «una
+  semilla por celda» y declara que el resaltado marca `r* = 1`, que antes no se decía.
+- **Encuadre**: el párrafo de la lámina 9 desbordaba la caja al crecer, y el `%` con espacio
+  normal quedaba huérfano al principio del renglón. 17 porcentajes pasaron a espacio duro.
+
+### Cuatro citas sin entrada en la bibliografía, no dos
+
+- **Redmon et al. (2016)** y **Jocher et al. (2023)**, citados en la sección 12 del informe.
+  Agregados al capítulo 7, que pasa de 36 a **38 entradas**. La de Jocher cita la versión 8.0.0
+  —la que los autores publican— y el informe declara aparte la 8.4.68 con la que se corrió; la
+  sección 12 ahora lo aclara para que no se lean como contradicción.
+- **Bai et al. (2015)** y **Wang et al. (2017)** en el párrafo 235 del libro: residuo de la
+  auditoría, que corrigió esas entradas a **2012** y **2014** por DOI sin propagarlo al cuerpo.
+  **No se arreglan cambiando el año**: la oración decía «Trabajos posteriores, como los de…»
+  justo después de citar a Bai (2013), y 2012 es *anterior* a 2013. Se reescribió describiendo
+  cada trabajo por lo que es —el de 2012 es de realce, no de fusión; el de 2014 usa
+  representaciones dispersas, no Top-Hat— y conservando el argumento del hueco.
+- **Toet (2014)** en la lámina 10 del deck, el dataset TNO. La entrada correcta es Toet (2017).
+  El año 2014 ya estaba en `RETIRADAS`, pero como la cadena lleva la inicial
+  (`Toet, A. (2014)`), la forma corta del deck sobrevivía. Lo encontró el chequeo nuevo.
+
+### Dos chequeos nuevos
+
+| Dónde | Qué comprueba | Discriminación comprobada |
+|---|---|---|
+| `verificar_entregables.py` bloque 12 | las formulaciones retiradas del barrido, con regex cruda y **leyendo el pptx** | los 4 patrones marcan el pptx viejo → 0 en el nuevo. **Dos dan 0 en el PDF**: viven sólo en las notas del orador |
+| `verificar_entregables.py` bloque 13 | toda cita en texto tiene entrada en la bibliografía | 5 huérfanas en la versión vieja (2 libro, 2 informe, 1 deck) → 0 ahora |
+
+El bloque 12 va con regex cruda porque `afirmada()` **no** podía verlo: el «no r = 25» que
+precede a «que aparece en 8» cae en su ventana de 90 caracteres y la negación lo anulaba, o sea
+falso negativo garantizado. Y el bloque 13 no existía en ninguna forma: `verificar_bibliografia.py`
+valida el sentido inverso —que lo listado exista en Crossref—, nunca que lo citado esté listado.
+
+Un patrón se probó y **se descartó a propósito**: vigilar «las 25 configuraciones convergen al
+mismo peso» marcaba tres afirmaciones **legítimas** —libro, informe y README— donde la frase
+habla de las 25 celdas del barrido publicado, y eso es verdad. En el deck se reescribió por
+precisión, no por error. Un chequeo así forzaría a reescribir texto correcto.
+
 ## Pendientes, por prioridad
 
 ### 1. Los quince hallazgos `A_LEER`
@@ -193,6 +277,28 @@ poner el resultado medido, o retirar la afirmación.
 Las otras 34 entradas están verificadas. El informe está en
 `docs/Auditoria_Bibliografia.md`.
 
+**`docs/fuentes/entradas.json` quedó desfasado, y por eso `verificar_bibliografia.py` grita en
+falso.** Ese script no lee el `.docx`: lee ese JSON, que es una instantánea congelada del 2 de
+agosto con **33** entradas y los datos **previos** a las correcciones de la auditoría. Todavía
+dice Bai 2015, Mukhopadhyay 2001, Toet 2014 y Wang 2017 —los cuatro ya corregidos en el libro, y
+Crossref le da la razón al libro—, le faltan Kingsbury (2001), Bajac Figueredo et al. (2024) y
+Flores et al. (s. f.), y ahora también Redmon y Jocher. De sus «10 con defectos», cuatro son el
+JSON viejo y no el libro.
+
+Trampa al sincronizarlo: `LIBROS = {8, 21, 24}` y `SIN_DOI = {18}` son índices **posicionales**
+1-based sobre ese JSON. Insertar entradas en orden alfabético los corre y los rompe en silencio.
+Hay que pasarlos a clave apellido+año antes de agregar nada.
+
+No se tocó en esta sesión a propósito: sincronizarlo implica revalidar contra Crossref (tarda
+minutos y necesita red), y el cruce citas-contra-bibliografía que hacía falta ya quedó cubierto
+por el bloque 13 de `verificar_entregables.py`, que toma como autoridad **el listado impreso del
+propio libro** en lugar del snapshot. Queda como decisión: sincronizar el JSON, o retirarlo y
+hacer que `verificar_bibliografia.py` lea el `.docx`.
+
+`docs/Auditoria_Bibliografia.md` afirma en su §1 que «el cruce en ambas direcciones no encontró
+citas huérfanas ni entradas sin citar». **Eso dejó de ser cierto por sus propias correcciones**:
+había cinco. Conviene corregir esa frase del informe de auditoría.
+
 ### 4. Decisiones del autor
 
 - **`docs/_local` (44 MB)**: diez instantáneas fechadas del libro, un `BACKUP_actual` y
@@ -202,9 +308,12 @@ Las otras 34 entradas están verificadas. El informe está en
   todos y hay 21 más verificados, pero completarlos depende del reglamento de la UCOM,
   que sigue siendo el pendiente externo.
 - **Notas del orador del deck**: escritas por lámina en `docs/Plan_Deck_Defensa.md`, con
-  presupuesto de tiempo para los 20 minutos. Se aplicaron las de la 18 y la 19, que
-  decían lo contrario de su lámina; **las demás siguen sin revisar**, y el precedente dice
-  que hay que compararlas una por una con el cuerpo de su lámina.
+  presupuesto de tiempo para los 20 minutos. Revisadas las de la **9, 18 y 19**, que decían lo
+  contrario de su lámina o del informe; **las otras 15 con notas siguen sin revisar** (las
+  láminas 4, 6, 14, 15 y 16 no tienen). El precedente dice que hay que compararlas una por una
+  con el cuerpo de su lámina **y con los CSV**: la de la 9 sostenía una afirmación sobre el
+  óptimo de `F_o` que ningún dato respalda, y ninguna herramienta la miraba porque las notas no
+  llegan al PDF. Ahora el bloque 12 de `verificar_entregables.py` sí lee el pptx.
 - **Banda base de la pirámide de Laplace**: el comparativo fusiona su banda base por
   máxima actividad en lugar de promediarla. Declarado en las limitaciones; corregirlo
   cambiaría los resultados de LP.

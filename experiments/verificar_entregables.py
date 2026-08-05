@@ -178,6 +178,12 @@ RETIRADAS = [
     'de 0,808 a la banda', 'más fuerte (0,957)',
     # y el argumento que los otros tres documentos ya retiraron
     'activa el banco completo',
+    # El deck contaba «r = 1 en 16 de las 25 configuraciones» y «r = 25 ... aparece en 8». Es el
+    # reparto del barrido publicado, que corre UNA semilla por celda; con 20 repeticiones por
+    # celda se da vuelta (r = 25 en el 51,4 % y r = 1 en el 45,6 %). Ademas 16 + 8 = 24 y no 25:
+    # la celda que falta (2 particulas x 10 iteraciones) devuelve r = 14. Lo que caduca es la
+    # frecuencia, no el argmax, que sigue en r = 1 dentro del rango publicado.
+    '16 de las 25',
 ]
 NEGADORES = ('no ', 'No ', 'ninguna', 'Ninguna', 'ningún', 'sin ', 'tampoco')
 
@@ -546,6 +552,147 @@ except ImportError:
     avisos.append('excel sin revisar (falta openpyxl)')
 except FileNotFoundError as e:
     ok(False, f'falta {e} para revisar el Excel', blando=True)
+
+# El deck sostenia que el PSO devuelve r = 1 «en 16 de las 25 configuraciones» y que las 25
+# «convergen al mismo peso». Son cifras del barrido publicado, que corre UNA semilla por celda.
+# Con 20 repeticiones por celda —500 corridas— el reparto se da vuelta: r = 25 en el 51,4 % y
+# r = 1 en el 45,6 %, y el piso del peso se alcanza en 499 de 500, no en todas.
+#
+# El bloque 4 no alcanza para vigilarlo, por dos razones medidas:
+#  - «que aparece en 8» quedaba SIEMPRE tapada por afirmada(), porque el «no r = 25» que la
+#    precede cae en la ventana de 90 caracteres y NEGADORES la anula: falso negativo garantizado.
+#  - las notas del orador NO se imprimen en el PDF, de modo que ninguna frase que viva solo ahi
+#    puede ser vista por los bloques que leen DOCUMENTOS. La nota de la lamina 19 decia «la
+#    busqueda devuelve r = 1», que con las 500 corridas queda literalmente invertida.
+# Por eso este bloque va con regex cruda, sin filtro de negacion, y ademas abre el pptx.
+print('\n=== 12. formulaciones del barrido PSO retiradas (regex cruda, incluye notas) ===')
+FORMULAS_PSO = [
+    (r'\b16\s*de\s*(?:las\s*)?25\b', 'r = 1 en 16 de las 25 celdas (barrido de una sola semilla)'),
+    (r'que\s+aparece\s+en\s+8\b', 'r = 25 «aparece en 8» (idem, y 16 + 8 = 24, no 25)'),
+    # NO se vigila «las 25 configuraciones convergen al mismo peso»: se probo y marcaba tres
+    # afirmaciones LEGITIMAS —libro, informe y README— donde la frase habla de las 25 celdas del
+    # barrido publicado, y eso es cierto: las 25 tienen m_opt = 0,30, como garantiza el assert de
+    # make_figuras_deck.py. En el deck se reescribio por precision, no por error, porque al lado
+    # de las 500 corridas «las 25» se volvia ambiguo. Un chequeo asi forzaria a reescribir texto
+    # correcto, que es peor que no tenerlo.
+    (r'b[uú]squeda\s+devuelve\s+r\s*=\s*1', 'la busqueda «devuelve r = 1» (devuelve r = 25 en el '
+                                            '51,4 % y r = 1 en el 45,6 %)'),
+    (r'[óo]ptimo\s+de\s+F_o\s+NO\s+es', 'el optimo de F_o «NO es» r = 25 con m = 0,07 (si lo es: '
+                                        'es el maximo global de optimo_exacto_fo.csv)'),
+]
+# el texto del pptx, cuerpo y notas, que es mas amplio que el del PDF
+TEXTO_PPTX = ''
+if PPTX.exists():
+    try:
+        from pptx import Presentation as _Pres
+        _p = _Pres(str(PPTX))
+        _tr = []
+        for _sl in _p.slides:
+            for _sh in _sl.shapes:
+                if _sh.has_text_frame:
+                    _tr.append(_sh.text_frame.text)
+                if getattr(_sh, 'has_table', False) and _sh.has_table:
+                    _tr += [_c.text for _r in _sh.table.rows for _c in _r.cells]
+            if _sl.has_notes_slide:
+                _tr.append(_sl.notes_slide.notes_text_frame.text)
+        TEXTO_PPTX = plano('\n'.join(_tr))
+        print(f'  pptx leido: {len(TEXTO_PPTX)} caracteres de cuerpo, tablas y notas')
+    except ImportError:
+        print('  AVISO python-pptx no instalado: no se revisaron las notas del orador')
+        avisos.append('notas del orador sin revisar (falta python-pptx)')
+
+FUENTES_PSO = {k: v['texto'] for k, v in DOCUMENTOS.items()}
+if TEXTO_PPTX:
+    FUENTES_PSO['pptx (con notas)'] = TEXTO_PPTX
+for _pat, _desc in FORMULAS_PSO:
+    _rx = re.compile(_pat, re.I)
+    _donde = {k: len(_rx.findall(t)) for k, t in FUENTES_PSO.items() if _rx.search(t)}
+    ok(not _donde, f'nadie afirma «{_desc}»' + (f' — aparece en {_donde}' if _donde else ''))
+
+# Cruce de citas contra bibliografia: no lo hacia ningun script del repo. verificar_bibliografia.py
+# valida el sentido inverso —que lo LISTADO exista en Crossref— y ademas lee un snapshot congelado
+# (docs/fuentes/entradas.json), no el listado impreso del libro. Este bloque toma como autoridad el
+# capitulo 7 del propio docx, que es la bibliografia que el lector ve.
+#
+# Motivo real: cuatro citas del proyecto no tenian entrada. Redmon et al. (2016) y Jocher et al.
+# (2023), citados en la seccion 12 del informe de avances; y Bai et al. (2015) y Wang et al. (2017)
+# en el libro, que quedaron con el anio viejo cuando la auditoria corrigio esas dos entradas a 2012
+# y 2014 por DOI.
+print('\n=== 13. toda cita en texto tiene entrada en la bibliografia ===')
+LIBRO_DOCX = DOCS / 'Tesis_Borrador_V3.docx'
+# La segunda letra del apellido puede ser minuscula acentuada (Vázquez, Candès), asi que el token
+# es «mayuscula + al menos una letra mas». Las iniciales sueltas («X.», «R. C.») quedan fuera.
+TOKEN = r'[A-ZÁÉÍÓÚÑ][\wÁÉÍÓÚÑáéíóúñ\-]+'
+ANIO = r'\d{4}|s\.\s?f\.'
+NARRATIVA = re.compile(rf'({TOKEN})(?:\s+et\s+al\.|\s+y\s+{TOKEN})?\s*\(({ANIO})')
+PARENTETICA = re.compile(rf'\(({TOKEN})(?:\s+et\s+al\.)?,\s*({ANIO})')
+# Falsos positivos medidos, con el motivo. No son citas.
+IGNORAR = {('cvpr', '2016'), ('cvpr', '2022'), ('icip', '2003'), ('iccv', '2021'),
+           ('figura', 's.f.'), ('tabla', 's.f.')}
+
+
+def _clave(apellido, anio):
+    return (sin_tildes(apellido).lower(), re.sub(r'\s', '', anio).lower())
+
+
+def _autoridad_de(entradas):
+    """Todos los apellidos de cada entrada, con su anio: «Ortega y Espinoza (2025)» cita por el
+    segundo apellido, y «Bai et al. (2012)» por el primero de tres."""
+    aut = set()
+    for e in entradas:
+        cab, _, resto = e.partition('(')
+        m = re.match(rf'\s*({ANIO})', resto)
+        if not m:
+            continue
+        for tok in re.findall(TOKEN, cab):
+            aut.add(_clave(tok, m.group(1)))
+    return aut
+
+
+def _citas_de(texto):
+    return {_clave(a, y) for rx in (NARRATIVA, PARENTETICA) for a, y in rx.findall(texto)}
+
+
+try:
+    import docx as _docx
+    _P = [p.text.strip() for p in _docx.Document(str(LIBRO_DOCX)).paragraphs]
+    # La ULTIMA aparicion: la primera es la entrada del indice, y cortar por ella deja el
+    # listado vacio sin que nada falle (se comprobo: da 0 entradas y el bloque no ve nada).
+    _ir = max(i for i, t in enumerate(_P) if t.startswith('7. REFERENCIAS'))
+    _ia = max(i for i, t in enumerate(_P) if t.startswith('8. AP'))
+    ENTRADAS_LIBRO = [t for t in _P[_ir + 1:_ia] if t]
+    AUT_LIBRO = _autoridad_de(ENTRADAS_LIBRO)
+    ok(len(ENTRADAS_LIBRO) >= 36, f'el capitulo 7 del libro lista {len(ENTRADAS_LIBRO)} entradas')
+
+    # El README declara su propia seleccion de referencias, con una entrada —Daubechies (1992)—
+    # que no esta entre las del libro. Para el README la autoridad es la union de las dos.
+    ENTRADAS_README = []
+    _mr = re.search(r'##\s*\d+\.\s*Referencias(.*?)(?=\n##\s|\Z)',
+                    (RAIZ / 'README.md').read_text(encoding='utf-8'), re.S)
+    if _mr:
+        ENTRADAS_README = [re.sub(r'^[-*]\s*', '', l).strip()
+                           for l in _mr.group(1).splitlines()
+                           if l.strip().startswith(('-', '*'))]
+    AUT_README = AUT_LIBRO | _autoridad_de(ENTRADAS_README)
+    print(f'  autoridad: {len(AUT_LIBRO)} pares (apellido, anio) del libro '
+          f'+ {len(AUT_README - AUT_LIBRO)} propios del README')
+
+    # El cuerpo del libro se lee del docx y se corta ANTES del capitulo 7: si no, las entradas de
+    # la bibliografia se cuentan a si mismas como citas y el cruce nunca detecta nada.
+    CUERPOS = {'libro': plano('\n'.join(_P[:_ir]))}
+    for _d in ('deck', 'avances', 'readme'):
+        if _d in DOCUMENTOS:
+            CUERPOS[_d] = DOCUMENTOS[_d]['texto']
+    for _d, _t in CUERPOS.items():
+        _aut = AUT_README if _d == 'readme' else AUT_LIBRO
+        _huerf = sorted(c for c in _citas_de(_t) - _aut if c not in IGNORAR)
+        ok(not _huerf, f'{_d}: las {len(_citas_de(_t))} citas tienen entrada'
+                       + (f' — SIN entrada: {_huerf}' if _huerf else ''))
+except ImportError:
+    print('  AVISO python-docx no instalado: no se cruzaron las citas')
+    avisos.append('citas sin cruzar (falta python-docx)')
+except (ValueError, FileNotFoundError) as e:
+    ok(False, f'no se pudo delimitar la bibliografia del libro: {e}')
 
 # --------------------------------------------- resumen
 print(f'\n=== {len(fallos)} fallos · {len(avisos)} avisos ===')

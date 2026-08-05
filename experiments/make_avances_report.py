@@ -2164,7 +2164,8 @@ H.append(f"""
   regiones y después las clasifican—, YOLO plantea la detección como una única regresión sobre la
   imagen completa, lo que le da el costo por imagen necesario para evaluar nueve entradas sobre
   varios miles de imágenes (Redmon et al., 2016). Se usó la versión <b>YOLOv8n</b>, la variante
-  <i>nano</i> de la familia (Jocher et al., 2023).</p>
+  <i>nano</i> de la familia (Jocher et al., 2023; la cita acredita la publicación del modelo, y la
+  versión exacta de la biblioteca con la que se corrió se declara más abajo).</p>
 
   <p><b>Cómo está formado.</b> Los datos que siguen no se citan de la documentación: se midieron
   sobre los propios pesos entrenados de este trabajo. La red tiene
