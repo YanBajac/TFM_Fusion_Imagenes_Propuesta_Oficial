@@ -461,6 +461,14 @@ if 'avances' in DOCUMENTOS:
     ok(len(rep) == len(set(rep)), 'ningun pie se repite'
        + ('' if len(rep) == len(set(rep))
           else f' — repetidos {sorted(v for v in set(rep) if rep.count(v) > 1)}'))
+    # Y el encuadre: el pie esta posicionado en absoluto al fondo del div de cada pagina, de
+    # modo que si el contenido se pasa de alto el div termina en la pagina SIGUIENTE y se
+    # lleva el pie con el. Una pagina sin pie al final es, por tanto, una pagina cuyo
+    # contenido se derramo: parte del texto queda huerfano y la siguiente arranca a media
+    # frase. La portada es la unica que legitimamente no lleva pie.
+    derramadas = [i for i, v in pies if v is None and i > 1]
+    ok(not derramadas, 'ninguna pagina derrama su contenido a la siguiente'
+                       + (f' — derraman {derramadas}' if derramadas else ''))
 
 # --------------------------------------------- 11. el Excel
 # El Excel es un entregable rastreado y no tenia ningun chequeo. Llego a publicar «optimo

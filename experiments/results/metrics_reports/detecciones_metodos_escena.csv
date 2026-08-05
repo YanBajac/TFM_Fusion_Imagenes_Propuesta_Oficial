@@ -1,10 +1,41 @@
-escena,entrada,etiqueta,people_detectadas,lamp_detectadas,people_gt,lamp_gt,recupera_ambas
-00231,VIS,VIS,4,5,12,5,True
-00231,IR,IR,10,1,12,5,True
-00231,PiramideLaplace,Pirámide de Laplace,9,9,12,5,True
-00231,RatioPiramide,Ratio Pyramid,9,3,12,5,True
-00231,DWT,DWT,10,5,12,5,True
-00231,DTCWT,DTCWT,10,4,12,5,True
-00231,Curvelet,CVT,7,5,12,5,True
-00231,TopHat_Clasico,Top-Hat clásico,10,9,12,5,True
-00231,Propuesta_Novedosa,"Propuesta (r=25, m=0,30)",8,7,12,5,True
+escena,criterio,entrada,etiqueta,people_detectadas,lamp_detectadas,people_gt,lamp_gt,detecta_ambas
+00231,la escena ya publicada,VIS,VIS,4,5,12,5,True
+00231,la escena ya publicada,IR,IR,10,1,12,5,True
+00231,la escena ya publicada,PiramideLaplace,Pirámide de Laplace,9,9,12,5,True
+00231,la escena ya publicada,RatioPiramide,Ratio Pyramid,9,3,12,5,True
+00231,la escena ya publicada,DWT,DWT,10,5,12,5,True
+00231,la escena ya publicada,DTCWT,DTCWT,10,4,12,5,True
+00231,la escena ya publicada,Curvelet,CVT,7,5,12,5,True
+00231,la escena ya publicada,TopHat_Clasico,"Top-Hat clásico (r=5, m=1)",10,9,12,5,True
+00231,la escena ya publicada,Ref_PSO,"Metodología de la referencia (disco, PSO: r=25, m=0,30)",8,6,12,5,True
+00231,la escena ya publicada,Propuesta_Novedosa,"Propuesta (r=25, m=0,30)",8,7,12,5,True
+00138,la propuesta recupera ambas y el visible no,VIS,VIS,1,1,11,3,True
+00138,la propuesta recupera ambas y el visible no,IR,IR,3,2,11,3,True
+00138,la propuesta recupera ambas y el visible no,PiramideLaplace,Pirámide de Laplace,3,1,11,3,True
+00138,la propuesta recupera ambas y el visible no,RatioPiramide,Ratio Pyramid,2,1,11,3,True
+00138,la propuesta recupera ambas y el visible no,DWT,DWT,2,2,11,3,True
+00138,la propuesta recupera ambas y el visible no,DTCWT,DTCWT,2,2,11,3,True
+00138,la propuesta recupera ambas y el visible no,Curvelet,CVT,2,1,11,3,True
+00138,la propuesta recupera ambas y el visible no,TopHat_Clasico,"Top-Hat clásico (r=5, m=1)",2,1,11,3,True
+00138,la propuesta recupera ambas y el visible no,Ref_PSO,"Metodología de la referencia (disco, PSO: r=25, m=0,30)",2,2,11,3,True
+00138,la propuesta recupera ambas y el visible no,Propuesta_Novedosa,"Propuesta (r=25, m=0,30)",2,2,11,3,True
+00147,el visible recupera ambas y la propuesta no,VIS,VIS,1,1,12,1,True
+00147,el visible recupera ambas y la propuesta no,IR,IR,9,1,12,1,True
+00147,el visible recupera ambas y la propuesta no,PiramideLaplace,Pirámide de Laplace,10,0,12,1,False
+00147,el visible recupera ambas y la propuesta no,RatioPiramide,Ratio Pyramid,8,1,12,1,True
+00147,el visible recupera ambas y la propuesta no,DWT,DWT,10,0,12,1,False
+00147,el visible recupera ambas y la propuesta no,DTCWT,DTCWT,9,0,12,1,False
+00147,el visible recupera ambas y la propuesta no,Curvelet,CVT,5,0,12,1,False
+00147,el visible recupera ambas y la propuesta no,TopHat_Clasico,"Top-Hat clásico (r=5, m=1)",5,0,12,1,False
+00147,el visible recupera ambas y la propuesta no,Ref_PSO,"Metodología de la referencia (disco, PSO: r=25, m=0,30)",7,0,12,1,False
+00147,el visible recupera ambas y la propuesta no,Propuesta_Novedosa,"Propuesta (r=25, m=0,30)",6,0,12,1,False
+00232,ambas recuperan las dos clases,VIS,VIS,3,4,12,6,True
+00232,ambas recuperan las dos clases,IR,IR,10,2,12,6,True
+00232,ambas recuperan las dos clases,PiramideLaplace,Pirámide de Laplace,5,4,12,6,True
+00232,ambas recuperan las dos clases,RatioPiramide,Ratio Pyramid,8,3,12,6,True
+00232,ambas recuperan las dos clases,DWT,DWT,4,3,12,6,True
+00232,ambas recuperan las dos clases,DTCWT,DTCWT,5,4,12,6,True
+00232,ambas recuperan las dos clases,Curvelet,CVT,2,3,12,6,True
+00232,ambas recuperan las dos clases,TopHat_Clasico,"Top-Hat clásico (r=5, m=1)",3,2,12,6,True
+00232,ambas recuperan las dos clases,Ref_PSO,"Metodología de la referencia (disco, PSO: r=25, m=0,30)",4,4,12,6,True
+00232,ambas recuperan las dos clases,Propuesta_Novedosa,"Propuesta (r=25, m=0,30)",4,3,12,6,True

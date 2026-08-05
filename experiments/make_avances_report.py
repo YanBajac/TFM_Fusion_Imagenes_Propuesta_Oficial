@@ -454,13 +454,65 @@ DET_LIDERES = "; ".join(
 # la comparativa cualitativa por metodo sobre una escena
 # la columna escena es un identificador con ceros a la izquierda (00231): si se lee como
 # numero, el pie de la figura contradice el rotulo que la propia figura lleva grabado
+# el grafo del detector, leido del checkpoint por make_figura_arquitectura_yolo.py
+_arq = json.load(open(os.path.join(MR, "arquitectura_yolo.json"), encoding="utf-8"))
+_ac = {c["i"]: c for c in _arq["capas"]}
+_adet = _arq["capas"][-1]
+ARQ_CAPAS = len(_arq["capas"])
+ARQ_IMGSZ = _arq["meta"]["imgsz"]
+ARQ_CKPT = _arq["meta"]["checkpoint"]
+ARQ_PARAMS = f"{_arq['meta']['parametros']:,}".replace(",", ".")
+ARQ_RES_MIN = min(c["res"] for c in _arq["capas"] if c["i"] <= 9)
+ARQ_TAPS = ", ".join(str(i) for i in (4, 6, 9))
+ARQ_SRC_TD = " y ".join(str(_ac[i]["from"][1]) for i in (11, 14))
+ARQ_SRC_BU = " y ".join(str(_ac[i]["from"][1]) for i in (17, 20))
+ARQ_SALIDAS = ", ".join(str(i) for i in _adet["from"])
+
 _dme = pd.read_csv(os.path.join(MR, "detecciones_metodos_escena.csv"), dtype={"escena": str})
-DME_ESCENA = str(_dme.escena.iloc[0])
-DME_GT_P = int(_dme.people_gt.iloc[0])
-DME_GT_L = int(_dme.lamp_gt.iloc[0])
-DME_AMBAS = int(_dme.recupera_ambas.sum())
-DME_N = len(_dme)
-_dme_sobre = _dme[_dme.lamp_detectadas > _dme.lamp_gt]
+# Cuatro escenas elegidas por una regla declarada que incluye el caso ADVERSO a la propuesta,
+# y diez entradas: las nueve del benchmark mas la metodologia de la referencia, que es su
+# operador de disco con el (r, m) que su propio PSO halla y NO el comparativo «Top-Hat
+# clasico», que corre con la parametrizacion manual r = 5, m = 1.
+DME_ESCENAS = list(dict.fromkeys(_dme.escena))
+DME_N_ESC = len(DME_ESCENAS)
+DME_N_ENT = _dme.entrada.nunique()
+DME_CRITERIO = {e: _dme[_dme.escena == e].criterio.iloc[0] for e in DME_ESCENAS}
+DME_GT = {e: (int(_dme[_dme.escena == e].people_gt.iloc[0]),
+              int(_dme[_dme.escena == e].lamp_gt.iloc[0])) for e in DME_ESCENAS}
+_ORD_DME = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT", "Curvelet",
+            "TopHat_Clasico", "Ref_PSO", "Propuesta_Novedosa"]
+_ET_DME = {k: _dme[_dme.entrada == k].etiqueta.iloc[0] for k in _ORD_DME if (_dme.entrada == k).any()}
+_fil_dme = ""
+for _k in _ORD_DME:
+    _g = _dme[_dme.entrada == _k]
+    if not len(_g):
+        continue
+    _dest = _k in ("Ref_PSO", "Propuesta_Novedosa")
+    _tds = ""
+    for _e in DME_ESCENAS:
+        _r = _g[_g.escena == _e]
+        _tds += (f"<td>{int(_r.people_detectadas.iloc[0])} · {int(_r.lamp_detectadas.iloc[0])}</td>"
+                 if len(_r) else "<td>—</td>")
+    _nom = _ET_DME[_k].split(" (")[0]
+    _fil_dme += (f"<tr><td class='l'>{'<b>' if _dest else ''}{_nom}{'</b>' if _dest else ''}</td>"
+                 f"{_tds}</tr>")
+_cab_dme = "".join(f"<th>{_e}<br>({DME_GT[_e][0]} · {DME_GT[_e][1]})</th>" for _e in DME_ESCENAS)
+TAB_DME = ('<table class="chica"><thead><tr><th class="l">Entrada</th>' + _cab_dme
+           + '</tr></thead><tbody>' + _fil_dme + '</tbody></table>')
+# cuantas entradas sobredetectan luces, por escena
+_sobre = {_e: _dme[(_dme.escena == _e) & (_dme.lamp_detectadas > _dme.lamp_gt)]
+          for _e in DME_ESCENAS}
+DME_SOBRE_TXT = "; ".join(
+    f"escena {_e}: " + (", ".join(f"{_r.etiqueta.split(' (')[0]} ({int(_r.lamp_detectadas)})"
+                                  for _r in _sobre[_e].itertuples()) or "ninguna")
+    for _e in DME_ESCENAS if len(_sobre[_e]))
+# la escena publicada, que la seccion 14 tambien cita
+DME_ESCENA = DME_ESCENAS[0]
+DME_GT_P, DME_GT_L = DME_GT[DME_ESCENA]
+_dme_pub = _dme[_dme.escena == DME_ESCENA]
+DME_AMBAS = int(_dme_pub.detecta_ambas.sum())
+DME_N = len(_dme_pub)
+_dme_sobre = _dme_pub[_dme_pub.lamp_detectadas > _dme_pub.lamp_gt]
 DME_SOBRE = ", ".join(f"{r.etiqueta.split(' (')[0]} ({int(r.lamp_detectadas)})"
                       for r in _dme_sobre.itertuples())
 DME_N_SOBRE = len(_dme_sobre)
@@ -899,21 +951,18 @@ if LIBRE:
         "hiperparámetros definen la configuración de la propuesta usada en todo el benchmark de esta "
         "variante.")
 else:
+    # Se acorta a proposito: las paginas siguientes desarrollan el peso, el barrido
+    # determinista y el estudio de estabilidad, de modo que repetirlo aca desbordaba la pagina
+    # y derramaba el parrafo entero a la siguiente.
     LECTURA_PSO = (
-        "Lectura: las <b>25 configuraciones convergen al mismo peso óptimo, m* = 0,30</b>, el límite "
-        "inferior del rango publicado, porque los dos términos de fidelidad de F<sub>o</sub> "
-        "(SSIM<sub>avg</sub> y PSNR<sub>n</sub>) decrecen al aumentar el realce y dominan sobre la "
-        "entropía normalizada; se verificó que F<sub>o</sub> decrece de forma estrictamente monótona en "
-        "m sobre todo el rango, de manera que el óptimo del peso está forzado por la forma de la "
-        "aptitud y no es un artefacto del enjambre. "
-        "<b>El radio, en cambio, no lo fija el PSO:</b> dentro de este rango la aptitud F<sub>o</sub> "
-        f"prefiere r = {R_PREFERIDO} ({FO_MEJOR} frente a {FO_R25} en r = 25), de modo que r = 25 es una "
-        "<b>decisión de diseño</b> tomada sobre las métricas de evaluación y no el resultado de la "
-        "optimización. De las nueve métricas, <b>cinco favorecen r = 25</b> (EN, SD, FE, MG y SF) y "
-        "las <b>cuatro de fidelidad favorecen r = 1</b> (SSIM, PSNR, MI<sub>vis</sub> y "
-        "MI<sub>ir</sub>), todas con p &lt; 10<sup>-5</sup>. Se adopta <b>r = 25, m = 0,30</b> "
-        "priorizando la capacidad de realce, y se reconoce que la elección del radio se apoya en parte "
-        "del mismo criterio con el que luego se evalúa.")
+        "Lectura: las <b>25 configuraciones convergen al mismo peso, m* = 0,30</b>, el piso del rango "
+        "publicado, porque los dos términos de fidelidad de F<sub>o</sub> dominan sobre la entropía y "
+        "decrecen al aumentar el realce. <b>El radio, en cambio, no lo fija el PSO:</b> dentro de este "
+        f"rango la aptitud prefiere r = {R_PREFERIDO} ({FO_MEJOR} frente a {FO_R25} en r = 25), de modo "
+        "que <b>r = 25 es una decisión de diseño</b> tomada sobre las métricas de evaluación —cinco de "
+        "las nueve la favorecen y las cuatro de fidelidad favorecen r = 1— y no el resultado de la "
+        "optimización. Las páginas que siguen desarrollan las dos cosas: la justificación del peso, y "
+        "con un barrido determinista y 500 corridas repetidas, el alcance exacto de esa preferencia.")
     PARRAFO_RADIO = (
         "El radio r = 25 (elementos estructurantes de 51 píxeles) permite que el operador aproveche un "
         "vecindario amplio para capturar los objetivos térmicos completos, y a igual peso supera a "
@@ -1121,7 +1170,8 @@ def fig_file(name, max_w=1350):
 EXIST = {n: fig_file(n) for n in [
     "fig_morfologia_tophat.png", "fig_cinco_se.png", "fig_pso_diagrama.png",
     "ejemplo_modalidades.png", "fig_aptitud_vs_m.png", "fig_m3fd_detecciones.png",
-    "comparacion_aptitudes.png", "fig_m3fd_detecciones_metodos.png"]}
+    "comparacion_aptitudes.png", "fig_arquitectura_yolo.png"]
+    + [f"fig_m3fd_detecciones_{_e}.png" for _e in DME_ESCENAS]}
 print("imagenes ok")
 
 def tabla_friedman():
@@ -1310,6 +1360,12 @@ h1 { font-size: 16pt; text-align: center; margin-bottom: 4mm; }
 h2 { font-size: 13pt; margin: 0 0 3mm 0; border-bottom: 1px solid #000; padding-bottom: 1mm; }
 h3 { font-size: 11.5pt; margin: 4mm 0 1.5mm 0; }
 p { text-align: justify; margin-bottom: 2.5mm; }
+/* Encuadre: cuando una pagina se pasa de alto, lo que sobra cae en la siguiente. Sin estas
+   reglas el corte ocurre en cualquier renglon y deja una o dos lineas huerfanas sueltas.
+   Con ellas el corte respeta los bloques: se mueve el parrafo, la tabla o la figura entera. */
+p, .lectura, li { orphans: 3; widows: 3; break-inside: avoid; page-break-inside: avoid; }
+table, .figc, .formula, .par { break-inside: avoid; page-break-inside: avoid; }
+h2, h3 { break-after: avoid; page-break-after: avoid; }
 .formula { text-align: center; margin: 3mm 0; position: relative; }
 .formula img { max-height: 12mm; max-width: 90%; vertical-align: middle; }
 .eq { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 10pt; }
@@ -1400,7 +1456,13 @@ H.append(f"""
 """)
 
 # Bloques calculados sobre el largo real, no recortados a 20 a mano.
-chunks = [pairs_html[i:i + 8] for i in range(0, len(pairs_html), 8)]
+# 6 + 7 + 7 y no 8 + 8 + 4: la primera pagina lleva ademas el texto de la seccion y las
+# dos notas del corpus, de modo que con ocho pares los dos ultimos se derramaban y
+# desperdiciaban tres cuartos de la pagina siguiente.
+_c1 = 6
+_resto = len(pairs_html) - _c1
+chunks = [pairs_html[:_c1], pairs_html[_c1:_c1 + (_resto + 1) // 2],
+          pairs_html[_c1 + (_resto + 1) // 2:]]
 H.append(f"""
 <div class="page">
   <h2>2. Datos de entrada: {N_ESC} pares VIS/IR (TNO)</h2>
@@ -1576,6 +1638,13 @@ H.append(f"""
   <i>referencia_pso_ortega_espinoza.py</i>).</p>
   {TAB_REFERENCIA}
 
+  {pie(11)}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>5. Optimización por PSO (continuación): la equivalencia del realce físico</h2>
   <p><b>Tercero, y es el argumento central: la equivalencia del realce físico.</b> El realce que
   efectivamente se inyecta en la reconstrucción no es m, sino el producto <b>m · |W|</b> del peso por
   la energía de detalle que extrae el operador. El banco de cinco elementos estructurantes extrae
@@ -1585,28 +1654,18 @@ H.append(f"""
   sin corregir por esa ganancia es comparar unidades distintas. Corrigiendo:</p>
   <ul>
     <li>m = 0,30 sobre el banco propuesto equivale a <b>m = {f"{M_EQUIV:.2f}".replace(".", ",")}</b>
-        sobre un disco único, valor que cae <b>dentro</b> del rango publicado [0,30; 2,00], al
+        sobre un disco único: cae <b>dentro</b> del rango publicado [0,30; 2,00], al
         {f"{POS_EN_RANGO:.0f}"} % de su recorrido y a
-        {f"{abs(M_EQUIV - 1.0):.2f}".replace(".", ",")} del peso canónico m = 1 de la metodología
-        clásica.</li>
-    <li>A la inversa, el rango publicado <b>traducido</b> a este operador preservando el realce
-        físico es [{f"{RANGO_LO:.4f}".replace(".", ",")}; {f"{RANGO_HI:.4f}".replace(".", ",")}], y
-        m = 0,30 cae dentro de ese intervalo.</li>
+        {f"{abs(M_EQUIV - 1.0):.2f}".replace(".", ",")} del peso canónico m = 1. A la inversa, ese
+        rango traducido a este operador es
+        [{f"{RANGO_LO:.4f}".replace(".", ",")}; {f"{RANGO_HI:.4f}".replace(".", ",")}], y m = 0,30
+        también cae dentro.</li>
   </ul>
   <p>Es decir que el peso adoptado <b>no es un valor bajo</b>: es el que reproduce el realce físico
   del rango publicado una vez corregida la diferencia de energía entre los dos operadores. Parece bajo
   únicamente si se olvida que el operador cambió.</p>
 
-  <p><b>Y la referencia lo confirma con sus propios datos.</b> Si el criterio correcto es el realce
-  físico y no el peso nominal, entonces el equivalente de esta tesis sobre un disco único
-  —m = {f"{M_EQUIV:.2f}".replace(".", ",")}— debería caer en la banda donde la búsqueda de la
-  referencia efectivamente aterrizó, y es lo que ocurre: sus {REF_N} corridas seleccionan pesos entre
-  {REF_M_MIN} y {REF_M_MAX}, con medianas por escena de {REF_M_MED_MIN} a {REF_M_MED_MAX}. Los dos
-  trabajos coinciden entonces en el <b>orden de magnitud del realce</b> y difieren solo en el valor de
-  m que lo expresa. Dicho con precisión, y sin exagerar el acuerdo:
-  {f"{M_EQUIV:.2f}".replace(".", ",")} queda por encima de cuatro de sus cinco medianas por escena, de
-  modo que el realce adoptado aquí es algo <b>mayor</b> que su valor típico, no idéntico a él.</p>
-  {pie(11)}
+  {pie(12)}
 </div>
 """)
 
@@ -1646,17 +1705,7 @@ H.append(f"""
   interior, sino que <b>confirma un óptimo que la forma de la aptitud determina</b>; lo que se hereda
   del trabajo de referencia es la elección del rango.</p>
 
-  <p><b>El fenómeno no es exclusivo de este trabajo, y ahí está el alcance del hallazgo.</b> En el
-  trabajo de referencia lo que se apoya en la cota no es el peso sino el radio: <b>r = 25, el límite
-  superior del intervalo, aparece en {REF_R25} de sus {REF_N} corridas</b> ({REF_R25_PCT} %), y r = 1
-  en {REF_R1}. Es decir que también allí uno de los dos hiperparámetros queda determinado por una
-  decisión de acotación —tomada con un argumento cualitativo, «evitar el sobresuavizado y la pérdida
-  de características térmicas»— y no por la búsqueda. La conclusión de aquel trabajo, sin embargo,
-  afirma que el PSO «logró determinar de forma autónoma los valores óptimos» y que «elimina la
-  subjetividad inherente a la parametrización manual». La observación no le quita mérito a la
-  optimización: delimita qué es lo que la optimización decide y qué sigue siendo una decisión de
-  diseño, y es exactamente el punto que esta tesis audita.</p>
-  {pie(12)}
+  {pie(13)}
 </div>
 """)
 
@@ -1694,7 +1743,7 @@ H.append(f"""
   tendencia, y la aptitud media se mueve en una banda de {REP_BANDA}. La rejilla de {N_CFG}
   configuraciones del trabajo de referencia no gana estabilidad con más partículas ni más
   iteraciones.</p>
-  {pie(13)}
+  {pie(14)}
 </div>
 """)
 
@@ -1712,7 +1761,7 @@ H.append(f"""
   es también la única que no llega al piso del peso en el 100 % de sus repeticiones. La columna del
   radio confirma lo que la tabla anterior resume: la proporción que termina en r = 1 no sigue
   ninguna tendencia con el número de partículas ni con las iteraciones.</p>
-  {pie(14)}
+  {pie(15)}
 </div>
 """)
 
@@ -1758,7 +1807,7 @@ H.append(f"""
   pueden mejorarlo, porque el máximo ya está alcanzado. Y el argumento de monotonía del peso, que
   hasta aquí estaba medido con r = 25, se verifica ahora en <b>los veinticinco radios</b>: el mejor
   peso dentro del rango publicado es el piso {"en todos" if OE_PISO_SIEMPRE else "en algunos"}.</p>
-  {pie(15)}
+  {pie(16)}
 </div>
 """)
 
@@ -1775,6 +1824,20 @@ H.append(f"""
   <p><b>Tabla 3d.</b> Recorrido de cada término de la aptitud en las {REF_N} corridas publicadas por
   el trabajo de referencia.</p>
   {TAB_REF_RECORRIDO}
+  <p><b>Y la referencia lo confirma con sus propios datos.</b> El equivalente de esta tesis sobre un
+  disco único —m = {f"{M_EQUIV:.2f}".replace(".", ",")}— cae en la banda donde su búsqueda aterrizó:
+  sus {REF_N} corridas seleccionan pesos entre {REF_M_MIN} y {REF_M_MAX}, con medianas por escena de
+  {REF_M_MED_MIN} a {REF_M_MED_MAX}. Los dos trabajos coinciden en el <b>orden de magnitud del
+  realce</b> y difieren solo en el valor de m que lo expresa. Sin exagerar el acuerdo:
+  {f"{M_EQUIV:.2f}".replace(".", ",")} queda por encima de cuatro de sus cinco medianas, de modo que el
+  realce adoptado aquí es algo <b>mayor</b> que su valor típico, no idéntico.</p>
+  <p><b>El fenómeno no es exclusivo de este trabajo.</b> En la referencia lo que se apoya en la cota
+  no es el peso sino el radio: <b>r = 25, el límite superior del intervalo, aparece en {REF_R25} de sus
+  {REF_N} corridas</b> ({REF_R25_PCT} %) y r = 1 en {REF_R1}. También allí, entonces, uno de los dos
+  hiperparámetros lo determina una decisión de acotación —argumentada de forma cualitativa, «evitar el
+  sobresuavizado y la pérdida de características térmicas»— y no la búsqueda, mientras su conclusión
+  afirma que el PSO «logró determinar de forma autónoma los valores óptimos». La observación no le
+  quita mérito a la optimización: delimita qué decide la optimización y qué sigue siendo diseño.</p>
 
   <p class="lectura">El término que debía penalizar la distorsión aporta el
   {REF_REC['PSNR_n'][1]} % de la variación: con el desplazamiento de la ecuación (29) su PSNR
@@ -1795,7 +1858,7 @@ H.append(f"""
   diseño que amplifica el contraste: la referencia optimiza <b>por escena</b>, con una corrida
   independiente para cada una, mientras este trabajo promedia la aptitud sobre tres escenas, lo que
   suaviza la superficie y hace que un solo óptimo domine.</p>
-  {pie(16)}
+  {pie(17)}
 </div>
 """)
 
@@ -1830,7 +1893,7 @@ H.append(f"""
   El aporte de la tesis en este punto no es entonces que el PSO falle, sino que <b>el rango de
   búsqueda heredado, y no el optimizador, es lo que fija uno de los dos hiperparámetros</b>. Es una
   afirmación sobre el protocolo, y ahora está medida en las dos direcciones.</p>
-  {pie(17)}
+  {pie(18)}
 </div>
 """)
 
@@ -1857,7 +1920,7 @@ H.append(f"""
   Excepción en el peso: {CORRIDAS_EXCEPCION}. El registro completo, con el peso, la aptitud y el
   tiempo de cada corrida, está en <i>pso_repeticiones_propuesta.csv</i>; el del barrido con el peso
   libre, en <i>pso_repeticiones_propuesta_libre.csv</i>.</p>
-  {pie(18)}
+  {pie(19)}
 </div>
 """)
 
@@ -1893,7 +1956,7 @@ H.append(f"""
   {formula("th_clasico", 17)}
   <p>Todos los métodos se ejecutan sobre los mismos {N_ESC} pares, con la misma implementación de métricas
   (<i>src/metrics/evaluators.py</i>), de modo que la comparación es directa.</p>
-  {pie(19)}
+  {pie(20)}
 </div>
 """)
 
@@ -1929,7 +1992,7 @@ H.append(f"""
   segundo puesto entre ocho entradas con σ &ge; 0,10, por delante de los seis métodos comparativos, y
   cuyo rango mejora de forma monótona al aumentar la varianza. Los resultados de las secciones
   siguientes deben leerse con ese alcance.</p>
-  {pie(20)}
+  {pie(21)}
 </div>
 """)
 
@@ -1941,7 +2004,7 @@ H.append(f"""
   {tabla_metodos(ORDEN, resaltar=PROP)}
   <p class="lectura">{LECTURA_BENCH}</p>
   {figura(charts["quality"], "Cuatro métricas representativas (EN, FE, SF, SSIM); la barra azul es la propuesta.", 96)}
-  {pie(21)}
+  {pie(22)}
 </div>
 """)
 
@@ -1973,7 +2036,7 @@ for _b, _imgs in enumerate(_bloques, 1):
   <p><b>Tabla 4{chr(96 + _b)}.</b> Resultados por par — pares {(_b - 1) * 4 + 1} a
   {(_b - 1) * 4 + len(_imgs)} de {N_ESC}.</p>
   {tabla_por_imagen(_imgs)}{_lect}
-  {pie(21 + _b)}
+  {pie(22 + _b)}
 </div>
 """)
 
@@ -1984,7 +2047,7 @@ H.append(f"""
   {formula("friedman", 23)}
   <p><b>Tabla 5.</b> Resultados del test de Friedman.</p>
   {tabla_friedman()}
-  {pie(27)}
+  {pie(28)}
 </div>
 <div class="page">
   <h2>9. Análisis estadístico (continuación): Wilcoxon y ranking</h2>
@@ -1998,11 +2061,11 @@ H.append(f"""
   peor en {w_peor} y sin diferencia en {w_emp}; su ventaja más consistente es en las
   métricas de actividad e información (EN, FE, MG, SF), mejor que los cinco métodos del estado del arte.</p>
   {figura(charts["ranking"], "Ranking promedio global de los 7 métodos (9 métricas, dirección respetada); la barra azul es la propuesta.", 78)}
-  {pie(28)}
+  {pie(29)}
 </div>
 """)
 
-pg = 29
+pg = 30
 H.append(f"""
 <div class="page">
   <h2>10. Robustez del resultado: ajuste simétrico y ablación del operador</h2>
@@ -2122,6 +2185,31 @@ H.append(f"""
         regresión directa.</li>
   </ul>
 
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>12. El detector (continuación): el grafo del modelo</h2>
+  <p>El diagrama siguiente no se copia de la documentación de la biblioteca: se leyó el grafo del
+  <b>modelo entrenado de este trabajo</b> —los {ARQ_CAPAS} módulos con sus índices de origen,
+  canales, núcleos y pasos— y se dibujó eso. Las resoluciones de cada nivel tampoco son un supuesto:
+  salen de acumular los pasos declarados desde la entrada de {ARQ_IMGSZ}×{ARQ_IMGSZ}.</p>
+  {figura(EXIST.get("fig_arquitectura_yolo.png"),
+          f"Arquitectura del detector leída del checkpoint {ARQ_CKPT}. En gris oscuro, las capas "
+          f"cuya salida alimenta otra escala; en línea azul punteada, los atajos que forman la "
+          f"pirámide; en granate, los tres niveles de detección. {ARQ_PARAMS} parámetros.", 100)}
+  <p class="lectura">Se lee en tres tramos. La <b>columna</b> reduce la resolución cinco veces con
+  convoluciones de paso 2, de {ARQ_IMGSZ}² a {ARQ_RES_MIN}², y deja tres derivaciones —las capas
+  {ARQ_TAPS}— que son los tres niveles de escala. El <b>cuello</b> las combina en dos pasadas: la
+  descendente sube la resolución con dos sobremuestreos y concatena hacia atrás con las capas
+  {ARQ_SRC_TD}; la ascendente vuelve a bajar con dos convoluciones de paso 2 y concatena con las
+  capas {ARQ_SRC_BU}. Esas cuatro concatenaciones son lo que permite que un objeto grande y uno
+  pequeño se detecten con el mismo paso de la red. El <b>cabezal</b> toma las salidas
+  {ARQ_SALIDAS} y predice en los tres niveles a la vez, con ramas separadas de clasificación y de
+  caja.</p>
   {pie(pg)}
 </div>
 """)
@@ -2321,35 +2409,74 @@ pg += 1
 
 H.append(f"""
 <div class="page">
-  <h2>15. Comparativa cualitativa: la misma escena en las nueve entradas</h2>
-  <p>El cuadro anterior promedia sobre cientos de imágenes y por eso no muestra <i>qué</i> cambia. La
-  figura siguiente toma una sola escena —la misma de la sección {14}, para que las dos se puedan
-  cruzar— y dibuja las detecciones que el <b>mismo</b> modelo produce sobre cada una de las nueve
-  entradas. Es la comparación directa entre metodologías sobre píxeles idénticos en todo salvo el
-  método de fusión.</p>
-  {figura(EXIST.get("fig_m3fd_detecciones_metodos.png"),
-          f"M3FD, escena {DME_ESCENA}: detecciones del modelo único VIS+IR sobre cada entrada. "
-          f"People en granate, Lamp en azul, umbral de confianza 0,30. Verdad de campo: "
-          f"{DME_GT_P} personas y {DME_GT_L} luces.", 100)}
-  <p class="lectura">Lectura, y conviene que sea honesta en los tres puntos. <b>Primero</b>, las
-  {DME_AMBAS} de las {DME_N} entradas recuperan las dos clases en esta escena, incluido el
-  <b>visible solo</b> —que detecta las {DME_GT_L} luces y {int(_dme[_dme.entrada == 'VIS'].people_detectadas.iloc[0])}
-  de las {DME_GT_P} personas—: la afirmación de que «solo la imagen fusionada permite detectar ambas
-  a la vez» no se sostiene y fue retirada del trabajo. <b>Segundo</b>, el infrarrojo muestra con
-  claridad su límite: recupera
-  {int(_dme[_dme.entrada == 'IR'].people_detectadas.iloc[0])} personas pero solo
-  {int(_dme[_dme.entrada == 'IR'].lamp_detectadas.iloc[0])} luz. <b>Tercero</b>, y es el hallazgo que
-  esta figura aporta y las tablas promediadas esconden: {DME_N_SOBRE} entradas
-  <b>sobredetectan</b> luces por encima de la verdad de campo ({DME_SOBRE} frente a {DME_GT_L}
-  reales), y son las dos morfológicas junto con la pirámide de Laplace. Es coherente con la tasa de
-  artefactos medida sobre la imagen: el realce morfológico crea manchas brillantes puntuales que el
-  detector lee como luces. El costo en artefactos que la sección de métricas mide con Nabf aparece
-  aquí como falsos positivos en la tarea, y ése es un puente entre los dos criterios que el trabajo
-  no tenía documentado.</p>
+  <h2>15. Comparativa cualitativa: {DME_N_ESC} escenas en {DME_N_ENT} entradas</h2>
+  <p>El cuadro anterior promedia sobre cientos de imágenes y por eso no muestra <i>qué</i> cambia.
+  Las figuras que siguen toman escenas concretas y dibujan las detecciones que el <b>mismo</b>
+  modelo produce sobre cada entrada, con píxeles idénticos en todo salvo el método de fusión. Dos
+  precisiones sobre el diseño de la comparación.</p>
+
+  <p><b>Se agrega la metodología del trabajo de referencia</b>, que no estaba. El comparativo
+  «Top-Hat clásico» del benchmark corre con la parametrización manual r = 5 y m = 1; la metodología
+  de Ortega y Espinoza (2025) es ese mismo operador de disco único con (r, m) hallados por su PSO, y
+  el barrido con su aptitud devuelve r = 25 y m = 0,30 —la misma configuración que la propuesta—, de
+  modo que compararlas <b>aísla el banco de cinco elementos frente al disco único</b> a
+  hiperparámetros idénticos. Es la ablación del operador, vista sobre la tarea.</p>
+
+  <p><b>Las escenas no se eligen por conveniencia.</b> La regla se declara de antemano y se aplica
+  sobre el conteo por escena, e incluye el caso <b>adverso</b> a la propuesta: la escena ya publicada
+  —para poder cruzarla con la figura anterior—, la escena con más objetos donde la propuesta recupera
+  ambas clases y el visible no, la escena con más objetos donde ocurre lo contrario, y la escena con
+  más objetos donde ambas las recuperan.</p>
+
+  <p><b>Tabla 14.</b> Detecciones por entrada y por escena, en el formato <i>personas · luces</i>. En
+  el encabezado, la verdad de campo de cada escena. En negrita, los dos operadores morfológicos a
+  igual configuración.</p>
+  {TAB_DME}
+  <p class="lectura">Conviene precisar qué cuentan estos números: son <b>detecciones</b> por encima
+  del umbral de confianza, no aciertos emparejados con la verdad de campo. La regla de selección usó
+  el conteo de aciertos, de modo que una escena puede aparecer con detecciones de ambas clases sin
+  que ambas sean correctas. Un valor de luces <b>mayor</b> que la verdad de campo es, por
+  construcción, falso positivo.</p>
   {pie(pg)}
 </div>
 """)
 pg += 1
+
+for _e in DME_ESCENAS:
+    _p, _l = DME_GT[_e]
+    _g = _dme[_dme.escena == _e]
+    _prop = _g[_g.entrada == "Propuesta_Novedosa"].iloc[0]
+    _ref = _g[_g.entrada == "Ref_PSO"].iloc[0]
+    _vis = _g[_g.entrada == "VIS"].iloc[0]
+    _sob = _g[_g.lamp_detectadas > _g.lamp_gt]
+    H.append(f"""
+<div class="page">
+  <h2>15. Comparativa cualitativa (continuación): escena {_e}</h2>
+  <p>Criterio de selección: <b>{DME_CRITERIO[_e]}</b>. Verdad de campo: {_p} personas y {_l}
+  {'luz' if _l == 1 else 'luces'}.</p>
+  {figura(EXIST.get(f"fig_m3fd_detecciones_{_e}.png"),
+          f"M3FD, escena {_e}: detecciones del modelo único VIS+IR sobre las {DME_N_ENT} entradas. "
+          f"People en granate, Lamp en azul, umbral de confianza 0,30. Verdad de campo: "
+          f"{_p} personas y {_l} {'luz' if _l == 1 else 'luces'}.", 100)}
+  <p class="lectura">En esta escena el visible solo detecta {int(_vis.people_detectadas)} personas y
+  {int(_vis.lamp_detectadas)} luces; la propuesta, {int(_prop.people_detectadas)} y
+  {int(_prop.lamp_detectadas)}; y la metodología de la referencia a la misma configuración,
+  {int(_ref.people_detectadas)} y {int(_ref.lamp_detectadas)}. La comparación entre estas dos
+  últimas es la que aísla el aporte del banco sobre el disco:
+  {"el banco detecta más personas" if _prop.people_detectadas > _ref.people_detectadas
+   else ("el disco detecta más personas" if _prop.people_detectadas < _ref.people_detectadas
+         else "las dos detectan las mismas personas")} y
+  {"el banco más luces" if _prop.lamp_detectadas > _ref.lamp_detectadas
+   else ("el disco más luces" if _prop.lamp_detectadas < _ref.lamp_detectadas
+         else "las mismas luces")}.
+  {"Ninguna entrada sobredetecta luces aquí." if not len(_sob) else
+   "Sobredetectan luces por encima de la verdad de campo: "
+   + ", ".join(f"{r.etiqueta.split(' (')[0]} ({int(r.lamp_detectadas)})" for r in _sob.itertuples())
+   + ", lo que es coherente con la tasa de artefactos que Nabf mide sobre la imagen."}</p>
+  {pie(pg)}
+</div>
+""")
+    pg += 1
 
 H.append(f"""
 <div class="page">

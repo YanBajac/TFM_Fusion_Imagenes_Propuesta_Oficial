@@ -1,0 +1,229 @@
+{
+ "meta": {
+  "parametros": 3012018,
+  "clases": [
+   "People",
+   "Car",
+   "Bus",
+   "Motorcycle",
+   "Lamp",
+   "Truck"
+  ],
+  "imgsz": 640,
+  "checkpoint": "runs/detect/runs/m3fd/mixto/weights/best.pt"
+ },
+ "capas": [
+  {
+   "i": 0,
+   "tipo": "Conv",
+   "from": -1,
+   "cin": 3,
+   "cout": 16,
+   "k": 3,
+   "s": 2,
+   "res": 320
+  },
+  {
+   "i": 1,
+   "tipo": "Conv",
+   "from": -1,
+   "cin": 16,
+   "cout": 32,
+   "k": 3,
+   "s": 2,
+   "res": 160
+  },
+  {
+   "i": 2,
+   "tipo": "C2f",
+   "from": -1,
+   "cin": 32,
+   "cout": 32,
+   "s": 1,
+   "res": 160
+  },
+  {
+   "i": 3,
+   "tipo": "Conv",
+   "from": -1,
+   "cin": 32,
+   "cout": 64,
+   "k": 3,
+   "s": 2,
+   "res": 80
+  },
+  {
+   "i": 4,
+   "tipo": "C2f",
+   "from": -1,
+   "cin": 64,
+   "cout": 64,
+   "s": 1,
+   "res": 80
+  },
+  {
+   "i": 5,
+   "tipo": "Conv",
+   "from": -1,
+   "cin": 64,
+   "cout": 128,
+   "k": 3,
+   "s": 2,
+   "res": 40
+  },
+  {
+   "i": 6,
+   "tipo": "C2f",
+   "from": -1,
+   "cin": 128,
+   "cout": 128,
+   "s": 1,
+   "res": 40
+  },
+  {
+   "i": 7,
+   "tipo": "Conv",
+   "from": -1,
+   "cin": 128,
+   "cout": 256,
+   "k": 3,
+   "s": 2,
+   "res": 20
+  },
+  {
+   "i": 8,
+   "tipo": "C2f",
+   "from": -1,
+   "cin": 256,
+   "cout": 256,
+   "s": 1,
+   "res": 20
+  },
+  {
+   "i": 9,
+   "tipo": "SPPF",
+   "from": -1,
+   "cin": 256,
+   "cout": 256,
+   "s": 1,
+   "res": 20
+  },
+  {
+   "i": 10,
+   "tipo": "Upsample",
+   "from": -1,
+   "s": 1,
+   "res": 40
+  },
+  {
+   "i": 11,
+   "tipo": "Concat",
+   "from": [
+    -1,
+    6
+   ],
+   "res": 40
+  },
+  {
+   "i": 12,
+   "tipo": "C2f",
+   "from": -1,
+   "cin": 384,
+   "cout": 128,
+   "s": 1,
+   "res": 40
+  },
+  {
+   "i": 13,
+   "tipo": "Upsample",
+   "from": -1,
+   "s": 1,
+   "res": 80
+  },
+  {
+   "i": 14,
+   "tipo": "Concat",
+   "from": [
+    -1,
+    4
+   ],
+   "res": 80
+  },
+  {
+   "i": 15,
+   "tipo": "C2f",
+   "from": -1,
+   "cin": 192,
+   "cout": 64,
+   "s": 1,
+   "res": 80
+  },
+  {
+   "i": 16,
+   "tipo": "Conv",
+   "from": -1,
+   "cin": 64,
+   "cout": 64,
+   "k": 3,
+   "s": 2,
+   "res": 40
+  },
+  {
+   "i": 17,
+   "tipo": "Concat",
+   "from": [
+    -1,
+    12
+   ],
+   "res": 40
+  },
+  {
+   "i": 18,
+   "tipo": "C2f",
+   "from": -1,
+   "cin": 192,
+   "cout": 128,
+   "s": 1,
+   "res": 40
+  },
+  {
+   "i": 19,
+   "tipo": "Conv",
+   "from": -1,
+   "cin": 128,
+   "cout": 128,
+   "k": 3,
+   "s": 2,
+   "res": 20
+  },
+  {
+   "i": 20,
+   "tipo": "Concat",
+   "from": [
+    -1,
+    9
+   ],
+   "res": 20
+  },
+  {
+   "i": 21,
+   "tipo": "C2f",
+   "from": -1,
+   "cin": 384,
+   "cout": 256,
+   "s": 1,
+   "res": 20
+  },
+  {
+   "i": 22,
+   "tipo": "Detect",
+   "from": [
+    15,
+    18,
+    21
+   ],
+   "res": 20,
+   "clases": 6
+  }
+ ]
+}
