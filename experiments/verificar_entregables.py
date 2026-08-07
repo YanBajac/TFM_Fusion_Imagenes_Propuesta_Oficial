@@ -185,7 +185,11 @@ RETIRADAS = [
     # frecuencia, no el argmax, que sigue en r = 1 dentro del rango publicado.
     '16 de las 25',
 ]
-NEGADORES = ('no ', 'No ', 'ninguna', 'Ninguna', 'ningún', 'sin ', 'tampoco')
+# «NO » en mayusculas hace falta: el proyecto usa el NO enfatico en mayusculas —el cuerpo de la
+# lamina 19 dice «La optimizacion NO determina la configuracion adoptada», y las notas del orador
+# instruyen con «NO decir «...»» citando textual la frase retirada—. Sin esta variante, cualquier
+# frase de RETIRADAS que aparezca citada asi se reportaria como afirmada, o sea un falso positivo.
+NEGADORES = ('no ', 'No ', 'NO ', 'ninguna', 'Ninguna', 'ningún', 'sin ', 'tampoco')
 
 
 def afirmada(texto, frase):

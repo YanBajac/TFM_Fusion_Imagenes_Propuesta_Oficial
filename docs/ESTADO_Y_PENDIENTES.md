@@ -230,6 +230,42 @@ mismo peso» marcaba tres afirmaciones **legítimas** —libro, informe y README
 habla de las 25 celdas del barrido publicado, y eso es verdad. En el deck se reescribió por
 precisión, no por error. Un chequeo así forzaría a reescribir texto correcto.
 
+## Cerrado el 5 de agosto (tarde) — las notas del orador, las 15 que faltaban
+
+Quedaban 15 láminas con notas sin revisar (18 tienen; ya estaban hechas la 9, la 18 y la 19; las
+láminas 4, 6, 14, 15 y 16 no tienen). **Once defectos en nueve láminas.** Todas las cifras que las
+notas nuevas escriben se recalcularon contra los CSV antes de escribirlas.
+
+Esto importa más de lo que parece: **las notas no se imprimen en el PDF**, así que ningún
+verificador las miraba hasta el bloque 12. Se leen en voz alta frente a la mesa.
+
+| Lámina | Decía | El problema |
+|---|---|---|
+| 1 | «la tesis propone y **valida** un método…» | encuadre de UN aporte, anterior al reencuadre a dos. La lámina 4 dice «la tesis no sostiene que el método sea mejor» |
+| 5 | «un objetivo general y **cuatro** específicos» | su propia lámina lista **cinco**. El que se pierde es OE4, la auditoría de la batería — la mitad del segundo aporte |
+| 8 | «El PSO (caja punteada) calibra **r y m**» | el flujograma de esa misma lámina dice «el radio es decisión de diseño». Lo contradice su propia figura, la lámina 9 y H5. `Plan_Deck_Defensa.md` ya prescribía el cambio y nunca se aplicó |
+| 11 | «con **menos halos y ruido** que RP/DWT» | **falso y al revés**: Nabf 0,374 de la propuesta contra 0,224 de RP y 0,241 de DWT. Contra el Top-Hat clásico sí es más limpia (0,374 contra 0,586) |
+| 12 | «si se recuerda la versión anterior de esta nota…» | instrucción sobre el historial del material, inútil frente a la mesa |
+| 13 | «sostiene las ventajas donde la propuesta las reclama: **limpieza y estructura**» | es exactamente el bloque donde **pierde**: 17 de 20 contrastes adversos en fidelidad. Lo que la estadística respalda es la actividad espacial (24 de 25) |
+| 17 | «entre fusiones las diferencias son **pequeñas**» | la propuesta queda 0,046 por debajo de la mejor fusión — la mitad de lo que la fusión le gana al visible (0,813 → 0,906–0,952) |
+| 20 | «**óptimo hallado**» | es justo lo que H5 niega |
+| 23 | «invisibles para el detector en VIS» · «el IR no los ve» | las dos escenas estaban mal descriptas. El visible detecta **3 de 10** personas en 00389; el infrarrojo detecta **1 de las 5** luces en 00231 (AP@0,5 Lamp = 0,348), o sea que se degrada pero no es ciego |
+
+Dos ajustes propios sobre lo que salió de la revisión: en la 23 se aclara que los conteos son
+**detecciones sobre el umbral y no aciertos emparejados** —la fusión da 7 lámparas donde la verdad
+de campo tiene 5, y decirlo evita la pregunta—, y la nota de la 11 se acortó, porque venía
+larguísima para un apunte de hablar.
+
+Las notas nuevas **citan** la frase retirada dentro de una instrucción `NO decir «…»`. Es
+deliberado —el orador puede tener memorizada la redacción vieja— y es el estilo que ya usaba
+`Plan_Deck_Defensa.md`. Efecto colateral: obligó a agregar `'NO '` a `NEGADORES` en
+`verificar_entregables.py`, que reconocía `'no '` y `'No '` pero no la mayúscula, con lo cual
+cualquier frase de `RETIRADAS` citada así se habría reportado como afirmada. El cuerpo de la
+lámina 19 ya tenía el mismo patrón («La optimización NO determina…»).
+
+El PDF del deck **no se regeneró**: se comprobó que ninguna de las cifras nuevas llega al PDF,
+porque las notas no se imprimen.
+
 ## Pendientes, por prioridad
 
 ### 1. Los quince hallazgos `A_LEER`
@@ -307,13 +343,12 @@ había cinco. Conviene corregir esa frase del informe de auditoría.
 - **DOI del resto de la bibliografía**: 15 de 36 entradas lo llevan. APA 7 los pide
   todos y hay 21 más verificados, pero completarlos depende del reglamento de la UCOM,
   que sigue siendo el pendiente externo.
-- **Notas del orador del deck**: escritas por lámina en `docs/Plan_Deck_Defensa.md`, con
-  presupuesto de tiempo para los 20 minutos. Revisadas las de la **9, 18 y 19**, que decían lo
-  contrario de su lámina o del informe; **las otras 15 con notas siguen sin revisar** (las
-  láminas 4, 6, 14, 15 y 16 no tienen). El precedente dice que hay que compararlas una por una
-  con el cuerpo de su lámina **y con los CSV**: la de la 9 sostenía una afirmación sobre el
-  óptimo de `F_o` que ningún dato respalda, y ninguna herramienta la miraba porque las notas no
-  llegan al PDF. Ahora el bloque 12 de `verificar_entregables.py` sí lee el pptx.
+- **Notas del orador del deck**: ~~pendiente~~ **cerrado el 5 de agosto**. Las 18 láminas con
+  notas quedaron revisadas una por una contra el cuerpo de su lámina y contra los CSV; 14 tenían
+  defectos. Las láminas 4, 6, 14, 15 y 16 no tienen notas — **conviene decidir si deberían
+  tenerlas**, porque tres de ellas (14, 15 y 16) son las de la auditoría del criterio, que es el
+  segundo aporte y la parte que más preguntas va a atraer. `docs/Plan_Deck_Defensa.md` §3 les
+  asigna 1:30, 1:20 y 1:00 de exposición sin apunte escrito.
 - **Banda base de la pirámide de Laplace**: el comparativo fusiona su banda base por
   máxima actividad en lugar de promediarla. Declarado en las limitaciones; corregirlo
   cambiaría los resultados de LP.
