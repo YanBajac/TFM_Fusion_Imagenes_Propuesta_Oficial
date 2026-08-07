@@ -266,6 +266,36 @@ lámina 19 ya tenía el mismo patrón («La optimización NO determina…»).
 El PDF del deck **no se regeneró**: se comprobó que ninguna de las cifras nuevas llega al PDF,
 porque las notas no se imprimen.
 
+## Cerrado el 5 de agosto (noche) — las cinco láminas que no tenían notas
+
+Las láminas 4, 6, 14, 15 y 16 eran las únicas sin notas del orador. Tres de ellas —14, 15 y 16—
+son las de la auditoría del criterio: el segundo aporte, la parte que más preguntas atrae, con
+1:30, 1:20 y 1:00 de exposición asignados y sin apunte escrito.
+
+**`Plan_Deck_Defensa.md` ya traía las cinco redactadas; nunca se aplicaron.** Se verificaron contra
+el estado actual antes de escribirlas, y **tres afirmaciones del plan resultaron falsas**:
+
+| Lámina | El plan decía | Por qué no va |
+|---|---|---|
+| 14 | «ambos experimentos están versionados en `run_control_negativo.py`» | **Falso.** Ese script no contiene `avg_rank_sin_FE`, ni `friedman`, ni `chi2`: la redundancia de FE la produce `run_stats_analysis.py`. Mandaba al orador a citar el archivo equivocado ante la mesa |
+| 15 | «si alguien cita el libro diciendo que cae al **quinto lugar**, es una errata» | **Vencida.** El libro (p. 62) ya dice «desciende al **tercer** lugar (3,821), por detrás de la pirámide de Laplace (3,141) y de DTCWT (3,362)». Lo mandaba a defenderse de un error que ya no existe |
+| 15 | «a peso igualado la propuesta gana **con holgura**» | Son **0,166** — 3,528 contra 3,694. Se da la cifra |
+| 4 | «el propio libro declara la **circularidad del radio**» | La palabra no aparece en ninguno de los dos documentos, y H5 va sobre los **dos** hiperparámetros. Lo que el rango heredado fija por completo es el **peso** (m = 0,30 en 499 de 500); con el peso libre r = 25 es el óptimo exacto de Fo. Decirlo al revés regala un flanco |
+
+El deck queda con **notas en las 23 láminas**.
+
+### Un defecto del informe que salió de rebote
+
+Verificando la nota de la lámina 14 apareció que el informe publicaba, en **dos** lugares (p. 21 y
+§16), que el ruido «alcanza el segundo puesto entre **ocho** entradas». Es de una corrida
+anterior: el control negativo tiene hoy **14 entradas** —los 7 métodos, la imagen base, 4 fusiones
+de ruido y 2 desenfoques— y el ruido de σ = 0,20 queda **3.º**, con 5 de los 6 comparativos
+detrás. Las dos frases estaban escritas a mano.
+
+No se corrigieron a mano: `make_avances_report.py` ahora **carga `control_negativo_ranking.csv`** y
+deriva el ordinal, el total de entradas, el rango y cuántos comparativos quedan detrás. Así no
+vuelve a envejecer, que es la misma disciplina que el resto del informe.
+
 ## Pendientes, por prioridad
 
 ### 1. Los quince hallazgos `A_LEER`
@@ -343,12 +373,10 @@ había cinco. Conviene corregir esa frase del informe de auditoría.
 - **DOI del resto de la bibliografía**: 15 de 36 entradas lo llevan. APA 7 los pide
   todos y hay 21 más verificados, pero completarlos depende del reglamento de la UCOM,
   que sigue siendo el pendiente externo.
-- **Notas del orador del deck**: ~~pendiente~~ **cerrado el 5 de agosto**. Las 18 láminas con
-  notas quedaron revisadas una por una contra el cuerpo de su lámina y contra los CSV; 14 tenían
-  defectos. Las láminas 4, 6, 14, 15 y 16 no tienen notas — **conviene decidir si deberían
-  tenerlas**, porque tres de ellas (14, 15 y 16) son las de la auditoría del criterio, que es el
-  segundo aporte y la parte que más preguntas va a atraer. `docs/Plan_Deck_Defensa.md` §3 les
-  asigna 1:30, 1:20 y 1:00 de exposición sin apunte escrito.
+- **Notas del orador del deck**: ~~pendiente~~ **cerrado el 5 de agosto**. Las **23 láminas**
+  tienen notas y todas quedaron verificadas contra el cuerpo de su lámina y contra los CSV. De las
+  18 que ya tenían, 14 traían defectos; las 5 que no tenían se escribieron desde lo que el plan
+  había dejado redactado, corrigiendo cuatro afirmaciones suyas que no se sostenían.
 - **Banda base de la pirámide de Laplace**: el comparativo fusiona su banda base por
   máxima actividad en lugar de promediarla. Declarado en las limitaciones; corregirlo
   cambiaría los resultados de LP.

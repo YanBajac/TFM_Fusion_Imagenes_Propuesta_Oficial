@@ -824,6 +824,22 @@ _ajr = pd.read_csv(os.path.join(MR, "ajuste_comparativos_ranking.csv"), index_co
 _ajm = pd.read_csv(os.path.join(MR, "ajuste_comparativos_mejores.csv"))
 _abl = pd.read_csv(os.path.join(MR, "ablacion_banco_resumen.csv"), index_col=0)
 
+# Control negativo. El informe citaba «el segundo puesto entre ocho entradas» en dos lugares, a
+# mano y de una corrida anterior: el control tiene hoy 14 entradas —los 7 metodos, la imagen base,
+# 4 fusiones de ruido y 2 desenfoques— y el ruido de sigma = 0,20 queda TERCERO. Se deriva del CSV
+# para que no vuelva a envejecer.
+_cneg = pd.read_csv(os.path.join(MR, "control_negativo_ranking.csv")).set_index("brazo")
+CN_ENTRADAS = len(_cneg)
+_cn9 = _cneg["rango_9"].sort_values()          # menor rango = mejor
+_RUIDO_ALTO = "ruido_0.20"
+CN_POS_RUIDO = list(_cn9.index).index(_RUIDO_ALTO) + 1
+CN_RANGO_RUIDO = f"{_cn9[_RUIDO_ALTO]:.3f}".replace(".", ",")
+# cuantos de los seis comparativos quedan POR DETRAS del ruido (rango mayor)
+_COMPAR = ["PiramideLaplace", "RatioPiramide", "DWT", "DTCWT", "Curvelet", "TopHat_Clasico"]
+CN_COMPAR_DETRAS = int((_cneg.loc[_COMPAR, "rango_9"] > _cn9[_RUIDO_ALTO]).sum())
+# y el ordinal en femenino que usa el texto («la 3.ª»)
+CN_ORD_RUIDO = f"{CN_POS_RUIDO}.º"
+
 _ESC = {"A_todos_por_defecto": "A. Cada método en su configuración estándar",
         "B_comparativos_ajustados": "B. Comparativos ajustados; propuesta fija en r = 25",
         "C_todos_ajustados": "C. Todos ajustados, incluida la propuesta",
@@ -1988,8 +2004,9 @@ H.append(f"""
   es otra y conviene enunciarla con precisión: las nueve son <b>todas de tipo «mayor es mejor»</b>, de
   modo que ninguna penaliza el ruido ni los artefactos —la única métrica implementada con dirección
   inversa, Nabf, queda fuera del conjunto—. En consecuencia el criterio premia la magnitud del realce:
-  se verificó con un control negativo en el que una fusión artificial de ruido gaussiano alcanza el
-  segundo puesto entre ocho entradas con σ &ge; 0,10, por delante de los seis métodos comparativos, y
+  se verificó con un control negativo en el que una fusión artificial de ruido gaussiano con
+  σ = 0,20 alcanza el <b>{CN_ORD_RUIDO} puesto entre {CN_ENTRADAS} entradas</b> (rango
+  {CN_RANGO_RUIDO}), por delante de {CN_COMPAR_DETRAS} de los seis métodos comparativos, y
   cuyo rango mejora de forma monótona al aumentar la varianza. Los resultados de las secciones
   siguientes deben leerse con ese alcance.</p>
   {pie(21)}
@@ -2529,10 +2546,10 @@ H.append(f"""
         del trabajo la propuesta es {POS_RANK}.ª; con las diecisiete que el mismo evaluador calcula,
         {_POS_17}.ª. No cambia nada del operador ni de las imágenes.</li>
     <li>La batería de nueve <b>no distingue detalle útil de ruido</b>: una fusión artificial de
-        ruido gaussiano alcanza el segundo puesto entre ocho entradas con σ &ge; 0,10, por delante de
-        los seis métodos comparativos, y su rango <b>mejora monótonamente</b> al aumentar la
-        varianza. Incorporando Nabf, la única métrica con dirección inversa, el control cae como
-        corresponde.</li>
+        ruido gaussiano con σ = 0,20 alcanza el <b>{CN_ORD_RUIDO} puesto entre {CN_ENTRADAS}
+        entradas</b>, por delante de {CN_COMPAR_DETRAS} de los seis métodos comparativos, y su
+        rango <b>mejora monótonamente</b> al aumentar la varianza. Incorporando Nabf, la única
+        métrica con dirección inversa, el control cae como corresponde.</li>
     <li>La batería <b>contiene redundancia</b>: FE es EN reescalada por una constante por escena, de
         modo que produce rangos intra-bloque idénticos y el mismo χ² de Friedman. Las dimensiones
         efectivas son ocho, no nueve.</li>
