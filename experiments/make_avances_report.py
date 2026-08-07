@@ -1405,6 +1405,10 @@ th.l, td.l { text-align: left; padding-left: 2mm; }
 .par img { width: 100%; border: 1px solid #999; }
 .mont { margin-bottom: 4mm; text-align: center; }
 .mont img { width: 88%; border: 1px solid #999; }
+/* El montaje de la pagina de apertura de la seccion 11 va solo —los dos parrafos que lo preceden
+   no dejan lugar para el segundo—, asi que se lo deja ocupar todo el ancho en lugar de dejar el
+   pie de la pagina en blanco. */
+.mont.solo img { width: 100%; }
 .pie { position: absolute; bottom: 8mm; left: 20mm; right: 20mm; text-align: center; font-size: 9pt; }
 ul, ol { margin: 1.5mm 0 2.5mm 7mm; }
 li { margin-bottom: 1mm; text-align: justify; }
@@ -2157,18 +2161,30 @@ pg += 1
 H.append(f"""
 <div class="page">
   <h2>11. Resultados cualitativos: los {N_ESC} pares</h2>
-  <p>Para cada escena se muestran las fuentes VIS e IR, los seis comparativos y la propuesta (recuadro
-  rojo). Se sugiere observar: la visibilidad del objetivo térmico, la conservación de la textura del
-  fondo visible y la ausencia de halos en los bordes.</p>
-  {mont_html[0]}
-  {mont_html[1]}
+  <p>Para cada escena se muestran diez entradas: las fuentes VIS e IR, los seis comparativos, la
+  <b>metodología de la referencia</b> (recuadro azul) y la propuesta (recuadro rojo). Se sugiere
+  observar: la visibilidad del objetivo térmico, la conservación de la textura del fondo visible y
+  la ausencia de halos en los bordes.</p>
+  <p class="lectura">Por qué la metodología de la referencia es una entrada aparte del comparativo
+  «Top-Hat clásico». Aquel corre con la parametrización manual r = 5 y m = 1. La metodología de
+  Ortega y Espinoza es el <b>mismo operador de disco único</b> pero con el (r, m) que halla su PSO,
+  y sobre este corpus ese barrido devuelve <b>r = 25 y m = 0,30</b> —la celda de mejor aptitud de
+  su rejilla, F<sub>o</sub> = 1,7544 frente a 1,7507 en r = 1—. Son los <b>mismos</b>
+  hiperparámetros que adopta la propuesta, de modo que los dos últimos paneles de cada montaje se
+  diferencian únicamente en el operador: disco único contra banco de cinco elementos. Es la
+  ablación del operador, vista a ojo, y por eso van uno al lado del otro en la última fila.</p>
+  {mont_html[0].replace('class="mont"', 'class="mont solo"')}
   {pie(pg)}
 </div>
 """)
 pg += 1
-for i in range(2, N_ESC, 2):
-    blk = mont_html[i] + (mont_html[i + 1] if i + 1 < N_ESC else "")
-    H.append(f'<div class="page"><h2>11. Resultados cualitativos (pares {i+1} y {min(i+2,N_ESC)} de {N_ESC})</h2>'
+# Un solo montaje en la pagina de apertura: con los dos parrafos de arriba, dos montajes
+# desbordaban la pagina y el bloque 8b lo marcaba. Los pares arrancan entonces en el segundo.
+for i in range(1, N_ESC, 2):
+    solo = i + 1 >= N_ESC
+    blk = mont_html[i] + ("" if solo else mont_html[i + 1])
+    rot = (f'par {i+1} de {N_ESC}' if solo else f'pares {i+1} y {i+2} de {N_ESC}')
+    H.append(f'<div class="page"><h2>11. Resultados cualitativos ({rot})</h2>'
              f'{blk}{pie(pg)}</div>')
     pg += 1
 
