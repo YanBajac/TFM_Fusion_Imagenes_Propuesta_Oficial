@@ -698,6 +698,57 @@ except ImportError:
 except (ValueError, FileNotFoundError) as e:
     ok(False, f'no se pudo delimitar la bibliografia del libro: {e}')
 
+# Todo CSV con una columna de imagen tiene que cubrir EXACTAMENTE el corpus vivo. El defecto que
+# motiva el bloque: pso_por_imagen_libre.csv tenia 19 de los 20 pares —le faltaba
+# Triclobs_Kaptein_1123, el que sustituyo al corrupto Athena_heather_IR_hei_vis— porque se habia
+# corrido antes de la sustitucion. Se publico una tabla que comparaba esa columna contra otra del
+# corpus nuevo, y desde el texto no se veia: las dos columnas parecen homologas.
+#
+# La fecha del archivo NO sirve para detectarlo: pso_por_imagen.csv es anterior al corrimiento que
+# se sospechaba y su corpus estaba bien. Lo unico que discrimina es comparar los nombres contra
+# list_pairs(), que es la fuente de verdad del corpus.
+print('\n=== 14. los CSV por imagen cubren el corpus vivo ===')
+# CSV que NO publica ningun entregable: el desajuste se informa como aviso, no como fallo, pero se
+# informa, porque un CSV vencido en results/ es una figura equivocada esperando que alguien lo tome.
+NO_PUBLICADOS = {
+    'fo_ablacion_per_image.csv': 'lo produce eval_fo_optima.py y no lo consume ningun entregable; '
+                                 'ademas indexa las imagenes por numero (1..20) y no por nombre, '
+                                 'asi que no se puede rastrear a que par corresponde cada fila',
+}
+try:
+    import sys as _sys
+    _sys.path.insert(0, str(RAIZ))
+    from src.datasets import list_pairs as _lp
+    _VIVO = {Path(str(v)).stem for v, _i in _lp()}
+    print(f'  corpus vivo: {len(_VIVO)} pares segun list_pairs()')
+    _revisados = 0
+    for _csv in sorted(REP.glob('*.csv')):
+        if '.bak' in _csv.name:
+            continue
+        try:
+            _d = pd.read_csv(_csv, dtype=str, usecols=lambda c: c.lower() in ('imagen', 'image'))
+        except (ValueError, pd.errors.EmptyDataError):
+            continue
+        if _d.empty or not len(_d.columns):
+            continue
+        _u = set(_d.iloc[:, 0].dropna())
+        if not (_u & _VIVO):
+            continue      # otro dataset (M3FD, LLVIP) o indexado por numero: no aplica
+        _revisados += 1
+        _falta, _sobra = sorted(_VIVO - _u), sorted(_u - _VIVO)
+        _blando = _csv.name in NO_PUBLICADOS
+        ok(not _falta and not _sobra,
+           f'{_csv.name}: cubre el corpus vivo'
+           + (f' — faltan {_falta} · sobran {_sobra}' if (_falta or _sobra) else ''),
+           blando=_blando)
+    ok(_revisados >= 6, f'se revisaron {_revisados} CSV indexados por nombre de imagen')
+    for _n, _por in NO_PUBLICADOS.items():
+        if (REP / _n).exists():
+            print(f'        ({_n}: {_por})')
+except ImportError as _e:
+    print(f'  AVISO no se pudo importar list_pairs ({_e}): corpus sin verificar')
+    avisos.append('corpus de los CSV sin verificar (no se pudo importar list_pairs)')
+
 # --------------------------------------------- resumen
 print(f'\n=== {len(fallos)} fallos · {len(avisos)} avisos ===')
 for f in fallos:
