@@ -137,6 +137,80 @@ _rk = rankm["avg_rank"].sort_values()
 POS_RANK = list(_rk.index).index(PROP) + 1
 VAL_RANK = f"{_rk[PROP]:.2f}".replace(".", ",")
 LIDER_RANK = f"{_rk.iloc[0]:.2f}".replace(".", ",")
+
+# Las TRES agregaciones que ranking_methods.csv ya calcula. El informe leia solo la primera, que
+# es la que mas favorece a la propuesta, y afirmaba «con separacion estadisticamente
+# significativa» sin ningun test que respaldara esa separacion: Friedman y Wilcoxon corren por
+# metrica sobre los valores, no sobre el rango promedio. Las tres columnas estan en el CSV, una al
+# lado de la otra, de modo que cualquiera que lo abra ve lo que el informe no decia — y con la
+# tercera hay EMPATE. Publicarlo es mejor que ocultarlo: el orden de merito dependiendo de como se
+# agrega es exactamente lo que sostiene H2, o sea el segundo aporte del trabajo.
+_AGREG = [("avg_rank", "Rangos por métrica, las nueve",
+           "el criterio del trabajo de referencia"),
+          ("avg_rank_sin_FE", "Rangos por métrica, sin FE",
+           "las ocho dimensiones efectivas: FE es EN reescalada"),
+          ("avg_rank_medias", "Rango de los promedios",
+           "se promedia primero y se rankea después")]
+
+
+def _pos_val(col):
+    s_ = rankm[col].sort_values()
+    return list(s_.index).index(PROP) + 1, s_[PROP], s_
+
+
+AG_FILAS = []
+for _c, _et, _por in _AGREG:
+    _p, _v, _s = _pos_val(_c)
+    _empatan = [i for i in _s.index if abs(_s[i] - _v) < 5e-4 and i != PROP]
+    # Cuando la propuesta lidera, repetir «lider: la propuesta (su propio valor)» no informa nada:
+    # lo util es quien le sigue y por cuanto. La cuarta columna muestra eso.
+    _otros = [i for i in _s.index if i != PROP and i not in _empatan]
+    _seg = _otros[0] if _otros else None
+    AG_FILAS.append((_et, _por, _p, _v, _seg, (_s[_seg] if _seg else float("nan")), _empatan))
+# el empate de la tercera agregacion es el dato que hace valer la tabla; si desaparece, el parrafo
+# que lo comenta deja de tener sentido y hay que reescribirlo
+AG_EMPATE = AG_FILAS[2][6]
+POS_MEDIAS = AG_FILAS[2][2]
+
+_coma = lambda v, nd: f"{v:.{nd}f}".replace(".", ",")
+# las columnas de metrica de ranking_methods.csv, o sea todo lo que no es una agregacion
+N_METRICAS_RK = len([c for c in rankm.columns if not c.startswith("avg_rank")])
+def _celda_seg(p, emp, seg, vseg):
+    """Cuarta columna: con quien empata, o a quien le lleva ventaja y por cuanto."""
+    if emp:
+        return ('<b>empata</b> con ' + ' y '.join(LBL.get(x, x).split(" (")[0] for x in emp))
+    if seg is None:
+        return "&mdash;"
+    quien = LBL.get(seg, seg).split(" (")[0]
+    return (f'le sigue {quien} ({_coma(vseg, 3)})' if p == 1
+            else f'lidera {quien} ({_coma(vseg, 3)})')
+
+
+TAB_AGREGACIONES = (
+    '<table class="chica"><thead><tr><th class="l">Forma de agregar</th>'
+    '<th>Puesto de la propuesta</th><th>Valor</th>'
+    '<th class="l">El rival más cercano</th></tr></thead><tbody>'
+    + "".join(
+        f"<tr><td class='l'>{et}<br><span style='font-size:8.5pt;color:#444'>{por}</span></td>"
+        f"<td>{p}.º{' <b>(empate)</b>' if emp else ''}</td><td>{_coma(v, 3)}</td>"
+        f"<td class='l'>{_celda_seg(p, emp, seg, vseg)}</td></tr>"
+        for et, por, p, v, seg, vseg, emp in AG_FILAS) + '</tbody></table>')
+
+# Potencia del contraste de McNemar del conteo por escena (experiments/potencia_mcnemar.py).
+# El informe decia que la hipotesis de traslacion «se rechaza, con muestra suficiente». El
+# contraste es un McNemar exacto que NO rechaza —p = 0,21—, de modo que apoyarse en el exige decir
+# para que diferencia alcanza la muestra. Eso es una cuenta y ahora esta corrida.
+_pot = pd.read_csv(os.path.join(MR, "potencia_mcnemar.csv"))
+_d80 = _pot[_pot.potencia >= 0.80]
+POT_DELTA80 = f"{float(_d80.delta_pp.iloc[0]):.1f}".replace(".", ",")
+_cr = pd.read_csv(os.path.join(MR, "complementariedad_resumen.csv")).set_index("entrada")
+POT_B = int(_cr.loc[PROP, "gana_vs_VIS"])
+POT_C = int(_cr.loc[PROP, "pierde_vs_VIS"])
+POT_ND = POT_B + POT_C
+_dif_obs = 100.0 * (_cr.loc[PROP, "recupera_ambas"] - _cr.loc["VIS", "recupera_ambas"]) / _cr.loc[PROP, "escenas"]
+POT_DIF_OBS = f"{abs(_dif_obs):.1f}".replace(".", ",")
+POT_EN_OBS = f"{float(_pot.iloc[(_pot.delta_pp - abs(_dif_obs)).abs().argsort().iloc[0]].potencia):.2f}".replace(".", ",")
+assert _dif_obs < 0, "la diferencia por escena dejo de ser adversa: revisar el parrafo de H6"
 _fus = det.drop(index=[x for x in ("VIS", "IR") if x in det.index])
 LLVIP_PROP = f"{det.loc[PROP, 'mAP50']:.3f}".replace(".", ",")
 LLVIP_LO = f"{_fus['mAP50'].min():.3f}".replace(".", ",")
@@ -2217,6 +2291,45 @@ H.append(f"""
 """)
 
 pg = 31
+
+# El informe afirmaba que el primer puesto se obtiene «con separacion estadisticamente
+# significativa». No habia ningun test que respaldara eso: Friedman y Wilcoxon corren por metrica
+# sobre los valores, no sobre el rango promedio. Y ranking_methods.csv trae TRES columnas de
+# agregacion de las que el informe leia solo una, la que mas favorece a la propuesta. Publicar las
+# tres —con el empate a la vista— es mejor que dejar que la mesa abra el CSV: el orden de merito
+# dependiendo de como se agrega es exactamente lo que sostiene H2.
+H.append(f"""
+<div class="page">
+  <h2>9. Análisis estadístico (continuación): el orden depende de cómo se agrega</h2>
+  <p>El primer puesto del apartado anterior se obtiene promediando, para cada método, su rango
+  dentro de cada imagen. Es una decisión de agregación entre varias posibles, y conviene mostrar
+  qué pasa con las otras dos que este mismo trabajo calcula, porque están las tres en
+  <span class="mono">ranking_methods.csv</span> y cualquiera que abra el archivo las ve juntas.</p>
+
+  <p><b>Tabla 6a.</b> El mismo benchmark bajo tres formas de agregar las {N_METRICAS_RK} métricas.</p>
+  {TAB_AGREGACIONES}
+
+  <p class="lectura">Lectura. La propuesta encabeza con las dos agregaciones por rangos, y
+  sostiene el primer puesto incluso al retirar FE, que es la métrica redundante: eso responde la
+  objeción de que su ventaja viniera de contar dos veces la entropía. Pero con la tercera
+  —promediar primero los valores y rankear después— hay <b>empate</b> con la pirámide de Laplace,
+  en {_coma(AG_FILAS[2][3], 3)}. No cambió ninguna imagen ni ninguna métrica: cambió el orden de
+  dos operaciones. <b>No se reclama aquí una separación estadísticamente significativa</b>, y
+  conviene ser explícito sobre por qué: los contrastes de Friedman y Wilcoxon del apartado
+  anterior corren <b>por métrica y sobre los valores</b>, de modo que no autorizan a afirmar nada
+  sobre la diferencia entre dos rangos promedio. Un test sobre esa diferencia no se hizo.</p>
+
+  <p>Lejos de debilitar el resultado, esto es una instancia más del segundo aporte y de H2: el
+  orden de mérito no es una propiedad del operador sino del criterio con que se lo evalúa, y
+  «criterio» incluye la aritmética con que se resumen las métricas, no solo cuáles se eligen. La
+  sección 10 lleva el mismo examen a la composición del conjunto y al ajuste de los comparativos.
+  Lo que se sostiene es lo verificable: <b>con el criterio del trabajo de referencia, y con esa
+  agregación declarada, la propuesta encabeza el benchmark</b>.</p>
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
 H.append(f"""
 <div class="page">
   <h2>10. Robustez del resultado: ajuste simétrico y ablación del operador</h2>
@@ -2538,12 +2651,32 @@ H.append(f"""
   {f"{CP_PP:.4f}".replace(".", ",")}) y {CP_PROP_CRIT} escenas críticas resueltas. Aplicando la
   corrección de Holm a las catorce comparaciones de la familia, el <b>único contraste
   significativo</b> es la Pirámide de Laplace frente al infrarrojo.</p>
-  <p><b>Conclusión sobre el objetivo declarado.</b> La hipótesis de que una mejor calidad de
-  fusión se traduzca en la detección de objetos complementarios <b>se rechaza</b> para el método
-  propuesto, y con muestra suficiente: no queda como resultado no concluyente por falta de datos.
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+# La conclusion de H6 va en su propia pagina. Al declarar la potencia el parrafo crecio y la
+# pagina anterior —que ya lleva la tabla de las 232 escenas— derramaba; lo marco el bloque 8b.
+# Ademas es el remate de una de las siete hipotesis y se lee mejor sin la tabla encima.
+H.append(f"""
+<div class="page">
+  <h2>14. Clases complementarias (continuación): hasta dónde llega el rechazo</h2>
+  <p><b>Conclusión sobre el objetivo declarado, y hasta dónde llega.</b> La hipótesis de que una
+  mejor calidad de fusión se traduzca en la detección de objetos complementarios <b>se rechaza</b>
+  para el método propuesto. Conviene decir con precisión qué alcance tiene ese rechazo, porque el
+  contraste <b>no es significativo</b> y una prueba que no rechaza puede querer decir dos cosas
+  muy distintas: que no hay efecto, o que no había con qué verlo. El test de McNemar condiciona en
+  los pares discordantes, y acá son <b>{POT_ND}</b> ({POT_B} escenas a favor de la propuesta y
+  {POT_C} a favor del visible). Con esos {POT_ND} discordantes y &alpha; = 0,05, la prueba alcanza
+  una potencia de <b>0,80 recién a partir de {POT_DELTA80} puntos porcentuales</b> de diferencia;
+  para la diferencia observada de {POT_DIF_OBS} puntos la potencia es apenas {POT_EN_OBS}. Lo que
+  queda descartado es entonces <b>una ventaja de {POT_DELTA80} puntos o más</b>, no una ventaja de
+  cualquier tamaño — y la diferencia observada apunta, además, <b>en contra</b> de la propuesta.
   Hay una <b>tendencia</b> a favor de la fusión como técnica —tres comparativos superan al
   visible— pero ninguna diferencia sobrevive la corrección por multiplicidad. El hallazgo acota
-  el alcance práctico de la fusión morfológica de realce para esta tarea.</p>
+  el alcance práctico de la fusión morfológica de realce para esta tarea. El cálculo de potencia
+  está en <span class="mono">experiments/potencia_mcnemar.py</span>.</p>
   {pie(pg)}
 </div>
 """)
@@ -2658,7 +2791,12 @@ H.append(f"""
         significancia</b>, y
         cede en <b>{_H1_FID_ADV} de {_H1_FID_TOT}</b> del bloque de fidelidad.</li>
     <li>Bajo el criterio del trabajo de referencia <b>encabeza el benchmark</b>: puesto
-        {POS_RANK} de 7 con {VAL_RANK}, con separación estadísticamente significativa.</li>
+        {POS_RANK} de 7 con {VAL_RANK}, y conserva el primer puesto al retirar FE, la métrica
+        redundante ({_coma(AG_FILAS[1][3], 3)} frente a {_coma(AG_FILAS[1][5], 3)}). El primer
+        puesto es sólido <b>dentro</b> de ese criterio, no una propiedad independiente de él: al
+        rankear los promedios en lugar de promediar los rangos hay <b>empate</b> con la pirámide
+        de Laplace, y con las diecisiete métricas la propuesta pasa a {_POS_17}.ª. Es la
+        conclusión 1 vista desde adentro del propio benchmark.</li>
     <li>El resultado es <b>robusto frente al ajuste de los comparativos</b>: dándoles el mismo paso
         de ajuste, <b>ninguna de las cinco configuraciones del estado del arte lo alcanza</b>. El
         Top-Hat clásico lo supera por {f"{abs(VAL_B - VLID_B):.3f}".replace(".", ",")}, pero con m = 1
@@ -2709,7 +2847,9 @@ H.append(f"""
     <li>El <b>orden de calidad no predice el orden de utilidad</b> en la tarea posterior, y
         <b>ninguna fusión supera a la mejor modalidad individual</b>: en el conteo por escena la
         propuesta queda por debajo del visible solo. La hipótesis de que la mejora de calidad se
-        traslade a la detección <b>se rechaza</b>, con muestra suficiente.</li>
+        traslade a la detección <b>se rechaza</b> para una ventaja de {POT_DELTA80} puntos
+        porcentuales o más, que es la resolución que dan los {POT_ND} pares discordantes; la
+        diferencia observada es de {POT_DIF_OBS} puntos <b>en contra</b>.</li>
   </ol>
   <p class="lectura">Consecuencia metodológica: un protocolo de evaluación de fusión debería incluir
   al menos una métrica que <b>penalice artefactos</b>, declarar la <b>redundancia</b> entre sus
