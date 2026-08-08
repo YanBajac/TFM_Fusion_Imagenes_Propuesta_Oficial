@@ -1438,6 +1438,14 @@ _m_moda_val = float(_mej["m"].mode().iloc[0])
 _m_moda = f"{_m_moda_val:.4f}".replace(".", ",").rstrip("0").rstrip(",")
 _m30 = int((_mej["m"] == _m_moda_val).sum())
 _n_no_borde = int((_pso_img["m"] != _m_moda_val).sum())
+# Cuantos radios distintos aparecen en los anexos y cuantos por par. Estaban escritos a mano —«18
+# radios distintos y entre 2 y 6»— y describian el corpus anterior a la sustitucion del par
+# corrupto: el CSV vigente da 17 y de 2 a 5. Los otros cuatro numeros de esa misma nota si se
+# derivaban, asi que la frase quedaba mezclando cifras vivas con cifras muertas, y la muerta es
+# refutable contando en los veinte anexos que vienen a continuacion en el propio documento.
+_R_DISTINTOS = int(_pso_img["r"].nunique())
+_r_por_par = _pso_img.groupby("imagen")["r"].nunique()
+_R_POR_PAR_LO, _R_POR_PAR_HI = int(_r_por_par.min()), int(_r_por_par.max())
 
 # ------------------------------------------------------------------ HTML
 def formula(key, num):
@@ -2691,8 +2699,13 @@ H.append(f"""
     <li>La batería <b>contiene redundancia</b>: FE es EN reescalada por una constante por escena, de
         modo que produce rangos intra-bloque idénticos y el mismo χ² de Friedman. Las dimensiones
         efectivas son ocho, no nueve.</li>
-    <li>La <b>optimización no determina la configuración evaluada</b>: el argmax de la aptitud es
-        r = {R_PREFERIDO} y el peso queda en el piso del rango de búsqueda.</li>
+    <li>La <b>optimización no determina la configuración evaluada</b>, y lo que la determina es el
+        <b>rango de búsqueda heredado</b> y no el optimizador: dentro de ese rango el argmax de la
+        aptitud es r = {R_PREFERIDO} y el peso queda clavado en su piso, m = 0,30, en el
+        {REP_PISO_PCT} % de las corridas. El calificador es necesario: <b>sin la restricción del
+        rango el argmax es r = {OE_R_LIBRE}</b> —el radio que esta tesis adopta— con
+        m = {OE_M_LIBRE}. Lo que el intervalo ajeno fija por completo es el <b>peso</b>, no el
+        radio.</li>
     <li>El <b>orden de calidad no predice el orden de utilidad</b> en la tarea posterior, y
         <b>ninguna fusión supera a la mejor modalidad individual</b>: en el conteo por escena la
         propuesta queda por debajo del visible solo. La hipótesis de que la mejora de calidad se
@@ -2722,16 +2735,21 @@ pg += 1
 _nota_anexo = f"""
   <p class="lectura">Nota metodológica sobre el comportamiento de (r, m). Las 25 configuraciones de
   cada escena se ejecutan sobre el mismo espacio de búsqueda r &isin; [1, 25], m &isin; {V['rango_anexo']}.
-  El <b>radio sí varía</b> con la configuración del enjambre: en el conjunto de los anexos aparecen 18
-  radios distintos y entre 2 y 6 valores diferentes por par. El <b>peso, en cambio, se fija en
+  El <b>radio sí varía</b> con la configuración del enjambre: en el conjunto de los anexos aparecen
+  {_R_DISTINTOS} radios distintos y entre {_R_POR_PAR_LO} y {_R_POR_PAR_HI} valores diferentes por
+  par. El <b>peso, en cambio, se fija en
   m = {_m_moda}</b> (en {_m30} de {N_ESC} pares) porque F<sub>o</sub> <b>decrece de forma estrictamente
   monótona</b> al aumentar m en todo el rango publicado —verificado con un barrido de paso 0,05: cero
   tramos crecientes en 34, tanto con r = 1 como con r = 25—, de modo que el máximo se ubica
   necesariamente en el <b>límite inferior del intervalo</b>. No es una limitación de la búsqueda: las
   únicas {_n_no_borde} filas (de 500) con m &ne; {_m_moda} corresponden a configuraciones de pocas partículas o
-  iteraciones que no alcanzaron el óptimo. El radio que maximiza F<sub>o</sub> es r = 1 en {_r1} de {N_ESC}
-  imágenes, coherente con que la aptitud premia la fidelidad a las fuentes y por lo tanto el mínimo
-  realce; la configuración adoptada (<b>r = 25</b>) no proviene de F<sub>o</sub> sino del criterio de
+  iteraciones que no alcanzaron el óptimo. <b>Dentro de este rango de búsqueda</b> el radio que
+  maximiza F<sub>o</sub> es r = 1 en {_r1} de {N_ESC} imágenes, coherente con que la aptitud premia la
+  fidelidad a las fuentes y por lo tanto el mínimo realce. El calificador importa y la sección 5 lo
+  desarrolla: <b>sin la restricción del rango heredado el argmax de F<sub>o</sub> es r = 25</b>, con
+  m = {OE_M_LIBRE} y F<sub>o</sub> = {OE_FO_LIBRE}, de modo que r = 1 es el óptimo del intervalo
+  ajeno y no de la aptitud. La configuración adoptada (<b>r = 25</b>) no proviene de F<sub>o</sub>
+  restringida sino del criterio de
   evaluación de esta tesis —las nueve métricas, todas de tipo «mayor es mejor»—, que a igual peso
   favorece el radio máximo, sin que r = 1 desactive el banco: como se precisa en la sección 5, con
   r = 1 el disco es la cruz de 3×3 y las cuatro líneas orientadas son cuatro máscaras 3×3 distintas,
