@@ -637,6 +637,90 @@ TAB_DOS_RANGOS = ('<table class="chica"><thead><tr><th class="l">Criterio</th>'
                             for a, b, c in _FILAS_DOS) + '</tbody></table>')
 
 
+# ------------------- el mismo experimento IMAGEN POR IMAGEN, comparable con el de la referencia
+# El estudio de estabilidad de arriba optimiza sobre las tres imagenes de list_pairs()[::7] y
+# repite la semilla veinte veces, de modo que mide dispersion ENTRE SEMILLAS. La referencia hace
+# otra cosa: una corrida independiente POR ESCENA, 5 escenas x 25 configuraciones de enjambre. Para
+# contrastar los dos trabajos sin comparar peras con manzanas hace falta el barrido por imagen, que
+# tiene la misma estructura: 20 imagenes x 25 configuraciones.
+#
+# Lo que la tabla muestra es que con el MISMO rango el disco unico encuentra pesos interiores y el
+# banco de cinco se clava en el piso; y que al bajar el piso el banco se comporta como el disco.
+# O sea que la diferencia de comportamiento no esta en la busqueda sino en donde cae el optimo de
+# cada operador respecto del intervalo heredado.
+_ppi = pd.read_csv(os.path.join(MR, "pso_por_imagen.csv"))
+_ppl = pd.read_csv(os.path.join(MR, "pso_por_imagen_libre.csv"))
+
+# La tabla compara los dos barridos columna contra columna, de modo que TIENEN que correrse sobre
+# el mismo corpus. Cuando se escribio este apartado no era asi: al barrido del piso bajado le
+# faltaba Triclobs_Kaptein_1123 —el par que sustituyo al corrupto Athena_heather_IR_hei_vis— porque
+# se habia corrido antes de la sustitucion, sobre el corpus de 19 pares. Publicar una comparacion
+# con una columna de otro corpus es exactamente el defecto que este proyecto viene persiguiendo, y
+# desde el texto no se ve: las dos columnas parecen homologas. El assert lo hace visible.
+_falta = sorted(set(_ppi.imagen) - set(_ppl.imagen))
+_sobra = sorted(set(_ppl.imagen) - set(_ppi.imagen))
+assert not _falta and not _sobra, (
+    "los dos barridos por imagen no cubren el mismo corpus, asi que la Tabla 3f compararia "
+    f"columnas de corpus distintos. Falta(n) en el de piso bajado: {_falta}. Sobra(n): {_sobra}. "
+    "Correr:  .venv\\Scripts\\python.exe -X utf8 experiments/pso_por_imagen.py "
+    "--m-min 0.01 --salida pso_por_imagen_libre.csv")
+
+
+def _perfil(tab, col_unidad, col_r, col_m, piso):
+    """Resume un barrido por unidad: cuanto dispersa el peso y donde cae el radio."""
+    en_piso = (tab[col_m] - piso).abs() < 5e-4
+    return {
+        'corridas': len(tab),
+        'unidades': tab[col_unidad].nunique(),
+        'piso': f"{piso:.2f}".replace(".", ","),
+        'm_med': f"{tab[col_m].median():.4f}".replace(".", ","),
+        'm_rango': (f"[{tab[col_m].min():.3f}; {tab[col_m].max():.3f}]".replace(".", ",")),
+        'piso_pct': f"{100 * en_piso.mean():.1f}".replace(".", ","),
+        'r_moda': int(tab[col_r].mode().iloc[0]),
+        'r25_pct': f"{100 * (tab[col_r] == 25).mean():.1f}".replace(".", ","),
+    }
+
+
+_P_REF = _perfil(_ref, 'escena', 'r', 'm', 0.30)
+_P_NUE = _perfil(_ppi, 'imagen', 'r', 'm', 0.30)
+_P_LIB = _perfil(_ppl, 'imagen', 'r', 'm', float(_ppl.m.min()))
+
+# El argumento del apartado solo se sostiene si el banco se clava en el piso mucho mas que el
+# disco, y si al liberar el piso el radio modal pasa a r = 25 como en la referencia.
+assert float(_P_NUE['piso_pct'].replace(",", ".")) > float(_P_REF['piso_pct'].replace(",", ".")), \
+    "el banco no se ancla al piso mas que el disco: el apartado de la comparacion por imagen cae"
+assert _P_LIB['r_moda'] == _P_REF['r_moda'] == 25, \
+    "con el peso libre el radio modal ya no coincide con el de la referencia: revisar el apartado"
+
+_FILAS_IMG = [
+    ("Operador", "Disco único", "Banco de 5 elementos", "Banco de 5 elementos"),
+    ("Unidad optimizada", f"{_P_REF['unidades']} escenas", f"{_P_NUE['unidades']} imágenes",
+     f"{_P_LIB['unidades']} imágenes"),
+    ("Corridas", f"{_P_REF['corridas']}", f"{_P_NUE['corridas']}", f"{_P_LIB['corridas']}"),
+    ("Piso del rango de m", "0,30", "0,30", f"<b>{_P_LIB['piso']}</b>"),
+    ("Mediana de m*", _P_REF['m_med'], f"<b>{_P_NUE['m_med']}</b>", _P_LIB['m_med']),
+    ("Recorrido de m*", _P_REF['m_rango'], _P_NUE['m_rango'], _P_LIB['m_rango']),
+    ("Corridas en el piso", f"{_P_REF['piso_pct']} %", f"<b>{_P_NUE['piso_pct']} %</b>",
+     f"{_P_LIB['piso_pct']} %"),
+    ("Radio modal", f"r = {_P_REF['r_moda']}", f"r = {_P_NUE['r_moda']}",
+     f"<b>r = {_P_LIB['r_moda']}</b>"),
+    ("Corridas con r* = 25", f"{_P_REF['r25_pct']} %", f"{_P_NUE['r25_pct']} %",
+     f"<b>{_P_LIB['r25_pct']} %</b>"),
+]
+TAB_POR_IMAGEN = (
+    '<table class="chica"><thead><tr><th class="l">Criterio</th>'
+    '<th>Referencia<br>(su rango)</th><th>Esta tesis<br>(su rango)</th>'
+    '<th>Esta tesis<br>(piso bajado)</th></tr></thead><tbody>'
+    + "".join(f"<tr><td class='l'>{a}</td><td>{b}</td><td>{c}</td><td>{d}</td></tr>"
+              for a, b, c, d in _FILAS_IMG) + '</tbody></table>')
+
+# La razon fisica: cuanta energia de detalle extrae cada operador, y por tanto que peso necesita
+# cada uno para inyectar el mismo realce.
+_GAN = float(_en.loc['Propuesta · W_opt = líneas + disco (r=25)', 'ganancia_vs_clasico'])
+GANANCIA_BANCO = f"{_GAN:.2f}".replace(".", ",")
+REF_M_EQUIV = f"{_ref.m.median() / _GAN:.3f}".replace(".", ",")
+
+
 # --------------------------------- las 500 corridas, una por una, en una sola matriz
 # El trabajo de referencia publica sus 125 corridas en anexos; este publica las 500 en una
 # matriz de 25 configuraciones x 20 repeticiones, de modo que cada celda es una corrida y el
@@ -1884,6 +1968,44 @@ H.append(f"""
 
 H.append(f"""
 <div class="page">
+  <h2>5. Optimización por PSO (continuación): el mismo barrido, imagen por imagen</h2>
+  <p>El estudio de estabilidad anterior repite la semilla veinte veces sobre las mismas tres
+  imágenes, de modo que mide dispersión <b>entre semillas</b>. El trabajo de referencia hace otra
+  cosa: una corrida independiente <b>por escena</b>, cinco escenas por veinticinco configuraciones
+  de enjambre. Comparar uno con otro directamente sería comparar cosas distintas. Este trabajo tiene
+  el barrido con la misma estructura —{_P_NUE['unidades']} imágenes por veinticinco
+  configuraciones— y es el que permite el contraste limpio.</p>
+
+  <p><b>Tabla 3f.</b> El mismo experimento, imagen por imagen, en los dos trabajos y con el piso
+  del peso bajado.</p>
+  {TAB_POR_IMAGEN}
+
+  <p class="lectura">Lectura, en tres pasos. <b>Primero</b>, con el <i>mismo</i> rango los dos
+  operadores se comportan al revés: el disco único de la referencia encuentra pesos interiores
+  —mediana {_P_REF['m_med']}, solo el {_P_REF['piso_pct']} % de sus corridas en el piso— mientras el
+  banco de cinco elementos se clava en el piso en el <b>{_P_NUE['piso_pct']} %</b>.
+  <b>Segundo</b>, al bajar el piso el banco deja de pegarse al borde y su radio modal pasa a
+  <b>r = {_P_LIB['r_moda']}</b>, con el {_P_LIB['r25_pct']} % de las corridas ahí: el mismo radio
+  modal que la referencia obtiene con su propio rango ({_P_REF['r25_pct']} % de sus corridas).
+  <b>Tercero</b>, y es la conclusión: la diferencia de comportamiento no está en la calidad de la
+  búsqueda sino en <b>dónde cae el óptimo de cada operador respecto del intervalo heredado</b>.</p>
+
+  <p>La razón es física y está medida. El banco de cinco elementos extrae
+  <b>{GANANCIA_BANCO} veces</b> la energía de detalle del disco clásico, de modo que para inyectar
+  el mismo realce necesita un peso {GANANCIA_BANCO} veces menor. La mediana
+  {_P_REF['m_med']} que selecciona la referencia sobre su disco equivale a
+  <b>m = {REF_M_EQUIV}</b> sobre este operador, y ese valor queda <b>por debajo del piso 0,30</b>
+  del intervalo que ambos trabajos heredan. El piso no es entonces un piso para este operador: está
+  ya pasado el óptimo. El optimizador no falla —está detenido contra una pared colocada donde su
+  óptimo no está—, y la prueba es que al retirarla se comporta como el de la referencia. Los dos
+  trabajos coinciden en el orden de magnitud del realce físico y difieren en el número que lo
+  expresa.</p>
+  {pie(18)}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
   <h2>5. Optimización por PSO (continuación): el mismo barrido con el peso libre</h2>
   <p>El barrido determinista dice <i>dónde</i> está el óptimo; queda comprobar si la búsqueda lo
   <i>encuentra</i> cuando el rango no lo empuja contra la pared. Se repitió por tanto el estudio
@@ -1913,7 +2035,7 @@ H.append(f"""
   El aporte de la tesis en este punto no es entonces que el PSO falle, sino que <b>el rango de
   búsqueda heredado, y no el optimizador, es lo que fija uno de los dos hiperparámetros</b>. Es una
   afirmación sobre el protocolo, y ahora está medida en las dos direcciones.</p>
-  {pie(18)}
+  {pie(19)}
 </div>
 """)
 
@@ -1940,7 +2062,7 @@ H.append(f"""
   Excepción en el peso: {CORRIDAS_EXCEPCION}. El registro completo, con el peso, la aptitud y el
   tiempo de cada corrida, está en <i>pso_repeticiones_propuesta.csv</i>; el del barrido con el peso
   libre, en <i>pso_repeticiones_propuesta_libre.csv</i>.</p>
-  {pie(19)}
+  {pie(20)}
 </div>
 """)
 
@@ -1976,7 +2098,7 @@ H.append(f"""
   {formula("th_clasico", 17)}
   <p>Todos los métodos se ejecutan sobre los mismos {N_ESC} pares, con la misma implementación de métricas
   (<i>src/metrics/evaluators.py</i>), de modo que la comparación es directa.</p>
-  {pie(20)}
+  {pie(21)}
 </div>
 """)
 
@@ -2013,7 +2135,7 @@ H.append(f"""
   {CN_RANGO_RUIDO}), por delante de {CN_COMPAR_DETRAS} de los seis métodos comparativos, y
   cuyo rango mejora de forma monótona al aumentar la varianza. Los resultados de las secciones
   siguientes deben leerse con ese alcance.</p>
-  {pie(21)}
+  {pie(22)}
 </div>
 """)
 
@@ -2025,7 +2147,7 @@ H.append(f"""
   {tabla_metodos(ORDEN, resaltar=PROP)}
   <p class="lectura">{LECTURA_BENCH}</p>
   {figura(charts["quality"], "Cuatro métricas representativas (EN, FE, SF, SSIM); la barra azul es la propuesta.", 96)}
-  {pie(22)}
+  {pie(23)}
 </div>
 """)
 
@@ -2057,7 +2179,7 @@ for _b, _imgs in enumerate(_bloques, 1):
   <p><b>Tabla 4{chr(96 + _b)}.</b> Resultados por par — pares {(_b - 1) * 4 + 1} a
   {(_b - 1) * 4 + len(_imgs)} de {N_ESC}.</p>
   {tabla_por_imagen(_imgs)}{_lect}
-  {pie(22 + _b)}
+  {pie(23 + _b)}
 </div>
 """)
 
@@ -2068,7 +2190,7 @@ H.append(f"""
   {formula("friedman", 23)}
   <p><b>Tabla 5.</b> Resultados del test de Friedman.</p>
   {tabla_friedman()}
-  {pie(28)}
+  {pie(29)}
 </div>
 <div class="page">
   <h2>9. Análisis estadístico (continuación): Wilcoxon y ranking</h2>
@@ -2082,11 +2204,11 @@ H.append(f"""
   peor en {w_peor} y sin diferencia en {w_emp}; su ventaja más consistente es en las
   métricas de actividad e información (EN, FE, MG, SF), mejor que los cinco métodos del estado del arte.</p>
   {figura(charts["ranking"], "Ranking promedio global de los 7 métodos (9 métricas, dirección respetada); la barra azul es la propuesta.", 78)}
-  {pie(29)}
+  {pie(30)}
 </div>
 """)
 
-pg = 30
+pg = 31
 H.append(f"""
 <div class="page">
   <h2>10. Robustez del resultado: ajuste simétrico y ablación del operador</h2>

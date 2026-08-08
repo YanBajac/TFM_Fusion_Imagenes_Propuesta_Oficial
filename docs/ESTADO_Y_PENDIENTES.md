@@ -296,6 +296,49 @@ No se corrigieron a mano: `make_avances_report.py` ahora **carga `control_negati
 deriva el ordinal, el total de entradas, el rango y cuántos comparativos quedan detrás. Así no
 vuelve a envejecer, que es la misma disciplina que el resto del informe.
 
+## Cerrado el 7 de agosto — por qué la referencia dispersa y esta tesis converge
+
+Consulta del autor: «¿por qué las 500 corridas no funcionan en nuestro proyecto y en el de las
+chicas sí?». **La premisa estaba dada vuelta y conviene tenerlo claro para la defensa:** convergencia
+es el resultado bueno; dispersión significa que el optimizador no pudo decidir. Las 500 corridas
+funcionaron — contestaron que el peso es robusto (499 de 500 en el piso), que el radio no lo fija
+la búsqueda (51,4 % contra 45,6 %, que es H5) y que más corridas no pueden mejorar nada porque la
+aptitud es determinista y hay 25 radios enteros.
+
+Se agregó la **Tabla 3f** (página 18), que es la comparación manzana con manzana que faltaba. El
+estudio de estabilidad optimiza sobre tres imágenes con veinte semillas, o sea mide dispersión
+**entre semillas**; la referencia optimiza **por escena**, 5 × 25. El comparable es el barrido por
+imagen, 20 × 25:
+
+| | Referencia (disco único) | Esta tesis (banco) | Esta tesis, piso 0,01 |
+|---|---|---|---|
+| Mediana de m* | 0,6950 | **0,3000** | 0,0436 |
+| Corridas en el piso | 13,6 % | **96,6 %** | 38,2 % |
+| Radio modal | r = 25 | r = 1 | **r = 25** |
+| Corridas con r* = 25 | 83,2 % | 27,2 % | **67,6 %** |
+
+Con el **mismo** rango los dos operadores se comportan al revés; al bajar el piso, el banco se
+comporta como el disco. La razón es física y está medida: el banco extrae **4,21 veces** la energía
+de detalle del disco, así que la mediana 0,695 que la referencia elige equivale a **m = 0,165** en
+este operador — **por debajo del piso 0,30** que ambos heredan. El piso no es un piso para este
+operador: está ya pasado el óptimo.
+
+### Un CSV que venía de otro corpus
+
+Armando esa tabla apareció que `pso_por_imagen_libre.csv` tenía **19 imágenes y no 20**: le faltaba
+`Triclobs_Kaptein_1123`, el par que sustituyó al corrupto `Athena_heather_IR_hei_vis`. Se había
+corrido el 29/07 a las 15:22, **antes** de la sustitución; el otro barrido es de las 19:21. O sea
+que la tabla habría comparado columnas de **corpus distintos**, y desde el texto no se ve: las dos
+columnas parecen homólogas.
+
+Se recalculó (500 corridas, 20 imágenes) y las cifras casi no se movieron —piso 38,2 % contra el
+40,0 % anterior, r = 25 en 67,6 % contra 68,0 %—, así que la conclusión aguanta. Y
+`make_avances_report.py` ahora lleva un **assert** que compara los conjuntos de imágenes de los dos
+barridos y no deja compilar el informe si difieren.
+
+**Conviene revisar si hay más CSV anteriores al 29/07 19:21**, que es cuando se sustituyó el par:
+cualquiera de esa fecha o anterior está sobre el corpus de 19.
+
 ## Pendientes, por prioridad
 
 ### 1. Los quince hallazgos `A_LEER`
