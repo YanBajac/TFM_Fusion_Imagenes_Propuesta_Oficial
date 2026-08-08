@@ -173,6 +173,46 @@ AG_EMPATE = AG_FILAS[2][6]
 POS_MEDIAS = AG_FILAS[2][2]
 
 _coma = lambda v, nd: f"{v:.{nd}f}".replace(".", ",")
+
+# ---------------------------------------------------------------- las siete hipotesis
+# El informe usaba «H5» como etiqueta sin definirla en ninguna parte. La tabla las enuncia y dice
+# donde se contrasta cada una EN ESTE INFORME, que no es donde las contrasta el libro. Las dos
+# columnas de la derecha estan escritas a mano a proposito: son una afirmacion editorial sobre la
+# estructura del propio documento, no una cifra derivable de un CSV.
+_HIP = [
+    ("H1", "operador", "El banco no mejora de manera uniforme: desplaza el punto de operación "
+     "hacia la actividad espacial y en contra de la fidelidad a las fuentes.",
+     "§8 y §9"),
+    ("H2", "criterio", "El orden de mérito no es propiedad del operador sino del criterio: cambia "
+     "al cambiar la composición del conjunto de métricas, sin que cambie ninguna imagen.",
+     "§9 y §10"),
+    ("H3", "criterio", "La batería de nueve métricas «mayor es mejor» es insuficiente: sus "
+     "métricas de actividad crecen con la varianza inyectada y no distinguen detalle de ruido.",
+     "§7 (resumen)"),
+    ("H4", "criterio", "La batería contiene al menos una métrica que no aporta información "
+     "independiente de las demás.",
+     "§9"),
+    ("H5", "criterio", "La optimización no determina la configuración adoptada: los dos "
+     "hiperparámetros se apoyan en parte del mismo criterio con que después se evalúa.",
+     "§5, once páginas"),
+    ("H6", "criterio", "El orden de mérito de las métricas de imagen no predice el orden de "
+     "utilidad en la tarea, y ninguna fusión supera por un margen distinguible a la mejor "
+     "modalidad individual.",
+     "§13 y §14"),
+    ("H7", "operador", "Con el radio y el peso igualados, el banco de cinco elementos produce un "
+     "perfil de métricas distinto del que produce el disco único.",
+     "§10"),
+]
+assert sum(1 for _h in _HIP if _h[1] == "criterio") == 5 and len(_HIP) == 7, \
+    "el reparto 2 operador / 5 criterio es el argumento de los dos aportes: si cambia, hay que " \
+    "reescribir la lectura de la pagina y la lamina 4 del deck"
+TAB_HIPOTESIS = (
+    '<table class="chica"><thead><tr><th>H</th><th>Familia</th>'
+    '<th class="l">Enunciado</th><th>En este informe</th></tr></thead><tbody>'
+    + "".join(f"<tr><td><b>{h}</b></td><td>{fam}</td><td class='l'>{txt}</td><td>{dnd}</td></tr>"
+              for h, fam, txt, dnd in _HIP) + '</tbody></table>')
+
+
 # las columnas de metrica de ranking_methods.csv, o sea todo lo que no es una agregacion
 N_METRICAS_RK = len([c for c in rankm.columns if not c.startswith("avg_rank")])
 def _celda_seg(p, emp, seg, vseg):
@@ -1651,6 +1691,40 @@ chunks = [pairs_html[:_c1], pairs_html[_c1:_c1 + (_resto + 1) // 2],
           pairs_html[_c1 + (_resto + 1) // 2:]]
 H.append(f"""
 <div class="page">
+  <h2>1. Objetivos e hipótesis, y dónde se contrasta cada una</h2>
+  <p><b>Objetivo general</b>, en sus dos mitades. Primera: diseñar, implementar y caracterizar un
+  operador de fusión VIS/IR por Top-Hat de una sola escala con banco de cinco elementos
+  estructurantes, <b>determinando en qué dirección desplaza el punto de operación</b> frente a la
+  metodología clásica y a cinco configuraciones de referencia. Segunda: <b>auditar, con ese mismo
+  desarrollo como caso de estudio, la validez discriminativa del protocolo con que se lo
+  evalúa</b> —métricas «mayor es mejor», hiperparámetros elegidos sobre esas mismas métricas, y
+  contraste con una tarea posterior—, estableciendo qué conclusiones autoriza el orden de mérito
+  que ese protocolo produce.</p>
+
+  <p><b>Objetivos específicos.</b> <b>OE1</b>, formular e implementar el operador tal como se lo
+  evalúa. <b>OE2</b>, delimitar el alcance real del PSO: qué hiperparámetro determina la aptitud y
+  cuál es decisión de diseño. <b>OE3</b>, comparar contra la metodología clásica y cinco
+  configuraciones del estado del arte, con pruebas no paramétricas. <b>OE4</b>, evaluar si esa
+  batería discrimina calidad —control negativo, redundancia interna y sensibilidad a la
+  composición—. <b>OE5</b>, medir el efecto sobre la detección y contrastar el orden de calidad
+  con el de utilidad.</p>
+
+  <p><b>Tabla 1a.</b> Las siete hipótesis, su familia y dónde se contrastan <b>en este informe</b>.
+  Las siete <b>se sostienen</b>; el desarrollo completo está en el capítulo 5 del libro.</p>
+  {TAB_HIPOTESIS}
+
+  <p class="lectura">Dos advertencias, para que la tabla no prometa más de lo que este documento
+  entrega. El control negativo de <b>H3</b> se resume acá pero no se desarrolla: está en el libro,
+  §5.8.2. Y la correlación de rangos con que se contrasta <b>H6</b> tampoco se reproduce en estas
+  páginas; lo que sí está es el conteo por escena de la sección 14, con su análisis de potencia.
+  Cinco de las siete hipótesis son sobre el <b>criterio</b> y solo dos sobre el <b>operador</b>:
+  ése es el reparto que justifica hablar de dos aportes y no de uno.</p>
+  {pie(3)}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
   <h2>2. Datos de entrada: {N_ESC} pares VIS/IR (TNO)</h2>
   <p>Se trabaja con los {N_ESC} pares registrados del TNO Image Fusion Dataset (escenas de vigilancia
   nocturna: vehículos, personas, humo). Cada par tiene una imagen visible (VIS), que aporta textura y
@@ -1668,17 +1742,17 @@ H.append(f"""
   independientes</b> y el tamaño de muestra efectivo es menor que {N_ESC}; los resultados de las
   secciones 8 y 9 deben leerse con ese alcance. El libro lo declara también entre las limitaciones.</p>
   <div class="grid2">{"".join(chunks[0])}</div>
-  {pie(3)}
-</div>
-<div class="page">
-  <h2>2. Datos de entrada (continuación)</h2>
-  <div class="grid2">{"".join(chunks[1])}</div>
   {pie(4)}
 </div>
 <div class="page">
   <h2>2. Datos de entrada (continuación)</h2>
-  <div class="grid2">{"".join(chunks[2])}</div>
+  <div class="grid2">{"".join(chunks[1])}</div>
   {pie(5)}
+</div>
+<div class="page">
+  <h2>2. Datos de entrada (continuación)</h2>
+  <div class="grid2">{"".join(chunks[2])}</div>
+  {pie(6)}
 </div>
 """)
 
@@ -1694,7 +1768,7 @@ H.append(f"""
   (WTH) extrae el detalle brillante fino y la Black Top-Hat (BTH) el detalle oscuro fino:</p>
   {formula("tophat", 3)}
   {figura(EXIST.get("fig_morfologia_tophat.png"), "Efecto de las operaciones morfológicas y de las transformadas WTH/BTH sobre una señal del dataset.", 80)}
-  {pie(6)}
+  {pie(7)}
 </div>
 """)
 
@@ -1715,7 +1789,7 @@ H.append(f"""
   <p>Las cuatro respuestas direccionales se <b>promedian</b>, de modo que ninguna orientación queda
   privilegiada y el ruido direccional se atenúa:</p>
   {formula("wth_lin4", 7)}
-  {pie(7)}
+  {pie(8)}
 </div>
 <div class="page">
   <h2>4. Propuesta novedosa (continuación)</h2>
@@ -1738,7 +1812,7 @@ H.append(f"""
   detalle brillante y resta el oscuro sobre la base, ponderados por el peso de contraste m:</p>
   {formula("fuse_src", 13)}
   {formula("recon", 14)}
-  {pie(8)}
+  {pie(9)}
 </div>
 """)
 
@@ -1775,7 +1849,7 @@ H.append(f"""
   con el rango m &isin; {V['rango']}.</p>
   {tabla_grid}
   <p class="lectura">{LECTURA_PSO}</p>
-  {pie(9)}
+  {pie(10)}
 </div>
 <div class="page">
   <h2>5. Optimización por PSO (continuación): convergencia y óptimo</h2>
@@ -1786,7 +1860,7 @@ H.append(f"""
   realce conservador; el operador propuesto (disco + líneas por suma, aptitud orientada a
   fusión) aprovecha el radio máximo disponible con un peso un orden de magnitud menor, reflejo
   de que la suma de cinco respuestas concentra más energía de detalle por unidad de peso.</p>
-  {pie(10)}
+  {pie(11)}
 </div>
 """)
 
@@ -1824,7 +1898,7 @@ H.append(f"""
   <i>referencia_pso_ortega_espinoza.py</i>).</p>
   {TAB_REFERENCIA}
 
-  {pie(11)}
+  {pie(12)}
 </div>
 """)
 
@@ -1851,7 +1925,7 @@ H.append(f"""
   del rango publicado una vez corregida la diferencia de energía entre los dos operadores. Parece bajo
   únicamente si se olvida que el operador cambió.</p>
 
-  {pie(12)}
+  {pie(13)}
 </div>
 """)
 
@@ -1891,7 +1965,7 @@ H.append(f"""
   interior, sino que <b>confirma un óptimo que la forma de la aptitud determina</b>; lo que se hereda
   del trabajo de referencia es la elección del rango.</p>
 
-  {pie(13)}
+  {pie(14)}
 </div>
 """)
 
@@ -1929,7 +2003,7 @@ H.append(f"""
   tendencia, y la aptitud media se mueve en una banda de {REP_BANDA}. La rejilla de {N_CFG}
   configuraciones del trabajo de referencia no gana estabilidad con más partículas ni más
   iteraciones.</p>
-  {pie(14)}
+  {pie(15)}
 </div>
 """)
 
@@ -1947,7 +2021,7 @@ H.append(f"""
   es también la única que no llega al piso del peso en el 100 % de sus repeticiones. La columna del
   radio confirma lo que la tabla anterior resume: la proporción que termina en r = 1 no sigue
   ninguna tendencia con el número de partículas ni con las iteraciones.</p>
-  {pie(15)}
+  {pie(16)}
 </div>
 """)
 
@@ -1993,7 +2067,7 @@ H.append(f"""
   pueden mejorarlo, porque el máximo ya está alcanzado. Y el argumento de monotonía del peso, que
   hasta aquí estaba medido con r = 25, se verifica ahora en <b>los veinticinco radios</b>: el mejor
   peso dentro del rango publicado es el piso {"en todos" if OE_PISO_SIEMPRE else "en algunos"}.</p>
-  {pie(16)}
+  {pie(17)}
 </div>
 """)
 
@@ -2044,7 +2118,7 @@ H.append(f"""
   diseño que amplifica el contraste: la referencia optimiza <b>por escena</b>, con una corrida
   independiente para cada una, mientras este trabajo promedia la aptitud sobre tres escenas, lo que
   suaviza la superficie y hace que un solo óptimo domine.</p>
-  {pie(17)}
+  {pie(18)}
 </div>
 """)
 
@@ -2082,7 +2156,7 @@ H.append(f"""
   óptimo no está—, y la prueba es que al retirarla se comporta como el de la referencia. Los dos
   trabajos coinciden en el orden de magnitud del realce físico y difieren en el número que lo
   expresa.</p>
-  {pie(18)}
+  {pie(19)}
 </div>
 """)
 
@@ -2117,7 +2191,7 @@ H.append(f"""
   El aporte de la tesis en este punto no es entonces que el PSO falle, sino que <b>el rango de
   búsqueda heredado, y no el optimizador, es lo que fija uno de los dos hiperparámetros</b>. Es una
   afirmación sobre el protocolo, y ahora está medida en las dos direcciones.</p>
-  {pie(19)}
+  {pie(20)}
 </div>
 """)
 
@@ -2144,7 +2218,7 @@ H.append(f"""
   Excepción en el peso: {CORRIDAS_EXCEPCION}. El registro completo, con el peso, la aptitud y el
   tiempo de cada corrida, está en <i>pso_repeticiones_propuesta.csv</i>; el del barrido con el peso
   libre, en <i>pso_repeticiones_propuesta_libre.csv</i>.</p>
-  {pie(20)}
+  {pie(21)}
 </div>
 """)
 
@@ -2180,7 +2254,7 @@ H.append(f"""
   {formula("th_clasico", 17)}
   <p>Todos los métodos se ejecutan sobre los mismos {N_ESC} pares, con la misma implementación de métricas
   (<i>src/metrics/evaluators.py</i>), de modo que la comparación es directa.</p>
-  {pie(21)}
+  {pie(22)}
 </div>
 """)
 
@@ -2217,7 +2291,7 @@ H.append(f"""
   {CN_RANGO_RUIDO}), por delante de {CN_COMPAR_DETRAS} de los seis métodos comparativos, y
   cuyo rango mejora de forma monótona al aumentar la varianza. Los resultados de las secciones
   siguientes deben leerse con ese alcance.</p>
-  {pie(22)}
+  {pie(23)}
 </div>
 """)
 
@@ -2229,7 +2303,7 @@ H.append(f"""
   {tabla_metodos(ORDEN, resaltar=PROP)}
   <p class="lectura">{LECTURA_BENCH}</p>
   {figura(charts["quality"], "Cuatro métricas representativas (EN, FE, SF, SSIM); la barra azul es la propuesta.", 96)}
-  {pie(23)}
+  {pie(24)}
 </div>
 """)
 
@@ -2261,7 +2335,7 @@ for _b, _imgs in enumerate(_bloques, 1):
   <p><b>Tabla 4{chr(96 + _b)}.</b> Resultados por par — pares {(_b - 1) * 4 + 1} a
   {(_b - 1) * 4 + len(_imgs)} de {N_ESC}.</p>
   {tabla_por_imagen(_imgs)}{_lect}
-  {pie(23 + _b)}
+  {pie(24 + _b)}
 </div>
 """)
 
@@ -2272,7 +2346,7 @@ H.append(f"""
   {formula("friedman", 23)}
   <p><b>Tabla 5.</b> Resultados del test de Friedman.</p>
   {tabla_friedman()}
-  {pie(29)}
+  {pie(30)}
 </div>
 <div class="page">
   <h2>9. Análisis estadístico (continuación): Wilcoxon y ranking</h2>
@@ -2286,11 +2360,11 @@ H.append(f"""
   peor en {w_peor} y sin diferencia en {w_emp}; su ventaja más consistente es en las
   métricas de actividad e información (EN, FE, MG, SF), mejor que los cinco métodos del estado del arte.</p>
   {figura(charts["ranking"], "Ranking promedio global de los 7 métodos (9 métricas, dirección respetada); la barra azul es la propuesta.", 78)}
-  {pie(30)}
+  {pie(31)}
 </div>
 """)
 
-pg = 31
+pg = 32
 
 # El informe afirmaba que el primer puesto se obtiene «con separacion estadisticamente
 # significativa». No habia ningun test que respaldara eso: Friedman y Wilcoxon corren por metrica
