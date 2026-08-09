@@ -108,6 +108,19 @@ DIRECTION = {"EN": 1, "SD": 1, "FE": 1, "MG": 1, "MI_vis": 1, "MI_ir": 1, "SF": 
              "SSIM": 1, "PSNR": 1}
 METS = list(DIRECTION.keys())
 
+# Coma decimal. El informe escribe con coma en la prosa pero varias TABLAS y los rotulos de las
+# figuras de barras salian con punto, de modo que en la misma pagina el mismo numero aparecia de
+# las dos formas —1,7350 en el texto y 1.7350 en la celda de al lado—. Este helper unifica el
+# formato en un solo lugar en lugar de repetir el replace en cada f-string.
+def dec(v, nd):
+    return f"{v:.{nd}f}".replace(".", ",")
+
+
+def dec_exp(v, nd=1):
+    """Notacion cientifica con coma en la mantisa: 6,9e-17 y no 6.9e-17."""
+    return f"{v:.{nd}e}".replace(".", ",")
+
+
 def tabla_metodos(methods, resaltar=None):
     best = {}
     for mk in METS:
@@ -120,7 +133,7 @@ def tabla_metodos(methods, resaltar=None):
         for mk in METS:
             v = means.loc[m, mk]
             b = "<b>" if best.get(mk) == m else ""
-            tds.append(f'<td>{b}{v:.3f}{"</b>" if b else ""}</td>')
+            tds.append(f'<td>{b}{dec(v, 3)}{"</b>" if b else ""}</td>')
         name = LBL.get(m, m)
         if m == resaltar:
             name = f"<b>{name}</b>"
@@ -1285,8 +1298,10 @@ def _enum(ks, con_valor=True):
     """Enumera metricas en prosa, opcionalmente con su valor."""
     if not ks:
         return ""
-    fmt = {"SF": ".2f", "PSNR": ".2f"}
-    ps = [(f"{_NOM_MET[k]} ({k} {means.loc[PROP, k]:{fmt.get(k, '.3f')}})"
+    # con dec() y no con el formato directo: estas cifras caian en la misma pagina que la tabla
+    # de medias, de modo que el mismo numero salia «6.986» en la prosa y «6,986» en la celda.
+    nd = {"SF": 2, "PSNR": 2}
+    ps = [(f"{_NOM_MET[k]} ({k} {dec(means.loc[PROP, k], nd.get(k, 3))})"
            if con_valor else _NOM_MET[k]) for k in ks]
     return ps[0] if len(ps) == 1 else ", ".join(ps[:-1]) + " y " + ps[-1]
 
@@ -1333,7 +1348,7 @@ for n in [2, 4, 6, 8, 10]:
     for T in [10, 20, 30, 40, 50]:
         v = piv.loc[n, T]
         b = "<b>" if abs(v - gbest_F) < 5e-4 else ""
-        tds.append(f"<td>{b}{v:.4f}{'</b>' if b else ''}</td>")
+        tds.append(f"<td>{b}{dec(v, 4)}{'</b>' if b else ''}</td>")
     filas_grid.append(f'<tr><td class="l"><b>n = {n}</b></td>{"".join(tds)}</tr>')
 tabla_grid = ('<table class="chica"><tr><th class="l">Partículas \\ Iteraciones</th>'
               + "".join(f"<th>T = {T}</th>" for T in [10, 20, 30, 40, 50])
@@ -1346,7 +1361,7 @@ for ax, mk in zip(axes, key):
     cols = [AZUL if m == PROP else GRIS for m in ORDEN]
     ax.bar(range(len(ORDEN)), vals, color=cols, width=0.62)
     for i, v in enumerate(vals):
-        ax.text(i, v, f"{v:.3f}", ha="center", va="bottom", fontsize=6.3)
+        ax.text(i, v, dec(v, 3), ha="center", va="bottom", fontsize=6.3)
     ax.set_title(f'{mk} (mayor mejor)', fontsize=9)
     ax.set_xticks(range(len(ORDEN)))
     ax.set_xticklabels([SHORT[m] for m in ORDEN], fontsize=6.5, rotation=30, ha="right")
@@ -1481,8 +1496,8 @@ EXIST = {n: fig_file(n) for n in [
 print("imagenes ok")
 
 def tabla_friedman():
-    rows = "".join(f'<tr><td class="l">{r.metric}</td><td>{r.chi2:.1f}</td>'
-                   f'<td>{r.p_value:.1e}</td><td>{"Sí" if r.significant_05 else "No"}</td></tr>'
+    rows = "".join(f'<tr><td class="l">{r.metric}</td><td>{dec(r.chi2, 1)}</td>'
+                   f'<td>{dec_exp(r.p_value)}</td><td>{"Sí" if r.significant_05 else "No"}</td></tr>'
                    for r in fried.itertuples())
     return ('<table class="chica"><tr><th class="l">Métrica</th><th>χ² de Friedman</th>'
             f'<th>p-valor</th><th>Significativa (α = 0,05)</th></tr>{rows}</table>')

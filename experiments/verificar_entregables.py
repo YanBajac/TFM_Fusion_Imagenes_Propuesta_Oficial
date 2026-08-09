@@ -795,6 +795,75 @@ if 'avances' in DOCUMENTOS:
 else:
     print('  AVISO no esta el informe de avances: rotulos sin revisar')
 
+# El informe escribe con coma decimal en la prosa, pero varias TABLAS y los rotulos de una figura
+# salian con punto: en la misma pagina el mismo numero aparecia de las dos formas —«6,986» en la
+# celda y «6.986» en el renglon de abajo—. Eran unas 106 cifras entre la tabla de medias, la del
+# barrido, la de Friedman, los rotulos de la figura de cuatro metricas y la lectura de la tabla de
+# medias.
+#
+# El chequeo tiene que excluir TRES cosas que llevan punto legitimamente, y distinguirlas es todo
+# el trabajo:
+#   1. los separadores de miles —90.000 evaluaciones, 3.012.018 parametros—, que en castellano van
+#      con punto;
+#   2. los numeros de seccion y de version —§5.8.2, 4.3 Respuestas, Ultralytics 8.4.68—;
+#   3. la tabla de configuracion del detector, que DECLARA transcribir los valores literales del
+#      archivo args.yaml «con punto decimal, para que puedan copiarse tal cual». Ahi el punto es
+#      correcto y cambiarlo romperia el proposito de la tabla.
+print('\n=== 16. coma decimal en el informe (salvo lo que legitimamente lleva punto) ===')
+if 'avances' in DOCUMENTOS:
+    # separador de miles: grupos de exactamente tres digitos, posiblemente encadenados
+    # OJO: la forma no alcanza para distinguir el separador de miles del decimal de tres cifras.
+    # «6.840» encaja igual de bien en \d{1,3}(\.\d{3})+ que «90.000», y la primera version de este
+    # bloque daba por buenas las 65 cifras de la tabla de medias por eso. Lo que sí discrimina en
+    # este documento es lo que viene DESPUES: los separadores de miles siempre preceden a un
+    # sustantivo en minuscula —«90.000 evaluaciones», «3.012.018 parametros», «2.000 imagenes»—
+    # mientras los decimales de una tabla van seguidos de otro numero o de fin de celda.
+    _MILES = re.compile(r'^\d{1,3}(\.\d{3})+$')
+    # Solo nombres de archivo, versiones y enlaces. NO se excluye por la cercania de «Tabla» o
+    # «Figura»: la primera version del chequeo lo hacia y tapaba las primeras celdas de cada
+    # tabla, que es justo donde estaban la mitad de los defectos —contaba 43 donde habia mas de
+    # cien—. Un chequeo que excluye de mas es peor que no tenerlo.
+    _CTX_OK = re.compile(r'\.py|\.csv|\.json|\.pt|\.yaml|doi|http|§|Ultralytics|PyTorch|cu\d|'
+                         r'yolov', re.I)
+    # Los numeros de subseccion —«4.1 Elementos estructurantes»— no son decimales. En lugar de
+    # adivinarlos con una regex se leen del HTML que el generador escribe al lado del PDF, que es
+    # donde los encabezados estan marcados como tales. Si el HTML no esta, el conjunto queda
+    # vacio y el chequeo se pone mas estricto, no menos.
+    _SECS = set()
+    _html = DOCS / '_local' / 'Avances_Tesis.html'
+    if _html.exists():
+        _h = _html.read_text(encoding='utf-8', errors='replace')
+        for _m in re.finditer(r'<h[23][^>]*>\s*(\d+(?:\.\d+)+)', _h):
+            _SECS.add(_m.group(1))
+        print(f'  {len(_SECS)} numeros de subseccion excluidos: {sorted(_SECS)}')
+    _con_punto = []
+    with fitz.open(str(DOCUMENTOS['avances']['ruta'])) as _d:
+        for _i in range(_d.page_count):
+            _t = plano(_d[_i].get_text())
+            # la pagina que declara el punto literal queda fuera por su propia declaracion
+            if 'con punto decimal' in _t:
+                continue
+            for _m in re.finditer(r'\d+\.\d+(\.\d+)*', _t):
+                _s = _m.group(0)
+                if _MILES.match(_s) and re.match(r'\s+[a-záéíóúñ]', _t[_m.end():_m.end() + 3]):
+                    continue
+                # numero de subseccion, y ademas seguido del titulo en mayuscula
+                if _s in _SECS and re.match(r'\s+[A-ZÁÉÍÓÚÑ]', _t[_m.end():_m.end() + 3]):
+                    continue
+                _ctx = _t[max(0, _m.start() - 34):_m.end() + 20]
+                if _CTX_OK.search(_ctx):
+                    continue
+                _con_punto.append((_i + 1, _s, _ctx.strip()))
+    ok(not _con_punto,
+       f'ninguna cifra con punto decimal fuera de la tabla que lo declara'
+       + (f' — {len(_con_punto)}: ' + '; '.join(f'p{p} «{s}»' for p, s, _c in _con_punto[:6])
+          if _con_punto else ''))
+    if _con_punto:
+        for _p, _s, _c in _con_punto[:4]:
+            print(f'        p.{_p}: ...{_c}...')
+else:
+    print('  AVISO no esta el informe de avances: coma decimal sin revisar')
+
 # --------------------------------------------- resumen
 print(f'\n=== {len(fallos)} fallos · {len(avisos)} avisos ===')
 for f in fallos:
