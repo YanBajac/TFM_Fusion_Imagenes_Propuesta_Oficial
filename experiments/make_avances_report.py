@@ -174,6 +174,40 @@ POS_MEDIAS = AG_FILAS[2][2]
 
 _coma = lambda v, nd: f"{v:.{nd}f}".replace(".", ",")
 
+# Recuento POR BLOQUES de los contrastes de Wilcoxon. Las conclusiones citaban «24 de 25
+# contrastes favorables» y «17 de 20 adversos» y el cuerpo del informe no derivaba esas cifras en
+# ninguna parte: la seccion 9 contaba 31 / 19 / 4, que es otro corte —todos los contrastes contra
+# los SEIS comparativos—. Las dos cuentas son ciertas, pero la conclusion usaba un numero que el
+# lector no podia rastrear dentro del documento. El corte del 24/25 son los CINCO metodos del
+# estado del arte, sin el Top-Hat clasico, que es el comparativo del mismo operador.
+#
+# Ademas el recuento por bloques es la forma en que H1 esta enunciada —desplaza el punto de
+# operacion, no mejora de manera uniforme—, de modo que es la lectura que corresponde.
+_SOTA5 = ["PiramideLaplace", "RatioPiramide", "DWT", "DTCWT", "Curvelet"]
+BLOQ_ACT = ["EN", "SD", "FE", "MG", "SF"]          # actividad espacial
+BLOQ_FID = ["MI_vis", "MI_ir", "SSIM", "PSNR"]     # fidelidad a las fuentes
+
+
+def _bloque(metricas):
+    s = wilc[(wilc.metric.isin(metricas)) & (wilc.tophat == PROP)
+             & (wilc.baseline.isin(_SOTA5))]
+    fav = s[(s.sig_holm_05) & (s["diff"] > 0)]
+    adv = s[(s.sig_holm_05) & (s["diff"] < 0)]
+    ns = s[~s.sig_holm_05]
+    peor = ns.loc[ns.p_holm.idxmin()] if len(ns) else None
+    return {"n": len(s), "fav": len(fav), "adv": len(adv), "ns": len(ns),
+            "excepcion": (f"{peor.metric} frente a {LBL.get(peor.baseline, peor.baseline).split(' (')[0]}, "
+                          f"p<sub>Holm</sub> = {_coma(peor.p_holm, 3)}") if peor is not None else ""}
+
+
+BL_ACT, BL_FID = _bloque(BLOQ_ACT), _bloque(BLOQ_FID)
+
+# (el subconjunto de ajuste del PSO se calcula mas abajo, donde list_pairs ya esta importado)
+assert BL_ACT["n"] == 25 and BL_FID["n"] == 20, (
+    f"el corte por bloques dejo de dar 25 y 20 contrastes ({BL_ACT['n']} y {BL_FID['n']}): las "
+    "conclusiones citan esas cifras, hay que revisarlas")
+assert BL_ACT["adv"] == 0, "aparecio un contraste adverso y significativo en el bloque de actividad"
+
 # ---------------------------------------------------------------- las siete hipotesis
 # El informe usaba «H5» como etiqueta sin definirla en ninguna parte. La tabla las enuncia y dice
 # donde se contrasta cada una EN ESTE INFORME, que no es donde las contrasta el libro. Las dos
@@ -1365,6 +1399,16 @@ VIS_D = os.path.join(ROOT, "data", "raw", "VIS"); IR_D = os.path.join(ROOT, "dat
 import sys as _sys
 _sys.path.insert(0, ROOT)
 from src.datasets import list_pairs as _list_pairs
+
+# Las escenas sobre las que se ajusta el PSO. El informe decia «sobre las escenas representativas
+# del TNO»: no decia cuales, ni cuantas, ni —lo que importa— que estan DENTRO de los veinte pares
+# sobre los que despues se reporta. Ese solapamiento no invalida nada, pero es justo lo que H5
+# sostiene, de modo que callarlo era desaprovechar evidencia propia y dejar un flanco abierto.
+_AJUSTE = [os.path.splitext(p[0].name)[0] for p in _list_pairs()][::7]
+AJ_N = len(_AJUSTE)
+AJ_NOMBRES = ", ".join(x.replace("_", " ") for x in _AJUSTE)
+assert AJ_N == 3, f"el subconjunto de ajuste dejo de ser de 3 escenas ({AJ_N}): revisar el parrafo"
+
 pairs_html = []
 for idx, nm in enumerate([p[0].name for p in _list_pairs()], 1):
     v = Image.open(os.path.join(VIS_D, nm)).convert("L")
@@ -1844,15 +1888,22 @@ H.append(f"""
   2 a 10 en incrementos de 2 y número de iteraciones de 10 a 50 en incrementos de 10, es decir,
   <b>25 configuraciones</b>. El espacio de búsqueda adopta el rango del mismo trabajo para el radio,
   r ∈ [1, 25]; para el peso se usa m &isin; {V['rango']}. Cada configuración se ejecutó con semilla
-  propia sobre las escenas representativas del TNO.</p>
+  propia, promediando la aptitud sobre <b>{AJ_N} de los {N_ESC} pares</b> —{AJ_NOMBRES}—, elegidos
+  por un salto uniforme sobre la lista ordenada del corpus
+  (<span class="mono">list_pairs()[::7]</span>) para acotar el costo. Conviene declarar que esos
+  {AJ_N} pares <b>pertenecen a los {N_ESC} sobre los que después se reporta</b>, de modo que la
+  elección del punto de operación <b>no es independiente de la evaluación</b>: es lo que sostiene
+  H5, y por eso se enuncia acá y no solo en las conclusiones.</p>
   <p><b>Tabla 1.</b> Resultado del barrido: mejor aptitud F<sub>o</sub> alcanzada por cada configuración
   con el rango m &isin; {V['rango']}.</p>
   {tabla_grid}
-  <p class="lectura">{LECTURA_PSO}</p>
   {pie(10)}
 </div>
 <div class="page">
   <h2>5. Optimización por PSO (continuación): convergencia y óptimo</h2>
+  <!-- La lectura del barrido vive aca y no bajo su tabla: al declarar el subconjunto de ajuste, la
+       pagina anterior paso a derramar y esta pagina trata justamente de lo que la lectura dice. -->
+  <p class="lectura">{LECTURA_PSO}</p>
   {figura(charts["pso"], f"Mejor aptitud Fo alcanzada según el número de partículas (Tmax = 50), con el rango m ∈ {V['rango']}.", 84)}
   <p>{PARRAFO_RADIO}</p>
   <p>La comparación con el trabajo de referencia es directa: con el mismo diseño experimental
@@ -2356,9 +2407,17 @@ H.append(f"""
   <p><b>Tabla 6.</b> Resumen de los {len(wtab)} contrastes de la propuesta: mejor / peor / sin
   diferencia significativa (≈), α = 0,05.</p>
   {tabla_wilcoxon}
-  <p class="lectura">Lectura: la propuesta resulta significativamente mejor en {w_mejor} contrastes,
-  peor en {w_peor} y sin diferencia en {w_emp}; su ventaja más consistente es en las
-  métricas de actividad e información (EN, FE, MG, SF), mejor que los cinco métodos del estado del arte.</p>
+  <p class="lectura">Lectura <b>por bloques</b>, que es la forma en que H1 está enunciada. Contra
+  los cinco métodos del estado del arte, el bloque de <b>actividad espacial</b> (EN, SD, FE, MG,
+  SF) da <b>{BL_ACT['fav']} de {BL_ACT['n']}</b> contrastes favorables y significativos y
+  <b>ninguno adverso</b>; el único que no alcanza significancia es {BL_ACT['excepcion']}. El
+  bloque de <b>fidelidad a las fuentes</b> (MI<sub>vis</sub>, MI<sub>ir</sub>, SSIM, PSNR) da
+  <b>{BL_FID['adv']} de {BL_FID['n']}</b> adversos y significativos. Sobre el total de los
+  {w_mejor + w_peor + w_emp} contrastes contra los seis comparativos —incluido el Top-Hat clásico,
+  que es el mismo operador—: {w_mejor} mejor, {w_peor} peor y {w_emp} sin diferencia. Los dos
+  recuentos dicen lo mismo: <b>no es una mejora uniforme sino un desplazamiento del punto de
+  operación</b>, que es exactamente lo que afirma H1. Las conclusiones citan el recuento por
+  bloques.</p>
   {figura(charts["ranking"], "Ranking promedio global de los 7 métodos (9 métricas, dirección respetada); la barra azul es la propuesta.", 78)}
   {pie(31)}
 </div>
