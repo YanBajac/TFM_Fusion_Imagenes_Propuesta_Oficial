@@ -755,6 +755,46 @@ except ImportError as _e:
     print(f'  AVISO no se pudo importar list_pairs ({_e}): corpus sin verificar')
     avisos.append('corpus de los CSV sin verificar (no se pudo importar list_pairs)')
 
+# Los rotulos de las tablas del informe, en orden de aparicion. El defecto que motiva el bloque:
+# al agregar una tabla nueva se le puso «Tabla 3f», que ya existia mas adelante, de modo que el
+# documento tenia dos Tabla 3f y ademas la 3e quedaba DESPUES de la 3f. Y de antes venia la tabla
+# del detector rotulada 10 apareciendo cuatro paginas antes que la 9.
+#
+# Nada de eso lo veia ningun chequeo: el generador arma cada rotulo a mano en su literal HTML, asi
+# que dos tablas pueden llevar el mismo numero sin que nada proteste. Un lector que busca «la
+# Tabla 3f» encuentra dos.
+print('\n=== 15. rotulos de tabla del informe: sin repetidos y en orden ===')
+if 'avances' in DOCUMENTOS:
+    _rot = []
+    with fitz.open(str(DOCUMENTOS['avances']['ruta'])) as _d:
+        for _i in range(_d.page_count):
+            for _m in re.finditer(r'Tabla (\d+)([a-z]?)\.', plano(_d[_i].get_text())):
+                _rot.append((_i + 1, int(_m.group(1)), _m.group(2), _m.group(0)[:-1]))
+    print(f'  {len(_rot)} rotulos: ' + ' · '.join(f'p{p}:{e}' for p, _n, _s, e in _rot))
+
+    _etqs = [e for _p, _n, _s, e in _rot]
+    _rep = sorted({e for e in _etqs if _etqs.count(e) > 1})
+    ok(not _rep, 'ningun rotulo de tabla se repite' + (f' — repetidos {_rep}' if _rep else ''))
+
+    _nums = [n for _p, n, _s, _e in _rot]
+    _baja = [(_rot[i - 1][3], _rot[i][3]) for i in range(1, len(_nums))
+             if _nums[i] < _nums[i - 1]]
+    ok(not _baja, 'la parte numerica no retrocede'
+                  + (f' — retrocede en {_baja}' if _baja else ''))
+
+    # Dentro de un mismo numero, las letras tienen que ir creciendo. No se exige que la base «N»
+    # preceda a «Na»: el informe usa desde antes la convencion inversa —la Tabla 2a esta en la
+    # p. 12 y la Tabla 2 en la p. 14— y forzarla obligaria a renumerar todo el documento.
+    _mal_letra = []
+    for _num in sorted(set(_nums)):
+        _ls = [s for _p, n, s, _e in _rot if n == _num and s]
+        if _ls != sorted(_ls):
+            _mal_letra.append((_num, _ls))
+    ok(not _mal_letra, 'dentro de cada número las letras van en orden'
+                       + (f' — desordenadas {_mal_letra}' if _mal_letra else ''))
+else:
+    print('  AVISO no esta el informe de avances: rotulos sin revisar')
+
 # --------------------------------------------- resumen
 print(f'\n=== {len(fallos)} fallos · {len(avisos)} avisos ===')
 for f in fallos:

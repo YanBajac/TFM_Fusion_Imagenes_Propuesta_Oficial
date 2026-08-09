@@ -209,6 +209,18 @@ BL_ACT, BL_FID = _bloque(BLOQ_ACT), _bloque(BLOQ_FID)
 #
 # La comparacion es contra el RIVAL MAS FUERTE en cada metrica, que es la mas exigente posible:
 # cada metrica contra su propio mejor comparativo, no contra el promedio de los seis.
+# Cuanto separan entre si a las fusiones en LLVIP. Todo el capitulo de deteccion descansa en UNA
+# corrida y UNA semilla por brazo, y el informe no lo advertia en ninguna parte: la unica mencion a
+# «una sola semilla» en las 83 paginas es sobre el barrido PSO, que es otra cosa. Sin repeticiones
+# no se puede separar el orden entre fusiones del ruido de inicializacion, y las fusiones estan a
+# centesimas unas de otras. Lo que SI se sostiene es la brecha grande contra el visible.
+_lld_o = det.drop(index=[x for x in ("VIS", "IR") if x in det.index]).sort_values(
+    "mAP50", ascending=False)
+_gaps = _lld_o.mAP50.to_numpy()[:-1] - _lld_o.mAP50.to_numpy()[1:]
+DET_GAP_MIN = f"{float(_gaps.min()):.4f}".replace(".", ",")
+DET_GAP_VIS = f"{float(_lld_o.mAP50.min() - det.loc['VIS', 'mAP50']):.3f}".replace(".", ",")
+DET_N_FUS = len(_lld_o)
+
 _disp = pd.read_csv(os.path.join(MR, "dispersion_pareada.csv"))
 DISP_N = len(_disp)
 DISP_GANA = int(((_disp.dif_media > 0) & _disp.ic_excluye_cero).sum())
@@ -325,7 +337,7 @@ _fus = det.drop(index=[x for x in ("VIS", "IR") if x in det.index])
 LLVIP_PROP = f"{det.loc[PROP, 'mAP50']:.3f}".replace(".", ",")
 LLVIP_LO = f"{_fus['mAP50'].min():.3f}".replace(".", ",")
 LLVIP_HI = f"{_fus['mAP50'].max():.3f}".replace(".", ",")
-# El visible y el infrarrojo estaban escritos a mano en la lectura de la Tabla 9, con
+# El visible y el infrarrojo estaban escritos a mano en la lectura de la tabla de LLVIP (hoy la Tabla 10), con
 # 0,808 y 0,957 de una corrida anterior, mientras la tabla de arriba —generada desde el
 # CSV— imprimia 0,813 y 0,971. Ahora los tres salen del mismo dato.
 LLVIP_VIS = f"{det.loc['VIS', 'mAP50']:.3f}".replace(".", ",")
@@ -844,7 +856,7 @@ _ppl = pd.read_csv(os.path.join(MR, "pso_por_imagen_libre.csv"))
 _falta = sorted(set(_ppi.imagen) - set(_ppl.imagen))
 _sobra = sorted(set(_ppl.imagen) - set(_ppi.imagen))
 assert not _falta and not _sobra, (
-    "los dos barridos por imagen no cubren el mismo corpus, asi que la Tabla 3f compararia "
+    "los dos barridos por imagen no cubren el mismo corpus, asi que la Tabla 3e compararia "
     f"columnas de corpus distintos. Falta(n) en el de piso bajado: {_falta}. Sobra(n): {_sobra}. "
     "Correr:  .venv\\Scripts\\python.exe -X utf8 experiments/pso_por_imagen.py "
     "--m-min 0.01 --salida pso_por_imagen_libre.csv")
@@ -2219,7 +2231,7 @@ H.append(f"""
   el barrido con la misma estructura —{_P_NUE['unidades']} imágenes por veinticinco
   configuraciones— y es el que permite el contraste limpio.</p>
 
-  <p><b>Tabla 3f.</b> El mismo experimento, imagen por imagen, en los dos trabajos y con el piso
+  <p><b>Tabla 3e.</b> El mismo experimento, imagen por imagen, en los dos trabajos y con el piso
   del peso bajado.</p>
   {TAB_POR_IMAGEN}
 
@@ -2256,7 +2268,7 @@ H.append(f"""
   de bajar el piso del peso de 0,30 a {LIB_PISO}. Todo lo demás es idéntico: mismas escenas, mismas
   semillas, mismo operador.</p>
 
-  <p><b>Tabla 3e.</b> El mismo barrido bajo los dos rangos de búsqueda.</p>
+  <p><b>Tabla 3f.</b> El mismo barrido bajo los dos rangos de búsqueda.</p>
   {TAB_DOS_RANGOS}
 
   <p class="lectura">Lectura, y es la confirmación del apartado anterior. <b>El peso</b>: con el rango
@@ -2293,7 +2305,7 @@ H.append(f"""
   identifica al pie. El total son {CORRIDAS_EVALS} evaluaciones de aptitud y {CORRIDAS_HORAS} horas de
   cálculo.</p>
 
-  <p><b>Tabla 3f.</b> Radio óptimo devuelto por cada una de las {CORRIDAS_TOTAL} corridas. Filas:
+  <p><b>Tabla 3g.</b> Radio óptimo devuelto por cada una de las {CORRIDAS_TOTAL} corridas. Filas:
   partículas (n) e iteraciones (T). Columnas: número de repetición.</p>
   {TAB_500_RADIO}
 
@@ -2695,7 +2707,7 @@ H.append(f"""
   <p>La configuración es la misma en las dos pruebas y quedó registrada en los <i>args.yaml</i> de
   cada corrida: <b>{YOLO_ENTORNO}</b>. Los valores se transcriben <b>literales</b> del archivo de
   configuración —con punto decimal— para que puedan copiarse tal cual.</p>
-  <p><b>Tabla 10.</b> Configuración de entrenamiento e inferencia del detector, común a las dos
+  <p><b>Tabla 9.</b> Configuración de entrenamiento e inferencia del detector, común a las dos
   pruebas.</p>
   {TAB_YOLO_HIPER}
   <p class="lectura">Nota: se parte del modelo preentrenado en COCO y se reentrena por completo, sin
@@ -2749,7 +2761,12 @@ H.append(f"""
   (peatones nocturnos; subconjunto de 2.000 imágenes de entrenamiento y 500 de validación). Como los
   pares VIS/IR están registrados, las anotaciones valen para toda versión fusionada: la diferencia de
   mAP aísla el efecto del método de fusión.</p>
-  <p><b>Tabla 9.</b> Detección de peatones en LLVIP — mAP por entrada del detector.</p>
+  <p><b>Tabla 10.</b> Detección de peatones en LLVIP — mAP por entrada del detector.
+  <span style="font-weight:normal">Un entrenamiento por entrada, con una sola semilla: sin
+  repeticiones <b>no se puede separar el orden entre fusiones del ruido de inicialización</b>, y
+  las {DET_N_FUS} fusiones se apilan en centésimas —la menor distancia entre dos consecutivas es
+  {DET_GAP_MIN}—. Lo que sí sobrevive a cualquier semilla es la brecha contra el visible solo, de
+  {DET_GAP_VIS} puntos de mAP.</span></p>
   {tabla_det()}
   <p class="lectura">Lectura: toda fusión supera con claridad al visible solo (mAP@0,5 de {LLVIP_VIS} a la banda
   {LLVIP_LO}–{LLVIP_HI}); el infrarrojo solo es la modalidad más fuerte ({LLVIP_IR}) y ninguna
@@ -2887,7 +2904,12 @@ H.append(f"""
   orden cambia según la columna que se priorice. En negrita, el mejor valor de cada columna.</p>
   <p><b>Tabla 13.</b> Comparativa de las nueve entradas en la prueba de detección (LLVIP con un
   detector por entrada; M3FD con un único detector e inferencia por entrada; el conteo por escena
-  sobre las {M3FD_COMP} escenas que contienen las dos clases complementarias).</p>
+  sobre las {M3FD_COMP} escenas que contienen las dos clases complementarias).
+  <span style="font-weight:normal">Vale acá la misma advertencia de la Tabla 10: <b>un
+  entrenamiento por entrada y una sola semilla</b>. Las diferencias de pocas centésimas entre
+  entradas <b>no deben leerse como un orden</b>; lo que el capítulo sostiene son las brechas
+  grandes —el visible contra la banda de fusiones, y el infrarrojo por encima de todas ellas en
+  LLVIP—.</span></p>
   {TAB_DETECCION}
   <p class="lectura">Lectura: los líderes por columna son {DET_LIDERES}. Es decir que la mejor
   entrada depende de la pregunta: si el objetivo es detectar peatones nocturnos, el
