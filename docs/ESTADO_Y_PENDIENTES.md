@@ -1,4 +1,4 @@
-# Estado y pendientes — 5 de agosto de 2026
+# Estado y pendientes — 8 de agosto de 2026
 
 Punto de retomada. Todo lo que sigue está verificado; lo que no, está marcado como tal.
 
@@ -57,7 +57,7 @@ Medido el 5 de agosto sobre los archivos compilados, no copiado de la versión a
 |---|---|---|
 | Libro | 74 pág. | **38** referencias auditadas, sección 5.8 de auditoría del protocolo |
 | Deck | 22 láminas + reserva (23 pág. de PDF) | |
-| Avances | 77 pág. | cero derrames de página; la portada es la única sin pie |
+| Avances | 82 pág. | cero derrames de página; la portada es la única sin pie |
 | README | 572 líneas | |
 
 ## Cerrado el 3 de agosto (sesión de la tarde) — el deck
@@ -338,6 +338,55 @@ barridos y no deja compilar el informe si difieren.
 
 **Conviene revisar si hay más CSV anteriores al 29/07 19:21**, que es cuando se sustituyó el par:
 cualquiera de esa fecha o anterior está sobre el corpus de 19.
+
+## Cerrado el 8 de agosto — la auditoría del informe de avances
+
+Se auditó el informe desde cuatro ángulos (estructura, trazabilidad de las cifras, defensibilidad
+ante la mesa, presentación) y se cerraron las cinco primeras prioridades. **Todo lo que sigue se
+verificó contra el PDF o el CSV antes de tocarlo**, y la auditoría misma descartó cinco hallazgos
+suyos por no sostenerse.
+
+| Qué | Estado |
+|---|---|
+| **La contradicción del argmax.** La p. 19 decía que r = 25 es «la que la optimización elige» y la conclusión 4, cuarenta páginas después, «el argmax de la aptitud es r = 1» — **sin el calificador de rango**. Las dos ciertas en su marco, escritas como la misma afirmación | corregido |
+| **El Anexo publicaba «18 radios distintos y entre 2 y 6 por par»**; el CSV vigente da **17** y **2 a 5**. Del corpus anterior a la sustitución del par corrupto | derivado del CSV |
+| **«Con separación estadísticamente significativa»** — no existía ningún test sobre rangos agregados | retirado |
+| **«Con muestra suficiente»** (×2) — el contraste es un McNemar exacto con **p = 0,2100**, o sea que no rechaza | reemplazado por la potencia medida |
+| **`ranking_methods.csv` trae tres agregaciones** y el informe leía sólo la que más favorece. Con la tercera hay **empate exacto** con Laplace en 3,556 | publicadas las tres |
+| **No enunciaba objetivos ni las siete hipótesis**, y usaba «H5» tres veces sin referente | página 3 nueva |
+| **El «24 de 25» de las conclusiones** no se derivaba en el cuerpo (§9 contaba 31/19/4, otro corte) | derivado por bloques |
+| **El PSO se ajusta sobre 3 de los 20 pares que evalúa**, sin declarar | declarado en §5 |
+| **El libro atribuía r = 25 al PSO en cinco lugares** | corregido |
+
+### La potencia del contraste de H6
+
+`experiments/potencia_mcnemar.py`. El test condiciona en los pares discordantes y son **23** (8 a
+favor de la propuesta, 15 del visible). Con esos 23 y α = 0,05 la potencia llega a 0,80 recién a
+partir de **5,8 puntos porcentuales**; para la diferencia observada de 3,0 puntos es **0,26**. Lo
+que queda descartado es una ventaja de 5,8 puntos o más, **no una ventaja de cualquier tamaño**.
+
+El script construye la región de rechazo evaluando el mismo `binomtest` que el informe reporta, no
+con una fórmula cerrada, y lleva dos controles: que el nivel real no pase de α (da 0,0347) y que la
+potencia con δ = 0 coincida con ese nivel.
+
+### Dos huecos del informe que el mapeo de hipótesis destapó
+
+- **La correlación de rangos entre calidad y tarea —el instrumento de H6— no aparece ni una vez** en
+  las 82 páginas. Ni «Spearman», ni el ρ, ni sus valores. Lo que sostiene el rechazo es el conteo
+  por escena de §14 con su análisis de potencia.
+- **El control negativo de H3** se resume pero no se desarrolla: está en el libro §5.8.2.
+
+Los dos quedan **declarados** al pie de la Tabla 1a, en lugar de dejar que la tabla prometa un
+desarrollo que el documento no tiene.
+
+### Lo que la auditoría dijo que NO hay que tocar
+
+> «La autocrítica es el activo defensivo más fuerte que tenés, y es infrecuente. El informe se
+> ataca a sí mismo más duro de lo que lo hará la mesa.»
+
+El control negativo con ruido llegando al 3.º puesto de 14; la caída al 3.º con las diecisiete
+métricas; que la calidad no se traslada a la detección; que ninguna fusión supera al infrarrojo
+solo; la errata de la ecuación (29) declarada de frente. **No suavizar nada de eso.**
 
 ## Pendientes, por prioridad
 

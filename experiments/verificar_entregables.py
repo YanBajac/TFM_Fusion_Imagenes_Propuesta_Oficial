@@ -184,6 +184,12 @@ RETIRADAS = [
     # la celda que falta (2 particulas x 10 iteraciones) devuelve r = 14. Lo que caduca es la
     # frecuencia, no el argmax, que sigue en r = 1 dentro del rango publicado.
     '16 de las 25',
+    # El libro escribia «(PSO: r=25, m=0,30)» en cinco lugares —resumen, abstract, entrada del
+    # indice de figuras, epigrafe de la Figura 10 y conclusion—, como si la optimizacion hubiera
+    # hallado los dos hiperparametros. Es lo que H5 niega y lo que el informe dedica once paginas
+    # a desmentir: dentro del rango heredado el argmax de la aptitud es r = 1, y el radio lo elige
+    # la bateria de evaluacion. Era la ultima inconsistencia ENTRE documentos.
+    'PSO: r=25', 'PSO: r = 25',
 ]
 # «NO » en mayusculas hace falta: el proyecto usa el NO enfatico en mayusculas —el cuerpo de la
 # lamina 19 dice «La optimizacion NO determina la configuracion adoptada», y las notas del orador
