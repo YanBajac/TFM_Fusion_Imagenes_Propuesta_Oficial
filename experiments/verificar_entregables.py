@@ -864,6 +864,46 @@ if 'avances' in DOCUMENTOS:
 else:
     print('  AVISO no esta el informe de avances: coma decimal sin revisar')
 
+# El informe llevaba 83 paginas sin indice y sin un solo marcador: en la reunion no habia forma de
+# ir a una seccion salvo desplazandose. Los marcadores se escriben en un posproceso con PyMuPDF
+# —Edge headless no los emite, y la regla CSS bookmark-level solo la entiende WeasyPrint—, de modo
+# que son un paso aparte que puede fallar en silencio: si el posproceso no corre, el PDF sale igual
+# y nadie se entera.
+print('\n=== 17. indice y marcadores del informe ===')
+if 'avances' in DOCUMENTOS:
+    with fitz.open(str(DOCUMENTOS['avances']['ruta'])) as _d:
+        _toc = _d.get_toc()
+        _npg = _d.page_count
+        ok(len(_toc) >= 40, f'el PDF trae marcadores de navegacion ({len(_toc)})')
+
+        # Cada marcador tiene que caer en la pagina cuyo PIE IMPRESO es ese mismo numero. Si el
+        # posproceso se corriera sobre un PDF con otra paginacion, los marcadores quedarian
+        # corridos y el indice seguiria pareciendo correcto.
+        def _pie_de(_p):
+            _ls = [l.strip() for l in _d[_p - 1].get_text().splitlines() if l.strip()]
+            return _ls[-1] if _ls else ''
+
+        _fuera = [(t, p) for _n, t, p in _toc if not 1 <= p <= _npg]
+        _corridos = [(t, p) for _n, t, p in _toc if 1 <= p <= _npg and _pie_de(p) != str(p)]
+        ok(not _fuera, 'ningun marcador apunta fuera del documento'
+                       + (f' — {_fuera[:3]}' if _fuera else ''))
+        ok(not _corridos, f'los {len(_toc)} marcadores caen en la pagina de su pie impreso'
+                          + (f' — corridos {[(t[:30], p) for t, p in _corridos[:3]]}'
+                             if _corridos else ''))
+
+        # El indice impreso: cada entrada tiene que apuntar a una pagina que exista y su rango
+        # tiene que empezar donde arranca la seccion segun los marcadores.
+        _t2 = plano(_d[1].get_text())
+        ok('Índice' in _t2, 'la pagina 2 es el indice')
+        _rangos = re.findall(r'(\d{1,3})(?:–(\d{1,3}))?\s*(?=\d{1,3}\.|Anexos|$)', _t2)
+        _inicios = sorted({p for _n, _t, p in _toc if _n == 1})
+        _citadas = sorted({int(a) for a, _b in re.findall(r'\b(\d{1,3})(?:–(\d{1,3}))?\b', _t2)
+                           if int(a) in _inicios})
+        ok(len(_citadas) >= 12,
+           f'el indice cita {len(_citadas)} de los {len(_inicios)} comienzos de seccion')
+else:
+    print('  AVISO no esta el informe de avances: indice y marcadores sin revisar')
+
 # --------------------------------------------- resumen
 print(f'\n=== {len(fallos)} fallos · {len(avisos)} avisos ===')
 for f in fallos:

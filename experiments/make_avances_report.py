@@ -1784,7 +1784,7 @@ H.append(f"""
         sobre una escena (sección 15), y conclusiones (sección 16).</li>
     <li>Anexos 1-{N_ESC}: las 25 configuraciones del PSO en cada uno de los {N_ESC} pares.</li>
   </ol>
-  {pie(2)}
+  {pie(3)}
 </div>
 """)
 
@@ -1826,7 +1826,7 @@ H.append(f"""
   páginas; lo que sí está es el conteo por escena de la sección 14, con su análisis de potencia.
   Cinco de las siete hipótesis son sobre el <b>criterio</b> y solo dos sobre el <b>operador</b>:
   ése es el reparto que justifica hablar de dos aportes y no de uno.</p>
-  {pie(3)}
+  {pie(4)}
 </div>
 """)
 
@@ -1849,17 +1849,17 @@ H.append(f"""
   independientes</b> y el tamaño de muestra efectivo es menor que {N_ESC}; los resultados de las
   secciones 8 y 9 deben leerse con ese alcance. El libro lo declara también entre las limitaciones.</p>
   <div class="grid2">{"".join(chunks[0])}</div>
-  {pie(4)}
-</div>
-<div class="page">
-  <h2>2. Datos de entrada (continuación)</h2>
-  <div class="grid2">{"".join(chunks[1])}</div>
   {pie(5)}
 </div>
 <div class="page">
   <h2>2. Datos de entrada (continuación)</h2>
-  <div class="grid2">{"".join(chunks[2])}</div>
+  <div class="grid2">{"".join(chunks[1])}</div>
   {pie(6)}
+</div>
+<div class="page">
+  <h2>2. Datos de entrada (continuación)</h2>
+  <div class="grid2">{"".join(chunks[2])}</div>
+  {pie(7)}
 </div>
 """)
 
@@ -1875,7 +1875,7 @@ H.append(f"""
   (WTH) extrae el detalle brillante fino y la Black Top-Hat (BTH) el detalle oscuro fino:</p>
   {formula("tophat", 3)}
   {figura(EXIST.get("fig_morfologia_tophat.png"), "Efecto de las operaciones morfológicas y de las transformadas WTH/BTH sobre una señal del dataset.", 80)}
-  {pie(7)}
+  {pie(8)}
 </div>
 """)
 
@@ -1896,7 +1896,7 @@ H.append(f"""
   <p>Las cuatro respuestas direccionales se <b>promedian</b>, de modo que ninguna orientación queda
   privilegiada y el ruido direccional se atenúa:</p>
   {formula("wth_lin4", 7)}
-  {pie(8)}
+  {pie(9)}
 </div>
 <div class="page">
   <h2>4. Propuesta novedosa (continuación)</h2>
@@ -1919,7 +1919,7 @@ H.append(f"""
   detalle brillante y resta el oscuro sobre la base, ponderados por el peso de contraste m:</p>
   {formula("fuse_src", 13)}
   {formula("recon", 14)}
-  {pie(9)}
+  {pie(10)}
 </div>
 """)
 
@@ -1960,7 +1960,7 @@ H.append(f"""
   <p><b>Tabla 1.</b> Resultado del barrido: mejor aptitud F<sub>o</sub> alcanzada por cada configuración
   con el rango m &isin; {V['rango']}.</p>
   {tabla_grid}
-  {pie(10)}
+  {pie(11)}
 </div>
 <div class="page">
   <h2>5. Optimización por PSO (continuación): convergencia y óptimo</h2>
@@ -1974,7 +1974,7 @@ H.append(f"""
   realce conservador; el operador propuesto (disco + líneas por suma, aptitud orientada a
   fusión) aprovecha el radio máximo disponible con un peso un orden de magnitud menor, reflejo
   de que la suma de cinco respuestas concentra más energía de detalle por unidad de peso.</p>
-  {pie(11)}
+  {pie(12)}
 </div>
 """)
 
@@ -2012,7 +2012,7 @@ H.append(f"""
   <i>referencia_pso_ortega_espinoza.py</i>).</p>
   {TAB_REFERENCIA}
 
-  {pie(12)}
+  {pie(13)}
 </div>
 """)
 
@@ -2039,7 +2039,7 @@ H.append(f"""
   del rango publicado una vez corregida la diferencia de energía entre los dos operadores. Parece bajo
   únicamente si se olvida que el operador cambió.</p>
 
-  {pie(13)}
+  {pie(14)}
 </div>
 """)
 
@@ -2079,7 +2079,7 @@ H.append(f"""
   interior, sino que <b>confirma un óptimo que la forma de la aptitud determina</b>; lo que se hereda
   del trabajo de referencia es la elección del rango.</p>
 
-  {pie(14)}
+  {pie(15)}
 </div>
 """)
 
@@ -2117,7 +2117,7 @@ H.append(f"""
   tendencia, y la aptitud media se mueve en una banda de {REP_BANDA}. La rejilla de {N_CFG}
   configuraciones del trabajo de referencia no gana estabilidad con más partículas ni más
   iteraciones.</p>
-  {pie(15)}
+  {pie(16)}
 </div>
 """)
 
@@ -2135,7 +2135,7 @@ H.append(f"""
   es también la única que no llega al piso del peso en el 100 % de sus repeticiones. La columna del
   radio confirma lo que la tabla anterior resume: la proporción que termina en r = 1 no sigue
   ninguna tendencia con el número de partículas ni con las iteraciones.</p>
-  {pie(16)}
+  {pie(17)}
 </div>
 """)
 
@@ -2181,7 +2181,7 @@ H.append(f"""
   pueden mejorarlo, porque el máximo ya está alcanzado. Y el argumento de monotonía del peso, que
   hasta aquí estaba medido con r = 25, se verifica ahora en <b>los veinticinco radios</b>: el mejor
   peso dentro del rango publicado es el piso {"en todos" if OE_PISO_SIEMPRE else "en algunos"}.</p>
-  {pie(17)}
+  {pie(18)}
 </div>
 """)
 
@@ -2232,7 +2232,7 @@ H.append(f"""
   diseño que amplifica el contraste: la referencia optimiza <b>por escena</b>, con una corrida
   independiente para cada una, mientras este trabajo promedia la aptitud sobre tres escenas, lo que
   suaviza la superficie y hace que un solo óptimo domine.</p>
-  {pie(18)}
+  {pie(19)}
 </div>
 """)
 
@@ -2270,7 +2270,7 @@ H.append(f"""
   óptimo no está—, y la prueba es que al retirarla se comporta como el de la referencia. Los dos
   trabajos coinciden en el orden de magnitud del realce físico y difieren en el número que lo
   expresa.</p>
-  {pie(19)}
+  {pie(20)}
 </div>
 """)
 
@@ -2305,7 +2305,7 @@ H.append(f"""
   El aporte de la tesis en este punto no es entonces que el PSO falle, sino que <b>el rango de
   búsqueda heredado, y no el optimizador, es lo que fija uno de los dos hiperparámetros</b>. Es una
   afirmación sobre el protocolo, y ahora está medida en las dos direcciones.</p>
-  {pie(20)}
+  {pie(21)}
 </div>
 """)
 
@@ -2332,7 +2332,7 @@ H.append(f"""
   Excepción en el peso: {CORRIDAS_EXCEPCION}. El registro completo, con el peso, la aptitud y el
   tiempo de cada corrida, está en <i>pso_repeticiones_propuesta.csv</i>; el del barrido con el peso
   libre, en <i>pso_repeticiones_propuesta_libre.csv</i>.</p>
-  {pie(21)}
+  {pie(22)}
 </div>
 """)
 
@@ -2368,7 +2368,7 @@ H.append(f"""
   {formula("th_clasico", 17)}
   <p>Todos los métodos se ejecutan sobre los mismos {N_ESC} pares, con la misma implementación de métricas
   (<i>src/metrics/evaluators.py</i>), de modo que la comparación es directa.</p>
-  {pie(22)}
+  {pie(23)}
 </div>
 """)
 
@@ -2405,7 +2405,7 @@ H.append(f"""
   {CN_RANGO_RUIDO}), por delante de {CN_COMPAR_DETRAS} de los seis métodos comparativos, y
   cuyo rango mejora de forma monótona al aumentar la varianza. Los resultados de las secciones
   siguientes deben leerse con ese alcance.</p>
-  {pie(23)}
+  {pie(24)}
 </div>
 """)
 
@@ -2417,7 +2417,7 @@ H.append(f"""
   {tabla_metodos(ORDEN, resaltar=PROP)}
   <p class="lectura">{LECTURA_BENCH}</p>
   {figura(charts["quality"], "Cuatro métricas representativas (EN, FE, SF, SSIM); la barra azul es la propuesta.", 96)}
-  {pie(24)}
+  {pie(25)}
 </div>
 """)
 
@@ -2449,7 +2449,7 @@ for _b, _imgs in enumerate(_bloques, 1):
   <p><b>Tabla 4{chr(96 + _b)}.</b> Resultados por par — pares {(_b - 1) * 4 + 1} a
   {(_b - 1) * 4 + len(_imgs)} de {N_ESC}.</p>
   {tabla_por_imagen(_imgs)}{_lect}
-  {pie(24 + _b)}
+  {pie(25 + _b)}
 </div>
 """)
 
@@ -2460,7 +2460,7 @@ H.append(f"""
   {formula("friedman", 23)}
   <p><b>Tabla 5.</b> Resultados del test de Friedman.</p>
   {tabla_friedman()}
-  {pie(30)}
+  {pie(31)}
 </div>
 <div class="page">
   <h2>9. Análisis estadístico (continuación): Wilcoxon y ranking</h2>
@@ -2482,11 +2482,11 @@ H.append(f"""
   operación</b>, que es exactamente lo que afirma H1. Las conclusiones citan el recuento por
   bloques.</p>
   {figura(charts["ranking"], "Ranking promedio global de los 7 métodos (9 métricas, dirección respetada); la barra azul es la propuesta.", 78)}
-  {pie(31)}
+  {pie(32)}
 </div>
 """)
 
-pg = 32
+pg = 33
 
 # El informe afirmaba que el primer puesto se obtiene «con separacion estadisticamente
 # significativa». No habia ningun test que respaldara eso: Friedman y Wilcoxon corren por metrica
@@ -3145,6 +3145,84 @@ for _i, _img in enumerate(IMAGENES, 1):
 """)
     pg += 1
 
+# ------------------------------------------------------------------ indice y marcadores
+# El informe tenia 83 paginas sin indice y sin un solo marcador de PDF: en la reunion no habia
+# forma de ir a una seccion salvo desplazandose. No se puede usar la regla CSS bookmark-level, que
+# es una prestacion de WeasyPrint: este documento se imprime con Edge headless, que no emite
+# marcadores. El camino que si funciona es posprocesar el PDF terminado con PyMuPDF.
+#
+# El indice se arma DESPUES de ensamblar el HTML, leyendo de cada bloque de pagina su <h2> y el
+# numero que ya quedo interpolado en su pie. Asi no hay que instrumentar las cuarenta y pico
+# paginas una por una ni mantener una lista paralela que se desincronice: la fuente del indice es
+# el documento mismo. La pagina 2 quedo reservada para el, de modo que los pies no se mueven.
+_cuerpo = "".join(H)
+_BLOQUES = []
+for _b_html in _cuerpo.split('<div class="page"')[1:]:
+    _mh = _re.search(r'<h2>(.*?)</h2>', _b_html, _re.S)
+    _mp = _re.search(r'<div class="pie">(\d+)</div>', _b_html)
+    if _mh and _mp:
+        _t = _re.sub(r'<[^>]+>', '', _mh.group(1))
+        _BLOQUES.append((_re.sub(r'\s+', ' ', _t).strip(), int(_mp.group(1))))
+
+# Marcadores: uno por encabezado, con las «(continuación)» colgando de su seccion. Es la
+# granularidad util en un lector de PDF, donde el arbol se pliega.
+_TOC, _sec_ant = [], None
+for _t, _p in _BLOQUES:
+    _num = _re.match(r'\s*(\d+|A\d+)\.', _t)
+    _sec = _num.group(1) if _num else None
+    _niv = 1 if (_sec is None or _sec != _sec_ant) else 2
+    _TOC.append([_niv, _t, _p])
+    _sec_ant = _sec
+
+# Indice impreso: se agrupan las paginas consecutivas de una misma seccion en un solo renglon con
+# su rango, porque listar las cuarenta y pico entradas —diez de ellas «11. Resultados cualitativos
+# (pares N y M)» y veinte anexos— llenaria dos paginas y no ayudaria a nadie.
+def _clave(t):
+    """Agrupa por numero de seccion. Los veinte anexos van todos juntos: agrupar por titulo no
+    alcanzaba —cada uno se llama «Anexo N: resultados para X»— y el indice salia de 48 entradas,
+    que ocupan tres paginas y corren toda la numeracion."""
+    if t.lower().startswith('anexo'):
+        return 'anexos'
+    m = _re.match(r'\s*(\d+)\.', t)
+    return m.group(1) if m else t
+
+
+def _rotulo(t):
+    """El titulo sin el "(continuación)" ni lo que sigue a los dos puntos."""
+    t = _re.sub(r'\s*\((continuación|pares .*?)\).*$', '', t)
+    return t.split(':')[0].strip()
+
+
+_FILAS_IDX, _acc, _ck = [], None, None
+for _t, _p in _BLOQUES:
+    _k = _clave(_t)
+    if _acc and _k == _ck:
+        _acc[2] = _p
+    else:
+        if _acc:
+            _FILAS_IDX.append(_acc)
+        _acc = ['Anexos por escena (A1–A20)' if _k == 'anexos' else _rotulo(_t), _p, _p]
+        _ck = _k
+if _acc:
+    _FILAS_IDX.append(_acc)
+
+_idx_filas = "".join(
+    f'<tr><td class="l">{t}</td><td style="text-align:right">'
+    f'{a}{"–" + str(b) if b != a else ""}</td></tr>'
+    for t, a, b in _FILAS_IDX)
+_INDICE = f"""
+<div class="page">
+  <h2>Índice</h2>
+  <p>El documento tiene {_BLOQUES[-1][1]} páginas numeradas. Las secciones con varias páginas se
+  listan con su rango; el PDF lleva además marcadores de navegación, uno por encabezado.</p>
+  <table class="chica"><thead><tr><th class="l">Sección</th><th style="text-align:right">Pág.</th>
+  </tr></thead><tbody>{_idx_filas}</tbody></table>
+  {pie(2)}
+</div>
+"""
+H.insert(1, _INDICE)
+print(f"indice: {len(_FILAS_IDX)} entradas · marcadores: {len(_TOC)}")
+
 html = f"""<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
 <title>Presentación de avances — Fusión IR/VIS</title><style>{css}</style></head>
 <body>{''.join(H)}</body></html>"""
@@ -3163,6 +3241,38 @@ if os.path.exists(EDGE):
                     HTML_OUT], capture_output=True, timeout=300)
     if os.path.exists(PDF_OUT):
         print("PDF:", PDF_OUT, f"{os.path.getsize(PDF_OUT)/1e6:.1f} MB")
+        # Los marcadores se agregan aca y no en el HTML: Edge no los emite, y la regla CSS
+        # bookmark-level solo la entiende WeasyPrint. La pagina fisica coincide con la impresa
+        # porque la portada es la 1 sin pie y el indice la 2 con pie: se comprueba antes de
+        # escribir, para no dejar marcadores corridos si algun dia deja de coincidir.
+        try:
+            import fitz as _fitz
+            with _fitz.open(PDF_OUT) as _doc:
+                _npag = _doc.page_count
+                _malos = [t for t in _TOC if not 1 <= t[2] <= _npag]
+                if _malos:
+                    print(f"AVISO: {len(_malos)} marcadores fuera de rango, no se escriben: "
+                          f"{[t[1][:40] for t in _malos[:3]]}")
+                else:
+                    # Control: el pie IMPRESO de la pagina destino tiene que ser ese mismo
+                    # numero. El pie va posicionado en absoluto al fondo del div, de modo que en
+                    # la extraccion de texto queda como ultima linea no vacia; buscarlo de otra
+                    # forma da falsos avisos —la primera version de este control los dio en los
+                    # 82 marcadores porque comparaba contra marcado HTML que en el PDF no existe—.
+                    def _pie_impreso(_p):
+                        _ls = [l.strip() for l in _doc[_p - 1].get_text().splitlines() if l.strip()]
+                        return _ls[-1] if _ls else ''
+
+                    _ctrl = [t for t in _TOC if _pie_impreso(t[2]) != str(t[2])]
+                    if _ctrl:
+                        print(f"AVISO: la pagina fisica no coincide con la impresa en "
+                              f"{len(_ctrl)} marcadores; se escriben igual. Primeros: "
+                              f"{[(t[1][:34], t[2]) for t in _ctrl[:3]]}")
+                    _doc.set_toc([[n, t, p] for n, t, p in _TOC])
+                    _doc.saveIncr()
+                    print(f"marcadores: {len(_TOC)} escritos en el PDF")
+        except ImportError:
+            print("AVISO: PyMuPDF no instalado; el PDF queda sin marcadores")
     else:
         print("AVISO: Edge no genero el PDF; reintentar o imprimir el HTML con Ctrl+P.")
 else:
