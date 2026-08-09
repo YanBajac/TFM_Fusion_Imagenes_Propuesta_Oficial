@@ -202,6 +202,42 @@ def _bloque(metricas):
 
 BL_ACT, BL_FID = _bloque(BLOQ_ACT), _bloque(BLOQ_FID)
 
+# Diferencias pareadas con intervalo de confianza (experiments/dispersion_pareada.py). El informe
+# no publicaba NI UNA medida de dispersion en 82 paginas —ni un intervalo, ni un error estandar—
+# y la Tabla 6 anunciaba «correccion de Holm y tamano de efecto rank-biserial» sin mostrar ningun
+# p-valor ni ningun tamano de efecto, teniendo las dos columnas calculadas en el CSV.
+#
+# La comparacion es contra el RIVAL MAS FUERTE en cada metrica, que es la mas exigente posible:
+# cada metrica contra su propio mejor comparativo, no contra el promedio de los seis.
+_disp = pd.read_csv(os.path.join(MR, "dispersion_pareada.csv"))
+DISP_N = len(_disp)
+DISP_GANA = int(((_disp.dif_media > 0) & _disp.ic_excluye_cero).sum())
+DISP_PIERDE = int(((_disp.dif_media < 0) & _disp.ic_excluye_cero).sum())
+DISP_EMPATA = int((~_disp.ic_excluye_cero).sum())
+DISP_PARES = int(_disp.pares.iloc[0])
+assert DISP_GANA + DISP_PIERDE + DISP_EMPATA == DISP_N, "el recuento de la Tabla 6b no cierra"
+
+
+def _fila_disp(r):
+    sg = "+" if r.dif_media >= 0 else "−"
+    dm = f"{sg}{abs(r.dif_media):.4f}".replace(".", ",")
+    ic = (f"[{'+' if r.ic95_lo >= 0 else '−'}{abs(r.ic95_lo):.4f}; "
+          f"{'+' if r.ic95_hi >= 0 else '−'}{abs(r.ic95_hi):.4f}]").replace(".", ",")
+    cero = "" if r.ic_excluye_cero else " <span style='font-size:8.5pt'>(cruza&nbsp;0)</span>"
+    p = "&lt; 0,0001" if r.p_holm < 1e-4 else _coma(r.p_holm, 4)
+    return (f"<tr><td class='l'>{r.metrica}</td>"
+            f"<td class='l'>{SHORT.get(r.rival_mas_fuerte, r.rival_mas_fuerte)}</td>"
+            f"<td>{dm}</td><td>{ic}{cero}</td>"
+            f"<td>{r.pares_a_favor} / {r.pares}</td><td>{p}</td>"
+            f"<td>{_coma(r.effect_r, 3)}</td></tr>")
+
+
+TAB_DIF_PAREADAS = (
+    '<table class="chica"><thead><tr><th class="l">Métrica</th>'
+    '<th class="l">Rival más fuerte</th><th>Δ media</th><th>IC 95 %</th>'
+    '<th>Pares a favor</th><th>p<sub>Holm</sub></th><th>r</th></tr></thead><tbody>'
+    + "".join(_fila_disp(r) for r in _disp.itertuples()) + '</tbody></table>')
+
 # (el subconjunto de ajuste del PSO se calcula mas abajo, donde list_pairs ya esta importado)
 assert BL_ACT["n"] == 25 and BL_FID["n"] == 20, (
     f"el corte por bloques dejo de dar 25 y 20 contrastes ({BL_ACT['n']} y {BL_FID['n']}): las "
@@ -2458,6 +2494,34 @@ H.append(f"""
   sección 10 lleva el mismo examen a la composición del conjunto y al ajuste de los comparativos.
   Lo que se sostiene es lo verificable: <b>con el criterio del trabajo de referencia, y con esa
   agregación declarada, la propuesta encabeza el benchmark</b>.</p>
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+H.append(f"""
+<div class="page">
+  <h2>9. Análisis estadístico (continuación): cuánta dispersión hay detrás de las medias</h2>
+  <p>Todo lo anterior son medias sobre {DISP_PARES} pares, y sin intervalo una ventaja pequeña
+  parece ruido de redondeo aunque no lo sea. La tabla hace la comparación <b>más exigente
+  posible</b>: cada métrica contra <b>su propio rival más fuerte</b>, no contra el promedio de los
+  seis.</p>
+
+  <p><b>Tabla 6b.</b> Diferencia media pareada contra el rival más fuerte de cada métrica, con
+  intervalo de confianza al 95 % por remuestreo de los {DISP_PARES} pares (10.000 réplicas, semilla
+  fija), más el p con corrección de Holm y el tamaño de efecto rank-biserial <i>r</i> que la
+  Tabla 6 anunciaba sin mostrar.</p>
+  {TAB_DIF_PAREADAS}
+
+  <p class="lectura">Lectura, y es la más dura del informe. Contra el mejor rival de cada métrica
+  la propuesta gana con el intervalo <b>excluyendo el cero</b> en <b>{DISP_GANA} de las
+  {DISP_N}</b> —entropía y eficiencia de fusión, frente al Top-Hat clásico—, <b>empata</b> en
+  {DISP_EMPATA} —SD frente a la pirámide de Laplace, el mismo contraste que no alcanza
+  significancia por bloques— y <b>pierde</b> en {DISP_PIERDE}. Los intervalos son estrechos: los
+  {DISP_PARES} pares alcanzan para resolver estas diferencias, así que lo que se ve no es
+  indefinición sino un perfil. <b>No contradice el primer puesto del ranking</b>: aquel promedia
+  rangos sobre las nueve métricas y ésta enfrenta cada una con su campeón, que no es siempre el
+  mismo método. Un punto de operación desplazado, no una dominancia: es la afirmación de H1.</p>
   {pie(pg)}
 </div>
 """)
