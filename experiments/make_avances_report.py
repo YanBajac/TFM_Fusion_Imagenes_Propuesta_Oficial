@@ -275,23 +275,23 @@ assert BL_ACT["adv"] == 0, "aparecio un contraste adverso y significativo en el 
 # columnas de la derecha estan escritas a mano a proposito: son una afirmacion editorial sobre la
 # estructura del propio documento, no una cifra derivable de un CSV.
 _HIP = [
-    ("H1", "operador", "El banco no mejora de manera uniforme: desplaza el punto de operación "
+    ("H1", "operador", "El banco no mejora de manera uniforme. Desplaza el punto de operación "
      "hacia la actividad espacial y en contra de la fidelidad a las fuentes.",
      "§8 y §9"),
-    ("H2", "criterio", "El orden de mérito no es propiedad del operador sino del criterio: cambia "
+    ("H2", "criterio", "El orden de mérito depende del criterio y no del operador. Cambia "
      "al cambiar la composición del conjunto de métricas, sin que cambie ninguna imagen.",
      "§9 y §10"),
-    ("H3", "criterio", "La batería de nueve métricas «mayor es mejor» es insuficiente: sus "
+    ("H3", "criterio", "La batería de nueve métricas «mayor es mejor» es insuficiente. Sus "
      "métricas de actividad crecen con la varianza inyectada y no distinguen detalle de ruido.",
      "§7 (resumen)"),
     ("H4", "criterio", "La batería contiene al menos una métrica que no aporta información "
      "independiente de las demás.",
      "§9"),
-    ("H5", "criterio", "La optimización no determina la configuración adoptada: los dos "
+    ("H5", "criterio", "La optimización no determina la configuración adoptada. Los dos "
      "hiperparámetros se apoyan en parte del mismo criterio con que después se evalúa.",
      "§5, once páginas"),
     ("H6", "criterio", "El orden de mérito de las métricas de imagen no predice el orden de "
-     "utilidad en la tarea, y ninguna fusión supera por un margen distinguible a la mejor "
+     "utilidad en la tarea. Ninguna fusión supera por un margen distinguible a la mejor "
      "modalidad individual.",
      "§13 y §14"),
     ("H7", "operador", "Con el radio y el peso igualados, el banco de cinco elementos produce un "
@@ -420,7 +420,7 @@ _mejor_map = _m3["mAP50"].idxmax()
 
 LECTURA_M3FD = (
     f"Lectura: la complementariedad de las dos clases queda a la vista en las modalidades "
-    f"individuales — el infrarrojo alcanza {_n(_m3.loc['IR', 'AP50_People'])} en personas frente a "
+    f"individuales. El infrarrojo alcanza {_n(_m3.loc['IR', 'AP50_People'])} en personas frente a "
     f"{_n(_m3.loc['IR', 'AP50_Lamp'])} en luces, y el visible presenta el patrón inverso "
     f"({_n(_m3.loc['VIS', 'AP50_People'])} y {_n(_m3.loc['VIS', 'AP50_Lamp'])}). "
     + (f"<b>{len(_rec_ambas)} de las {len(_m3f)} fusiones detectan objetos de ambas clases</b> en una "
@@ -1266,19 +1266,20 @@ else:
     LECTURA_PSO = (
         "Lectura: las <b>25 configuraciones convergen al mismo peso, m* = 0,30</b>, el piso del rango "
         "publicado, porque los dos términos de fidelidad de F<sub>o</sub> dominan sobre la entropía y "
-        "decrecen al aumentar el realce. <b>El radio, en cambio, no lo fija el PSO:</b> dentro de este "
-        f"rango la aptitud prefiere r = {R_PREFERIDO} ({FO_MEJOR} frente a {FO_R25} en r = 25), de modo "
-        "que <b>r = 25 es una decisión de diseño</b> tomada sobre las métricas de evaluación —cinco de "
-        "las nueve la favorecen y las cuatro de fidelidad favorecen r = 1— y no el resultado de la "
-        "optimización. Las páginas que siguen desarrollan las dos cosas: la justificación del peso, y "
-        "con un barrido determinista y 500 corridas repetidas, el alcance exacto de esa preferencia.")
+        "decrecen al aumentar el realce. <b>El radio, en cambio, no lo fija el PSO.</b> Dentro de este "
+        f"rango la aptitud prefiere r = {R_PREFERIDO} ({FO_MEJOR} frente a {FO_R25} en r = 25), así "
+        "que <b>r = 25 es una decisión de diseño</b> y no el resultado de la optimización. Se tomó "
+        "mirando las métricas de evaluación, donde cinco de las nueve favorecen ese radio y las "
+        "cuatro de fidelidad favorecen r = 1. Las páginas que siguen desarrollan las dos cosas: la "
+        "justificación del peso, y con un barrido determinista y 500 corridas repetidas, el alcance "
+        "exacto de esa preferencia.")
     PARRAFO_RADIO = (
         "El radio r = 25 (elementos estructurantes de 51 píxeles) permite que el operador aproveche un "
-        "vecindario amplio para capturar los objetivos térmicos completos, y a igual peso supera a "
+        "vecindario amplio y capture los objetivos térmicos completos. A igual peso supera a "
         "r = 1 en entropía, contraste, ganancia de entropía sobre las fuentes, gradiente medio y "
-        "frecuencia espacial; cede, en cambio, en las cuatro métricas de fidelidad. Conviene precisar "
-        "que r = 1 <b>no</b> desactiva el banco de elementos estructurantes: con r = 1 el disco es la "
-        "cruz de 3×3 y las cuatro líneas orientadas son cuatro máscaras 3×3 distintas, de modo que el "
+        "frecuencia espacial, y pierde en las cuatro métricas de fidelidad. Hay que aclarar "
+        "que r = 1 <b>no</b> desactiva el banco de elementos estructurantes. Con r = 1 el disco es la "
+        "cruz de 3×3 y las cuatro líneas orientadas son cuatro máscaras 3×3 distintas, así que el "
         "banco sigue operativo sobre un vecindario mínimo. El peso m = 0,30 es el que produce el "
         "barrido con la metodología de referencia y mantiene la saturación por debajo del 2 % de los "
         "píxeles. Estos hiperparámetros definen la configuración de la propuesta usada en todo el "
@@ -1317,11 +1318,11 @@ else:
                      f"métricas</b>; su mejor posición es {min(_POS.values())}.ª "
                      f"({_enum([k for k in METS if _POS[k] == min(_POS.values())], False)}). ")
 LECTURA_BENCH += (f"Cede, en cambio, en {_enum(_CEDE, False)}. " if _CEDE else "")
-LECTURA_BENCH += (f"Frente al Top-Hat clásico —la referencia morfológica directa— mejora "
+LECTURA_BENCH += (f"Frente al Top-Hat clásico, que es la referencia morfológica directa, mejora "
                   f"<b>{len(_VS_TH)} de las nueve métricas</b> y cede en {len(_VS_TH_NO)} "
-                  f"({_enum(_VS_TH_NO, False)}). Advertencia metodológica: los dos operadores no "
-                  "comparten (r, m) —el clásico usa r = 5, m = 1—, de modo que la diferencia refleja "
-                  "conjuntamente el cambio de operador y el de hiperparámetros.")
+                  f"({_enum(_VS_TH_NO, False)}). Una advertencia metodológica. Los dos operadores no "
+                  "comparten (r, m), porque el clásico usa r = 5, m = 1. Así que la diferencia "
+                  "refleja a la vez el cambio de operador y el de hiperparámetros.")
 
 # ------------------------------------------------------------------ graficas
 charts = {}
@@ -1756,15 +1757,16 @@ H.append(f"""
 <div class="page">
   <h2>1. Introducción y esquema general</h2>
   <p>Este informe documenta el planteamiento vigente del proyecto. La propuesta central es un método de
-  fusión VIS+IR basado en la transformada Top-Hat que, sobre una única escala definida por el radio r,
-  combina por <b>suma</b> la respuesta promediada de cuatro elementos estructurantes lineales con la de
-  un disco, y reconstruye con el esquema aditivo-sustractivo con peso de contraste m. Los
+  fusión VIS+IR basado en la transformada Top-Hat. Trabaja sobre una sola escala, fijada por el radio r.
+  En esa escala <b>suma</b> la respuesta promediada de cuatro elementos estructurantes lineales y la de
+  un disco. Después reconstruye con el esquema aditivo-sustractivo, con peso de contraste m. Los
   hiperparámetros (r, m) se optimizan por enjambre de partículas (PSO).</p>
-  <p>La evaluación compara la propuesta contra <b>seis métodos</b>: cinco representativos del estado del
-  arte en fusión multiescala —Pirámide de Laplace (LP), Ratio of low-pass Pyramid (RP), Wavelet discreta
-  (DWT), Dual-Tree Complex Wavelet (DTCWT) y wavelet db4 (rotulada CVT)— más la <b>metodología clásica de la
-  transformada Top-Hat</b>, sobre los {N_ESC} pares del TNO Image Fusion Dataset con nueve métricas sin
-  referencia y análisis estadístico no paramétrico.</p>
+  <p>La evaluación compara la propuesta contra <b>seis métodos</b>. Cinco son representativos del estado
+  del arte en fusión multiescala: Pirámide de Laplace (LP), Ratio of low-pass Pyramid (RP), Wavelet
+  discreta (DWT), Dual-Tree Complex Wavelet (DTCWT) y wavelet db4 (rotulada CVT). El sexto es la
+  <b>metodología clásica de la transformada Top-Hat</b>. La comparación se hace sobre los {N_ESC} pares
+  del TNO Image Fusion Dataset, con nueve métricas sin referencia y análisis estadístico no
+  paramétrico.</p>
   <p>El orden del documento:</p>
   <ol>
     <li>Datos de entrada: {N_ESC} pares VIS/IR del dataset TNO (sección 2).</li>
@@ -1799,21 +1801,21 @@ chunks = [pairs_html[:_c1], pairs_html[_c1:_c1 + (_resto + 1) // 2],
 H.append(f"""
 <div class="page">
   <h2>1. Objetivos e hipótesis, y dónde se contrasta cada una</h2>
-  <p><b>Objetivo general</b>, en sus dos mitades. Primera: diseñar, implementar y caracterizar un
+  <p><b>Objetivo general.</b> Tiene dos mitades. La primera es diseñar, implementar y caracterizar un
   operador de fusión VIS/IR por Top-Hat de una sola escala con banco de cinco elementos
   estructurantes, <b>determinando en qué dirección desplaza el punto de operación</b> frente a la
-  metodología clásica y a cinco configuraciones de referencia. Segunda: <b>auditar, con ese mismo
-  desarrollo como caso de estudio, la validez discriminativa del protocolo con que se lo
-  evalúa</b> —métricas «mayor es mejor», hiperparámetros elegidos sobre esas mismas métricas, y
-  contraste con una tarea posterior—, estableciendo qué conclusiones autoriza el orden de mérito
-  que ese protocolo produce.</p>
+  metodología clásica y a cinco configuraciones de referencia. La segunda es <b>auditar la validez
+  discriminativa del protocolo con que se lo evalúa</b>, tomando ese mismo desarrollo como caso de
+  estudio. Ese protocolo lo forman las métricas «mayor es mejor», los hiperparámetros elegidos sobre
+  esas mismas métricas y el contraste con una tarea posterior. La auditoría establece qué conclusiones
+  autoriza el orden de mérito que ese protocolo produce.</p>
 
   <p><b>Objetivos específicos.</b> <b>OE1</b>, formular e implementar el operador tal como se lo
-  evalúa. <b>OE2</b>, delimitar el alcance real del PSO: qué hiperparámetro determina la aptitud y
+  evalúa. <b>OE2</b>, delimitar el alcance real del PSO, o sea qué hiperparámetro determina la aptitud y
   cuál es decisión de diseño. <b>OE3</b>, comparar contra la metodología clásica y cinco
   configuraciones del estado del arte, con pruebas no paramétricas. <b>OE4</b>, evaluar si esa
-  batería discrimina calidad —control negativo, redundancia interna y sensibilidad a la
-  composición—. <b>OE5</b>, medir el efecto sobre la detección y contrastar el orden de calidad
+  batería discrimina calidad, con el control negativo, la redundancia interna y la sensibilidad a la
+  composición. <b>OE5</b>, medir el efecto sobre la detección y contrastar el orden de calidad
   con el de utilidad.</p>
 
   <p><b>Tabla 1a.</b> Las siete hipótesis, su familia y dónde se contrastan <b>en este informe</b>.
@@ -1821,11 +1823,11 @@ H.append(f"""
   {TAB_HIPOTESIS}
 
   <p class="lectura">Dos advertencias, para que la tabla no prometa más de lo que este documento
-  entrega. El control negativo de <b>H3</b> se resume acá pero no se desarrolla: está en el libro,
-  §5.8.2. Y la correlación de rangos con que se contrasta <b>H6</b> tampoco se reproduce en estas
-  páginas; lo que sí está es el conteo por escena de la sección 14, con su análisis de potencia.
-  Cinco de las siete hipótesis son sobre el <b>criterio</b> y solo dos sobre el <b>operador</b>:
-  ése es el reparto que justifica hablar de dos aportes y no de uno.</p>
+  entrega. El control negativo de <b>H3</b> se resume acá pero no se desarrolla. Está en el libro,
+  §5.8.2. La correlación de rangos con que se contrasta <b>H6</b> tampoco se reproduce en estas
+  páginas. En su lugar está el conteo por escena de la sección 14, con su análisis de potencia.
+  Cinco de las siete hipótesis son sobre el <b>criterio</b> y solo dos sobre el <b>operador</b>.
+  Ese reparto es el que justifica hablar de dos aportes y no de uno.</p>
   {pie(4)}
 </div>
 """)
@@ -1833,21 +1835,22 @@ H.append(f"""
 H.append(f"""
 <div class="page">
   <h2>2. Datos de entrada: {N_ESC} pares VIS/IR (TNO)</h2>
-  <p>Se trabaja con los {N_ESC} pares registrados del TNO Image Fusion Dataset (escenas de vigilancia
-  nocturna: vehículos, personas, humo). Cada par tiene una imagen visible (VIS), que aporta textura y
-  contexto, y una infrarroja (IR), que registra la radiación térmica. Ambas comparten nombre de archivo
-  para el emparejado automático. Sobre estos {N_ESC} pares se calculan todas las métricas del informe.</p>
-  <p class="lectura">Nota sobre el corpus: el conjunto original contiene 21 archivos emparejables, pero
-  el par <i>Athena_heather_IR_hei_vis_g</i> se <b>excluye</b> porque su archivo del canal visible es una
-  copia byte a byte del infrarrojo (mismo md5), de modo que no es un par VIS/IR sino la misma imagen
-  repetida. Con VIS = IR el error cuadrático medio es nulo y todo método que devuelva la entrada sin
-  modificarla obtiene SSIM = 1 y un PSNR que desborda la escala, lo que inflaba artificialmente los
-  promedios de fidelidad de los métodos multiescala. El corpus efectivo es de <b>{N_ESC} pares</b>.</p>
-  <p class="lectura">Composición del corpus: los {N_ESC} pares corresponden a <b>{N_SUJETOS} escenas
-  distintas</b>, porque cuatro de ellas aportan varias tomas del mismo sujeto ({SUJETOS_MULTI}). En
-  consecuencia los bloques del test de Friedman y de los contrastes de Wilcoxon <b>no son plenamente
-  independientes</b> y el tamaño de muestra efectivo es menor que {N_ESC}; los resultados de las
-  secciones 8 y 9 deben leerse con ese alcance. El libro lo declara también entre las limitaciones.</p>
+  <p>Se trabaja con los {N_ESC} pares registrados del TNO Image Fusion Dataset, escenas de vigilancia
+  nocturna con vehículos, personas y humo. Cada par tiene una imagen visible (VIS), que aporta textura y
+  contexto, y una infrarroja (IR), que registra la radiación térmica. Las dos comparten nombre de
+  archivo, así que el emparejado es automático. Sobre estos {N_ESC} pares se calculan todas las métricas
+  del informe.</p>
+  <p class="lectura">Nota sobre el corpus. El conjunto original contiene 21 archivos emparejables, pero
+  el par <i>Athena_heather_IR_hei_vis_g</i> se <b>excluye</b>. Su archivo del canal visible es una copia
+  byte a byte del infrarrojo (mismo md5), así que ese par es la misma imagen repetida. Con VIS = IR
+  el error cuadrático medio es nulo. Entonces todo método que devuelva la entrada sin modificarla obtiene
+  SSIM = 1 y un PSNR que desborda la escala, y eso inflaba artificialmente los promedios de fidelidad de
+  los métodos multiescala. El corpus efectivo es de <b>{N_ESC} pares</b>.</p>
+  <p class="lectura">Composición del corpus. Los {N_ESC} pares corresponden a <b>{N_SUJETOS} escenas
+  distintas</b>, porque cuatro de ellas aportan varias tomas del mismo sujeto ({SUJETOS_MULTI}). Por eso
+  los bloques del test de Friedman y de los contrastes de Wilcoxon <b>no son plenamente
+  independientes</b>, y el tamaño de muestra efectivo es menor que {N_ESC}. Los resultados de las
+  secciones 8 y 9 hay que leerlos con ese alcance. El libro lo declara también entre las limitaciones.</p>
   <div class="grid2">{"".join(chunks[0])}</div>
   {pie(5)}
 </div>
@@ -1868,11 +1871,11 @@ H.append(f"""
   <h2>3. Fundamentos: morfología matemática y Top-Hat</h2>
   <p>Dado un elemento estructurante (SE) <i>b</i>, la dilatación toma el máximo local y la erosión el mínimo:</p>
   {formula("dil_ero", 1)}
-  <p>Su composición define la apertura γ, que elimina objetos claros menores que el SE, y el cierre φ, que
-  rellena huecos oscuros menores que el SE:</p>
+  <p>Al componerlas se definen dos operadores más. La apertura γ elimina los objetos claros menores que
+  el SE. El cierre φ rellena los huecos oscuros menores que el SE:</p>
   {formula("open_close", 2)}
-  <p>La transformada Top-Hat conserva exactamente lo que la apertura o el cierre eliminan: la White Top-Hat
-  (WTH) extrae el detalle brillante fino y la Black Top-Hat (BTH) el detalle oscuro fino:</p>
+  <p>La transformada Top-Hat guarda justo lo que la apertura o el cierre eliminan. La White Top-Hat (WTH)
+  se queda con el detalle brillante fino y la Black Top-Hat (BTH) con el detalle oscuro fino:</p>
   {formula("tophat", 3)}
   {figura(EXIST.get("fig_morfologia_tophat.png"), "Efecto de las operaciones morfológicas y de las transformadas WTH/BTH sobre una señal del dataset.", 80)}
   {pie(8)}
@@ -1893,7 +1896,7 @@ H.append(f"""
   <p>Para cada orientación θ, la White Top-Hat con el segmento L<sub>r,θ</sub> extrae las estructuras
   <b>brillantes</b> finas alineadas con esa dirección:</p>
   {formula("wth_theta", 6)}
-  <p>Las cuatro respuestas direccionales se <b>promedian</b>, de modo que ninguna orientación queda
+  <p>Las cuatro respuestas direccionales se <b>promedian</b>. Así ninguna orientación queda
   privilegiada y el ruido direccional se atenúa:</p>
   {formula("wth_lin4", 7)}
   {pie(9)}
@@ -1909,14 +1912,15 @@ H.append(f"""
   predominante (manchas, objetivos térmicos compactos):</p>
   {formula("wth_disc", 10)}
   <h3>4.5 Operador combinado por suma</h3>
-  <p>El operador de la propuesta <b>suma</b> la respuesta lineal promediada y la del disco, de modo que el
-  realce acumula la evidencia de ambas ramas: donde una estructura es a la vez direccional e isótropa,
-  ambas contribuyen (esquema de Bala et al., 2024):</p>
+  <p>El operador de la propuesta <b>suma</b> la respuesta lineal promediada y la del disco. Así el
+  realce acumula la evidencia de las dos ramas. Donde una estructura es a la vez direccional e
+  isótropa, las dos contribuyen (esquema de Bala et al., 2024):</p>
   {formula("wth_sum", 11)}
   {formula("bth_sum", 12)}
   <h3>4.6 Combinación entre fuentes y reconstrucción</h3>
-  <p>Entre fuentes se conserva, píxel a píxel, el detalle <b>dominante</b>, y la imagen fusionada suma el
-  detalle brillante y resta el oscuro sobre la base, ponderados por el peso de contraste m:</p>
+  <p>Entre fuentes se conserva, píxel a píxel, el detalle <b>dominante</b>. La imagen fusionada suma
+  el detalle brillante y resta el oscuro sobre la base. Los dos van ponderados por el peso de
+  contraste m:</p>
   {formula("fuse_src", 13)}
   {formula("recon", 14)}
   {pie(10)}
@@ -1926,37 +1930,37 @@ H.append(f"""
 H.append(f"""
 <div class="page">
   <h2>5. Optimización de (r, m) por PSO: barrido de configuraciones</h2>
-  <p>Cada partícula k es un candidato (r, m) que se mueve atraído por su mejor posición personal
-  p<sub>k</sub> y por la mejor global g, con inercia ω decreciente linealmente de 0,9 a 0,4 y
+  <p>Cada partícula k es un candidato (r, m). Se mueve atraída por su mejor posición personal
+  p<sub>k</sub> y por la mejor global g. La inercia ω baja linealmente de 0,9 a 0,4, con
   c1 = c2 = 1,5:</p>
   {formula("pso_v", 15)}
-  <p>La función de aptitud es la del trabajo de referencia (Ortega y Espinoza, 2025), orientada a la
-  calidad de fusión: premia la fidelidad estructural con las fuentes (SSIM<sub>avg</sub>), el contenido
-  informativo (entropía normalizada E<sub>n</sub>) y la reducción de la distorsión (PSNR
-  normalizado), sin pesos arbitrarios:</p>
+  <p>La función de aptitud es la del trabajo de referencia (Ortega y Espinoza, 2025) y apunta a la
+  calidad de fusión. Premia tres cosas: la fidelidad estructural con las fuentes (SSIM<sub>avg</sub>),
+  el contenido informativo (entropía normalizada E<sub>n</sub>) y la reducción de la distorsión (PSNR
+  normalizado). No lleva pesos arbitrarios:</p>
   {formula("pso_fit", 16)}
-  <p class="lectura"><b>Una precisión de implementación que conviene declarar.</b> La ecuación (29) del
+  <p class="lectura"><b>Un detalle de implementación que hay que aclarar.</b> La ecuación (29) del
   trabajo de referencia define el PSNR como 10·log<sub>10</sub>((M × N)² / MSE), con el <b>número de
-  píxeles</b> al cuadrado en el numerador, donde la definición estándar lleva la <b>intensidad
-  máxima</b> al cuadrado. Para una imagen de 620 × 450 eso desplaza el resultado en
-  {ERRATA_OFFSET} dB, y explica que los valores publicados en sus anexos vayan de
-  {ERRATA_PSNR_LO} a {ERRATA_PSNR_HI} dB —cifras incompatibles con una fusión, porque implicarían que
+  píxeles</b> al cuadrado en el numerador. La definición estándar lleva ahí la <b>intensidad
+  máxima</b> al cuadrado. Para una imagen de 620 × 450 ese cambio desplaza el resultado en
+  {ERRATA_OFFSET} dB. Eso explica que los valores publicados en sus anexos vayan de
+  {ERRATA_PSNR_LO} a {ERRATA_PSNR_HI} dB. Son cifras imposibles en una fusión, porque implicarían que
   la imagen fusionada es casi idéntica a las dos fuentes a la vez, mientras su propio SSIM<sub>avg</sub>
-  mediano es {ERRATA_SSIM}—. Esta tesis usa la <b>definición estándar</b>,
-  10·log<sub>10</sub>(MAX²/MSE), de modo que sus valores de F<sub>o</sub> no son directamente
-  comparables con los publicados allí: los de este informe se mueven en
+  mediano es {ERRATA_SSIM}. Esta tesis usa la <b>definición estándar</b>,
+  10·log<sub>10</sub>(MAX²/MSE), así que sus valores de F<sub>o</sub> no son directamente
+  comparables con los publicados allí. Los de este informe se mueven en
   {ERRATA_FO_NUESTRO} y los suyos en {ERRATA_FO_SUYO}. La diferencia está enteramente en ese término.</p>
-  <p>Para elegir la configuración del enjambre se replicó el diseño experimental de Ortega y
-  Espinoza (2025): se evaluaron sistemáticamente combinaciones con número de partículas variando de
-  2 a 10 en incrementos de 2 y número de iteraciones de 10 a 50 en incrementos de 10, es decir,
-  <b>25 configuraciones</b>. El espacio de búsqueda adopta el rango del mismo trabajo para el radio,
+  <p>Para elegir la configuración del enjambre se repitió el diseño experimental de Ortega y
+  Espinoza (2025). Se probaron todas las combinaciones de partículas de
+  2 a 10 en pasos de 2 y de iteraciones de 10 a 50 en pasos de 10, es decir,
+  <b>25 configuraciones</b>. El espacio de búsqueda toma el rango del mismo trabajo para el radio,
   r ∈ [1, 25]; para el peso se usa m &isin; {V['rango']}. Cada configuración se ejecutó con semilla
-  propia, promediando la aptitud sobre <b>{AJ_N} de los {N_ESC} pares</b> —{AJ_NOMBRES}—, elegidos
+  propia. La aptitud se promedia sobre <b>{AJ_N} de los {N_ESC} pares</b> ({AJ_NOMBRES}), elegidos
   por un salto uniforme sobre la lista ordenada del corpus
-  (<span class="mono">list_pairs()[::7]</span>) para acotar el costo. Conviene declarar que esos
-  {AJ_N} pares <b>pertenecen a los {N_ESC} sobre los que después se reporta</b>, de modo que la
-  elección del punto de operación <b>no es independiente de la evaluación</b>: es lo que sostiene
-  H5, y por eso se enuncia acá y no solo en las conclusiones.</p>
+  (<span class="mono">list_pairs()[::7]</span>) para acotar el costo. Hay que decirlo claro: esos
+  {AJ_N} pares <b>pertenecen a los {N_ESC} sobre los que después se reporta</b>, así que la
+  elección del punto de operación <b>no es independiente de la evaluación</b>. Sobre eso se apoya
+  H5, y por eso se dice acá y no solo en las conclusiones.</p>
   <p><b>Tabla 1.</b> Resultado del barrido: mejor aptitud F<sub>o</sub> alcanzada por cada configuración
   con el rango m &isin; {V['rango']}.</p>
   {tabla_grid}
@@ -1969,11 +1973,11 @@ H.append(f"""
   <p class="lectura">{LECTURA_PSO}</p>
   {figura(charts["pso"], f"Mejor aptitud Fo alcanzada según el número de partículas (Tmax = 50), con el rango m ∈ {V['rango']}.", 84)}
   <p>{PARRAFO_RADIO}</p>
-  <p>La comparación con el trabajo de referencia es directa: con el mismo diseño experimental
-  y el mismo rango de radio, aquel operador (disco único, aptitud de fidelidad) convergía a un
-  realce conservador; el operador propuesto (disco + líneas por suma, aptitud orientada a
-  fusión) aprovecha el radio máximo disponible con un peso un orden de magnitud menor, reflejo
-  de que la suma de cinco respuestas concentra más energía de detalle por unidad de peso.</p>
+  <p>La comparación con el trabajo de referencia es directa. Con el mismo diseño experimental
+  y el mismo rango de radio, aquel operador (disco único, aptitud de fidelidad) llegaba a un
+  realce conservador. El operador propuesto (disco + líneas por suma, aptitud orientada a
+  fusión) usa el radio máximo disponible con un peso un orden de magnitud menor. Eso pasa
+  porque la suma de cinco respuestas concentra más energía de detalle por unidad de peso.</p>
   {pie(12)}
 </div>
 """)
@@ -1981,30 +1985,30 @@ H.append(f"""
 H.append(f"""
 <div class="page">
   <h2>5. Optimización por PSO (continuación): justificación del peso adoptado</h2>
-  <p>El peso <b>m = 0,30</b> merece una justificación explícita, porque es el límite inferior del
-  rango publicado y a primera vista podría parecer una elección discrecional o un valor
-  artificialmente bajo. No lo es: cuatro criterios <b>independientes entre sí</b> convergen en él.</p>
+  <p>El peso <b>m = 0,30</b> necesita una justificación explícita. Es el límite inferior del
+  rango publicado y a primera vista puede parecer una elección arbitraria o un valor
+  artificialmente bajo. No lo es. Cuatro criterios <b>independientes entre sí</b> llevan a él.</p>
 
-  <p><b>Primero, el óptimo está forzado por la forma de la aptitud, no elegido.</b> Un barrido
+  <p><b>Primero, el óptimo lo fuerza la forma de la aptitud; no es una elección.</b> Un barrido
   determinista muestra que F<sub>o</sub> <b>decrece de forma estrictamente monótona</b> al aumentar m
-  dentro del rango publicado: {M_CRECIENTES} tramos crecientes de {M_TRAMOS}, desde
-  {f"{FO_M030:.4f}".replace(".", ",")} en m = 0,30 hasta {f"{FO_M200:.4f}".replace(".", ",")} en
-  m = 2,00. En consecuencia m* = 0,30 es el <b>único máximo posible</b> dentro del intervalo, y
-  cualquier optimizador converge a él: no depende de la semilla ni de la suerte de la búsqueda. Eso
-  explica que las 25 configuraciones del enjambre coincidan, y convierte el resultado en
+  dentro del rango publicado. De los {M_TRAMOS} tramos, {M_CRECIENTES} son crecientes. El valor va de
+  {f"{FO_M030:.4f}".replace(".", ",")} en m = 0,30 a {f"{FO_M200:.4f}".replace(".", ",")} en
+  m = 2,00. Por eso m* = 0,30 es el <b>único máximo posible</b> dentro del intervalo, y
+  cualquier optimizador termina ahí. No depende de la semilla ni de la suerte de la búsqueda. Eso
+  explica que las 25 configuraciones del enjambre coincidan, y hace que el resultado sea
   reproducible por construcción.</p>
 
-  <p><b>Segundo, el rango proviene del trabajo de referencia, pero el valor no.</b> El intervalo
-  m &isin; [0,30; 2,00] es el espacio de búsqueda publicado por Ortega y Espinoza (2025) —lo acotan
-  para «evitar estos extremos», el escaso realce por un lado y el sobrecontraste con artefactos por
-  el otro— y adoptarlo es lo que hace comparable este trabajo con aquel. Conviene precisar a quién
-  corresponde cada cosa, porque es un punto donde es fácil atribuir de más: <b>con el disco único de
-  la referencia, su PSO no elige el piso del rango sino valores interiores</b>. Sobre las
-  {REF_N} corridas de sus cinco escenas —sus anexos publican las 25 configuraciones de cada una— la
+  <p><b>Segundo, el rango viene del trabajo de referencia, pero el valor no.</b> El intervalo
+  m &isin; [0,30; 2,00] es el espacio de búsqueda publicado por Ortega y Espinoza (2025). Ellos lo
+  acotan para «evitar estos extremos», el escaso realce por un lado y el sobrecontraste con
+  artefactos por el otro. Adoptarlo es lo que hace comparable este trabajo con aquel. Acá hay que
+  ser claro con lo que le corresponde a cada uno, porque es fácil atribuir de más. <b>Con el
+  disco único de la referencia, su PSO elige valores interiores del rango, no el piso</b>. Sobre las
+  {REF_N} corridas de sus cinco escenas (sus anexos publican las 25 configuraciones de cada una) la
   mediana del peso es <b>{REF_M_MED}</b>, con recorrido [{REF_M_MIN}; {REF_M_MAX}], y solo una escena
-  ({REF_ESC_PISO}) se ancla en el piso, en {REF_PISO} de sus 25 configuraciones. El anclaje que este
-  trabajo observa en las {N_CFG} configuraciones es, por tanto, <b>una propiedad del operador</b> y no
-  de la función de aptitud ni del rango: la misma aptitud y el mismo intervalo dan óptimo interior
+  ({REF_ESC_PISO}) se ancla en el piso, en {REF_PISO} de sus 25 configuraciones. Entonces el anclaje
+  que este trabajo observa en las {N_CFG} configuraciones es <b>una propiedad del operador</b>, y no
+  de la función de aptitud ni del rango. La misma aptitud y el mismo intervalo dan óptimo interior
   sobre un disco y óptimo de borde sobre el banco de cinco.</p>
 
   <p><b>Tabla 2a.</b> Peso óptimo por escena en el trabajo de referencia (disco único, 25
@@ -2019,25 +2023,25 @@ H.append(f"""
 H.append(f"""
 <div class="page">
   <h2>5. Optimización por PSO (continuación): la equivalencia del realce físico</h2>
-  <p><b>Tercero, y es el argumento central: la equivalencia del realce físico.</b> El realce que
-  efectivamente se inyecta en la reconstrucción no es m, sino el producto <b>m · |W|</b> del peso por
+  <p><b>Tercero, el argumento central: la equivalencia del realce físico.</b> El realce que
+  de verdad entra en la reconstrucción no es m. Es el producto <b>m · |W|</b> del peso por
   la energía de detalle que extrae el operador. El banco de cinco elementos estructurantes extrae
   {f"{W_PROP:.4f}".replace(".", ",")} frente a {f"{W_CLAS:.4f}".replace(".", ",")} del disco único de
-  la metodología clásica, es decir <b>{f"{GANANCIA:.2f}".replace(".", ",")} veces más energía</b>. Por
-  lo tanto un mismo peso no produce el mismo realce en ambos operadores, y comparar los valores de m
-  sin corregir por esa ganancia es comparar unidades distintas. Corrigiendo:</p>
+  la metodología clásica, es decir <b>{f"{GANANCIA:.2f}".replace(".", ",")} veces más energía</b>. Así
+  que un mismo peso no produce el mismo realce en los dos operadores. Comparar los valores de m
+  sin corregir esa ganancia es comparar unidades distintas. Corrigiendo:</p>
   <ul>
     <li>m = 0,30 sobre el banco propuesto equivale a <b>m = {f"{M_EQUIV:.2f}".replace(".", ",")}</b>
-        sobre un disco único: cae <b>dentro</b> del rango publicado [0,30; 2,00], al
+        sobre un disco único. Ese valor cae <b>dentro</b> del rango publicado [0,30; 2,00], al
         {f"{POS_EN_RANGO:.0f}"} % de su recorrido y a
-        {f"{abs(M_EQUIV - 1.0):.2f}".replace(".", ",")} del peso canónico m = 1. A la inversa, ese
-        rango traducido a este operador es
+        {f"{abs(M_EQUIV - 1.0):.2f}".replace(".", ",")} del peso canónico m = 1. Al revés pasa lo
+        mismo. Ese rango traducido a este operador es
         [{f"{RANGO_LO:.4f}".replace(".", ",")}; {f"{RANGO_HI:.4f}".replace(".", ",")}], y m = 0,30
         también cae dentro.</li>
   </ul>
-  <p>Es decir que el peso adoptado <b>no es un valor bajo</b>: es el que reproduce el realce físico
-  del rango publicado una vez corregida la diferencia de energía entre los dos operadores. Parece bajo
-  únicamente si se olvida que el operador cambió.</p>
+  <p>Es decir que el peso adoptado <b>no es un valor bajo</b>. Es el que reproduce el realce físico
+  del rango publicado, una vez corregida la diferencia de energía entre los dos operadores. Solo
+  parece bajo si se olvida que el operador cambió.</p>
 
   {pie(14)}
 </div>
@@ -2047,37 +2051,37 @@ H.append(f"""
 <div class="page">
   <h2>5. Optimización por PSO (continuación): rango dinámico y tensión de criterios</h2>
   <p><b>Cuarto criterio: el rango dinámico de la reconstrucción.</b> La imagen fusionada se recorta a
-  [0, 1] antes de evaluarse, de modo que los píxeles que caen fuera quedan aplastados y su información
-  se pierde. Como el operador propuesto inyecta
-  {f"{GANANCIA:.2f}".replace(".", ",")} veces más detalle que un disco único, el recorte se vuelve
-  restrictivo mucho antes.</p>
+  [0, 1] antes de evaluarse. Los píxeles que caen fuera quedan aplastados y su información se pierde.
+  El operador propuesto inyecta
+  {f"{GANANCIA:.2f}".replace(".", ",")} veces más detalle que un disco único, así que el recorte se
+  vuelve restrictivo mucho antes.</p>
   <p><b>Tabla 2.</b> Porcentaje de píxeles saturados por el recorte según el peso, con r = 25 sobre
   los {N_ESC} pares.</p>
   {TAB_SATURACION}
   <p class="lectura">Lectura: con m = 0,30 la saturación es de
-  {f"{SAT_030:.2f}".replace(".", ",")} %, es decir por debajo del 1 % de los píxeles. Con el peso
+  {f"{SAT_030:.2f}".replace(".", ",")} %, o sea por debajo del 1 % de los píxeles. Con el peso
   canónico de la metodología clásica (m = 1) este operador saturaría
-  {f"{SAT_100:.2f}".replace(".", ",")} % —{f"{SAT_VECES:.1f}".replace(".", ",")} veces más— y con
-  m = 2,00 más de {f"{SAT_200:.0f}"} % de la imagen. El peso adoptado es, por tanto, compatible con el
-  rango dinámico del operador, y este criterio es <b>independiente de la función de aptitud</b>.</p>
+  {f"{SAT_100:.2f}".replace(".", ",")} % ({f"{SAT_VECES:.1f}".replace(".", ",")} veces más) y con
+  m = 2,00 más de {f"{SAT_200:.0f}"} % de la imagen. El peso adoptado es entonces compatible con el
+  rango dinámico del operador, y este criterio <b>no depende de la función de aptitud</b>.</p>
 
   <p><b>Por qué el punto es un compromiso y no un máximo de todo.</b> Los dos criterios del trabajo
-  empujan m en sentidos opuestos: la aptitud F<sub>o</sub> hacia abajo, porque dos de sus tres términos
-  miden fidelidad a las fuentes; y las nueve métricas de evaluación hacia arriba, porque todas son de
-  tipo «mayor es mejor» y premian la actividad.</p>
+  empujan m en sentidos opuestos. La aptitud F<sub>o</sub> lo empuja hacia abajo, porque dos de sus
+  tres términos miden fidelidad a las fuentes. Las nueve métricas de evaluación lo empujan hacia
+  arriba, porque todas son de tipo «mayor es mejor» y premian la actividad.</p>
   <p><b>Tabla 3.</b> Comportamiento opuesto de los dos criterios al variar el peso (r = 25).</p>
   {TAB_TENSION}
   <p class="lectura">Lectura: al pasar de m = 0,30 a m = 2,00 la aptitud cae de
   {f"{FO_M030:.4f}".replace(".", ",")} a {f"{FO_M200:.4f}".replace(".", ",")} mientras la suma de las
   nueve métricas sube de {f"{FN_M030:.3f}".replace(".", ",")} a
-  {f"{FN_M200:.3f}".replace(".", ",")}: el mismo cambio de peso mejora un criterio y empeora el otro.
-  La columna de aptitud es la del enjambre —la misma que reporta la Tabla 1—, y las tres restantes
+  {f"{FN_M200:.3f}".replace(".", ",")}. El mismo cambio de peso mejora un criterio y empeora el otro.
+  La columna de aptitud es la del enjambre, la misma que reporta la Tabla 1; las tres restantes
   provienen del barrido determinista sobre las mismas tres escenas.
   El SSIM se derrumba y la frecuencia espacial se dispara. <b>m = 0,30 es el punto donde esa tensión
-  se resuelve</b> del lado de la aptitud publicada, respetando además el rango dinámico. Conviene
-  enunciarlo con precisión: el PSO no <i>descubre</i> este valor explorando un espacio con óptimo
-  interior, sino que <b>confirma un óptimo que la forma de la aptitud determina</b>; lo que se hereda
-  del trabajo de referencia es la elección del rango.</p>
+  se resuelve</b> del lado de la aptitud publicada, y respeta además el rango dinámico. El PSO no
+  <i>descubre</i> este valor explorando un espacio con óptimo interior. Lo que hace es
+  <b>confirmar un óptimo que la forma de la aptitud determina</b>. Del trabajo de referencia se
+  hereda la elección del rango.</p>
 
   {pie(15)}
 </div>
@@ -2086,35 +2090,35 @@ H.append(f"""
 H.append(f"""
 <div class="page">
   <h2>5. Optimización por PSO (continuación): estabilidad del barrido en {REP_N} corridas</h2>
-  <p>El barrido publicado tiene una configuración por celda y una sola semilla, de modo que sus 25
-  resultados <b>no son 25 confirmaciones independientes</b>. Conviene decirlo con precisión: la aptitud
-  es determinista y las semillas estaban fijadas por la configuración y por el número de iteración,
-  así que repetir una celda devolvía el mismo resultado. Para medir de verdad la dispersión se repitió
-  <b>{REP_REPS} veces cada configuración</b> con la semilla en función de (n, T, repetición):
-  <b>{REP_N} corridas</b> y {REP_EVALS} evaluaciones de aptitud. El control de que no cambió nada más
-  que la semilla es que la repetición 0 conserva las semillas originales y reproduce el barrido
+  <p>El barrido publicado tiene una configuración por celda y una sola semilla, así que sus 25
+  resultados <b>no son 25 confirmaciones independientes</b>. La aptitud es determinista y las semillas
+  estaban fijadas por la configuración y por el número de iteración. Repetir una celda devolvía
+  entonces el mismo resultado. Para medir de verdad la dispersión se repitió
+  <b>{REP_REPS} veces cada configuración</b>, con la semilla en función de (n, T, repetición). Son
+  <b>{REP_N} corridas</b> y {REP_EVALS} evaluaciones de aptitud. Como control de que no cambió nada
+  más que la semilla, la repetición 0 conserva las semillas originales y reproduce el barrido
   publicado celda por celda.</p>
 
   <p><b>Tabla 3a.</b> Distribución del radio óptimo hallado sobre las {REP_N} corridas.</p>
   {TAB_REP_RADIO}
 
   <p class="lectura">Lectura, en tres puntos. <b>Primero, el peso es robusto</b>: m* = 0,30 en
-  {REP_PISO} de las {REP_N} corridas ({REP_PISO_PCT} %), {REP_VEREDICTO_PESO}. Queda así confirmado
-  empíricamente el argumento de la página anterior. <b>Segundo, el radio no lo es</b>:
-  la búsqueda se reparte entre los dos bordes del intervalo —r = 1 en el {REP_R1_PCT} % de las
-  corridas y r = 25 en el {REP_R25_PCT} %—, con un {REP_OTROS_PCT} % que queda en radios
-  intermedios. No es que el argmax sea r = 1: es que <b>la optimización no identifica un radio
-  estable</b>, y por lo tanto el r = 25 adoptado no puede atribuirse a ella. Es la evidencia más
-  firme de H5 que contiene el trabajo. Y hay un detalle que conviene subrayar, porque cierra el
+  {REP_PISO} de las {REP_N} corridas ({REP_PISO_PCT} %), {REP_VEREDICTO_PESO}. Esto confirma con
+  datos el argumento de la página anterior. <b>Segundo, el radio no lo es.</b>
+  La búsqueda se reparte entre los dos bordes del intervalo: r = 1 en el {REP_R1_PCT} % de las
+  corridas y r = 25 en el {REP_R25_PCT} %, con un {REP_OTROS_PCT} % que queda en radios
+  intermedios. El problema no es que el argmax sea r = 1. Es que <b>la optimización no identifica un
+  radio estable</b>, y por eso el r = 25 adoptado no puede atribuirse a ella. Es la evidencia más
+  firme de H5 que contiene el trabajo. Hay un detalle más, y cierra el
   argumento: <b>el radio que la búsqueda encuentra con más frecuencia no es el que maximiza la
   aptitud</b>. r = {REP_R_FREC} aparece más veces pero rinde {REP_FO_FREC}, mientras
   r = {REP_R_MEJOR} rinde {REP_FO_MEJOR}. El mejor óptimo está en el borde del intervalo y atrae
-  menos inicializaciones, de modo que la frecuencia con que el enjambre devuelve un radio no mide
-  su calidad; usar el resultado de la búsqueda como justificación del radio sería, entonces, usar
-  el argumento equivocado dos veces. <b>Tercero, agrandar el enjambre no cambia el cuadro</b>: la
+  menos inicializaciones. La frecuencia con que el enjambre devuelve un radio no mide, entonces,
+  su calidad. Usar el resultado de la búsqueda para justificar el radio sería usar
+  el argumento equivocado dos veces. <b>Tercero, agrandar el enjambre no cambia el cuadro.</b> La
   proporción de corridas que terminan en r = 1 va del {REP_PORN_MIN} % al {REP_PORN_MAX} % según el
   número de partículas y del {REP_PORT_MIN} % al {REP_PORT_MAX} % según las iteraciones, sin
-  tendencia, y la aptitud media se mueve en una banda de {REP_BANDA}. La rejilla de {N_CFG}
+  tendencia. La aptitud media se mueve en una banda de {REP_BANDA}. La rejilla de {N_CFG}
   configuraciones del trabajo de referencia no gana estabilidad con más partículas ni más
   iteraciones.</p>
   {pie(16)}
@@ -2130,10 +2134,10 @@ H.append(f"""
   <p><b>Tabla 3b.</b> Dispersión de las {REP_N} corridas por configuración de enjambre.</p>
   {TAB_DISPERSION}
   <p class="lectura">Lectura: la aptitud mínima y la máxima de casi todas las filas son las mismas
-  —{OE_FO_PUB} y el valor de r = 25—, porque la búsqueda termina en uno de los dos bordes del
-  intervalo del radio. La excepción es la primera fila, la configuración con menos evaluaciones, que
-  es también la única que no llega al piso del peso en el 100 % de sus repeticiones. La columna del
-  radio confirma lo que la tabla anterior resume: la proporción que termina en r = 1 no sigue
+  ({OE_FO_PUB} y el valor de r = 25), porque la búsqueda termina en uno de los dos bordes del
+  intervalo del radio. La excepción es la primera fila, la configuración con menos evaluaciones. Es
+  también la única que no llega al piso del peso en el 100 % de sus repeticiones. La columna del
+  radio confirma lo que resume la tabla anterior: la proporción que termina en r = 1 no sigue
   ninguna tendencia con el número de partículas ni con las iteraciones.</p>
   {pie(17)}
 </div>
@@ -2143,33 +2147,33 @@ H.append(f"""
 <div class="page">
   <h2>5. Optimización por PSO (continuación): el óptimo exacto, por enumeración</h2>
   <p>La pregunta de si más corridas mejorarían el resultado no se contesta con más corridas. La
-  aptitud es <b>determinista</b> y el radio es <b>entero</b>: el operador lo redondea al intervalo
-  [1, 25], de modo que el espacio de búsqueda tiene veinticinco valores en una dimensión y un
-  continuo suave en la otra. Se puede entonces dejar de muestrear y <b>enumerarlo</b>:
-  {OE_N} evaluaciones —los 25 radios por {OE_PASOS} pesos— dan el máximo sin azar, a una fracción
+  aptitud es <b>determinista</b> y el radio es <b>entero</b>, porque el operador lo redondea al
+  intervalo [1, 25]. El espacio de búsqueda tiene entonces veinticinco valores en una dimensión y un
+  continuo suave en la otra. Se puede dejar de muestrear y <b>enumerarlo</b>:
+  {OE_N} evaluaciones (los 25 radios por {OE_PASOS} pesos) dan el máximo sin azar, a una fracción
   del costo de mil corridas de enjambre.</p>
 
   <p><b>Tabla 3c.</b> Mejor peso y mejor aptitud por radio, con el peso libre y con el peso
   restringido al rango publicado (primeros y últimos radios del orden).</p>
   {TAB_OPTIMO_EXACTO}
 
-  <p class="lectura">Y el resultado corrige el enunciado de H5 en un punto importante. <b>Con el
+  <p class="lectura">El resultado corrige el enunciado de H5 en un punto importante. <b>Con el
   peso restringido</b> al rango publicado, el máximo está en r = {OE_R_PUB} con
   F<sub>o</sub> = {OE_FO_PUB}. <b>Con el peso libre</b>, el máximo está en
-  r = {OE_R_LIBRE} —el radio que esta tesis adopta— con m = {OE_M_LIBRE} y
-  F<sub>o</sub> = {OE_FO_LIBRE}; el rango heredado cuesta {OE_COSTO} de aptitud. Y el orden de los
+  r = {OE_R_LIBRE}, el radio que esta tesis adopta, con m = {OE_M_LIBRE} y
+  F<sub>o</sub> = {OE_FO_LIBRE}. El rango heredado cuesta {OE_COSTO} de aptitud. Y el orden de los
   radios <b>se invierte</b>: con el peso libre la aptitud decrece al bajar el radio y r =
-  {OE_PEOR_LIBRE} pasa a ser el peor ({OE_FO_PEOR_LIBRE}). El mecanismo es directo: con un peso alto
-  un radio grande inyecta demasiado detalle y la similitud estructural se derrumba, de modo que gana
-  el radio chico; en el óptimo verdadero del peso la inyección es pequeña y el radio grande aporta
+  {OE_PEOR_LIBRE} pasa a ser el peor ({OE_FO_PEOR_LIBRE}). El mecanismo es simple. Con un peso alto,
+  un radio grande inyecta demasiado detalle y la similitud estructural se derrumba, así que gana el
+  radio chico. En el óptimo verdadero del peso la inyección es pequeña y el radio grande aporta
   estructura sin costo de fidelidad.</p>
 
-  <p><b>De modo que la discrepancia no está en el radio, sino en el peso.</b> El
-  r = 25 adoptado <b>es</b> el óptimo de la aptitud del trabajo de referencia una vez que el peso no
-  está atado al piso de un intervalo calibrado para otro operador: el «argmax es r = 1» que se
-  observa dentro del rango publicado es un artefacto de esa restricción, y no un desacuerdo entre la
+  <p><b>La discrepancia está en el peso, no en el radio.</b> El
+  r = 25 adoptado <b>es</b> el óptimo de la aptitud del trabajo de referencia, una vez que el peso no
+  está atado al piso de un intervalo calibrado para otro operador. El «argmax es r = 1» que se
+  observa dentro del rango publicado es un artefacto de esa restricción, no un desacuerdo entre la
   aptitud y la batería de evaluación. Lo que sí queda en desacuerdo es el peso, y ahí la
-  equivalencia de energía cierra el cuadro: el óptimo libre m = {OE_M_LIBRE} equivale a
+  equivalencia de energía cierra el cuadro. El óptimo libre m = {OE_M_LIBRE} equivale a
   m = {f"{float(OE_M_LIBRE.replace(',', '.')) * GANANCIA:.3f}".replace(".", ",")} sobre un disco
   único, esencialmente el piso 0,30 que la referencia publicó <b>para su disco</b>. El intervalo
   estaba calibrado para un operador con {f"{GANANCIA:.2f}".replace(".", ",")} veces menos energía de
@@ -2189,48 +2193,49 @@ H.append(f"""
 <div class="page">
   <h2>5. Optimización por PSO (continuación): por qué el barrido de la referencia dispersa</h2>
   <p>Queda una asimetría por explicar, y explicarla cambia su lectura. El barrido de la referencia
-  devuelve pesos muy distintos entre corridas —mediana {REF_M_MED} y recorrido
-  [{REF_M_MIN}; {REF_M_MAX}] sobre sus {REF_N} corridas— mientras el de esta tesis devuelve
-  {REP_PISO} veces el mismo valor de {REP_N}. Parece una diferencia de calidad de la búsqueda y no lo
-  es: es una diferencia en la <b>forma de la superficie</b>, y su causa se puede medir en sus propios
+  devuelve pesos muy distintos entre corridas: mediana {REF_M_MED} y recorrido
+  [{REF_M_MIN}; {REF_M_MAX}] sobre sus {REF_N} corridas. El de esta tesis devuelve
+  {REP_PISO} veces el mismo valor de {REP_N}. Parece una diferencia de calidad de la búsqueda, pero
+  es una diferencia en la <b>forma de la superficie</b>, y su causa se puede medir en sus propios
   anexos.</p>
 
   <p><b>Tabla 3d.</b> Recorrido de cada término de la aptitud en las {REF_N} corridas publicadas por
   el trabajo de referencia.</p>
   {TAB_REF_RECORRIDO}
   <p><b>Y la referencia lo confirma con sus propios datos.</b> El equivalente de esta tesis sobre un
-  disco único —m = {f"{M_EQUIV:.2f}".replace(".", ",")}— cae en la banda donde su búsqueda aterrizó:
+  disco único (m = {f"{M_EQUIV:.2f}".replace(".", ",")}) cae en la banda donde su búsqueda aterrizó:
   sus {REF_N} corridas seleccionan pesos entre {REF_M_MIN} y {REF_M_MAX}, con medianas por escena de
   {REF_M_MED_MIN} a {REF_M_MED_MAX}. Los dos trabajos coinciden en el <b>orden de magnitud del
-  realce</b> y difieren solo en el valor de m que lo expresa. Sin exagerar el acuerdo:
-  {f"{M_EQUIV:.2f}".replace(".", ",")} queda por encima de cuatro de sus cinco medianas, de modo que el
+  realce</b> y difieren solo en el valor de m que lo expresa. El acuerdo no es exacto:
+  {f"{M_EQUIV:.2f}".replace(".", ",")} queda por encima de cuatro de sus cinco medianas, así que el
   realce adoptado aquí es algo <b>mayor</b> que su valor típico, no idéntico.</p>
-  <p><b>El fenómeno no es exclusivo de este trabajo.</b> En la referencia lo que se apoya en la cota
-  no es el peso sino el radio: <b>r = 25, el límite superior del intervalo, aparece en {REF_R25} de sus
+  <p><b>El fenómeno no es exclusivo de este trabajo.</b> En la referencia el que se apoya en la cota
+  es el radio, no el peso: <b>r = 25, el límite superior del intervalo, aparece en {REF_R25} de sus
   {REF_N} corridas</b> ({REF_R25_PCT} %) y r = 1 en {REF_R1}. También allí, entonces, uno de los dos
-  hiperparámetros lo determina una decisión de acotación —argumentada de forma cualitativa, «evitar el
-  sobresuavizado y la pérdida de características térmicas»— y no la búsqueda, mientras su conclusión
-  afirma que el PSO «logró determinar de forma autónoma los valores óptimos». La observación no le
-  quita mérito a la optimización: delimita qué decide la optimización y qué sigue siendo diseño.</p>
+  hiperparámetros lo fija una decisión de acotación y no la búsqueda. Esa decisión está argumentada
+  de forma cualitativa, «evitar el sobresuavizado y la pérdida de características térmicas», mientras
+  su conclusión afirma que el PSO «logró determinar de forma autónoma los valores óptimos». La
+  observación no le quita mérito a la optimización. Solo separa qué decide la optimización y qué
+  sigue siendo diseño.</p>
 
   <p class="lectura">El término que debía penalizar la distorsión aporta el
-  {REF_REC['PSNR_n'][1]} % de la variación: con el desplazamiento de la ecuación (29) su PSNR
+  {REF_REC['PSNR_n'][1]} % de la variación. Con el desplazamiento de la ecuación (29) su PSNR
   normalizado queda entre 0,94 y 0,99, casi saturado, y suma una constante a cada evaluación sin
-  discriminar entre candidatos. Su criterio efectivo es entonces <b>SSIM + entropía</b>, y esos dos
-  términos tienen tendencias <b>opuestas</b> en el peso: la similitud estructural cae al aumentar el
-  realce y la entropía sube. Dos tendencias opuestas dan un máximo <b>interior</b>, y un máximo
-  interior sobre una superficie plana significa que cada corrida, con presupuesto finito, se detiene
-  en un punto distinto de su vecindad. De ahí la dispersión.</p>
+  distinguir entre candidatos. Su criterio efectivo es entonces <b>SSIM + entropía</b>, y esos dos
+  términos se mueven en sentidos <b>opuestos</b> con el peso: al aumentar el realce, la similitud
+  estructural cae y la entropía sube. Dos tendencias opuestas dan un máximo <b>interior</b>. Y un
+  máximo interior sobre una superficie plana quiere decir que cada corrida, con presupuesto finito,
+  se detiene en un punto distinto de su vecindad. De ahí la dispersión.</p>
 
   <p>En esta tesis, con la definición estándar del PSNR, ese término vale alrededor de 0,17 y sí
-  varía, de modo que la similitud estructural domina la variación y la superficie resulta
-  <b>monótona</b> en el peso: el óptimo cae en el borde del intervalo, y el borde actúa como
+  varía. Por eso la similitud estructural domina la variación y la superficie resulta
+  <b>monótona</b> en el peso. El óptimo cae en el borde del intervalo, y el borde actúa como
   atractor porque el recorte devuelve todas las partículas al mismo valor. <b>La estabilidad de este
-  barrido no es, por tanto, una virtud del método: es el síntoma de un óptimo contra la pared.</b> Y
-  la dispersión del suyo no es un defecto de su búsqueda: es el comportamiento esperable cuando el
-  óptimo es genuinamente interior, que es el caso más difícil. A esto se suma una diferencia de
-  diseño que amplifica el contraste: la referencia optimiza <b>por escena</b>, con una corrida
-  independiente para cada una, mientras este trabajo promedia la aptitud sobre tres escenas, lo que
+  barrido no es entonces una virtud del método: es el síntoma de un óptimo contra la pared.</b> Y
+  la dispersión del suyo tampoco es un defecto de su búsqueda. Es lo esperable cuando el
+  óptimo es genuinamente interior, que es el caso más difícil. Hay además una diferencia de
+  diseño que amplifica el contraste. La referencia optimiza <b>por escena</b>, con una corrida
+  independiente para cada una, mientras este trabajo promedia la aptitud sobre tres escenas, y eso
   suaviza la superficie y hace que un solo óptimo domine.</p>
   {pie(19)}
 </div>
@@ -2240,34 +2245,34 @@ H.append(f"""
 <div class="page">
   <h2>5. Optimización por PSO (continuación): el mismo barrido, imagen por imagen</h2>
   <p>El estudio de estabilidad anterior repite la semilla veinte veces sobre las mismas tres
-  imágenes, de modo que mide dispersión <b>entre semillas</b>. El trabajo de referencia hace otra
+  imágenes, así que mide dispersión <b>entre semillas</b>. El trabajo de referencia hace otra
   cosa: una corrida independiente <b>por escena</b>, cinco escenas por veinticinco configuraciones
   de enjambre. Comparar uno con otro directamente sería comparar cosas distintas. Este trabajo tiene
-  el barrido con la misma estructura —{_P_NUE['unidades']} imágenes por veinticinco
-  configuraciones— y es el que permite el contraste limpio.</p>
+  también un barrido con la misma estructura, {_P_NUE['unidades']} imágenes por veinticinco
+  configuraciones, y es el que permite el contraste limpio.</p>
 
   <p><b>Tabla 3e.</b> El mismo experimento, imagen por imagen, en los dos trabajos y con el piso
   del peso bajado.</p>
   {TAB_POR_IMAGEN}
 
   <p class="lectura">Lectura, en tres pasos. <b>Primero</b>, con el <i>mismo</i> rango los dos
-  operadores se comportan al revés: el disco único de la referencia encuentra pesos interiores
-  —mediana {_P_REF['m_med']}, solo el {_P_REF['piso_pct']} % de sus corridas en el piso— mientras el
+  operadores se comportan al revés. El disco único de la referencia encuentra pesos interiores
+  (mediana {_P_REF['m_med']}, solo el {_P_REF['piso_pct']} % de sus corridas en el piso), mientras el
   banco de cinco elementos se clava en el piso en el <b>{_P_NUE['piso_pct']} %</b>.
   <b>Segundo</b>, al bajar el piso el banco deja de pegarse al borde y su radio modal pasa a
-  <b>r = {_P_LIB['r_moda']}</b>, con el {_P_LIB['r25_pct']} % de las corridas ahí: el mismo radio
+  <b>r = {_P_LIB['r_moda']}</b>, con el {_P_LIB['r25_pct']} % de las corridas ahí. Es el mismo radio
   modal que la referencia obtiene con su propio rango ({_P_REF['r25_pct']} % de sus corridas).
-  <b>Tercero</b>, y es la conclusión: la diferencia de comportamiento no está en la calidad de la
-  búsqueda sino en <b>dónde cae el óptimo de cada operador respecto del intervalo heredado</b>.</p>
+  <b>Tercero</b>, la conclusión. La diferencia de comportamiento no está en la calidad de la
+  búsqueda, está en <b>dónde cae el óptimo de cada operador respecto del intervalo heredado</b>.</p>
 
   <p>La razón es física y está medida. El banco de cinco elementos extrae
-  <b>{GANANCIA_BANCO} veces</b> la energía de detalle del disco clásico, de modo que para inyectar
+  <b>{GANANCIA_BANCO} veces</b> la energía de detalle del disco clásico, así que para inyectar
   el mismo realce necesita un peso {GANANCIA_BANCO} veces menor. La mediana
   {_P_REF['m_med']} que selecciona la referencia sobre su disco equivale a
   <b>m = {REF_M_EQUIV}</b> sobre este operador, y ese valor queda <b>por debajo del piso 0,30</b>
-  del intervalo que ambos trabajos heredan. El piso no es entonces un piso para este operador: está
-  ya pasado el óptimo. El optimizador no falla —está detenido contra una pared colocada donde su
-  óptimo no está—, y la prueba es que al retirarla se comporta como el de la referencia. Los dos
+  del intervalo que ambos trabajos heredan. Para este operador ese piso no es un piso: está
+  ya pasado el óptimo. El optimizador no falla. Está detenido contra una pared colocada donde su
+  óptimo no está, y la prueba es que al retirarla se comporta como el de la referencia. Los dos
   trabajos coinciden en el orden de magnitud del realce físico y difieren en el número que lo
   expresa.</p>
   {pie(20)}
@@ -2277,32 +2282,32 @@ H.append(f"""
 H.append(f"""
 <div class="page">
   <h2>5. Optimización por PSO (continuación): el mismo barrido con el peso libre</h2>
-  <p>El barrido determinista dice <i>dónde</i> está el óptimo; queda comprobar si la búsqueda lo
-  <i>encuentra</i> cuando el rango no lo empuja contra la pared. Se repitió por tanto el estudio
-  completo —{LIB_REPS} repeticiones de las 25 configuraciones, {LIB_N} corridas— con el único cambio
-  de bajar el piso del peso de 0,30 a {LIB_PISO}. Todo lo demás es idéntico: mismas escenas, mismas
+  <p>El barrido determinista dice <i>dónde</i> está el óptimo. Queda comprobar si la búsqueda lo
+  <i>encuentra</i> cuando el rango no lo empuja contra la pared. Se repitió entonces el estudio
+  completo ({LIB_REPS} repeticiones de las 25 configuraciones, {LIB_N} corridas) con un único cambio:
+  bajar el piso del peso de 0,30 a {LIB_PISO}. Todo lo demás es idéntico, mismas escenas, mismas
   semillas, mismo operador.</p>
 
   <p><b>Tabla 3f.</b> El mismo barrido bajo los dos rangos de búsqueda.</p>
   {TAB_DOS_RANGOS}
 
-  <p class="lectura">Lectura, y es la confirmación del apartado anterior. <b>El peso</b>: con el rango
-  libre la búsqueda ya no se pega a un borde sino que converge al óptimo interior, con mediana
-  {LIB_M_MED} frente al {OE_M_LIBRE} que la enumeración señala como exacto. No es perfecta:
-  {LIB_PISO_N} corridas ({LIB_PISO_PCT} %) quedan atascadas en el piso nuevo, de modo que un óptimo
-  interior es efectivamente más difícil de alcanzar que un borde. <b>El radio</b>: y acá está el
+  <p class="lectura">Lectura, y confirma el apartado anterior. <b>El peso</b>: con el rango
+  libre la búsqueda ya no se pega a un borde, converge al óptimo interior, con mediana
+  {LIB_M_MED} frente al {OE_M_LIBRE} que la enumeración señala como exacto. No es perfecta.
+  {LIB_PISO_N} corridas ({LIB_PISO_PCT} %) quedan atascadas en el piso nuevo, así que un óptimo
+  interior es de verdad más difícil de alcanzar que un borde. <b>El radio</b>: acá está el
   dato que importa. Con el peso libre la búsqueda se concentra en <b>r = 25 en el
   {LIB_R25_PCT} %</b> de las corridas, contra el {REP_R25_PCT} % del rango publicado, y r = 1 cae del
   {REP_R1_PCT} % al {LIB_R1_PCT} %. <b>La indefinición del radio era, también, un artefacto del
   rango.</b></p>
 
-  <p>De modo que el cuadro completo de H5 es el siguiente. El radio r = 25 que esta tesis adopta es
+  <p>El cuadro completo de H5 queda así. El radio r = 25 que esta tesis adopta es
   el óptimo exacto de la aptitud con el peso libre, y es además la respuesta modal de la búsqueda en
-  esas condiciones: no es una decisión que haya que defender contra la optimización, sino la que la
-  optimización elige cuando no está restringida por un intervalo ajeno. Lo que el intervalo heredado
-  determina es el <b>peso</b>, y lo determina por completo: fija m = 0,30 en el
-  {REP_PISO_PCT} % de las corridas cuando el óptimo real de la aptitud está cuatro veces más abajo.
-  El aporte de la tesis en este punto no es entonces que el PSO falle, sino que <b>el rango de
+  esas condiciones. No hay que defenderlo contra la optimización: es el radio que la
+  optimización elige cuando no la restringe un intervalo ajeno. Lo que el intervalo heredado
+  determina es el <b>peso</b>, y lo determina por completo. Fija m = 0,30 en el
+  {REP_PISO_PCT} % de las corridas, cuando el óptimo real de la aptitud está cuatro veces más abajo.
+  El aporte de la tesis en este punto no es que el PSO falle. Es que <b>el rango de
   búsqueda heredado, y no el optimizador, es lo que fija uno de los dos hiperparámetros</b>. Es una
   afirmación sobre el protocolo, y ahora está medida en las dos direcciones.</p>
   {pie(21)}
@@ -2313,9 +2318,9 @@ H.append(f"""
 <div class="page">
   <h2>5. Optimización por PSO (continuación): el registro de las {CORRIDAS_TOTAL} corridas</h2>
   <p>El trabajo de referencia publica sus 125 corridas en anexos, una por fila. Este publica las
-  {CORRIDAS_TOTAL} en la matriz siguiente: <b>cada celda es una corrida</b>, las filas son las 25
+  {CORRIDAS_TOTAL} en la matriz siguiente. <b>Cada celda es una corrida</b>: las filas son las 25
   configuraciones de enjambre y las columnas las {REP_REPS} repeticiones independientes de cada una.
-  El valor de la celda es el <b>radio</b> que esa corrida devolvió, que es lo que varía; el peso
+  El valor de la celda es el <b>radio</b> que esa corrida devolvió, que es lo que varía. El peso
   resultó m* = 0,30 en todas menos {"una" if len(_fuera_piso) == 1 else str(len(_fuera_piso))}, que se
   identifica al pie. El total son {CORRIDAS_EVALS} evaluaciones de aptitud y {CORRIDAS_HORAS} horas de
   cálculo.</p>
@@ -2324,9 +2329,9 @@ H.append(f"""
   partículas (n) e iteraciones (T). Columnas: número de repetición.</p>
   {TAB_500_RADIO}
 
-  <p class="lectura">La matriz hace visible de un vistazo lo que las tablas anteriores resumen: las
-  celdas alternan entre 1 y 25 sin patrón por fila ni por columna —ni el número de partículas ni el
-  de iteraciones concentran un valor— y los radios intermedios aparecen de forma aislada. La
+  <p class="lectura">La matriz muestra de un vistazo lo que las tablas anteriores resumen. Las
+  celdas alternan entre 1 y 25 sin patrón por fila ni por columna, y los radios intermedios aparecen
+  de forma aislada. Ni el número de partículas ni el de iteraciones concentran un valor. La
   repetición 1 es la que conserva las semillas del barrido publicado, y su columna reproduce ese
   barrido celda por celda, lo que permite verificar que el estudio no cambió nada más que la semilla.
   Excepción en el peso: {CORRIDAS_EXCEPCION}. El registro completo, con el peso, la aptitud y el
@@ -2353,21 +2358,21 @@ H.append(f"""
         desplazamiento y seis subbandas direccionales complejas por nivel (4 niveles); fusión por máxima
         magnitud compleja.</li>
     <li><b>Wavelet Daubechies db4 (rotulada CVT)</b>: descomposición wavelet 2D con base db4 y 3
-        niveles, con la misma regla de fusión que la DWT. Corresponde señalar con precisión qué es y
-        qué no es este comparativo: la implementación empleada <b>no es la transformada curvelet</b> de
-        Candès et al. (2006) —que utiliza elementos base anisótropos y direccionales que una wavelet
-        separable no posee— sino una aproximación por wavelet 2D, y comparte algoritmo con la DWT
-        difiriendo únicamente en la base (db4 frente a Haar). Igualando la base, ambas producen
-        resultados idénticos. Se conserva en el banco por comparabilidad con la literatura que emplea
-        esta aproximación, pero <b>no debe leerse como una cuarta familia independiente</b>: los cinco
-        métodos de referencia cubren en rigor cuatro familias (pirámides, wavelets separables, wavelets
-        complejas y morfología).</li>
+        niveles, con la misma regla de fusión que la DWT. Hay que aclarar qué es y qué no es este
+        comparativo. La implementación empleada <b>no es la transformada curvelet</b> de
+        Candès et al. (2006). La curvelet usa elementos base anisótropos y direccionales que una
+        wavelet separable no tiene. Acá se usó una aproximación por wavelet 2D, con el mismo
+        algoritmo que la DWT y una única diferencia en la base (db4 frente a Haar). Si se iguala la
+        base, ambas dan resultados idénticos. Se conserva en el banco para poder comparar con la
+        literatura que emplea esta aproximación, pero <b>no debe leerse como una cuarta familia
+        independiente</b>. Los cinco métodos de referencia cubren cuatro familias (pirámides,
+        wavelets separables, wavelets complejas y morfología).</li>
     <li><b>Top-Hat clásico</b>: la fusión morfológica básica con un único disco B<sub>5</sub>, detalle
         entre fuentes por máximo y reconstrucción sin ponderación (m = 1):</li>
   </ul>
   {formula("th_clasico", 17)}
-  <p>Todos los métodos se ejecutan sobre los mismos {N_ESC} pares, con la misma implementación de métricas
-  (<i>src/metrics/evaluators.py</i>), de modo que la comparación es directa.</p>
+  <p>Todos los métodos se ejecutan sobre los mismos {N_ESC} pares y con la misma implementación de
+  métricas (<i>src/metrics/evaluators.py</i>). Así la comparación es directa.</p>
   {pie(23)}
 </div>
 """)
@@ -2376,10 +2381,10 @@ H.append(f"""
 <div class="page">
   <h2>7. Métricas de evaluación</h2>
   <p>Se emplean <b>nueve métricas</b> alineadas con la metodología de referencia (Ortega y Espinoza,
-  2025), todas de tipo «mayor es mejor» y calculadas a partir de la imagen fusionada y sus fuentes:
-  entropía (EN), desviación estándar (SD), ganancia de entropía sobre las fuentes (FE), gradiente medio (MG),
-  información mutua con el visible y el infrarrojo (MI_vis, MI_ir), frecuencia espacial (SF),
-  similitud estructural promedio (SSIM) y relación señal-ruido de pico (PSNR).</p>
+  2025). Todas son de tipo «mayor es mejor» y se calculan a partir de la imagen fusionada y sus
+  fuentes. Son entropía (EN), desviación estándar (SD), ganancia de entropía sobre las fuentes (FE),
+  gradiente medio (MG), información mutua con el visible y el infrarrojo (MI_vis, MI_ir), frecuencia
+  espacial (SF), similitud estructural promedio (SSIM) y relación señal-ruido de pico (PSNR).</p>
   <p>Entropía y desviación estándar (información y contraste):</p>
   {formula("en", 18)}
   <p>Gradiente medio y frecuencia espacial (nitidez y actividad):</p>
@@ -2390,21 +2395,20 @@ H.append(f"""
   {formula("ssim", 21)}
   <p>Relación señal-ruido de pico frente a ambas fuentes (MAX = 1):</p>
   {formula("psnr", 22)}
-  <p class="lectura">Alcance del conjunto y su limitación, declarados. El evaluador implementado
-  calcula además <b>ocho métricas que no se incorporan al análisis</b> —Qabf, Nabf, SCD, VIF, FMI y
-  los tres índices de Piella (Q0, QW, QE)—, y sus valores están disponibles en
-  <i>all_metrics.csv</i> junto a los de las nueve reportadas. La decisión de restringir el análisis a
-  estas nueve responde a la <b>fidelidad metodológica</b> con el trabajo de referencia, no a una
-  selección de resultados: con las diecisiete la propuesta cede el primer puesto del ranking agregado
-  y pasa al tercero, aunque lidera dos de las ocho excluidas (SCD y VIF). La limitación que importa
-  es otra y conviene enunciarla con precisión: las nueve son <b>todas de tipo «mayor es mejor»</b>, de
-  modo que ninguna penaliza el ruido ni los artefactos —la única métrica implementada con dirección
-  inversa, Nabf, queda fuera del conjunto—. En consecuencia el criterio premia la magnitud del realce:
-  se verificó con un control negativo en el que una fusión artificial de ruido gaussiano con
-  σ = 0,20 alcanza el <b>{CN_ORD_RUIDO} puesto entre {CN_ENTRADAS} entradas</b> (rango
-  {CN_RANGO_RUIDO}), por delante de {CN_COMPAR_DETRAS} de los seis métodos comparativos, y
-  cuyo rango mejora de forma monótona al aumentar la varianza. Los resultados de las secciones
-  siguientes deben leerse con ese alcance.</p>
+  <p class="lectura">Alcance del conjunto y su limitación. El evaluador implementado calcula además
+  <b>ocho métricas que no se incorporan al análisis</b>: Qabf, Nabf, SCD, VIF, FMI y los tres
+  índices de Piella (Q0, QW, QE). Sus valores están en <i>all_metrics.csv</i> junto a los de las
+  nueve reportadas. El análisis se restringe a estas nueve por <b>fidelidad metodológica</b> con el
+  trabajo de referencia, y no para elegir los resultados que convienen. Con las diecisiete la
+  propuesta cede el primer puesto del ranking agregado y pasa al tercero, aunque lidera dos de las
+  ocho excluidas (SCD y VIF). Hay otra limitación más importante. Las nueve son <b>todas de tipo
+  «mayor es mejor»</b>, así que ninguna penaliza el ruido ni los artefactos. La única métrica
+  implementada con dirección inversa, Nabf, queda fuera del conjunto. Por eso el criterio premia la
+  magnitud del realce. Se verificó con un control negativo. Una fusión artificial de ruido gaussiano
+  con σ = 0,20 alcanza el <b>{CN_ORD_RUIDO} puesto entre {CN_ENTRADAS} entradas</b> (rango
+  {CN_RANGO_RUIDO}), por delante de {CN_COMPAR_DETRAS} de los seis métodos comparativos, y su rango
+  mejora de forma monótona al aumentar la varianza. Los resultados de las secciones siguientes deben
+  leerse con ese alcance.</p>
   {pie(24)}
 </div>
 """)
@@ -2428,21 +2432,22 @@ for _b, _imgs in enumerate(_bloques, 1):
             if _b == 1 else f"8. Resultados por par (continuación {_b} de 5)")
     _intro = ("" if _b > 1 else f"""
   <p>Además de los promedios, se detallan los resultados <b>par por par</b> sobre los {N_ESC} pares
-  del TNO, con la misma disposición del Cuadro 2 del trabajo de referencia: una fila por método dentro
-  de cada par y, en <b>negrita</b>, el mejor valor de cada columna en ese par. Se incluye también
-  la metodología clásica Top-Hat, que es la referencia morfológica directa de la propuesta.</p>
+  del TNO, con la misma disposición del Cuadro 2 del trabajo de referencia. Hay una fila por método
+  dentro de cada par y, en <b>negrita</b>, el mejor valor de cada columna en ese par. Se incluye
+  también la metodología clásica Top-Hat, que es la referencia morfológica directa de la
+  propuesta.</p>
   <p class="lectura">Unidades: SSIM<sub>avg</sub> y SD en [0, 1]; E en bits (0–8); SF adimensional;
-  PSNR en dB. La correspondencia con el Cuadro 2 de referencia es directa —allí E y PSNR se reportan
-  normalizados (E/8 y PSNR/100) y SD en la escala 0–255—, de modo que el orden entre métodos es
-  comparable columna por columna.</p>""")
+  PSNR en dB. La correspondencia con el Cuadro 2 de referencia es directa. Allí E y PSNR se reportan
+  normalizados (E/8 y PSNR/100) y SD en la escala 0–255, así que el orden entre métodos se puede
+  comparar columna por columna.</p>""")
     _lect = ("" if _b < 5 else f"""
-  <p class="lectura">Lectura del conjunto de los {N_ESC} pares: la propuesta obtiene el mejor valor en
-  <b>{_lidera['E']} de {N_ESC}</b> pares en entropía (E) y en <b>{_lidera['SD']} de {N_ESC}</b> en desviación
-  estándar (SD), frente a <b>{_lidera['SF']} de {N_ESC}</b> en frecuencia espacial (SF, donde domina el
-  Top-Hat clásico), <b>{_lidera['SSIM_avg']} de {N_ESC}</b> en SSIM<sub>avg</sub> y
-  <b>{_lidera['PSNR']} de {N_ESC}</b> en PSNR. El patrón por par confirma el de los promedios: la
-  propuesta lidera de forma sistemática las métricas de información y contraste, y cede las de
-  fidelidad a las fuentes.</p>""")
+  <p class="lectura">Lectura del conjunto de los {N_ESC} pares. La propuesta obtiene el mejor valor
+  en <b>{_lidera['E']} de {N_ESC}</b> pares en entropía (E) y en <b>{_lidera['SD']} de {N_ESC}</b>
+  en desviación estándar (SD). En cambio, obtiene el mejor valor en <b>{_lidera['SF']} de
+  {N_ESC}</b> pares en frecuencia espacial (SF, donde domina el Top-Hat clásico), en
+  <b>{_lidera['SSIM_avg']} de {N_ESC}</b> en SSIM<sub>avg</sub> y en <b>{_lidera['PSNR']} de
+  {N_ESC}</b> en PSNR. El patrón por par confirma el de los promedios. La propuesta lidera de forma
+  sistemática las métricas de información y contraste, y cede las de fidelidad a las fuentes.</p>""")
     H.append(f"""
 <div class="page">
   <h2>{_cab}</h2>{_intro}
@@ -2470,17 +2475,16 @@ H.append(f"""
   <p><b>Tabla 6.</b> Resumen de los {len(wtab)} contrastes de la propuesta: mejor / peor / sin
   diferencia significativa (≈), α = 0,05.</p>
   {tabla_wilcoxon}
-  <p class="lectura">Lectura <b>por bloques</b>, que es la forma en que H1 está enunciada. Contra
-  los cinco métodos del estado del arte, el bloque de <b>actividad espacial</b> (EN, SD, FE, MG,
-  SF) da <b>{BL_ACT['fav']} de {BL_ACT['n']}</b> contrastes favorables y significativos y
-  <b>ninguno adverso</b>; el único que no alcanza significancia es {BL_ACT['excepcion']}. El
-  bloque de <b>fidelidad a las fuentes</b> (MI<sub>vis</sub>, MI<sub>ir</sub>, SSIM, PSNR) da
-  <b>{BL_FID['adv']} de {BL_FID['n']}</b> adversos y significativos. Sobre el total de los
-  {w_mejor + w_peor + w_emp} contrastes contra los seis comparativos —incluido el Top-Hat clásico,
-  que es el mismo operador—: {w_mejor} mejor, {w_peor} peor y {w_emp} sin diferencia. Los dos
-  recuentos dicen lo mismo: <b>no es una mejora uniforme sino un desplazamiento del punto de
-  operación</b>, que es exactamente lo que afirma H1. Las conclusiones citan el recuento por
-  bloques.</p>
+  <p class="lectura">Lectura <b>por bloques</b>, porque así está enunciada H1. Contra los cinco
+  métodos del estado del arte, el bloque de <b>actividad espacial</b> (EN, SD, FE, MG, SF) da
+  <b>{BL_ACT['fav']} de {BL_ACT['n']}</b> contrastes favorables y significativos y <b>ninguno
+  adverso</b>. El único que no alcanza significancia es {BL_ACT['excepcion']}. El bloque de
+  <b>fidelidad a las fuentes</b> (MI<sub>vis</sub>, MI<sub>ir</sub>, SSIM, PSNR) da
+  <b>{BL_FID['adv']} de {BL_FID['n']}</b> adversos y significativos. En el total de los
+  {w_mejor + w_peor + w_emp} contrastes contra los seis comparativos, incluido el Top-Hat clásico
+  (que es el mismo operador), hay {w_mejor} mejor, {w_peor} peor y {w_emp} sin diferencia. Los dos
+  recuentos dicen lo mismo. <b>No es una mejora uniforme. Es un desplazamiento del punto de
+  operación</b>, y eso es lo que afirma H1. Las conclusiones citan el recuento por bloques.</p>
   {figura(charts["ranking"], "Ranking promedio global de los 7 métodos (9 métricas, dirección respetada); la barra azul es la propuesta.", 78)}
   {pie(32)}
 </div>
@@ -2498,29 +2502,29 @@ H.append(f"""
 <div class="page">
   <h2>9. Análisis estadístico (continuación): el orden depende de cómo se agrega</h2>
   <p>El primer puesto del apartado anterior se obtiene promediando, para cada método, su rango
-  dentro de cada imagen. Es una decisión de agregación entre varias posibles, y conviene mostrar
-  qué pasa con las otras dos que este mismo trabajo calcula, porque están las tres en
+  dentro de cada imagen. Es una forma de agregar entre varias posibles. Acá se muestra qué pasa con
+  las otras dos que este mismo trabajo calcula, porque las tres están en
   <span class="mono">ranking_methods.csv</span> y cualquiera que abra el archivo las ve juntas.</p>
 
   <p><b>Tabla 6a.</b> El mismo benchmark bajo tres formas de agregar las {N_METRICAS_RK} métricas.</p>
   {TAB_AGREGACIONES}
 
-  <p class="lectura">Lectura. La propuesta encabeza con las dos agregaciones por rangos, y
-  sostiene el primer puesto incluso al retirar FE, que es la métrica redundante: eso responde la
-  objeción de que su ventaja viniera de contar dos veces la entropía. Pero con la tercera
-  —promediar primero los valores y rankear después— hay <b>empate</b> con la pirámide de Laplace,
-  en {_coma(AG_FILAS[2][3], 3)}. No cambió ninguna imagen ni ninguna métrica: cambió el orden de
-  dos operaciones. <b>No se reclama aquí una separación estadísticamente significativa</b>, y
-  conviene ser explícito sobre por qué: los contrastes de Friedman y Wilcoxon del apartado
-  anterior corren <b>por métrica y sobre los valores</b>, de modo que no autorizan a afirmar nada
-  sobre la diferencia entre dos rangos promedio. Un test sobre esa diferencia no se hizo.</p>
+  <p class="lectura">Lectura. La propuesta encabeza con las dos agregaciones por rangos, y sostiene
+  el primer puesto incluso al retirar FE, que es la métrica redundante. Eso responde la objeción de
+  que su ventaja viniera de contar dos veces la entropía. Pero con la tercera forma, que promedia
+  primero los valores y rankea después, hay <b>empate</b> con la pirámide de Laplace, en
+  {_coma(AG_FILAS[2][3], 3)}. No cambió ninguna imagen ni ninguna métrica. Cambió el orden de dos
+  operaciones. <b>Acá no se reclama una separación estadísticamente significativa</b>, y el motivo
+  es simple. Los contrastes de Friedman y Wilcoxon del apartado anterior corren <b>por métrica y
+  sobre los valores</b>, así que no permiten afirmar nada sobre la diferencia entre dos rangos
+  promedio. No se hizo ningún test sobre esa diferencia.</p>
 
-  <p>Lejos de debilitar el resultado, esto es una instancia más del segundo aporte y de H2: el
-  orden de mérito no es una propiedad del operador sino del criterio con que se lo evalúa, y
-  «criterio» incluye la aritmética con que se resumen las métricas, no solo cuáles se eligen. La
-  sección 10 lleva el mismo examen a la composición del conjunto y al ajuste de los comparativos.
-  Lo que se sostiene es lo verificable: <b>con el criterio del trabajo de referencia, y con esa
-  agregación declarada, la propuesta encabeza el benchmark</b>.</p>
+  <p>Esto no debilita el resultado. Es otro ejemplo del segundo aporte y de H2. El orden de mérito
+  no es una propiedad del operador, sino del criterio con que se lo evalúa. Y ese criterio incluye
+  la aritmética con que se resumen las métricas, no solo cuáles se eligen. La sección 10 lleva el
+  mismo examen a la composición del conjunto y al ajuste de los comparativos. Lo que queda en pie es
+  lo verificable. <b>Con el criterio del trabajo de referencia, y con esa agregación declarada, la
+  propuesta encabeza el benchmark</b>.</p>
   {pie(pg)}
 </div>
 """)
@@ -2529,26 +2533,26 @@ pg += 1
 H.append(f"""
 <div class="page">
   <h2>9. Análisis estadístico (continuación): cuánta dispersión hay detrás de las medias</h2>
-  <p>Todo lo anterior son medias sobre {DISP_PARES} pares, y sin intervalo una ventaja pequeña
-  parece ruido de redondeo aunque no lo sea. La tabla hace la comparación <b>más exigente
-  posible</b>: cada métrica contra <b>su propio rival más fuerte</b>, no contra el promedio de los
-  seis.</p>
+  <p>Todo lo anterior son medias sobre {DISP_PARES} pares. Sin intervalo de confianza, una ventaja
+  pequeña parece ruido de redondeo aunque no lo sea. La tabla hace la comparación <b>más exigente
+  posible</b>. Enfrenta cada métrica contra <b>su propio rival más fuerte</b>, y no contra el
+  promedio de los seis.</p>
 
-  <p><b>Tabla 6b.</b> Diferencia media pareada contra el rival más fuerte de cada métrica, con
-  intervalo de confianza al 95 % por remuestreo de los {DISP_PARES} pares (10.000 réplicas, semilla
-  fija), más el p con corrección de Holm y el tamaño de efecto rank-biserial <i>r</i> que la
+  <p><b>Tabla 6b.</b> Diferencia media pareada contra el rival más fuerte de cada métrica. Incluye
+  el intervalo de confianza al 95 % por remuestreo de los {DISP_PARES} pares (10.000 réplicas,
+  semilla fija), el p con corrección de Holm y el tamaño de efecto rank-biserial <i>r</i> que la
   Tabla 6 anunciaba sin mostrar.</p>
   {TAB_DIF_PAREADAS}
 
-  <p class="lectura">Lectura, y es la más dura del informe. Contra el mejor rival de cada métrica
-  la propuesta gana con el intervalo <b>excluyendo el cero</b> en <b>{DISP_GANA} de las
-  {DISP_N}</b> —entropía y eficiencia de fusión, frente al Top-Hat clásico—, <b>empata</b> en
-  {DISP_EMPATA} —SD frente a la pirámide de Laplace, el mismo contraste que no alcanza
-  significancia por bloques— y <b>pierde</b> en {DISP_PIERDE}. Los intervalos son estrechos: los
-  {DISP_PARES} pares alcanzan para resolver estas diferencias, así que lo que se ve no es
-  indefinición sino un perfil. <b>No contradice el primer puesto del ranking</b>: aquel promedia
-  rangos sobre las nueve métricas y ésta enfrenta cada una con su campeón, que no es siempre el
-  mismo método. Un punto de operación desplazado, no una dominancia: es la afirmación de H1.</p>
+  <p class="lectura">Lectura, y es la más dura del informe. Contra el mejor rival de cada métrica la
+  propuesta gana con el intervalo <b>excluyendo el cero</b> en <b>{DISP_GANA} de las
+  {DISP_N}</b>, que son entropía y eficiencia de fusión frente al Top-Hat clásico. <b>Empata</b> en
+  {DISP_EMPATA}, o sea SD frente a la pirámide de Laplace, el mismo contraste que no alcanza
+  significancia por bloques. Y <b>pierde</b> en {DISP_PIERDE}. Los intervalos son estrechos. Los
+  {DISP_PARES} pares alcanzan para resolver estas diferencias, así que lo que se ve es un perfil y
+  no una indefinición. <b>Esto no contradice el primer puesto del ranking</b>. Aquel promedia rangos
+  sobre las nueve métricas, y esta tabla enfrenta cada una con su campeón, que no es siempre el
+  mismo método. Es un punto de operación desplazado y no una dominancia. Eso es lo que afirma H1.</p>
   {pie(pg)}
 </div>
 """)
@@ -2558,32 +2562,33 @@ H.append(f"""
 <div class="page">
   <h2>10. Robustez del resultado: ajuste simétrico y ablación del operador</h2>
   <p>El resultado del apartado anterior se obtiene con cada método comparativo en su
-  <b>configuración estándar</b>, que es el protocolo habitual de la literatura. Cabe sin embargo una
-  objeción legítima: el radio de la propuesta (r = 25) se eligió observando las nueve métricas de
-  evaluación, mientras los seis comparativos corrieron con su parámetro por defecto. Para responderla
-  se barrió el parámetro principal de cada método —número de niveles en los multiescala, radio en el
-  Top-Hat clásico— y se seleccionó su mejor valor con <b>el mismo criterio</b> aplicado a la propuesta:
-  el promedio de rangos intra-bloque sobre las nueve métricas, calculado entre las configuraciones del
-  propio método. Son {len(_ajm)} configuraciones evaluadas sobre los {N_ESC} pares.</p>
+  <b>configuración estándar</b>, que es el protocolo habitual de la literatura. Pero cabe una objeción
+  legítima. El radio de la propuesta (r = 25) se eligió observando las nueve métricas de evaluación,
+  mientras los seis comparativos corrieron con su parámetro por defecto. Para responderla se barrió el
+  parámetro principal de cada método (número de niveles en los multiescala, radio en el Top-Hat
+  clásico) y se eligió su mejor valor con <b>el mismo criterio</b> que se aplicó a la propuesta. Ese
+  criterio es el promedio de rangos intra-bloque sobre las nueve métricas, calculado entre las
+  configuraciones del propio método. Son {len(_ajm)} configuraciones evaluadas sobre los {N_ESC}
+  pares.</p>
   <p><b>Tabla 7.</b> Ranking en cuatro escenarios de ajuste (promedio de rangos intra-bloque; menor es
   mejor; en negrita el líder de cada columna y la fila de la propuesta).</p>
   {TAB_ESCENARIOS}
   <p class="lectura">Lectura, en cuatro puntos. <b>Primero</b>, en la configuración estándar la
   propuesta es <b>{POS_A}.ª de {len(_ajr)}</b> ({f"{VAL_A:.3f}".replace(".", ",")}).
-  <b>Segundo</b>, el criterio de ajuste elige para la propuesta <b>r = {_elg.get(PROP, 25)}</b>, es
-  decir el mismo valor publicado entre los once candidatos evaluados: no es un valor arbitrario, y por
-  eso los escenarios B y C coinciden. <b>Tercero</b>, y es el punto central,
-  <b>ninguno de los cinco métodos del estado del arte alcanza a la propuesta ni siquiera ajustado</b>:
-  el mejor de ellos es {LBL.get(SOTA_MEJOR, SOTA_MEJOR).split(" (")[0]} con
+  <b>Segundo</b>, el criterio de ajuste elige para la propuesta <b>r = {_elg.get(PROP, 25)}</b>, o sea
+  el mismo valor publicado, entre los once candidatos evaluados. No es un valor arbitrario, y por eso
+  los escenarios B y C coinciden. <b>Tercero</b>, el punto central:
+  <b>ninguno de los cinco métodos del estado del arte alcanza a la propuesta ni siquiera ajustado</b>.
+  El mejor de ellos es {LBL.get(SOTA_MEJOR, SOTA_MEJOR).split(" (")[0]} con
   {f"{SOTA_MEJOR_VAL:.3f}".replace(".", ",")} frente a
   {f"{VAL_B:.3f}".replace(".", ",")} de la propuesta. <b>Cuarto</b>, el único método que la supera
-  es el <b>Top-Hat clásico</b> —que no pertenece al estado del arte sino a la misma familia
-  morfológica— por {f"{VAL_B - VLID_B:.3f}".replace(".", ",")}, y el párrafo siguiente muestra que
-  esa diferencia no proviene del operador.</p>
+  es el <b>Top-Hat clásico</b>, que no está en el estado del arte y pertenece a la misma familia
+  morfológica; le gana a la propuesta por {f"{VAL_B - VLID_B:.3f}".replace(".", ",")}. El párrafo
+  siguiente muestra que esa diferencia no viene del operador.</p>
   <p>Con las diecisiete métricas disponibles (escenario D) la propuesta pasa al
   {POS_D}.º puesto ({f"{VAL_D:.3f}".replace(".", ",")}), detrás de
-  {LBL.get(LID_D, LID_D).split(" (")[0]}. La composición del conjunto de métricas, y no solo el
-  método, determina el orden: es el hallazgo que se discute en el apartado 14.</p>
+  {LBL.get(LID_D, LID_D).split(" (")[0]}. El orden lo determina la composición del conjunto de
+  métricas, no solo el método. Este hallazgo se discute en el apartado 14.</p>
   {pie(pg)}
 </div>
 """)
@@ -2593,33 +2598,32 @@ H.append(f"""
 <div class="page">
   <h2>10. Robustez (continuación): el peso de realce y el aporte del banco</h2>
   <p><b>El origen de la ventaja del Top-Hat clásico en el escenario B.</b> Ese método se ejecuta con
-  <b>m = 1</b> por definición de la metodología clásica, frente a <b>m = 0,30</b> de la propuesta: no
-  compiten dos operadores, compiten dos pesos de realce, con el clásico inyectando <b>3,3 veces más</b>.
-  Igualando el peso —Top-Hat clásico con r = 25 y m = 0,30, los mismos valores de la propuesta— y
-  <b>sustituyéndolo</b> por esa versión dentro del benchmark de siete métodos, la propuesta conserva el
+  <b>m = 1</b> por definición de la metodología clásica, frente a <b>m = 0,30</b> de la propuesta. Ahí
+  no compiten dos operadores, compiten dos pesos de realce, y el clásico inyecta <b>3,3 veces más</b>.
+  Se igualó el peso (Top-Hat clásico con r = 25 y m = 0,30, los mismos valores de la propuesta) y se
+  lo <b>sustituyó</b> por esa versión dentro del benchmark de siete métodos. La propuesta conserva el
   primer lugar del ranking de nueve métricas: {f"{CTRL_PROP:.3f}".replace(".", ",")} frente a
   {f"{CTRL_TH_M030:.3f}".replace(".", ",")} del clásico, es decir <b>gana por
-  {f"{CTRL_VENTAJA:.3f}".replace(".", ",")}</b>. La ventaja de
-  {f"{abs(VAL_B - VLID_B):.3f}".replace(".", ",")} del escenario B proviene, entonces, de su peso
-  m = 1 —más del triple del de la propuesta— y no del operador: la diferencia del escenario B mide el
-  peso, no el operador.</p>
+  {f"{CTRL_VENTAJA:.3f}".replace(".", ",")}</b>. Así que la ventaja de
+  {f"{abs(VAL_B - VLID_B):.3f}".replace(".", ",")} del escenario B viene de su peso m = 1, más del
+  triple del de la propuesta, y no del operador. Esa diferencia mide el peso, no el operador.</p>
   <p><b>Aporte del banco de cinco elementos estructurantes.</b> La comparación contra el Top-Hat
   clásico no lo aísla, porque los dos operadores no comparten hiperparámetros. La ablación fija
   (r, m) = (25; 0,30) y varía únicamente la regla de combinación de las respuestas.</p>
   <p><b>Tabla 8.</b> Ablación del operador con (r, m) fijos (promedio de rangos intra-bloque entre los
   seis brazos; menor es mejor).</p>
   {TAB_ABLACION}
-  <p class="lectura">Lectura: con las nueve métricas del trabajo, <b>la suma de ramas —la propuesta— es
-  el mejor brazo</b> ({f"{_abl.loc['suma','rango_9']:.3f}".replace(".", ",")} frente a
-  {f"{_abl.loc['disco','rango_9']:.3f}".replace(".", ",")} del disco único con idénticos r y m), de
-  modo que el banco <b>sí</b> aporta sobre el disco. Con las diecisiete el orden se invierte y el mejor
+  <p class="lectura">Lectura: con las nueve métricas del trabajo, <b>la suma de ramas, o sea la
+  propuesta, es el mejor brazo</b> ({f"{_abl.loc['suma','rango_9']:.3f}".replace(".", ",")} frente a
+  {f"{_abl.loc['disco','rango_9']:.3f}".replace(".", ",")} del disco único con idénticos r y m). Por
+  eso el banco <b>sí</b> aporta sobre el disco. Con las diecisiete el orden se invierte y el mejor
   brazo es el máximo entre ramas. El contraste directo suma frente a disco es significativo a favor de
   la propuesta en seis métricas (EN, SD, FE, MG, SF y VIF) y en contra en nueve, todas de fidelidad o
-  de artefactos: el banco <b>desplaza el punto de operación</b> hacia la actividad espacial en lugar de
-  dominar en todo el espectro. Un dato en favor del operador: la imagen base (VIS+IR)/2 <b>sin
-  operador</b> queda última de los seis brazos con las diecisiete métricas
-  ({f"{_abl.loc['base','rango_17']:.3f}".replace(".", ",")}), de modo que el mérito no proviene de
-  la imagen de partida.</p>
+  de artefactos. O sea que el banco <b>desplaza el punto de operación</b> hacia la actividad espacial
+  en lugar de dominar en todo el espectro. Un dato en favor del operador: la imagen base
+  (VIS+IR)/2 <b>sin operador</b> queda última de los seis brazos con las diecisiete métricas
+  ({f"{_abl.loc['base','rango_17']:.3f}".replace(".", ",")}), así que el mérito no viene de la
+  imagen de partida.</p>
   {pie(pg)}
 </div>
 """)
@@ -2634,12 +2638,12 @@ H.append(f"""
   la ausencia de halos en los bordes.</p>
   <p class="lectura">Por qué la metodología de la referencia es una entrada aparte del comparativo
   «Top-Hat clásico». Aquel corre con la parametrización manual r = 5 y m = 1. La metodología de
-  Ortega y Espinoza es el <b>mismo operador de disco único</b> pero con el (r, m) que halla su PSO,
-  y sobre este corpus ese barrido devuelve <b>r = 25 y m = 0,30</b> —la celda de mejor aptitud de
-  su rejilla, F<sub>o</sub> = 1,7544 frente a 1,7507 en r = 1—. Son los <b>mismos</b>
-  hiperparámetros que adopta la propuesta, de modo que los dos últimos paneles de cada montaje se
-  diferencian únicamente en el operador: disco único contra banco de cinco elementos. Es la
-  ablación del operador, vista a ojo, y por eso van uno al lado del otro en la última fila.</p>
+  Ortega y Espinoza usa el <b>mismo operador de disco único</b>, pero con el (r, m) que halla su PSO.
+  Sobre este corpus ese barrido devuelve <b>r = 25 y m = 0,30</b>, que es la celda de mejor aptitud
+  de su rejilla (F<sub>o</sub> = 1,7544 frente a 1,7507 en r = 1). Son los <b>mismos</b>
+  hiperparámetros que adopta la propuesta. Por eso los dos últimos paneles de cada montaje se
+  diferencian solo en el operador: disco único contra banco de cinco elementos. Es la ablación del
+  operador vista a ojo, y van uno al lado del otro en la última fila.</p>
   {mont_html[0].replace('class="mont"', 'class="mont solo"')}
   {pie(pg)}
 </div>
@@ -2658,32 +2662,32 @@ for i in range(1, N_ESC, 2):
 H.append(f"""
 <div class="page">
   <h2>12. El detector: arquitectura, ejecución y protocolo de entrenamiento</h2>
-  <p>Las dos pruebas de detección usan el mismo detector, de modo que conviene precisar qué es,
-  cómo está formado y cómo se lo ejecutó, antes de leer sus resultados. Se eligió un detector
-  <b>de una sola etapa</b>: a diferencia de las arquitecturas de dos etapas —que primero proponen
-  regiones y después las clasifican—, YOLO plantea la detección como una única regresión sobre la
-  imagen completa, lo que le da el costo por imagen necesario para evaluar nueve entradas sobre
-  varios miles de imágenes (Redmon et al., 2016). Se usó la versión <b>YOLOv8n</b>, la variante
-  <i>nano</i> de la familia (Jocher et al., 2023; la cita acredita la publicación del modelo, y la
-  versión exacta de la biblioteca con la que se corrió se declara más abajo).</p>
+  <p>Las dos pruebas de detección usan el mismo detector. Antes de leer sus resultados hace falta
+  saber qué es, cómo está formado y cómo se lo ejecutó. Se eligió un detector <b>de una sola
+  etapa</b>. Las arquitecturas de dos etapas primero proponen regiones y después las clasifican.
+  YOLO, en cambio, plantea la detección como una única regresión sobre la imagen completa. Eso le da
+  el costo por imagen que hacía falta para evaluar nueve entradas sobre varios miles de imágenes
+  (Redmon et al., 2016). Se usó la versión <b>YOLOv8n</b>, la variante <i>nano</i> de la familia
+  (Jocher et al., 2023; la cita acredita la publicación del modelo, y la versión exacta de la
+  biblioteca con la que se corrió se declara más abajo).</p>
 
-  <p><b>Cómo está formado.</b> Los datos que siguen no se citan de la documentación: se midieron
+  <p><b>Cómo está formado.</b> Los datos que siguen no se citan de la documentación. Se midieron
   sobre los propios pesos entrenados de este trabajo. La red tiene
   <b>{YOLO_PARAMS} parámetros</b> y <b>{YOLO_GFLOPS} GFLOPs</b> a una entrada de {YOLO_IMGSZ}×{YOLO_IMGSZ},
   repartidos en {YOLO_MODULOS} módulos con esta composición: {YOLO_COMPOSICION}. Los tres bloques
   cumplen funciones distintas:</p>
   <ul>
     <li><b>Columna (backbone).</b> Convoluciones con paso 2 que reducen la resolución en cinco
-        niveles, intercaladas con bloques <i>C2f</i> —conexiones parciales cruzadas, que dividen el
-        canal en dos ramas y concatenan los residuos— y cerradas por un <i>SPPF</i>, que agrupa
+        niveles, intercaladas con bloques <i>C2f</i> (conexiones parciales cruzadas, que dividen el
+        canal en dos ramas y concatenan los residuos) y cerradas por un <i>SPPF</i>, que agrupa
         contexto con ventanas de varios tamaños. Es lo que extrae los rasgos.</li>
-    <li><b>Cuello (neck).</b> Una pirámide con camino descendente y ascendente: los
+    <li><b>Cuello (neck).</b> Una pirámide con camino descendente y ascendente. Los
         {YOLO_UPSAMPLE} sobremuestreos y las {YOLO_CONCAT} concatenaciones fusionan rasgos de tres
-        escalas, de modo que la red detecta objetos grandes y pequeños con el mismo paso.</li>
-    <li><b>Cabezal (head).</b> Desacoplado y <b>sin cajas ancla</b>: predice el centro y la extensión
-        de cada objeto con una rama de clasificación y otra de regresión, y modela la caja como una
-        distribución discreta sobre las distancias al borde (módulo <i>DFL</i>), más estable que una
-        regresión directa.</li>
+        escalas, y así la red detecta objetos grandes y pequeños con el mismo paso.</li>
+    <li><b>Cabezal (head).</b> Desacoplado y <b>sin cajas ancla</b>. Predice el centro y la extensión
+        de cada objeto con una rama de clasificación y otra de regresión. La caja la modela como una
+        distribución discreta sobre las distancias al borde (módulo <i>DFL</i>), que es más estable
+        que una regresión directa.</li>
   </ul>
 
   {pie(pg)}
@@ -2694,21 +2698,21 @@ pg += 1
 H.append(f"""
 <div class="page">
   <h2>12. El detector (continuación): el grafo del modelo</h2>
-  <p>El diagrama siguiente no se copia de la documentación de la biblioteca: se leyó el grafo del
-  <b>modelo entrenado de este trabajo</b> —los {ARQ_CAPAS} módulos con sus índices de origen,
-  canales, núcleos y pasos— y se dibujó eso. Las resoluciones de cada nivel tampoco son un supuesto:
-  salen de acumular los pasos declarados desde la entrada de {ARQ_IMGSZ}×{ARQ_IMGSZ}.</p>
+  <p>El diagrama siguiente no se copia de la documentación de la biblioteca. Se leyó el grafo del
+  <b>modelo entrenado de este trabajo</b>, con sus {ARQ_CAPAS} módulos, sus índices de origen,
+  canales, núcleos y pasos, y se dibujó eso. Las resoluciones de cada nivel tampoco son un supuesto.
+  Salen de acumular los pasos declarados desde la entrada de {ARQ_IMGSZ}×{ARQ_IMGSZ}.</p>
   {figura(EXIST.get("fig_arquitectura_yolo.png"),
           f"Arquitectura del detector leída del checkpoint {ARQ_CKPT}. En gris oscuro, las capas "
           f"cuya salida alimenta otra escala; en línea azul punteada, los atajos que forman la "
           f"pirámide; en granate, los tres niveles de detección. {ARQ_PARAMS} parámetros.", 100)}
   <p class="lectura">Se lee en tres tramos. La <b>columna</b> reduce la resolución cinco veces con
-  convoluciones de paso 2, de {ARQ_IMGSZ}² a {ARQ_RES_MIN}², y deja tres derivaciones —las capas
-  {ARQ_TAPS}— que son los tres niveles de escala. El <b>cuello</b> las combina en dos pasadas: la
+  convoluciones de paso 2, de {ARQ_IMGSZ}² a {ARQ_RES_MIN}², y deja tres derivaciones (las capas
+  {ARQ_TAPS}) que son los tres niveles de escala. El <b>cuello</b> las combina en dos pasadas. La
   descendente sube la resolución con dos sobremuestreos y concatena hacia atrás con las capas
-  {ARQ_SRC_TD}; la ascendente vuelve a bajar con dos convoluciones de paso 2 y concatena con las
-  capas {ARQ_SRC_BU}. Esas cuatro concatenaciones son lo que permite que un objeto grande y uno
-  pequeño se detecten con el mismo paso de la red. El <b>cabezal</b> toma las salidas
+  {ARQ_SRC_TD}. La ascendente vuelve a bajar con dos convoluciones de paso 2 y concatena con las
+  capas {ARQ_SRC_BU}. Esas cuatro concatenaciones son las que permiten detectar un objeto grande y
+  uno pequeño con el mismo paso de la red. El <b>cabezal</b> toma las salidas
   {ARQ_SALIDAS} y predice en los tres niveles a la vez, con ramas separadas de clasificación y de
   caja.</p>
   {pie(pg)}
@@ -2721,7 +2725,7 @@ H.append(f"""
   <h2>12. El detector (continuación): con qué se ejecutó</h2>
   <p>La configuración es la misma en las dos pruebas y quedó registrada en los <i>args.yaml</i> de
   cada corrida: <b>{YOLO_ENTORNO}</b>. Los valores se transcriben <b>literales</b> del archivo de
-  configuración —con punto decimal— para que puedan copiarse tal cual.</p>
+  configuración, con punto decimal, para que puedan copiarse tal cual.</p>
   <p><b>Tabla 9.</b> Configuración de entrenamiento e inferencia del detector, común a las dos
   pruebas.</p>
   {TAB_YOLO_HIPER}
@@ -2743,26 +2747,27 @@ H.append(f"""
 
   <p><b>LLVIP — un detector por entrada.</b> {LLVIP_TRAIN} imágenes de entrenamiento y
   {LLVIP_VAL} de validación, una sola clase (<i>person</i>). Se entrena un YOLOv8n <b>independiente
-  sobre cada entrada</b> —las dos modalidades y los siete métodos de fusión— con idéntica
+  sobre cada entrada</b> (las dos modalidades y los siete métodos de fusión) con idéntica
   configuración y semilla. Como los pares VIS/IR están registrados, las anotaciones valen para toda
-  versión fusionada: lo único que cambia entre corridas son los píxeles, de modo que la diferencia de
-  mAP es atribuible al método de fusión. La pregunta que responde es <i>¿cuánto ayuda esta imagen a
-  un detector entrenado sobre ella?</i></p>
+  versión fusionada. Lo único que cambia entre corridas son los píxeles, así que la diferencia de
+  mAP se le puede atribuir al método de fusión. La pregunta que responde es <i>¿cuánto ayuda esta
+  imagen a un detector entrenado sobre ella?</i></p>
   <p><b>M3FD — un único detector, inferencia por entrada.</b> {M3FD_TRAIN} imágenes de
   entrenamiento y {M3FD_VAL} de validación con VIS e IR <b>mezcladas</b> y sus seis clases
-  ({M3FD_CLASES}). Se entrena <b>un solo</b> modelo y se lo evalúa por inferencia sobre la validación
-  de cada entrada ({M3FD_TEST} imágenes), y el conteo por escena del objetivo declarado sobre el
-  subconjunto de escenas que contienen las dos clases complementarias ({M3FD_COMP} escenas). La
-  pregunta es otra: <i>¿qué entrada le permite a un mismo detector recuperar las dos clases a la
-  vez?</i></p>
+  ({M3FD_CLASES}). Se entrena <b>un solo</b> modelo. Después se lo evalúa por inferencia sobre la
+  validación de cada entrada ({M3FD_TEST} imágenes). Y se cuenta por escena el objetivo declarado,
+  sobre el subconjunto de escenas que contienen las dos clases complementarias ({M3FD_COMP} escenas).
+  Acá la pregunta es otra: <i>¿qué entrada le permite a un mismo detector recuperar las dos clases a
+  la vez?</i></p>
 
   <p><b>El punto de control, que no es un detalle menor.</b> En LLVIP se reporta <b>last.pt</b>, los
   pesos de la última época, y no <b>best.pt</b>. La razón es que LLVIP no tiene partición de prueba
-  separada: la validación cumple los dos roles, y elegir la mejor época <i>medida en el mismo conjunto
-  que se reporta</i> introduce un sesgo optimista del orden de las diferencias entre métodos, que es
-  justamente lo que se quiere medir. En M3FD sí se usa <b>best.pt</b>, porque allí la época se elige
-  sobre la validación mixta y se reporta sobre conjuntos distintos. Las {YOLO_EPOCAS} épocas se
-  completaron en todos los casos: con paciencia {YOLO_PATIENCE} no hubo corte temprano.</p>
+  separada. La validación cumple los dos roles, así que elegir la mejor época <i>medida en el mismo
+  conjunto que se reporta</i> agrega un sesgo optimista parecido en tamaño a las diferencias entre
+  métodos, que es justo lo que se quiere medir. En M3FD sí se usa <b>best.pt</b>, porque allí la
+  época se elige sobre la validación mixta y se reporta sobre conjuntos distintos. Las
+  {YOLO_EPOCAS} épocas se completaron en todos los casos: con paciencia {YOLO_PATIENCE} no hubo
+  corte temprano.</p>
   {pie(pg)}
 </div>
 """)
@@ -2773,22 +2778,22 @@ H.append(f"""
   <h2>13. Evaluación orientada a tarea: detección en LLVIP</h2>
   <p>Para medir el efecto práctico de la fusión se reentrenó el mismo detector <b>YOLOv8n</b> (40 épocas,
   misma configuración y semilla) sobre cada versión fusionada del dataset etiquetado <b>LLVIP</b>
-  (peatones nocturnos; subconjunto de 2.000 imágenes de entrenamiento y 500 de validación). Como los
-  pares VIS/IR están registrados, las anotaciones valen para toda versión fusionada: la diferencia de
-  mAP aísla el efecto del método de fusión.</p>
+  (peatones nocturnos; subconjunto de 2.000 imágenes de entrenamiento y 500 de validación). Los
+  pares VIS/IR están registrados, así que las anotaciones valen para toda versión fusionada. Por eso
+  la diferencia de mAP aísla el efecto del método de fusión.</p>
   <p><b>Tabla 10.</b> Detección de peatones en LLVIP — mAP por entrada del detector.
-  <span style="font-weight:normal">Un entrenamiento por entrada, con una sola semilla: sin
-  repeticiones <b>no se puede separar el orden entre fusiones del ruido de inicialización</b>, y
-  las {DET_N_FUS} fusiones se apilan en centésimas —la menor distancia entre dos consecutivas es
-  {DET_GAP_MIN}—. Lo que sí sobrevive a cualquier semilla es la brecha contra el visible solo, de
+  <span style="font-weight:normal">Hubo un entrenamiento por entrada, con una sola semilla. Sin
+  repeticiones <b>no se puede separar el orden entre fusiones del ruido de inicialización</b>. Las
+  {DET_N_FUS} fusiones se apilan en centésimas, y la menor distancia entre dos consecutivas es
+  {DET_GAP_MIN}. La brecha que sobrevive a cualquier semilla es la que hay contra el visible solo, de
   {DET_GAP_VIS} puntos de mAP.</span></p>
   {tabla_det()}
   <p class="lectura">Lectura: toda fusión supera con claridad al visible solo (mAP@0,5 de {LLVIP_VIS} a la banda
-  {LLVIP_LO}–{LLVIP_HI}); el infrarrojo solo es la modalidad más fuerte ({LLVIP_IR}) y ninguna
-  fusión lo supera, coherente con que el peatón nocturno es esencialmente térmico; y entre las fusiones,
-  la propuesta alcanza <b>{LLVIP_PROP}</b>. Conclusión honesta: la ventaja de la propuesta en las
-  métricas de imagen no se traslada automáticamente a la detección, de modo que ambos criterios deben
-  reportarse por separado.</p>
+  {LLVIP_LO}–{LLVIP_HI}). El infrarrojo solo es la modalidad más fuerte ({LLVIP_IR}) y ninguna
+  fusión lo supera, algo esperable porque el peatón nocturno es sobre todo térmico. Entre las fusiones,
+  la propuesta alcanza <b>{LLVIP_PROP}</b>. La ventaja de la propuesta en las
+  métricas de imagen no se traslada a la detección, así que los dos criterios se
+  reportan por separado.</p>
   {figura(charts["det"], "mAP por entrada del detector (YOLOv8n reentrenado por método sobre LLVIP).", 88)}
   {pie(pg)}
 </div>
@@ -2822,18 +2827,18 @@ TAB_M3FD = ('<table><thead><tr><th>Entrada del detector</th><th>AP People &uarr;
 H.append(f"""
 <div class="page">
   <h2>14. Detección con clases complementarias (M3FD)</h2>
-  <p>Experimento diseñado para aislar el escenario donde la fusión es insustituible: el dataset
-  <b>M3FD</b> (Liu et al., 2022) anota seis clases, dos de ellas de <b>visibilidad opuesta</b>: las
-  personas dominan en el infrarrojo (firma térmica) y las luces (Lamp) son esencialmente visibles solo
+  <p>Este experimento busca aislar el escenario donde la fusión es insustituible. El dataset
+  <b>M3FD</b> (Liu et al., 2022) anota seis clases y dos de ellas tienen <b>visibilidad opuesta</b>. Las
+  personas dominan en el infrarrojo, por su firma térmica, y las luces (Lamp) casi solo se ven
   en el canal visible. Un <b>único detector YOLOv8n</b> se entrenó con las imágenes de ambas modalidades
   mezcladas (etiquetas compartidas, 40 épocas) y se evaluó <b>por inferencia</b> sobre cada modalidad y
   cada método de fusión.</p>
-  <p>El corpus se reparte en <b>tres particiones disjuntas</b> obtenidas por muestreo aleatorio
+  <p>El corpus se reparte en <b>tres particiones disjuntas</b>, obtenidas por muestreo aleatorio
   <b>estratificado</b> según la presencia de las dos clases complementarias: 2.000 pares de
-  entrenamiento, 500 de <b>selección del modelo</b> y {M3_N} de <b>prueba</b>. La separación entre las
-  dos últimas es necesaria: si el checkpoint se elige midiendo en el mismo conjunto que luego se
-  reporta, el resultado hereda un sesgo optimista que no es comparable entre métodos. La
-  estratificación evita además que las particiones tengan proporciones de clase distintas, lo que
+  entrenamiento, 500 de <b>selección del modelo</b> y {M3_N} de <b>prueba</b>. Las dos últimas tienen
+  que estar separadas. Si el checkpoint se elige midiendo en el mismo conjunto que luego se
+  reporta, el resultado queda con un sesgo optimista y ya no se puede comparar entre métodos. La
+  estratificación evita además que las particiones tengan proporciones de clase distintas, porque eso
   desplazaría el criterio de selección.</p>
   <p><b>Tabla 11.</b> AP@0,5 por clase y mAP global (medias sobre las {M3_N} imágenes de la partición
   de prueba, disjunta de la de entrenamiento y de la de selección del modelo).</p>
@@ -2857,16 +2862,16 @@ pg += 1
 H.append(f"""
 <div class="page">
   <h2>14. Clases complementarias (continuación): el objetivo medido por escena</h2>
-  <p>El promedio de precisión (mAP) de la tabla anterior no mide el objetivo declarado, que
+  <p>El promedio de precisión (mAP) de la tabla anterior no mide el objetivo declarado. Ese objetivo
   afirma que la fusión permita <b>detectar objetos que no se detectan en el visible ni en el
-  infrarrojo por separado</b>: eso es un enunciado <b>por escena</b>, no un promedio. Lo que
+  infrarrojo por separado</b>, y eso es un enunciado <b>por escena</b>, no un promedio. Lo que
   corresponde contar es en cuántas escenas cada entrada recupera <b>simultáneamente</b> al menos
   un objeto de la clase dominante en infrarrojo (personas) y uno de la dominante en visible
   (luces), con la caja anotada emparejada con IoU &ge; 0,5 y confianza &ge; 0,25. Para dar
   potencia a la prueba, la evaluación se concentró en las <b>{CP_N} escenas</b> del corpus que
   tienen anotadas ambas clases y que no participaron del entrenamiento ni de la selección del
-  modelo; las particiones de ajuste y selección quedaron idénticas, de modo que el modelo es el
-  mismo y la única variable que cambia es el tamaño de la muestra.</p>
+  modelo. Las particiones de ajuste y selección quedaron idénticas, así que el modelo es el
+  mismo y lo único que cambia es el tamaño de la muestra.</p>
   <p><b>Tabla 12.</b> Recuperación de ambas clases complementarias por escena. Las
   <b>{CP_CRIT} escenas críticas</b> son aquellas en las que ni el visible ni el infrarrojo lo
   logran por separado: son las que la hipótesis reclama para la fusión.</p>
@@ -2874,10 +2879,10 @@ H.append(f"""
   <p class="lectura">Lectura: la mejor entrada es
   <b>{_CP_LBL.get(CP_MEJOR, CP_MEJOR).split(" (")[0]}</b> con
   {f"{CP_MEJOR_PCT:.1f}".replace(".", ",")} %, y resuelve {CP_MEJOR_CRIT} de las {CP_CRIT}
-  escenas críticas. La propuesta alcanza <b>{f"{CP_PROP:.1f}".replace(".", ",")} %</b>, es decir
-  <b>por debajo del visible solo</b> ({f"{CP_VIS:.1f}".replace(".", ",")} %), con {CP_PB} escenas
-  ganadas frente a {CP_PC} perdidas (McNemar exacto p =
-  {f"{CP_PP:.4f}".replace(".", ",")}) y {CP_PROP_CRIT} escenas críticas resueltas. Aplicando la
+  escenas críticas. La propuesta alcanza <b>{f"{CP_PROP:.1f}".replace(".", ",")} %</b>, o sea
+  <b>por debajo del visible solo</b> ({f"{CP_VIS:.1f}".replace(".", ",")} %). Gana {CP_PB} escenas
+  y pierde {CP_PC} (McNemar exacto p =
+  {f"{CP_PP:.4f}".replace(".", ",")}), y resuelve {CP_PROP_CRIT} escenas críticas. Al aplicar la
   corrección de Holm a las catorce comparaciones de la familia, el <b>único contraste
   significativo</b> es la Pirámide de Laplace frente al infrarrojo.</p>
   {pie(pg)}
@@ -2893,17 +2898,17 @@ H.append(f"""
   <h2>14. Clases complementarias (continuación): hasta dónde llega el rechazo</h2>
   <p><b>Conclusión sobre el objetivo declarado, y hasta dónde llega.</b> La hipótesis de que una
   mejor calidad de fusión se traduzca en la detección de objetos complementarios <b>se rechaza</b>
-  para el método propuesto. Conviene decir con precisión qué alcance tiene ese rechazo, porque el
-  contraste <b>no es significativo</b> y una prueba que no rechaza puede querer decir dos cosas
-  muy distintas: que no hay efecto, o que no había con qué verlo. El test de McNemar condiciona en
+  para el método propuesto. Hace falta aclarar qué alcance tiene ese rechazo. El
+  contraste <b>no es significativo</b>, y una prueba que no rechaza puede querer decir dos cosas
+  muy distintas: que no hay efecto, o que no había con qué verlo. El test de McNemar mira solo
   los pares discordantes, y acá son <b>{POT_ND}</b> ({POT_B} escenas a favor de la propuesta y
   {POT_C} a favor del visible). Con esos {POT_ND} discordantes y &alpha; = 0,05, la prueba alcanza
-  una potencia de <b>0,80 recién a partir de {POT_DELTA80} puntos porcentuales</b> de diferencia;
-  para la diferencia observada de {POT_DIF_OBS} puntos la potencia es apenas {POT_EN_OBS}. Lo que
-  queda descartado es entonces <b>una ventaja de {POT_DELTA80} puntos o más</b>, no una ventaja de
-  cualquier tamaño — y la diferencia observada apunta, además, <b>en contra</b> de la propuesta.
-  Hay una <b>tendencia</b> a favor de la fusión como técnica —tres comparativos superan al
-  visible— pero ninguna diferencia sobrevive la corrección por multiplicidad. El hallazgo acota
+  una potencia de <b>0,80 recién a partir de {POT_DELTA80} puntos porcentuales</b> de diferencia.
+  Para la diferencia observada de {POT_DIF_OBS} puntos la potencia es apenas {POT_EN_OBS}. Entonces
+  lo que queda descartado es <b>una ventaja de {POT_DELTA80} puntos o más</b>, no una ventaja de
+  cualquier tamaño. Y la diferencia observada apunta <b>en contra</b> de la propuesta.
+  Hay una <b>tendencia</b> a favor de la fusión como técnica, porque tres comparativos superan al
+  visible, pero ninguna diferencia sobrevive la corrección por multiplicidad. El hallazgo acota
   el alcance práctico de la fusión morfológica de realce para esta tarea. El cálculo de potencia
   está en <span class="mono">experiments/potencia_mcnemar.py</span>.</p>
   {pie(pg)}
@@ -2914,24 +2919,24 @@ pg += 1
 H.append(f"""
 <div class="page">
   <h2>15. Cuadro comparativo de las metodologías en la prueba de detección</h2>
-  <p>Las dos pruebas y el conteo por escena, reunidos por entrada. La tabla es la forma más
-  económica de mostrar el resultado central del capítulo: <b>ninguna entrada gana en todo</b>, y el
+  <p>Las dos pruebas y el conteo por escena, reunidos por entrada. La tabla muestra en poco espacio
+  el resultado central del capítulo. <b>Ninguna entrada gana en todo</b>, y el
   orden cambia según la columna que se priorice. En negrita, el mejor valor de cada columna.</p>
   <p><b>Tabla 13.</b> Comparativa de las nueve entradas en la prueba de detección (LLVIP con un
   detector por entrada; M3FD con un único detector e inferencia por entrada; el conteo por escena
   sobre las {M3FD_COMP} escenas que contienen las dos clases complementarias).
-  <span style="font-weight:normal">Vale acá la misma advertencia de la Tabla 10: <b>un
+  <span style="font-weight:normal">Vale acá la misma advertencia de la Tabla 10. Hubo <b>un
   entrenamiento por entrada y una sola semilla</b>. Las diferencias de pocas centésimas entre
-  entradas <b>no deben leerse como un orden</b>; lo que el capítulo sostiene son las brechas
-  grandes —el visible contra la banda de fusiones, y el infrarrojo por encima de todas ellas en
-  LLVIP—.</span></p>
+  entradas <b>no deben leerse como un orden</b>. Lo que el capítulo sostiene son las dos brechas
+  grandes: el visible contra la banda de fusiones, y el infrarrojo por encima de todas ellas en
+  LLVIP.</span></p>
   {TAB_DETECCION}
-  <p class="lectura">Lectura: los líderes por columna son {DET_LIDERES}. Es decir que la mejor
-  entrada depende de la pregunta: si el objetivo es detectar peatones nocturnos, el
-  <b>infrarrojo solo</b> es la mejor entrada y ninguna fusión lo alcanza; si el objetivo es sostener
+  <p class="lectura">Lectura: los líderes por columna son {DET_LIDERES}. La mejor
+  entrada depende entonces de la pregunta. Si el objetivo es detectar peatones nocturnos, el
+  <b>infrarrojo solo</b> es la mejor entrada y ninguna fusión lo alcanza. Si el objetivo es sostener
   las dos clases complementarias a la vez, la mejor entrada es una <b>fusión</b>, pero no la
-  propuesta. La propuesta queda en la mitad inferior de las fusiones en las dos pruebas, lo que es
-  coherente con su perfil: gana en las métricas de actividad de la imagen y cede en las de fidelidad,
+  propuesta. La propuesta queda en la mitad inferior de las fusiones en las dos pruebas. Encaja con
+  su perfil: gana en las métricas de actividad de la imagen y cede en las de fidelidad,
   y la tarea posterior no premia la actividad.</p>
   {pie(pg)}
 </div>
@@ -2947,25 +2952,25 @@ H.append(f"""
   precisiones sobre el diseño de la comparación.</p>
 
   <p><b>Se agrega la metodología del trabajo de referencia</b>, que no estaba. El comparativo
-  «Top-Hat clásico» del benchmark corre con la parametrización manual r = 5 y m = 1; la metodología
+  «Top-Hat clásico» del benchmark corre con la parametrización manual r = 5 y m = 1. La metodología
   de Ortega y Espinoza (2025) es ese mismo operador de disco único con (r, m) hallados por su PSO, y
-  el barrido con su aptitud devuelve r = 25 y m = 0,30 —la misma configuración que la propuesta—, de
-  modo que compararlas <b>aísla el banco de cinco elementos frente al disco único</b> a
+  el barrido con su aptitud devuelve r = 25 y m = 0,30, que es la misma configuración que la
+  propuesta. Por eso compararlas <b>aísla el banco de cinco elementos frente al disco único</b> a
   hiperparámetros idénticos. Es la ablación del operador, vista sobre la tarea.</p>
 
   <p><b>Las escenas no se eligen por conveniencia.</b> La regla se declara de antemano y se aplica
-  sobre el conteo por escena, e incluye el caso <b>adverso</b> a la propuesta: la escena ya publicada
-  —para poder cruzarla con la figura anterior—, la escena con más objetos donde la propuesta recupera
-  ambas clases y el visible no, la escena con más objetos donde ocurre lo contrario, y la escena con
-  más objetos donde ambas las recuperan.</p>
+  sobre el conteo por escena, e incluye el caso <b>adverso</b> a la propuesta. Son cuatro escenas: la
+  ya publicada, que permite cruzarla con la figura anterior; la escena con más objetos donde la
+  propuesta recupera ambas clases y el visible no; la escena con más objetos donde pasa lo contrario;
+  y la escena con más objetos donde las dos las recuperan.</p>
 
   <p><b>Tabla 14.</b> Detecciones por entrada y por escena, en el formato <i>personas · luces</i>. En
   el encabezado, la verdad de campo de cada escena. En negrita, los dos operadores morfológicos a
   igual configuración.</p>
   {TAB_DME}
-  <p class="lectura">Conviene precisar qué cuentan estos números: son <b>detecciones</b> por encima
+  <p class="lectura">Estos números cuentan <b>detecciones</b> por encima
   del umbral de confianza, no aciertos emparejados con la verdad de campo. La regla de selección usó
-  el conteo de aciertos, de modo que una escena puede aparecer con detecciones de ambas clases sin
+  el conteo de aciertos, así que una escena puede aparecer con detecciones de ambas clases sin
   que ambas sean correctas. Un valor de luces <b>mayor</b> que la verdad de campo es, por
   construcción, falso positivo.</p>
   {pie(pg)}
@@ -3012,25 +3017,25 @@ for _e in DME_ESCENAS:
 H.append(f"""
 <div class="page">
   <h2>16. Conclusiones y encuadre del aporte</h2>
-  <p>El trabajo sostiene <b>dos aportes</b>. El primero es el operador y su caracterización; el
-  segundo, la auditoría de la validez discriminativa del protocolo con que se lo evalúa, usando el
-  propio desarrollo como caso de estudio. Ambos se enuncian a continuación con la evidencia que los
-  respalda.</p>
+  <p>El trabajo sostiene <b>dos aportes</b>. El primero es el operador y su caracterización. El
+  segundo es la auditoría de la validez discriminativa del protocolo con que se lo evalúa, hecha
+  sobre el propio desarrollo como caso de estudio. Los dos se enuncian a continuación con la
+  evidencia que los respalda.</p>
 
   <h3>Primer aporte: el operador y su punto de operación</h3>
   <ol>
     <li>El operador <b>desplaza el punto de operación de la fusión</b> y no la mejora de manera
-        uniforme: contra las cinco configuraciones de referencia gana <b>{_H1_ACT_FAV} de
+        uniforme. Contra las cinco configuraciones de referencia gana <b>{_H1_ACT_FAV} de
         {_H1_ACT_TOT}</b> contrastes del bloque de actividad espacial <b>sin ninguno adverso con
         significancia</b>, y
         cede en <b>{_H1_FID_ADV} de {_H1_FID_TOT}</b> del bloque de fidelidad.</li>
     <li>Bajo el criterio del trabajo de referencia <b>encabeza el benchmark</b>: puesto
         {POS_RANK} de 7 con {VAL_RANK}, y conserva el primer puesto al retirar FE, la métrica
         redundante ({_coma(AG_FILAS[1][3], 3)} frente a {_coma(AG_FILAS[1][5], 3)}). El primer
-        puesto es sólido <b>dentro</b> de ese criterio, no una propiedad independiente de él: al
+        puesto es sólido <b>dentro</b> de ese criterio y depende de él. Al
         rankear los promedios en lugar de promediar los rangos hay <b>empate</b> con la pirámide
         de Laplace, y con las diecisiete métricas la propuesta pasa a {_POS_17}.ª. Es la
-        conclusión 1 vista desde adentro del propio benchmark.</li>
+        conclusión 1 mirada desde adentro del propio benchmark.</li>
     <li>El resultado es <b>robusto frente al ajuste de los comparativos</b>: dándoles el mismo paso
         de ajuste, <b>ninguna de las cinco configuraciones del estado del arte lo alcanza</b>. El
         Top-Hat clásico lo supera por {f"{abs(VAL_B - VLID_B):.3f}".replace(".", ",")}, pero con m = 1
@@ -3043,9 +3048,9 @@ H.append(f"""
         {f"{_abl.loc['disco','rango_9']:.3f}".replace(".", ",")}), y el mérito no proviene de la
         imagen base, que queda <b>última</b> de los seis brazos
         ({f"{_abl.loc['base','rango_17']:.3f}".replace(".", ",")}).</li>
-    <li>El <b>peso adoptado está justificado por criterios independientes de la aptitud</b>:
+    <li>El <b>peso adoptado está justificado por criterios independientes de la aptitud</b>.
         m = 0,30 sobre este operador equivale a m = {f"{M_EQUIV:.2f}".replace(".", ",")} sobre un
-        disco único —dentro del rango publicado— y mantiene la saturación en
+        disco único, valor que cae dentro del rango publicado, y mantiene la saturación en
         {f"{SAT_030:.2f}".replace(".", ",")} % frente al {f"{SAT_100:.2f}".replace(".", ",")} % que
         produciría m = 1.</li>
   </ol>
@@ -3068,21 +3073,21 @@ H.append(f"""
         entradas</b>, por delante de {CN_COMPAR_DETRAS} de los seis métodos comparativos, y su
         rango <b>mejora monótonamente</b> al aumentar la varianza. Incorporando Nabf, la única
         métrica con dirección inversa, el control cae como corresponde.</li>
-    <li>La batería <b>contiene redundancia</b>: FE es EN reescalada por una constante por escena, de
-        modo que produce rangos intra-bloque idénticos y el mismo χ² de Friedman. Las dimensiones
+    <li>La batería <b>contiene redundancia</b>: FE es EN reescalada por una constante por escena, y
+        por eso produce rangos intra-bloque idénticos y el mismo χ² de Friedman. Las dimensiones
         efectivas son ocho, no nueve.</li>
-    <li>La <b>optimización no determina la configuración evaluada</b>, y lo que la determina es el
-        <b>rango de búsqueda heredado</b> y no el optimizador: dentro de ese rango el argmax de la
+    <li>La <b>optimización no determina la configuración evaluada</b>. Lo que la determina es el
+        <b>rango de búsqueda heredado</b>, no el optimizador. Dentro de ese rango el argmax de la
         aptitud es r = {R_PREFERIDO} y el peso queda clavado en su piso, m = 0,30, en el
-        {REP_PISO_PCT} % de las corridas. El calificador es necesario: <b>sin la restricción del
-        rango el argmax es r = {OE_R_LIBRE}</b> —el radio que esta tesis adopta— con
+        {REP_PISO_PCT} % de las corridas. Hay que aclarar el alcance: <b>sin la restricción del
+        rango el argmax es r = {OE_R_LIBRE}</b>, que es el radio que esta tesis adopta, con
         m = {OE_M_LIBRE}. Lo que el intervalo ajeno fija por completo es el <b>peso</b>, no el
         radio.</li>
     <li>El <b>orden de calidad no predice el orden de utilidad</b> en la tarea posterior, y
-        <b>ninguna fusión supera a la mejor modalidad individual</b>: en el conteo por escena la
+        <b>ninguna fusión supera a la mejor modalidad individual</b>. En el conteo por escena la
         propuesta queda por debajo del visible solo. La hipótesis de que la mejora de calidad se
         traslade a la detección <b>se rechaza</b> para una ventaja de {POT_DELTA80} puntos
-        porcentuales o más, que es la resolución que dan los {POT_ND} pares discordantes; la
+        porcentuales o más, que es la resolución que dan los {POT_ND} pares discordantes. La
         diferencia observada es de {POT_DIF_OBS} puntos <b>en contra</b>.</li>
   </ol>
   <p class="lectura">Consecuencia metodológica: un protocolo de evaluación de fusión debería incluir
