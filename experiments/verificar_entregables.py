@@ -776,10 +776,19 @@ except ImportError as _e:
 # Tabla 3f» encuentra dos.
 print('\n=== 15. rotulos de tabla del informe: sin repetidos y en orden ===')
 if 'avances' in DOCUMENTOS:
+    # Un EPIGRAFE es «Tabla N.» al principio de su parrafo. Una REFERENCIA EN TEXTO —«la misma
+    # advertencia de la Tabla 10.»— tiene la misma forma y no es un rotulo. La primera version de
+    # este bloque no las distinguia y dio un falso «Tabla 10 repetida» en cuanto una reescritura
+    # cambio los dos puntos de una referencia por un punto. Lo que discrimina es lo que viene ANTES:
+    # una referencia siempre va precedida de articulo o preposicion.
+    _ANTES_REF = re.compile(r'\b(de|en|la|las|el|los|ver|segun|cf)\s+(la\s+)?$', re.I)
     _rot = []
     with fitz.open(str(DOCUMENTOS['avances']['ruta'])) as _d:
         for _i in range(_d.page_count):
-            for _m in re.finditer(r'Tabla (\d+)([a-z]?)\.', plano(_d[_i].get_text())):
+            _t = plano(_d[_i].get_text())
+            for _m in re.finditer(r'Tabla (\d+)([a-z]?)\.', _t):
+                if _ANTES_REF.search(_t[max(0, _m.start() - 14):_m.start()]):
+                    continue      # referencia en prosa, no rotulo
                 _rot.append((_i + 1, int(_m.group(1)), _m.group(2), _m.group(0)[:-1]))
     print(f'  {len(_rot)} rotulos: ' + ' · '.join(f'p{p}:{e}' for p, _n, _s, e in _rot))
 
