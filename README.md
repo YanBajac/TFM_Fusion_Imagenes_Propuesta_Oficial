@@ -383,6 +383,7 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 │   ├── verificar_entregables.py    # Contrasta los CUATRO entregables contra los CSV (un comando)
 │   ├── verificar_libro.py          # Contrasta el PDF del libro contra los CSV y el índice
 │   ├── verificar_bibliografia.py   # Contrasta las referencias contra Crossref y OpenAlex
+│   ├── verificar_corpus.py         # Comprueba data/raw contra el manifiesto (md5, pares, canales)
 │   ├── detection_llvip/            # Reentrenamiento de detección con LLVIP (mAP concluyente)
 │   │   ├── prepare_llvip.py        #   genera datasets YOLO fusionados por método (labels compartidas)
 │   │   └── train_eval_llvip.py     #   entrena YOLOv8 por método y compara mAP (CSV acumulativo)
@@ -418,7 +419,10 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 
 ## 5. Instalación
 
-**Requisitos:** Python 3.11+
+**Requisitos:** Python 3.11 o superior. Para los experimentos de detección hace falta además una
+GPU con CUDA; todo lo demás corre en CPU.
+
+### 5.1. Bajar el código e instalar
 
 ```powershell
 git clone https://github.com/YanBajac/TFM_Fusion_Imagenes_Propuesta_Oficial.git
@@ -430,8 +434,48 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Las imágenes de cada modalidad deben tener el **mismo nombre de archivo** en `data/raw/VIS/` y
-`data/raw/IR/` para el emparejado automático.
+### 5.2. Conseguir las imágenes
+
+**Las imágenes no vienen en el repositorio.** Pesan y tienen su propia licencia, así que `data/raw`
+está excluido del control de versiones. Lo que sí viaja es
+[`data/raw/MANIFIESTO_CORPUS.csv`](data/raw/MANIFIESTO_CORPUS.csv), que trae por cada archivo su
+tamaño, su **md5** y la **ruta exacta de origen** dentro del dataset original. Con eso el corpus se
+reconstruye y se verifica.
+
+El corpus es el **TNO Image Fusion Dataset** de Alexander Toet, publicado en figshare
+([10.6084/m9.figshare.1008029](https://doi.org/10.6084/m9.figshare.1008029)). Para armarlo:
+
+1. Descargar y descomprimir el TNO.
+2. Crear `data/raw/VIS/` y `data/raw/IR/`.
+3. Copiar cada archivo según la columna `origen_tno` del manifiesto, renombrándolo al nombre de la
+   columna `archivo`. **La imagen visible y la infrarroja de un par tienen que llamarse igual**: es
+   así como el código las empareja.
+
+### 5.3. Comprobar que quedó bien
+
+```powershell
+.venv\Scripts\python.exe -X utf8 experiments/verificar_corpus.py
+```
+
+Comprueba que estén los 42 archivos, que cada md5 coincida, que no haya archivos de más y que
+`list_pairs()` devuelva los **20 pares efectivos**. Si dice `0 fallos`, el resto del repositorio se
+puede correr.
+
+Vale la pena correrlo aunque la instalación parezca bien. El manifiesto declara **21** pares y el
+corpus efectivo son **20**: el par `Athena_heather_IR_hei_vis_g` viene con el canal visible idéntico
+al infrarrojo, byte a byte. Con un par así toda métrica de fidelidad da su valor perfecto y el PSNR
+se va al infinito, de modo que infla los promedios sin que nada más lo delate. Está declarado como
+excluido en el manifiesto y el verificador comprueba que ningún par *no* excluido tenga ese
+problema.
+
+### 5.4. Los datasets de detección (opcionales)
+
+Sólo hacen falta para la sección 8. Los dos son públicos y hay que descargarlos aparte:
+
+| Dataset | Para qué | Dónde |
+|---|---|---|
+| **LLVIP** | detección de peatones nocturnos, un detector por entrada | [bupt-ai-cz.github.io/LLVIP](https://bupt-ai-cz.github.io/LLVIP/) |
+| **M3FD** (Detection) | clases complementarias, un único detector VIS+IR | [JinyuanLiu-CV/TarDAL](https://github.com/JinyuanLiu-CV/TarDAL) |
 
 ---
 
@@ -456,7 +500,12 @@ print(metrics)   # el análisis usa: EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PS
 
 ## 7. Ejecución de experimentos
 
+El orden importa: cada paso consume las salidas del anterior.
+
 ```powershell
+# 0. Comprobar el corpus antes de gastar tiempo en lo demás (md5, pares, canales)
+python experiments/verificar_corpus.py
+
 # 1. Fusiones (todos los métodos) y métricas -> all_metrics.csv
 python experiments/run_all_fusions.py
 
