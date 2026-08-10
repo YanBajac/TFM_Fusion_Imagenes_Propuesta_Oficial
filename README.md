@@ -394,16 +394,16 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 │
 ├── notebooks/                      # 01 (EDA) y 03 (análisis estadístico)
 ├── docs/
-│   ├── Tesis_Borrador_V3.docx      # Documento principal (72 págs; formato UCOM/Villalba)
-│   ├── Avances_Tesis.pdf           # Informe de avances (60 págs, incluye Anexos 1-20)
-│   ├── Avances_Tesis_Tablas.xlsx   # Libro de tablas (12 hojas, detalle por escena)
+│   ├── Tesis_Borrador_V3.docx      # Documento principal (74 págs; formato UCOM/Villalba)
+│   ├── Tesis_Borrador_V3.pdf       #   el mismo, renderizado, para leerlo sin Word
+│   ├── Avances_Tesis.pdf           # Informe de avances (84 págs, con índice y Anexos A1-A20)
+│   ├── Avances_Tesis_Tablas.xlsx   # Libro de tablas (13 hojas, detalle por escena)
 │   ├── Tesis_Defensa_Presentacion.pptx # Defensa (22 láminas + reserva, notas del orador)
-│   ├── Auditoria_Interna.md        # Auditoría del pipeline: defectos, correcciones y alcance
-│   ├── Auditoria_Metodologia.md    # Segunda auditoría, sobre la metodología
+│   ├── Tesis_Defensa_Presentacion.pdf  #   el mismo, renderizado
+│   ├── ESTADO_Y_PENDIENTES.md      # Estado vivo: qué está cerrado, qué falta y cómo correr todo
 │   ├── Auditoria_Bibliografia.md   # Auditoría de las referencias contra Crossref y OpenAlex
-│   ├── Reencuadre_Final.md         # Encuadre adoptado: objetivos, H1-H7 y conclusiones
 │   ├── Plan_Deck_Defensa.md        # Plan de edición del deck (22 láminas)
-│   ├── Secuencia_Ajuste.md         # Plan de ajuste en cinco fases
+│   ├── historial/                  # Documentos de trabajo ya cumplidos; NO son el estado actual
 │   ├── fuentes/                    # PDF de las fuentes (no se versionan) y datos de verificación
 │   └── figures/                    # Figuras del libro (fuente y montajes cualitativos)
 │

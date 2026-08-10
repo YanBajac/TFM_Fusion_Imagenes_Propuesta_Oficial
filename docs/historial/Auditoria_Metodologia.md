@@ -1,3 +1,11 @@
+> **DOCUMENTO ARCHIVADO — no describe el estado actual del proyecto.**
+>
+> Auditoría ya cerrada, y **su veredicto de portada quedó invertido**: afirmaba que el banco de cinco elementos empata con el disco único, y la ablación con (r, m) igualados que publica el libro dice que el banco gana (3,222 contra 3,367 con las nueve métricas). Se conserva porque es el acta de nacimiento del segundo aporte y el registro del trabajo de verificación. **No leer su conclusión como estado actual.**
+>
+> El estado vigente está en `../ESTADO_Y_PENDIENTES.md` y en los entregables.
+
+---
+
 # Auditoria de la metodologia — segunda revision
 
 _Revision en seis frentes que la primera auditoria no cubrio: los seis metodos comparativos, el operador propuesto, el codigo escrito en las ultimas 48 horas, la coherencia entre la teoria del libro y el codigo, la reproducibilidad y la validez del diseno experimental. 69 defectos reportados, 9 confirmados tras refutacion adversarial (ninguno refutado), 14 puntos verificados como correctos._

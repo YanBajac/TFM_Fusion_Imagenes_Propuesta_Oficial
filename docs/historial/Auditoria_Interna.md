@@ -1,3 +1,11 @@
+> **DOCUMENTO ARCHIVADO — no describe el estado actual del proyecto.**
+>
+> Auditoría ya cerrada: sus nueve defectos están corregidos en el código. **Todas sus cifras son de otro corpus**, el de 19 imágenes, anterior a la sustitución del par corrupto. Se conserva porque es la trazabilidad forense que la sección 5.8 del libro usa sin reproducir, y porque `.gitignore` la designa como el registro del contenido de los respaldos `*.bak_*`.
+>
+> El estado vigente está en `../ESTADO_Y_PENDIENTES.md` y en los entregables.
+
+---
+
 # Auditoría interna del pipeline experimental
 
 _Revisión en seis dimensiones (integridad de datos, métricas, estadística, optimización, detección y consistencia documental) con verificación adversarial de los hallazgos más graves. 64 hallazgos; 7 de los 8 verificados sobrevivieron al intento de refutación. Todo lo afirmado fue comprobado ejecutando código sobre el repositorio._

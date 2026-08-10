@@ -81,7 +81,7 @@ data/**/infrared/
 docs/_local/
 
 # Respaldos locales de CSV antes de un recomputo (su contenido queda documentado en
-# docs/Auditoria_Interna.md y docs/Auditoria_Metodologia.md)
+# docs/historial/Auditoria_Interna.md y docs/historial/Auditoria_Metodologia.md)
 experiments/results/metrics_reports/*.bak_*
 experiments/results/pso/*.bak_*
 # Respaldos de entregables reemplazados (no circulan)

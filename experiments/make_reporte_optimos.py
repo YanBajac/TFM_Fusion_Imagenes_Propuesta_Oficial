@@ -33,7 +33,10 @@ MR = os.path.join(ROOT, "experiments", "results", "metrics_reports")
 OUT_DIR = os.path.join(ROOT, "docs", "_local")
 os.makedirs(OUT_DIR, exist_ok=True)
 HTML_OUT = os.path.join(OUT_DIR, "Resultados_Optimos_por_Imagen.html")
-PDF_OUT = os.path.join(ROOT, "docs", "Resultados_Optimos_por_Imagen.pdf")
+# Escribe en docs/historial/ y no en docs/: este informe no es un entregable, es un anexo de trabajo
+# que el informe de avances ya cubre. Si saliera a docs/ volveria a parecer vigente cada vez que se
+# corriera el script. Los cuatro entregables son los unicos habitantes de docs/ raiz.
+PDF_OUT = os.path.join(ROOT, "docs", "historial", "Resultados_Optimos_por_Imagen.pdf")
 
 ESCENA = {
     "APC_1_view_1_fk_06_005": "APC 1 · vista 1",
@@ -44,7 +47,8 @@ ESCENA = {
     "APC_3_view_3_fk_NL_05_005": "APC 3 · vista 3",
     "Athena_2_men_in_front_of_house_meting003": "2 men in front of house",
     "Athena_APC_4_fennek01_005": "APC 4 (fennek)",
-    "Athena_heather_IR_hei_vis_g": "heather (IR/vis g)",
+    # Athena_heather_IR_hei_vis_g salio del corpus: su canal visible era una copia byte a byte del
+    # infrarrojo, asi que toda metrica de fidelidad daba su valor perfecto. Lo sustituye Kaptein_1123.
     "Athena_heather_hei_vis": "heather (hei vis)",
     "Athena_helicopter_helib_011": "helicopter",
     "Athena_lake_lake": "lake",
@@ -55,6 +59,7 @@ ESCENA = {
     "Athena_soldier_in_trench_1_meting016": "soldier in trench 1",
     "Athena_soldier_in_trench_2_meting055": "soldier in trench 2",
     "Triclobs_Bosnia_R": "Bosnia",
+    "Triclobs_Kaptein_1123": "Kaptein 1123",
     "Triclobs_jeep_in_smoke_R": "jeep in smoke",
 }
 COLS = [("particulas", "Part.", 0), ("iteraciones", "Iter.", 0), ("r", "r", 0),

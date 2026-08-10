@@ -1,3 +1,11 @@
+> **DOCUMENTO ARCHIVADO — no describe el estado actual del proyecto.**
+>
+> Este documento **ya se aplicó al libro** y su redacción quedó atrás. Conserva el *por qué* del reencuadre, que es su valor, pero **sus cifras están superadas**: todavía afirma «24 de 25 contrastes favorables y ninguno adverso» (el 25.º es adverso, lo que le falta es significancia), «20.000 réplicas de permutación» (no existe ese experimento), «a igual peso gana por 0,683» (son 3,528 contra 3,694) y «muestra suficiente» sobre las 232 escenas (el contraste no es significativo: la potencia alcanza recién para 5,8 puntos). Ninguna de las cuatro está en el libro. **No recopiar números de acá.**
+>
+> El estado vigente está en `../ESTADO_Y_PENDIENTES.md` y en los entregables.
+
+---
+
 # Reencuadre final — texto para aplicar al libro
 
 Encuadre adoptado: **auditoría del protocolo de evaluación**. El trabajo pasa a tener **dos

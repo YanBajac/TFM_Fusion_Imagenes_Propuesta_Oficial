@@ -1012,6 +1012,55 @@ for _mod in ('fitz', 'docx', 'pptx', 'PIL', 'yaml', 'cv2', 'pandas', 'numpy'):
 ok(not _faltan_inst, 'los modulos criticos se importan en este entorno'
                      + (f' — faltan {_faltan_inst}' if _faltan_inst else ''))
 
+# --------------------------------------------- 20. docs/ raiz: solo entregables y estado vivo
+# POR QUE. Los documentos de trabajo ya cumplidos se archivaron en docs/historial/ para que quien
+# clone el repo no confunda un borrador viejo con el estado actual. Ese orden se deshace solo: basta
+# que un generador siga escribiendo su salida en docs/ y el documento archivado reaparece arriba,
+# con pinta de vigente, cada vez que alguien corre el script. Paso de verdad con
+# make_reporte_optimos.py, que escribia docs/Resultados_Optimos_por_Imagen.pdf.
+# El chequeo mira las dos caras: que en docs/ raiz solo esten los archivos declarados, y que ningun
+# script escriba ahi un archivo que no sea uno de ellos.
+print('\n--- 20. docs/ raiz tiene solo los entregables y el estado vivo')
+
+_DOCS_RAIZ = {
+    'Tesis_Borrador_V3.docx': 'entregable: el libro',
+    'Tesis_Borrador_V3.pdf': 'entregable: el libro renderizado, para leer sin Word',
+    'Avances_Tesis.pdf': 'entregable: el informe de avances',
+    'Avances_Tesis_Tablas.xlsx': 'entregable: el libro de tablas',
+    'Tesis_Defensa_Presentacion.pptx': 'entregable: el deck de defensa',
+    'Tesis_Defensa_Presentacion.pdf': 'entregable: el deck renderizado',
+    'ESTADO_Y_PENDIENTES.md': 'estado vivo del proyecto',
+    'Auditoria_Bibliografia.md': 'vivo: lo reusa la auditoria de referencias',
+    'Plan_Deck_Defensa.md': 'vivo: prescripciones del deck todavia sin aplicar',
+}
+_en_docs = sorted(p.name for p in (RAIZ / 'docs').iterdir() if p.is_file())
+_sin_declarar = [n for n in _en_docs if n not in _DOCS_RAIZ]
+_declarado_ausente = [n for n in _DOCS_RAIZ if n not in _en_docs]
+ok(not _sin_declarar, f'los {len(_en_docs)} archivos de docs/ raiz estan declarados'
+                      + (f' — sin declarar: {_sin_declarar}' if _sin_declarar else ''))
+ok(not _declarado_ausente, f'estan los {len(_DOCS_RAIZ)} archivos que docs/ raiz debe tener'
+                           + (f' — faltan: {_declarado_ausente}' if _declarado_ausente else ''))
+
+# La otra cara: que ningun generador apunte su salida a docs/ raiz fuera de esa lista. Las rutas se
+# escriben de dos formas en el repo —os.path.join(ROOT, "docs", "x.pdf") y el literal "docs/x.pdf",
+# que en Windows a veces viene con barra invertida—, asi que la linea se normaliza a barra comun
+# antes de mirarla y el patron no necesita ningun escape que se pueda perder al copiarlo.
+_ESCRIBE = re.compile(
+    r'''["']docs["']\s*,\s*["'](?P<a>[\w.\-]+\.(?:pdf|docx|xlsx|pptx|md|html))["']'''  # join("docs","x")
+    r'''|docs/(?P<b>[\w.\-]+\.(?:pdf|docx|xlsx|pptx|html))["']''')                # el literal docs/algo.pdf
+_fugas = {}
+for _py in sorted(list((RAIZ / 'src').rglob('*.py')) + list((RAIZ / 'experiments').rglob('*.py'))):
+    _txt = _py.read_text(encoding='utf-8', errors='replace')
+    for _ln in _txt.splitlines():
+        if _ln.lstrip().startswith('#') or 'historial' in _ln or '_local' in _ln:
+            continue
+        for _m in _ESCRIBE.finditer(_ln.replace('\\\\', '/').replace('\\', '/')):
+            _n = _m.group('a') or _m.group('b')
+            if _n not in _DOCS_RAIZ:
+                _fugas.setdefault(_py.name, set()).add(_n)
+ok(not _fugas, f'ningun script escribe en docs/ raiz fuera de los {len(_DOCS_RAIZ)} declarados'
+               + (f' — {({k: sorted(v) for k, v in _fugas.items()})}' if _fugas else ''))
+
 # --------------------------------------------- resumen
 print(f'\n=== {len(fallos)} fallos · {len(avisos)} avisos ===')
 for f in fallos:

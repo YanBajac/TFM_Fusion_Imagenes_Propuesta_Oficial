@@ -491,6 +491,35 @@ hacer que `verificar_bibliografia.py` lea el `.docx`.
 citas huérfanas ni entradas sin citar». **Eso dejó de ser cierto por sus propias correcciones**:
 había cinco. Conviene corregir esa frase del informe de auditoría.
 
+### 3 bis. Lo que venía en los documentos que se archivaron
+
+Al mover nueve documentos de trabajo a `docs/historial/` aparecieron **tres pendientes abiertos que
+no estaban en ningún otro lado**. Se traen acá, porque archivar sin migrarlos los enterraba.
+
+- **La negrita de la Tabla 10 del libro significa otra cosa que en las demás.** En las Tablas 4, 5 y
+  7 marca el mejor valor de cada columna; en la 10 marca la columna del método propuesto. Hace falta
+  una nota al pie que lo aclare. Verificado que sigue abierto: **ninguno de los 518 párrafos del
+  libro contiene la palabra «negrita»**. Venía de `Reverificacion_Informe.md`, cuyo único contenido
+  útil era éste.
+- **El reglamento de la UCOM: nueve requisitos de formato sin verificar** (márgenes, interlineado,
+  numeración, tipografía y demás). Están inventariados en el §6 de
+  `historial/Informe_Revision_Mesa_Examinadora.docx`, con los valores medidos sobre el libro, que
+  siguen valiendo. **Ningún script los mide**: el grep de `interlineado`, `line_spacing` y
+  `left_margin` sobre los `.py` no encuentra nada. Es un pendiente externo, del reglamento, no del
+  contenido.
+- **Validar con el director la reducción de alcance.** El `Plan_Replanteo_TFM.docx` acordado en junio
+  preveía tres detectores y se entregó con uno. La decisión está tomada y justificada, pero conviene
+  que conste que el director la conoce. Es gobernanza, no técnica.
+
+Y un defecto que el archivado destapó, ya corregido: **`make_reporte_optimos.py` escribía su PDF en
+`docs/`**, así que el documento archivado habría vuelto a aparecer arriba, con pinta de vigente, la
+próxima vez que alguien corriera el script. Además su diccionario de nombres de escena todavía
+nombraba el par corrupto retirado y le faltaba el que lo sustituyó, `Triclobs_Kaptein_1123`. Se
+arreglaron las tres cosas, se regeneró el PDF con el corpus de 20 pares y el **bloque 20** de
+`verificar_entregables.py` ahora comprueba las dos caras: que en `docs/` raíz sólo estén los nueve
+archivos declarados, y que ningún script escriba ahí fuera de esa lista. Se comprobó que el chequeo
+**discrimina**: marca la línea vieja y deja pasar la nueva, sobre nueve casos límite.
+
 ### 4. Decisiones del autor
 
 - **`docs/_local` (44 MB)**: diez instantáneas fechadas del libro, un `BACKUP_actual` y
