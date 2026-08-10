@@ -40,6 +40,11 @@ def metric_matrix(metric):
 # ---------------------------------------------------------------- means
 means = df.groupby("method")[METRICS].mean().round(4)
 means.to_csv(MDIR / "descriptive_means.csv")
+# Las medias SIN redondear, para rankear. El round(4) es para publicar, pero rankear sobre el
+# valor redondeado inventa empates que no existen: en MG dos metodos coincidian a cuatro decimales
+# y el promedio de rangos resultante daba RatioPiramide 4,167 y DWT 4,500 donde correspondia 4,111
+# y 4,556. La columna avg_rank_medias se publica en el informe, asi que la diferencia se lee.
+means_full = df.groupby("method")[METRICS].mean()
 
 # ---------------------------------------------------------------- ranking
 # Ranking por PROMEDIO DE RANGOS INTRA-BLOQUE: para cada metrica se rankean los
@@ -66,7 +71,7 @@ METRICS_INDEP = [m for m in METRICS if m != "FE"]
 rank_tbl["avg_rank"] = rank_tbl[METRICS].mean(axis=1).round(3)
 rank_tbl["avg_rank_sin_FE"] = rank_tbl[METRICS_INDEP].mean(axis=1).round(3)
 rank_tbl["avg_rank_medias"] = pd.concat(
-    [means[m].rank(ascending=(METRIC_DIRECTION[m] == "min"), method="average")
+    [means_full[m].rank(ascending=(METRIC_DIRECTION[m] == "min"), method="average")
      for m in METRICS], axis=1).mean(axis=1).round(3)
 rank_tbl = rank_tbl.round(3).sort_values("avg_rank")
 rank_tbl.to_csv(MDIR / "ranking_methods.csv")

@@ -2,8 +2,10 @@
 
 Punto de retomada. Todo lo que sigue está verificado; lo que no, está marcado como tal.
 
-**Los 106 hallazgos de la reverificación quedaron en 0 PENDIENTE: 91 aplicados y 15 que
-solo se pueden decidir leyendo.** El detalle de los quince está más abajo.
+**Los 106 hallazgos de la reverificación están CERRADOS: 96 aplicados y 10 resueltos, con cero
+`A_LEER` y cero `PENDIENTE`.** De los diez últimos, cinco eran defectos reales y cinco resultaron
+no serlo al leerlos. El registro con la razón de cada cierre está en `docs/fuentes/resueltos.json`;
+el detalle de lo que se corrigió, en la sección del 8 de agosto.
 
 ## Cómo correr las cosas
 
@@ -388,9 +390,41 @@ El control negativo con ruido llegando al 3.º puesto de 14; la caída al 3.º c
 métricas; que la calidad no se traslada a la detección; que ninguna fusión supera al infrarrojo
 solo; la errata de la ecuación (29) declarada de frente. **No suavizar nada de eso.**
 
+## Cerrado el 8 de agosto (noche) — los diez `A_LEER` que faltaban
+
+Con esto la reverificación queda en cero. **Cinco eran defectos reales y cinco no lo eran**, y las
+dos mitades importan por igual: dejar un hallazgo como `A_LEER` para siempre es tan malo como no
+haberlo mirado.
+
+### Los cinco que sí lo eran
+
+| # | Qué | Dónde |
+|---|---|---|
+| **n65** | El libro reportaba las métricas de M3FD «sobre 499 imágenes de **validación**», y esos 499 son la partición de **prueba**. `prepare_m3fd.py` dice literalmente que la validación se usa para elegir el checkpoint y **«nunca se reporta»**: el libro decía reportar sobre el conjunto que su propio diseño declara no reportar | libro, 4 pasajes |
+| **n106** | `avg_rank_medias` rankeaba las medias **ya redondeadas** a cuatro decimales, lo que inventaba empates: daba RP 4,167 y DWT 4,500 donde corresponde 4,111 y 4,556 | `run_stats_analysis.py` |
+| **n94** | SF es la única de las nueve que el evaluador calcula sobre **0–255**, y el libro no lo declaraba: aplicar la ecuación (17) a una imagen en [0, 1] devuelve el valor **dividido por 255** | libro, §4.4 |
+| **n93 / n96** | El comentario de `PARES_EXCLUIDOS` decía «19 pares» (son 20), y el docstring de `comparatives.py` listaba un «Promedio simple» que no existe | código |
+| **n53 / n56 / n57** | El README omitía `dtcwt` de las dependencias —sin él DTCWT lanza `ImportError`—, decía «Tres controles» listando **cinco**, y su árbol no incluía `experiments/detection_m3fd/` | README |
+
+El n106 tocaba algo que el informe publica: la columna del empate. **El empate 3,556 entre la
+propuesta y la pirámide de Laplace se sostiene en las dos versiones**, así que la Tabla 6a no cambia.
+
+### Los cinco que no lo eran
+
+n30 y n34 (deck), n44 (informe), n73 (libro) y n51 (README) ya estaban aplicados o el pasaje que
+quedaba era correcto. El triador los marcaba porque **su heurística compara subcadenas**: si la cita
+del hallazgo sigue apareciendo, da el pasaje por vivo, y eso no distingue «no se corrigió» de «era
+correcto y la aclaración se agregó en otra parte». Cuatro de los cinco eran un **prefijo de la frase
+ya corregida**.
+
+Eso no se arregla con más regex. Se agrega `docs/fuentes/resueltos.json`: por hallazgo, la fecha del
+cierre y **por qué**, incluidos los que se leyeron y resultaron no ser defectos. `triar_hallazgos.py`
+lo lee y les pone estado `RESUELTO`, y el registro gana sobre la heurística porque es una lectura
+hecha con su razón escrita.
+
 ## Pendientes, por prioridad
 
-### 1. Los quince hallazgos `A_LEER`
+### 1. ~~Los quince hallazgos `A_LEER`~~ — cerrado
 
 ```
 .venv\Scripts\python.exe -X utf8 experiments/triar_hallazgos.py

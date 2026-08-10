@@ -313,7 +313,7 @@ del IR en una escena, y 7 luces frente a 5 del VIS y 1 del IR en la otra. Result
 ### 3.1 Segundo aporte: auditoría del protocolo de evaluación
 
 El trabajo no solo propone el operador: **audita el criterio con que se lo juzga**, usando el propio
-desarrollo como caso de estudio. Tres controles, todos versionados y reproducibles:
+desarrollo como caso de estudio. Cinco controles, todos versionados y reproducibles:
 
 - **Control negativo** (`run_control_negativo.py`). Con las nueve métricas, una fusión artificial de
   **ruido gaussiano** con `σ = 0.20` queda **3.ª de 14 entradas** (rango 6.767), por delante de cinco
@@ -386,6 +386,9 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 │   ├── detection_llvip/            # Reentrenamiento de detección con LLVIP (mAP concluyente)
 │   │   ├── prepare_llvip.py        #   genera datasets YOLO fusionados por método (labels compartidas)
 │   │   └── train_eval_llvip.py     #   entrena YOLOv8 por método y compara mAP (CSV acumulativo)
+│   ├── detection_m3fd/             # Detección de clases complementarias con M3FD (§8.1)
+│   │   ├── prepare_m3fd.py         #   fusiona y arma las particiones (2.000 / 500 / 499)
+│   │   └── train_eval_m3fd.py      #   un único modelo mixto VIS+IR, inferencia por entrada
 │   └── results/metrics_reports/    # all_metrics.csv, ranking, friedman, wilcoxon, detección
 │
 ├── notebooks/                      # 01 (EDA) y 03 (análisis estadístico)
@@ -535,7 +538,7 @@ muestra suficiente.
 
 ## 10. Dependencias
 
-`numpy`, `opencv-python`, `scikit-image`, `scipy`, `PyWavelets`, `pandas`, `matplotlib`, `seaborn`,
+`numpy`, `opencv-python`, `scikit-image`, `scipy`, `PyWavelets`, `dtcwt`, `pandas`, `matplotlib`, `seaborn`,
 `jupyter`, `ipykernel`, `openpyxl`, `plotly`, `torch`, `torchvision` (ver `requirements.txt`).
 La detección con YOLO/RF-DETR requiere `ultralytics` / `rfdetr` (preferentemente con GPU CUDA).
 

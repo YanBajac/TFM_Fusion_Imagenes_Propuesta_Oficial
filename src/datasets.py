@@ -18,7 +18,9 @@ PROCESSED_DIR = Path(__file__).resolve().parents[1] / "data" / "processed"
 # IR/Athena_heather_hei_vis.bmp). No es un par VIS/IR: es la misma imagen dos veces,
 # de modo que MSE(VIS,IR)=0 y todo metodo que devuelva la entrada sin modificarla
 # obtiene SSIM=1 y un PSNR infinito, lo que invalida cualquier promedio de fidelidad.
-# El corpus efectivo queda en 19 pares.
+# El corpus efectivo queda en 20 pares. El comentario decia 19 y era de antes de la sustitucion
+# del par corrupto por Triclobs_Kaptein_1123: data/raw trae 21 nombres emparejables y la exclusion
+# retira uno.
 PARES_EXCLUIDOS = {"Athena_heather_IR_hei_vis_g"}
 
 

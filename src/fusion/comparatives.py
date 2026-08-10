@@ -10,7 +10,10 @@ Métodos implementados (benchmark de la tesis):
   - DTCWT : Dual-Tree Complex Wavelet Transform (paquete dtcwt)
   - CVT   : Curvelet (aproximación vía Wavelet 2D db4 con PyWavelets)
   - TopHat clásico : fusión morfológica básica con disco (WTH/BTH por máximo)
-  - Promedio simple (auxiliar)
+
+Son SEIS métodos. La lista mencionaba antes un «Promedio simple (auxiliar)» que no existe ni acá
+ni en src/fusion/__init__.py; el promedio de las fuentes aparece solo como brazo «base» de la
+ablación del banco, que lo construye run_ablacion_banco.py y no este módulo.
 """
 
 import cv2

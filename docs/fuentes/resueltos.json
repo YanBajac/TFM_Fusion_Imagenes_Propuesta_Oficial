@@ -1,0 +1,65 @@
+{
+  "_comentario": [
+    "Hallazgos de la reverificacion que quedaron RESUELTOS y que el triador no puede cerrar por su",
+    "cuenta. Su heuristica compara subcadenas: marca un pasaje como «vivo» si la cita del hallazgo",
+    "sigue apareciendo en el documento, y eso no distingue dos casos muy distintos —el pasaje sigue",
+    "ahi porque NO se corrigio, o sigue ahi porque era correcto y lo que se agrego es una",
+    "aclaracion—. Con mas regex no se arregla; se arregla con este registro.",
+    "",
+    "Cada entrada lleva el numero del hallazgo, la fecha en que se cerro y por que. Los cerrados",
+    "'sin cambio' son los que se leyeron y resultaron no ser defectos: dejarlos como A_LEER para",
+    "siempre es tan malo como no haberlos mirado."
+  ],
+  "resueltos": {
+    "30": {
+      "fecha": "2026-08-08",
+      "como": "sin cambio: ya estaba aplicado",
+      "por_que": "Las laminas 13 y 19 dicen las dos «ninguno adverso CON SIGNIFICANCIA» y la 13 nombra la excepcion (SD frente a la piramide de Laplace, p_Holm = 0,231). El triador la marca porque la cita del hallazgo es un prefijo de la frase ya corregida."
+    },
+    "34": {
+      "fecha": "2026-08-08",
+      "como": "sin cambio: ya estaba aplicado",
+      "por_que": "El titulo de la lamina 8 entra en una linea y termina en 758.952 EMU, antes de los 777.240 donde arranca el flujograma. El bloque 10 de verificar_entregables.py comprueba que ningun texto del deck quede debajo de una figura y pasa."
+    },
+    "44": {
+      "fecha": "2026-08-08",
+      "como": "sin cambio: el pasaje que queda es correcto",
+      "por_que": "«Escenas de vigilancia nocturna» caracteriza al dataset TNO, no afirma que los 20 pares sean 20 escenas independientes. El parrafo siguiente del informe declara los 21 archivos, el par corrupto excluido y las 13 escenas distintas, con la advertencia sobre la independencia de los bloques."
+    },
+    "51": {
+      "fecha": "2026-08-08",
+      "como": "sin cambio: ya estaba aplicado",
+      "por_que": "El README publica p_Holm = 0.674 en la linea 244, que es la cifra correcta. El triador no lo cierra porque no ubica la cita."
+    },
+    "65": {
+      "fecha": "2026-08-08",
+      "como": "corregido",
+      "por_que": "El libro reportaba las metricas de M3FD «sobre 499 imagenes de validacion» en cuatro pasajes, y esos 499 son la particion de PRUEBA: prepare_m3fd.py declara que la validacion se usa para elegir el checkpoint y «nunca se reporta». Corregidos el epigrafe de la Tabla 9, el parrafo de los valores absolutos y las dos menciones a las escenas de la figura."
+    },
+    "73": {
+      "fecha": "2026-08-08",
+      "como": "sin cambio: el pasaje que queda es correcto",
+      "por_que": "«Este aprendizaje es transferible a cualquier descomposicion multiescala» es una leccion metodologica declarada como transferible, no una afirmacion de que este operador sea multiescala. Los seis pasajes que si describian un operador multiescala inexistente se corrigieron."
+    },
+    "93": {
+      "fecha": "2026-08-08",
+      "como": "corregido",
+      "por_que": "El comentario de PARES_EXCLUIDOS en src/datasets.py decia «el corpus efectivo queda en 19 pares» y son 20: quedo de antes de la sustitucion del par corrupto por Triclobs_Kaptein_1123."
+    },
+    "94": {
+      "fecha": "2026-08-08",
+      "como": "corregido",
+      "por_que": "SF es la unica de las nueve metricas que el evaluador calcula sobre 0-255 (evaluators.py linea 101 multiplica por 255) y el libro no lo declaraba, de modo que aplicar la ecuacion (17) a una imagen en [0, 1] devuelve el valor dividido por 255. Se declara en la definicion de SF. El pasaje que el triador ve vivo —«se normalizan al rango [0, 1]»— es correcto y se queda."
+    },
+    "96": {
+      "fecha": "2026-08-08",
+      "como": "corregido",
+      "por_que": "El docstring de comparatives.py listaba un «Promedio simple (auxiliar)» que no existe ni en el modulo ni en src/fusion/__init__.py. Retirado, con la aclaracion de que el promedio aparece solo como brazo «base» de la ablacion. El pasaje que el triador ve vivo es el encabezado de la lista, que se queda."
+    },
+    "106": {
+      "fecha": "2026-08-08",
+      "como": "corregido",
+      "por_que": "La columna avg_rank_medias de ranking_methods.csv rankeaba las medias YA REDONDEADAS a cuatro decimales, lo que inventaba empates: daba RatioPiramide 4,167 y DWT 4,500 donde corresponde 4,111 y 4,556. run_stats_analysis.py ahora rankea las medias sin redondear. El empate 3,556 entre la propuesta y la piramide de Laplace, que el informe publica, se sostiene en las dos versiones."
+    }
+  }
+}

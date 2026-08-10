@@ -120,6 +120,18 @@ ap.add_argument('--doc')
 a = ap.parse_args()
 
 hall = json.loads(HALL.read_text(encoding='utf-8'))
+
+# Hallazgos ya cerrados a mano. La heuristica de este script compara subcadenas: si la cita del
+# hallazgo sigue apareciendo en el documento marca el pasaje como «vivo», y eso no distingue el
+# caso en que el defecto no se corrigio del caso en que el pasaje era correcto y lo que se agrego
+# fue una aclaracion en otra parte. Con mas regex no se arregla. El registro dice, por hallazgo,
+# cuando se cerro y por que, incluidos los que se leyeron y resultaron NO ser defectos: dejarlos
+# como A_LEER para siempre es tan malo como no haberlos mirado.
+_RES = DOCS / 'fuentes' / 'resueltos.json'
+RESUELTOS = {}
+if _RES.exists():
+    RESUELTOS = json.loads(_RES.read_text(encoding='utf-8')).get('resueltos', {})
+
 salida = []
 for i, h in enumerate(hall, 1):
     dim = h.get('dimension', '?')
@@ -130,6 +142,14 @@ for i, h in enumerate(hall, 1):
            'doc': doc, 'donde': h.get('donde', '')[:110],
            'dice': plano(h.get('dice', ''))[:180],
            'corresponde': plano(h.get('corresponde', ''))[:180]}
+    # El registro manual gana sobre la heuristica: es una lectura hecha, con su razon escrita.
+    if str(i) in RESUELTOS:
+        _r = RESUELTOS[str(i)]
+        reg['estado'] = 'RESUELTO'
+        reg['motivo'] = f"{_r['como']} ({_r['fecha']})"
+        reg['por_que'] = _r['por_que']
+        salida.append(reg)
+        continue
     if texto is None or not frs:
         reg['estado'] = 'A_LEER'
         reg['motivo'] = 'no se pudo ubicar el documento o la cita'
