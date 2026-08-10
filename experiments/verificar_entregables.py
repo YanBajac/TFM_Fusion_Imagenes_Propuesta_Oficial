@@ -319,6 +319,12 @@ EMBEBIDAS = {
         'word/media/image5.png': 'fig_flujo_propuesta.png',
         'word/media/image2.png': 'fig_morfologia_tophat.png',
         'word/media/image17.png': 'comparacion_aptitudes.png',
+        # La curva de aptitud rotulaba «m* = 0,0703» y sombreaba un «rango sugerido m in [0,5-2]»
+        # que no es de ningun trabajo; el rango publicado es [0,30; 2,00]. Contradecia a su propio
+        # epigrafe, que dice que el optimo dentro del rango cae en su piso. Tenia generador
+        # —curva_aptitud_vs_m.py— pero el blob embebido no coincidia con el, asi que no estaba bajo
+        # control: es el tercer caso del mismo patron, todos por no estar en esta lista.
+        'word/media/image15.png': 'fig_aptitud_vs_m.png',
     },
     DOCS / 'Tesis_Defensa_Presentacion.pptx': {
         'ppt/media/image-8-2.png': 'fig_deck_pso_barrido.png',
@@ -328,6 +334,11 @@ EMBEBIDAS = {
         'ppt/media/image-10-1.png': 'cualitativas/montaje_07.png',
         'ppt/media/image-7-1.png': 'fig_flujo_propuesta.png',
         'ppt/media/image-6-1.png': 'fig_morfologia_tophat.png',
+        # La figura de la lamina 3 rotulaba «Propuesta (r=25, m=0,070)» —el peso de una corrida
+        # descartada, el optimo de la aptitud paralela— y sobrevivio a la correccion del flujograma
+        # justamente porque no estaba en esta lista: al no tener gemela en docs/figures, el barrido
+        # por md5 nunca la miro. Ahora la produce make_figuras_deck.py::motivacion().
+        'ppt/media/image-3-1.png': 'fig_deck_motivacion.png',
     },
 }
 for contenedor, mapa in EMBEBIDAS.items():
@@ -903,6 +914,59 @@ if 'avances' in DOCUMENTOS:
            f'el indice cita {len(_citadas)} de los {len(_inicios)} comienzos de seccion')
 else:
     print('  AVISO no esta el informe de avances: indice y marcadores sin revisar')
+
+# Toda imagen embebida sin gemela en docs/figures es una imagen que NO SE PUEDE REHACER: no se sabe
+# que script la produjo ni con que datos, de modo que si las cifras cambian nadie se entera. Asi
+# sobrevivieron TRES figuras rotulando m = 0,0703 —el optimo de la aptitud paralela, que la tesis no
+# adopta— mucho despues de que el flujograma se corrigiera: el flujograma estaba en EMBEBIDAS y
+# ellas no, de modo que el barrido por md5 nunca las miro.
+#
+# Las que quedan son legitimas y estan declaradas una por una con su motivo. El chequeo no exige que
+# la lista se vacie: exige que no aparezca una NUEVA sin declarar, que es lo que hay que impedir.
+print('\n=== 18. imagenes embebidas sin gemela: todas declaradas ===')
+SIN_GEMELA = {
+    'Tesis_Borrador_V3.docx': {
+        'image1.png': 'logo de la Universidad Comunera; no sale de ningun dato',
+        'image3.png': 'flujograma conceptual del Top-Hat clasico (disco unico, m = 1); correcto y '
+                      'sin cifras del estudio',
+        'image4.png': 'esquema del banco de cinco elementos estructurantes; conceptual',
+        'image6.png': 'esquema ilustrativo del PSO. Rotula «gbest (r = 25; m = 0,0703)», que es el '
+                      'optimo de la aptitud paralela y NO el peso adoptado; el epigrafe de la '
+                      'Figura 5 lo declara. Repintarla exigiria escribirle un generador a una '
+                      'figura que no reporta datos',
+        'image7.png': 'PENDIENTE: montaje de 3 escenas x 6 entradas con imagenes FUSIONADAS, sin '
+                      'generador. Es el unico caso que si deberia tenerlo, porque muestra '
+                      'resultados del operador y hoy no se puede rehacer',
+    },
+    'Tesis_Defensa_Presentacion.pptx': {
+        'image-6-2.png': 'ecuacion renderizada', 'image-7-2.png': 'ecuacion renderizada',
+        'image-7-3.png': 'ecuacion renderizada', 'image-8-1.png': 'la formula de F_o renderizada',
+    },
+}
+_FIG_MD5 = set()
+for _p in (RAIZ / 'docs' / 'figures').rglob('*'):
+    if _p.is_file() and _p.suffix.lower() in ('.png', '.jpg', '.jpeg'):
+        _FIG_MD5.add(hashlib.md5(_p.read_bytes()).hexdigest())
+for _cont, _decl in SIN_GEMELA.items():
+    _ruta = DOCS / _cont
+    if not _ruta.exists():
+        ok(False, f'falta {_cont}')
+        continue
+    with zipfile.ZipFile(_ruta) as _z:
+        _huerf = {n.split('/')[-1] for n in _z.namelist()
+                  if '/media/' in n and n.lower().endswith(('.png', '.jpg', '.jpeg'))
+                  and hashlib.md5(_z.read(n)).hexdigest() not in _FIG_MD5}
+    _nuevas = sorted(_huerf - set(_decl))
+    _yano = sorted(set(_decl) - _huerf)
+    ok(not _nuevas, f'{_cont}: las {len(_huerf)} imagenes sin gemela estan declaradas'
+                    + (f' — SIN DECLARAR: {_nuevas}' if _nuevas else ''))
+    if _yano:
+        print(f'        ({_yano} ya tienen gemela: se pueden sacar de la lista)')
+_pend = [f'{c}/{n}' for c, d in SIN_GEMELA.items() for n, m in d.items()
+         if m.startswith('PENDIENTE')]
+if _pend:
+    print(f'  AVISO {len(_pend)} sin generador y con datos: {_pend}')
+    avisos.append(f'figuras con datos y sin generador: {_pend}')
 
 # --------------------------------------------- resumen
 print(f'\n=== {len(fallos)} fallos · {len(avisos)} avisos ===')

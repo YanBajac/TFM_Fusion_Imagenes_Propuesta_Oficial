@@ -181,8 +181,53 @@ def pso():
           f"r=25 -> {coma(r25,4)}; r=1 en {(d.r_opt==1).sum()}/25 celdas)")
 
 
+def motivacion():
+    """La figura de la lamina 3: la misma escena en VIS, IR, clasico y propuesta.
+
+    Estaba embebida en el pptx SIN generador, y por eso rotulaba «Propuesta (r=25, m=0,070)»: el
+    peso de una corrida descartada —el optimo de la aptitud paralela— y no el m = 0,30 que la tesis
+    adopta. Sobrevivio a la correccion del flujograma porque, al no tener gemela en docs/figures,
+    el barrido por md5 de verificar_entregables.py nunca la miro.
+    """
+    import sys as _s
+    _s.path.insert(0, ".")
+    from src.datasets import list_pairs, load_pair
+    from src.fusion import fuse_optimal, tophat_classic_fusion
+
+    R, M = 25, 0.30
+    # la escena de la lamina: dos hombres frente a la casa, la misma del montaje 7
+    par = next((p for p in list_pairs() if "2_men_in_front_of_house" in p[0].name), None)
+    assert par is not None, "no se hallo la escena de la lamina 3 en el corpus"
+    vis, ir = load_pair(*par)
+    stem = os.path.splitext(os.path.basename(str(par[0])))[0]
+
+    celdas = [
+        ("VIS", vis, False),
+        ("IR", ir, False),
+        ("Top-Hat clásico (r=5, m=1)", tophat_classic_fusion(vis, ir, r=5, m=1.0), False),
+        (f"Propuesta (r={R}, m={M:.2f})".replace(".", ","),
+         fuse_optimal(vis, ir, r=R, m=M, mode="sum"), True),
+    ]
+    fig, axes = plt.subplots(1, 4, figsize=(2131 / DPI, 491 / DPI), dpi=DPI)
+    for ax, (lab, img, dest) in zip(axes, celdas):
+        ax.imshow(np.clip(img, 0, 1), cmap="gray", vmin=0, vmax=1)
+        ax.set_title(lab, fontsize=11, color=GRANATE if dest else "black",
+                     fontweight="bold" if dest else "normal", pad=4)
+        ax.set_xticks([]); ax.set_yticks([]); ax.grid(False)
+        for sp in ax.spines.values():
+            sp.set_edgecolor(GRANATE if dest else "#555555")
+            sp.set_linewidth(2.2 if dest else 0.6)
+    fig.suptitle(f"Escena: {stem.replace('_', ' ')}", fontsize=11.5, color="#404040", y=0.985)
+    fig.tight_layout(rect=[0, 0, 1, 0.94])
+    out = FIG / "fig_deck_motivacion.png"
+    fig.savefig(out, dpi=DPI, facecolor="white")
+    plt.close(fig)
+    print(f"Guardado: {out}  (escena {stem}; propuesta con m = {M:.2f})")
+
+
 if __name__ == "__main__":
     FIG.mkdir(parents=True, exist_ok=True)
     llvip()
     m3fd()
     pso()
+    motivacion()
