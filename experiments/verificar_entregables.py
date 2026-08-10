@@ -13,6 +13,7 @@ definicion no puede derivarse de los datos.
 Uso:   .venv\Scripts\python.exe -X utf8 experiments/verificar_entregables.py
 Salida: informe por consola; codigo de salida 1 si hay algun fallo.
 """
+import ast
 import hashlib
 import re
 import sys
@@ -913,8 +914,24 @@ if 'avances' in DOCUMENTOS:
 
         # El indice impreso: cada entrada tiene que apuntar a una pagina que exista y su rango
         # tiene que empezar donde arranca la seccion segun los marcadores.
-        _t2 = plano(_d[1].get_text())
-        ok('Índice' in _t2, 'la pagina 2 es el indice')
+        #
+        # La pagina del indice SE BUSCA, no se da por sentada. Antes esto leia _d[1] a secas, o sea
+        # la segunda pagina fisica, y al meterle la carilla de resumen al frente el chequeo empezo a
+        # leer el resumen y a informar que el indice citaba «1 de los 37 comienzos de seccion». El
+        # fallo era del chequeo, no del documento. Buscarlo tampoco lo debilita: si no hubiera
+        # ninguna pagina de indice, no hay nada que encontrar y falla igual.
+        _pag_idx = next((_i for _i in range(1, min(6, _npg) + 1)
+                         if plano(_d[_i - 1].get_text()).lstrip().startswith('Índice')), None)
+        ok(_pag_idx is not None, 'hay una pagina de indice entre las cinco primeras')
+        _t2 = plano(_d[(_pag_idx or 2) - 1].get_text())
+
+        # Y el orden del frente, que es la razon de ser de la carilla: el resumen tiene que venir
+        # ANTES del indice. Si un dia alguien reordena los bloques, el resumen deja de ser lo
+        # primero que se lee y pierde el sentido, sin que nada mas lo delate.
+        _pag_res = next((_i for _i in range(1, min(6, _npg) + 1)
+                         if plano(_d[_i - 1].get_text()).lstrip().startswith('Resumen')), None)
+        ok(_pag_res is not None and _pag_idx is not None and _pag_res < _pag_idx,
+           f'el resumen (pag. {_pag_res}) va antes del indice (pag. {_pag_idx})')
         _rangos = re.findall(r'(\d{1,3})(?:–(\d{1,3}))?\s*(?=\d{1,3}\.|Anexos|$)', _t2)
         _inicios = sorted({p for _n, _t, p in _toc if _n == 1})
         _citadas = sorted({int(a) for a, _b in re.findall(r'\b(\d{1,3})(?:–(\d{1,3}))?\b', _t2)
@@ -985,7 +1002,7 @@ print('\n=== 19. requirements.txt declara todo lo que el codigo importa ===')
 _STDLIB = set('''os sys re json math time datetime pathlib collections itertools functools argparse
 subprocess shutil zipfile hashlib io copy random warnings unicodedata typing dataclasses glob
 statistics textwrap html csv traceback base64 xml multiprocessing urllib abc contextlib enum
-tempfile string operator pickle gzip struct threading queue logging inspect importlib'''.split())
+tempfile string operator pickle gzip struct threading queue logging inspect importlib ast'''.split())
 # nombre del modulo -> nombre del paquete en PyPI, cuando no coinciden
 _PAQ = {'cv2': 'opencv-python', 'skimage': 'scikit-image', 'PIL': 'Pillow', 'fitz': 'PyMuPDF',
         'docx': 'python-docx', 'pptx': 'python-pptx', 'pywt': 'PyWavelets',
@@ -1011,6 +1028,86 @@ for _mod in ('fitz', 'docx', 'pptx', 'PIL', 'yaml', 'cv2', 'pandas', 'numpy'):
         _faltan_inst.append(_mod)
 ok(not _faltan_inst, 'los modulos criticos se importan en este entorno'
                      + (f' — faltan {_faltan_inst}' if _faltan_inst else ''))
+
+# --------------------------------------------- 22. la carilla de resumen no introduce cifras nuevas
+# POR QUE. La pagina 2 es un resumen en lenguaje llano, y es lo primero que lee el director. Es
+# tambien el lugar donde una cifra mal copiada hace mas daño: quien la lee ahi no va a ir a buscarla
+# a la pagina 36. La regla es que el resumen NO PUEDE ESTRENAR NINGUNA CIFRA. Todo decimal que cite
+# tiene que aparecer, con ese mismo redondeo, en alguna otra pagina del informe, que es donde esta
+# la tabla y el metodo que lo produce. Si el resumen dijera 0,097 donde el cuerpo dice 0,906, esto
+# falla; si el cuerpo cambia y el resumen queda viejo, tambien.
+print('\n=== 22. las cifras de la carilla de resumen estan respaldadas en el cuerpo ===')
+if 'avances' in DOCUMENTOS:
+    with fitz.open(str(DOCUMENTOS['avances']['ruta'])) as _d:
+        _pag_res = next((_i for _i in range(1, min(6, _d.page_count) + 1)
+                         if plano(_d[_i - 1].get_text()).lstrip().startswith('Resumen')), None)
+        if _pag_res is None:
+            ok(False, 'no se encontro la carilla de resumen')
+        else:
+            _t_res = _d[_pag_res - 1].get_text()
+            _cuerpo_txt = "\n".join(_d[_i].get_text() for _i in range(_d.page_count)
+                                    if _i != _pag_res - 1)
+            # los decimales con coma son las afirmaciones; los enteros son conteos y remisiones
+            _dec_res = sorted(set(re.findall(r'\d+,\d+', _t_res)))
+            _huerfanas = [x for x in _dec_res if x not in _cuerpo_txt]
+            ok(not _huerfanas,
+               f'las {len(_dec_res)} cifras decimales del resumen {_dec_res} aparecen en el cuerpo'
+               + (f' — SIN RESPALDO: {_huerfanas}' if _huerfanas else ''))
+            # y las remisiones de pagina tienen que existir y llevar a la seccion que nombran
+            _rem = [(int(_s), int(_p)) for _s, _p in
+                    re.findall(r'la (?:secci[oó]n )?(\d{1,2}) \(p[aá]g\. (\d{1,3})\)', _t_res)]
+            _rem += [(int(_s), int(_p)) for _s, _p in
+                     re.findall(r'secci[oó]n (\d{1,2}) \(p[aá]g\. (\d{1,3})\)', _t_res)]
+            _malas = []
+            for _sec, _p in set(_rem):
+                if not 1 <= _p <= _d.page_count:
+                    _malas.append((_sec, _p, 'fuera del documento'))
+                    continue
+                _prim = next((_l.strip() for _l in _d[_p - 1].get_text().splitlines()
+                              if _l.strip()), '')
+                if not _prim.startswith(f'{_sec}.'):
+                    _malas.append((_sec, _p, f'ahi arranca «{_prim[:34]}»'))
+            ok(_rem and not _malas,
+               f'las {len(set(_rem))} remisiones del resumen caen en la seccion que nombran'
+               + (f' — {_malas[:4]}' if _malas else ''))
+
+# --------------------------------------------- 21. los nombres de escena cubren el corpus vivo
+# POR QUE. Los generadores traducen el nombre de archivo de cada par a un rotulo legible con un
+# diccionario a mano: «Triclobs_Bosnia_R» -> «Bosnia». Si al diccionario le falta una escena, el
+# .get(img, img) deja pasar el nombre crudo del archivo y el documento sale con diecinueve escenas
+# con nombre y una con «Triclobs_Kaptein_1123». Es exactamente lo que paso: cuando se sustituyo el
+# par corrupto, DOS generadores quedaron nombrando el par retirado y sin el que lo reemplazo, y el
+# Anexo 19 del informe salio en crudo. Nada lo delataba porque el .get no falla nunca.
+print('\n=== 21. los diccionarios de nombres de escena cubren el corpus vivo ===')
+try:
+    from src.datasets import list_pairs as _lp
+    _vivos = {Path(str(_v)).stem for _v, _i in _lp()}
+except Exception as _e:                                          # pragma: no cover
+    _vivos = set()
+    ok(False, f'no se pudo obtener el corpus vivo ({type(_e).__name__}: {_e})')
+
+if _vivos:
+    for _arch in ('make_avances_report.py', 'make_reporte_optimos.py'):
+        _p = RAIZ / 'experiments' / _arch
+        if not _p.exists():
+            continue
+        _txt = _p.read_text(encoding='utf-8')
+        # el diccionario es literal: se lo lee con ast, no con un regex de comillas
+        _m = re.search(r'^ESCENA\s*=\s*(\{.*?^\})', _txt, re.S | re.M)
+        if not _m:
+            ok(False, f'{_arch}: no se encontro el diccionario ESCENA')
+            continue
+        try:
+            _esc = ast.literal_eval(_m.group(1))
+        except (SyntaxError, ValueError) as _e:
+            ok(False, f'{_arch}: ESCENA no se pudo evaluar ({_e})')
+            continue
+        _sin_nombre = sorted(_vivos - set(_esc))
+        _sobran = sorted(set(_esc) - _vivos)
+        ok(not _sin_nombre, f'{_arch}: las {len(_vivos)} escenas del corpus tienen nombre legible'
+                            + (f' — en crudo saldrian {_sin_nombre}' if _sin_nombre else ''))
+        ok(not _sobran, f'{_arch}: ESCENA no nombra escenas ajenas al corpus'
+                        + (f' — sobran {_sobran}' if _sobran else ''))
 
 # --------------------------------------------- 20. docs/ raiz: solo entregables y estado vivo
 # POR QUE. Los documentos de trabajo ya cumplidos se archivaron en docs/historial/ para que quien

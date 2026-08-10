@@ -1565,7 +1565,10 @@ ESCENA = {
     "APC_3_view_3_fk_NL_05_005": "APC 3 · vista 3",
     "Athena_2_men_in_front_of_house_meting003": "2 men in front of house",
     "Athena_APC_4_fennek01_005": "APC 4 (fennek)",
-    "Athena_heather_IR_hei_vis_g": "heather (IR/vis g)",
+    # Athena_heather_IR_hei_vis_g salio del corpus: su canal visible era una copia byte a byte del
+    # infrarrojo, asi que toda metrica de fidelidad daba su valor perfecto. Lo sustituye Kaptein_1123,
+    # que faltaba aca: sin su entrada el Anexo 19 y las tablas por imagen mostraban el nombre crudo
+    # del archivo, «Triclobs_Kaptein_1123», donde las otras diecinueve escenas llevan nombre legible.
     "Athena_heather_hei_vis": "heather (hei vis)",
     "Athena_helicopter_helib_011": "helicopter",
     "Athena_lake_lake": "lake",
@@ -1576,6 +1579,7 @@ ESCENA = {
     "Athena_soldier_in_trench_1_meting016": "soldier in trench 1",
     "Athena_soldier_in_trench_2_meting055": "soldier in trench 2",
     "Triclobs_Bosnia_R": "Bosnia",
+    "Triclobs_Kaptein_1123": "Kaptein 1123",
     "Triclobs_jeep_in_smoke_R": "jeep in smoke",
 }
 IMAGENES = list(dict.fromkeys(allm["image"]))
@@ -1786,7 +1790,7 @@ H.append(f"""
         sobre una escena (sección 15), y conclusiones (sección 16).</li>
     <li>Anexos 1-{N_ESC}: las 25 configuraciones del PSO en cada uno de los {N_ESC} pares.</li>
   </ol>
-  {pie(3)}
+  {pie(4)}
 </div>
 """)
 
@@ -1828,7 +1832,7 @@ H.append(f"""
   páginas. En su lugar está el conteo por escena de la sección 14, con su análisis de potencia.
   Cinco de las siete hipótesis son sobre el <b>criterio</b> y solo dos sobre el <b>operador</b>.
   Ese reparto es el que justifica hablar de dos aportes y no de uno.</p>
-  {pie(4)}
+  {pie(5)}
 </div>
 """)
 
@@ -1852,17 +1856,17 @@ H.append(f"""
   independientes</b>, y el tamaño de muestra efectivo es menor que {N_ESC}. Los resultados de las
   secciones 8 y 9 hay que leerlos con ese alcance. El libro lo declara también entre las limitaciones.</p>
   <div class="grid2">{"".join(chunks[0])}</div>
-  {pie(5)}
-</div>
-<div class="page">
-  <h2>2. Datos de entrada (continuación)</h2>
-  <div class="grid2">{"".join(chunks[1])}</div>
   {pie(6)}
 </div>
 <div class="page">
   <h2>2. Datos de entrada (continuación)</h2>
-  <div class="grid2">{"".join(chunks[2])}</div>
+  <div class="grid2">{"".join(chunks[1])}</div>
   {pie(7)}
+</div>
+<div class="page">
+  <h2>2. Datos de entrada (continuación)</h2>
+  <div class="grid2">{"".join(chunks[2])}</div>
+  {pie(8)}
 </div>
 """)
 
@@ -1878,7 +1882,7 @@ H.append(f"""
   se queda con el detalle brillante fino y la Black Top-Hat (BTH) con el detalle oscuro fino:</p>
   {formula("tophat", 3)}
   {figura(EXIST.get("fig_morfologia_tophat.png"), "Efecto de las operaciones morfológicas y de las transformadas WTH/BTH sobre una señal del dataset.", 80)}
-  {pie(8)}
+  {pie(9)}
 </div>
 """)
 
@@ -1899,7 +1903,7 @@ H.append(f"""
   <p>Las cuatro respuestas direccionales se <b>promedian</b>. Así ninguna orientación queda
   privilegiada y el ruido direccional se atenúa:</p>
   {formula("wth_lin4", 7)}
-  {pie(9)}
+  {pie(10)}
 </div>
 <div class="page">
   <h2>4. Propuesta novedosa (continuación)</h2>
@@ -1923,7 +1927,7 @@ H.append(f"""
   contraste m:</p>
   {formula("fuse_src", 13)}
   {formula("recon", 14)}
-  {pie(10)}
+  {pie(11)}
 </div>
 """)
 
@@ -1964,7 +1968,7 @@ H.append(f"""
   <p><b>Tabla 1.</b> Resultado del barrido: mejor aptitud F<sub>o</sub> alcanzada por cada configuración
   con el rango m &isin; {V['rango']}.</p>
   {tabla_grid}
-  {pie(11)}
+  {pie(12)}
 </div>
 <div class="page">
   <h2>5. Optimización por PSO (continuación): convergencia y óptimo</h2>
@@ -1978,7 +1982,7 @@ H.append(f"""
   realce conservador. El operador propuesto (disco + líneas por suma, aptitud orientada a
   fusión) usa el radio máximo disponible con un peso un orden de magnitud menor. Eso pasa
   porque la suma de cinco respuestas concentra más energía de detalle por unidad de peso.</p>
-  {pie(12)}
+  {pie(13)}
 </div>
 """)
 
@@ -2016,7 +2020,7 @@ H.append(f"""
   <i>referencia_pso_ortega_espinoza.py</i>).</p>
   {TAB_REFERENCIA}
 
-  {pie(13)}
+  {pie(14)}
 </div>
 """)
 
@@ -2043,7 +2047,7 @@ H.append(f"""
   del rango publicado, una vez corregida la diferencia de energía entre los dos operadores. Solo
   parece bajo si se olvida que el operador cambió.</p>
 
-  {pie(14)}
+  {pie(15)}
 </div>
 """)
 
@@ -2083,7 +2087,7 @@ H.append(f"""
   <b>confirmar un óptimo que la forma de la aptitud determina</b>. Del trabajo de referencia se
   hereda la elección del rango.</p>
 
-  {pie(15)}
+  {pie(16)}
 </div>
 """)
 
@@ -2121,7 +2125,7 @@ H.append(f"""
   tendencia. La aptitud media se mueve en una banda de {REP_BANDA}. La rejilla de {N_CFG}
   configuraciones del trabajo de referencia no gana estabilidad con más partículas ni más
   iteraciones.</p>
-  {pie(16)}
+  {pie(17)}
 </div>
 """)
 
@@ -2139,7 +2143,7 @@ H.append(f"""
   también la única que no llega al piso del peso en el 100 % de sus repeticiones. La columna del
   radio confirma lo que resume la tabla anterior: la proporción que termina en r = 1 no sigue
   ninguna tendencia con el número de partículas ni con las iteraciones.</p>
-  {pie(17)}
+  {pie(18)}
 </div>
 """)
 
@@ -2185,7 +2189,7 @@ H.append(f"""
   pueden mejorarlo, porque el máximo ya está alcanzado. Y el argumento de monotonía del peso, que
   hasta aquí estaba medido con r = 25, se verifica ahora en <b>los veinticinco radios</b>: el mejor
   peso dentro del rango publicado es el piso {"en todos" if OE_PISO_SIEMPRE else "en algunos"}.</p>
-  {pie(18)}
+  {pie(19)}
 </div>
 """)
 
@@ -2237,7 +2241,7 @@ H.append(f"""
   diseño que amplifica el contraste. La referencia optimiza <b>por escena</b>, con una corrida
   independiente para cada una, mientras este trabajo promedia la aptitud sobre tres escenas, y eso
   suaviza la superficie y hace que un solo óptimo domine.</p>
-  {pie(19)}
+  {pie(20)}
 </div>
 """)
 
@@ -2275,7 +2279,7 @@ H.append(f"""
   óptimo no está, y la prueba es que al retirarla se comporta como el de la referencia. Los dos
   trabajos coinciden en el orden de magnitud del realce físico y difieren en el número que lo
   expresa.</p>
-  {pie(20)}
+  {pie(21)}
 </div>
 """)
 
@@ -2310,7 +2314,7 @@ H.append(f"""
   El aporte de la tesis en este punto no es que el PSO falle. Es que <b>el rango de
   búsqueda heredado, y no el optimizador, es lo que fija uno de los dos hiperparámetros</b>. Es una
   afirmación sobre el protocolo, y ahora está medida en las dos direcciones.</p>
-  {pie(21)}
+  {pie(22)}
 </div>
 """)
 
@@ -2337,7 +2341,7 @@ H.append(f"""
   Excepción en el peso: {CORRIDAS_EXCEPCION}. El registro completo, con el peso, la aptitud y el
   tiempo de cada corrida, está en <i>pso_repeticiones_propuesta.csv</i>; el del barrido con el peso
   libre, en <i>pso_repeticiones_propuesta_libre.csv</i>.</p>
-  {pie(22)}
+  {pie(23)}
 </div>
 """)
 
@@ -2373,7 +2377,7 @@ H.append(f"""
   {formula("th_clasico", 17)}
   <p>Todos los métodos se ejecutan sobre los mismos {N_ESC} pares y con la misma implementación de
   métricas (<i>src/metrics/evaluators.py</i>). Así la comparación es directa.</p>
-  {pie(23)}
+  {pie(24)}
 </div>
 """)
 
@@ -2409,7 +2413,7 @@ H.append(f"""
   {CN_RANGO_RUIDO}), por delante de {CN_COMPAR_DETRAS} de los seis métodos comparativos, y su rango
   mejora de forma monótona al aumentar la varianza. Los resultados de las secciones siguientes deben
   leerse con ese alcance.</p>
-  {pie(24)}
+  {pie(25)}
 </div>
 """)
 
@@ -2421,7 +2425,7 @@ H.append(f"""
   {tabla_metodos(ORDEN, resaltar=PROP)}
   <p class="lectura">{LECTURA_BENCH}</p>
   {figura(charts["quality"], "Cuatro métricas representativas (EN, FE, SF, SSIM); la barra azul es la propuesta.", 96)}
-  {pie(25)}
+  {pie(26)}
 </div>
 """)
 
@@ -2454,7 +2458,7 @@ for _b, _imgs in enumerate(_bloques, 1):
   <p><b>Tabla 4{chr(96 + _b)}.</b> Resultados por par — pares {(_b - 1) * 4 + 1} a
   {(_b - 1) * 4 + len(_imgs)} de {N_ESC}.</p>
   {tabla_por_imagen(_imgs)}{_lect}
-  {pie(25 + _b)}
+  {pie(26 + _b)}
 </div>
 """)
 
@@ -2465,7 +2469,7 @@ H.append(f"""
   {formula("friedman", 23)}
   <p><b>Tabla 5.</b> Resultados del test de Friedman.</p>
   {tabla_friedman()}
-  {pie(31)}
+  {pie(32)}
 </div>
 <div class="page">
   <h2>9. Análisis estadístico (continuación): Wilcoxon y ranking</h2>
@@ -2486,11 +2490,11 @@ H.append(f"""
   recuentos dicen lo mismo. <b>No es una mejora uniforme. Es un desplazamiento del punto de
   operación</b>, y eso es lo que afirma H1. Las conclusiones citan el recuento por bloques.</p>
   {figura(charts["ranking"], "Ranking promedio global de los 7 métodos (9 métricas, dirección respetada); la barra azul es la propuesta.", 78)}
-  {pie(32)}
+  {pie(33)}
 </div>
 """)
 
-pg = 33
+pg = 34
 
 # El informe afirmaba que el primer puesto se obtiene «con separacion estadisticamente
 # significativa». No habia ningun test que respaldara eso: Friedman y Wilcoxon corren por metrica
@@ -3160,6 +3164,69 @@ for _i, _img in enumerate(IMAGENES, 1):
 # numero que ya quedo interpolado en su pie. Asi no hay que instrumentar las cuarenta y pico
 # paginas una por una ni mantener una lista paralela que se desincronice: la fuente del indice es
 # el documento mismo. La pagina 2 quedo reservada para el, de modo que los pies no se mueven.
+# ---------------------------------------------------------------- carilla de resumen (pagina 2)
+# Va antes del indice porque es lo primero que se lee. No repite el contenido de la seccion 1: esa
+# describe el planteamiento para quien va a leer las ochenta y cuatro paginas, y esta responde que
+# se hizo, que salio y que falta para quien tiene cinco minutos.
+_RESUMEN = f"""
+<div class="page">
+  <h2>Resumen</h2>
+
+  <p><b>El problema.</b> Una cámara común y una cámara térmica ven cosas distintas de la misma
+  escena. La primera da textura y detalle; la segunda muestra lo que está caliente, aunque sea de
+  noche o haya humo. Fusionar es armar una sola imagen que conserve lo aprovechable de las dos.</p>
+
+  <p><b>Lo que se propone.</b> Un método de fusión por morfología matemática. En lugar de
+  descomponer la imagen en varias escalas, trabaja en una sola, fijada por un radio r, y extrae el
+  detalle con cinco figuras de prueba —un disco y cuatro líneas orientadas— en lugar de una.
+  Después reconstruye la imagen sumando ese detalle con un peso m. La configuración adoptada es
+  r = 25 y m = {V['m']}, elegida por barrido determinista y no por una corrida suelta del
+  optimizador.</p>
+
+  <p><b>Cómo se evaluó.</b> Se compararon siete entradas sobre los {N_ESC} pares del banco de
+  imágenes TNO: la propuesta, la metodología clásica del Top-Hat y cinco métodos multiescala del
+  estado del arte. Se usaron nueve métricas de calidad de imagen y pruebas estadísticas no
+  paramétricas. Además se entrenó un detector de objetos sobre cada versión fusionada, para ver si
+  la mejora de calidad sirve de algo en una tarea posterior.</p>
+
+  <p><b>Lo que salió.</b> El método <b>desplaza el punto de operación</b> de la fusión; no mejora
+  todo a la vez. Gana con claridad en detalle y contraste espacial: 24 de 25 comparaciones contra
+  las cinco configuraciones de referencia, ninguna en contra. Y cede en fidelidad al original: 17
+  de 20. Con el criterio del trabajo de referencia queda primero de siete, con 3,39 de rango medio.
+  Ese primer puesto <b>depende del criterio</b>: medido con las diecisiete métricas que el mismo
+  evaluador calcula, pasa a tercero.</p>
+
+  <p><b>Lo que no salió, y terminó siendo el segundo aporte.</b> La mejora de calidad no se
+  traslada a la tarea. Ninguna fusión le gana a la mejor cámara sola: en LLVIP el infrarrojo por sí
+  mismo llega a 0,971 de mAP y la propuesta a 0,906, con las siete fusiones apiladas dentro de unas
+  centésimas y un solo entrenamiento por entrada, de modo que entre ellas no hay orden que sostener.
+  Y el conjunto de nueve métricas no distingue
+  detalle útil de ruido: una imagen a la que se le agregó ruido a propósito queda tercera entre
+  catorce entradas, por delante de cinco de los seis métodos reales. De ahí salió el segundo aporte
+  del trabajo, que es auditar si el protocolo con que se evalúa la fusión mide lo que dice medir.</p>
+
+  <p><b>Tres diferencias con el plan de junio, para su visto bueno.</b> El método quedó de una sola
+  escala y no multiescala. Se reportan nueve métricas de las doce previstas, sobre diecisiete
+  calculadas. Y la detección se evaluó con un detector, YOLOv8n, en lugar de los tres acordados
+  (YOLO, RF-DETR y un modelo en Keras), aunque sobre dos conjuntos etiquetados y no uno. Los
+  motivos de cada cambio están en el informe; la decisión de darlos por buenos es suya.</p>
+
+  <p><b>Lo que falta.</b> Agregar al conjunto de evaluación por lo menos una métrica que castigue
+  los artefactos, y repetir la comparación con esa batería ampliada. Darles a todos los operadores
+  morfológicos el mismo presupuesto de ajuste, para aislar cuánto aporta el banco de cinco elementos.
+  Repetir la prueba de detección con otros detectores y con más semillas de entrenamiento. Y sumar
+  una validación perceptual con observadores.</p>
+
+  <p><b>Dónde mirar.</b> El método en la sección 4 (pág. 10); la elección de r y m en la 5
+  (pág. 12); los resultados y la estadística en las secciones 8 y 9 (págs. 26 y 32); la prueba de
+  robustez en la 10 (pág. 36); la detección en las 13 y 14 (págs. 53 y 54); y las conclusiones con
+  su evidencia en la 16 (pág. 64).</p>
+
+  {pie(2)}
+</div>
+"""
+H.insert(1, _RESUMEN)
+
 _cuerpo = "".join(H)
 _BLOQUES = []
 for _b_html in _cuerpo.split('<div class="page"')[1:]:
@@ -3222,11 +3289,26 @@ _INDICE = f"""
   listan con su rango; el PDF lleva además marcadores de navegación, uno por encabezado.</p>
   <table class="chica"><thead><tr><th class="l">Sección</th><th style="text-align:right">Pág.</th>
   </tr></thead><tbody>{_idx_filas}</tbody></table>
-  {pie(2)}
+  {pie(3)}
 </div>
 """
-H.insert(1, _INDICE)
+H.insert(2, _INDICE)
 print(f"indice: {len(_FILAS_IDX)} entradas · marcadores: {len(_TOC)}")
+
+# Control duro de la numeracion. No alcanza con que el script no reviente: los pies son literales
+# repartidos por tres mil lineas, y basta equivocar uno para que el indice apunte a la pagina de al
+# lado y los marcadores queden corridos. La secuencia de pies del documento ensamblado tiene que ser
+# exactamente 2, 3, 4, ..., N: sin huecos, sin repetidos y en orden. Si no lo es, no se escribe nada.
+_PIES = [int(x) for x in _re.findall(r'<div class="pie">(\d+)</div>', "".join(H))]
+_ESPERADA = list(range(2, len(_PIES) + 2))
+if _PIES != _ESPERADA:
+    _huecos = sorted(set(_ESPERADA) - set(_PIES))
+    _repes = sorted({p for p in _PIES if _PIES.count(p) > 1})
+    _desorden = [(a, b) for a, b in zip(_PIES, _PIES[1:]) if b != a + 1]
+    raise SystemExit(
+        f'ABORTA: la numeracion de pies no es 2..{len(_PIES) + 1}. '
+        f'faltan {_huecos[:6]} · repetidos {_repes[:6]} · saltos {_desorden[:6]}')
+print(f'numeracion: {len(_PIES)} pies, 2..{_PIES[-1]}, sin huecos ni repetidos')
 
 html = f"""<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
 <title>Presentación de avances — Fusión IR/VIS</title><style>{css}</style></head>

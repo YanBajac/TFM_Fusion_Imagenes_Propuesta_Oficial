@@ -1,6 +1,57 @@
-# Estado y pendientes — 8 de agosto de 2026
+# Estado y pendientes — 10 de agosto de 2026
 
 Punto de retomada. Todo lo que sigue está verificado; lo que no, está marcado como tal.
+
+## Lo primero al retomar: el deck tiene quince láminas pendientes, no cinco
+
+El informe de avances **está listo para enviar** (85 páginas, cuatro verificadores en 0 fallos, con
+una carilla de resumen en lenguaje llano en la página 2). Lo que queda abierto es el deck de defensa.
+
+Se contrastó `Plan_Deck_Defensa.md` lámina por lámina contra el pptx real, y el resultado corrige lo
+que se venía diciendo: **quedan quince láminas con prescripciones sin aplicar**, no las cinco que se
+habían identificado. La estructura del plan sí está hecha —23 láminas, las cuatro nuevas existen, la
+14 y la 15 viejas están fundidas en la 18, los pies dicen «n / 22», las 23 tienen notas—; lo que
+falta es texto de cuerpo. En orden de gravedad:
+
+| Lámina | Qué falta |
+|---|---|
+| **19** | La más grave. Sigue en la maqueta vieja de nueve cajas y proyecta **sólo tres hipótesis** (H1, H5, H6): H2, H3, H4 y H7 no aparecen, o sea que la lámina de contraste omite las del segundo aporte que las láminas 14 y 15 acaban de demostrar. Falta también la línea de pie. |
+| **21** | Cuerpo y notas son los «ANTES» íntegros. Las cuatro recomendaciones sobre el protocolo —lo que el plan llama el aporte transferible— no existen en el deck, y el cierre todavía dice «la propuesta es la opción recomendada» sin acotar el costo. |
+| **10** | La más atrasada; es el hallazgo n99. Sigue en dos columnas: falta la columna «Controles de la auditoría» que la lámina 4 promete, falta la línea de pie con las limitaciones, la columna C no menciona M3FD. Notas sin aplicar. |
+| **20** | Cinco párrafos con la arquitectura vieja de un solo aporte, donde el plan pide siete numeradas; no cierra con el aporte metodológico y las notas todavía dicen «Cinco conclusiones». |
+| **12** | Los valores de la tabla ya están bien, pero la tabla sigue con 6 columnas: proyecta EN, FE, SD, SF y SSIM y **no** proyecta MG, MI_vis, MI_ir ni PSNR, que son justo las cuatro que la prosa de cierre cita. La lámina se titula «por bloques» sin que se vea ningún bloque. |
+| **8** | `Text 2` conserva los cinco párrafos «ANTES» palabra por palabra. Ojo: el plan **no** reduce la cantidad de párrafos (antes y después son cinco); pliega la cita de Bala en el p2 y usa el hueco para la línea de la ablación. |
+| **9** | Al título le falta «(OE2 / H5)», y además faltan dos cosas: la declaración de que la aptitud se promedia sobre 3 de las 20 escenas que también integran el conjunto de evaluación, y el segundo párrafo de `Text 4` con la aptitud de la imagen base (`aptitud_operador_configs.csv` da 1,7583). |
+| **3** | Falta el párrafo del segundo problema, en la lámina que se titula «dos preguntas, no una»: hoy plantea sólo la primera. Notas sin aplicar. |
+| **4** | Falta el párrafo «Pregunta central», que es el único enunciado explícito de la pregunta de investigación en todo el deck. |
+| **13** | Dos omisiones chicas y reales: «y dos no significativos» (sin eso el desglose no cierra las 20 comparaciones: 17 + 1 = 18) y la frase que descuenta FE de las dimensiones independientes. |
+| **1** | El subtítulo de la portada sigue diciendo «Una propuesta… optimizada por PSO», el encuadre de un solo aporte que sus propias notas ya desmienten. |
+| **2** | El punto 7 del índice sin su subtítulo, y notas sin aplicar. |
+| **11** | El pie de la lámina cualitativa es el «ANTES», de una línea. |
+| **23** | El plan **no** manda retirar el título: manda reemplazarlo por «Reserva — M3FD: dos escenas de la validación». |
+| **18** | `Text 2` tiene tres párrafos y falta el cuarto. **No es un olvido**: está registrado más abajo como diferimiento deliberado, porque el cuarto párrafo obliga a encoger la figura a ~69 % de su ancho. Se puede resolver acortando un párrafo en lugar de encoger la figura. |
+
+**Tres cosas que no hay que proyectar sin resolver antes.** (1) Las «13 escenas físicamente
+distintas» que el plan pide para las láminas 10 y 11 **no están en ningún CSV ni script**: la cifra
+aparece sólo en el plan, agrupando los 20 nombres salen 13 o 14 según si las dos tomas de
+`soldier_in_trench` cuentan como una escena, y encima el corpus cambió al sustituir el par corrupto.
+Si se quiere el número, hay que fijar y versionar el criterio de agrupamiento. (2) EN de Curvelet:
+la fuente da 6,6445, el deck imprime 6,644 y el plan 6,645. (3) MI_ir de Curvelet: la fuente da
+0,6695 y el plan 0,670. Los dos últimos son fronteras de redondeo, hay que alinearlas con el
+generador de la tabla.
+
+**Y un aviso de maquetación.** Nueve de las quince láminas crecen en texto sobre recuadros que ya
+están llenos, y este deck tiene dos antecedentes de texto que no llega al PDF y de texto tapado por
+una figura. Después de **cada** edición hay que correr los bloques 9 y 10 de
+`verificar_entregables.py`.
+
+**Prescripciones que ya están aplicadas y que no hay que volver a aplicar.** Las dos figuras de la
+§4 del plan están regeneradas, y a propósito con texto distinto del que el plan proponía: el título
+que pedía el plan hablaba de «16 casos», reparto de una sola semilla que el estudio de 500 corridas
+dejó atrás. Por lo mismo, **no reintroducir «r = 1 en 16 de las 25» en ninguna lámina**. El «gana
+por 0,683: 3,467 frente a 4,150» del plan también está superado: el deck dice 3,528 frente a 3,694,
+margen 0,166, que es el cálculo correcto. La lámina 10 va con «Toet, 2017» y no con el «Toet, 2014»
+del plan. Y las láminas 5, 6, 7, 14, 15, 16, 17 y 22 están completas.
 
 **Los 106 hallazgos de la reverificación están CERRADOS: 96 aplicados y 10 resueltos, con cero
 `A_LEER` y cero `PENDIENTE`.** De los diez últimos, cinco eran defectos reales y cinco resultaron
@@ -510,6 +561,39 @@ no estaban en ningún otro lado**. Se traen acá, porque archivar sin migrarlos 
 - **Validar con el director la reducción de alcance.** El `Plan_Replanteo_TFM.docx` acordado en junio
   preveía tres detectores y se entregó con uno. La decisión está tomada y justificada, pero conviene
   que conste que el director la conoce. Es gobernanza, no técnica.
+
+### 3 ter. La carilla de resumen del informe, y dos defectos que aparecieron al hacerla
+
+El informe de avances lleva ahora una **carilla de resumen en lenguaje llano en la página 2**, antes
+del índice, que es lo primero que lee el director: el problema, qué se propone, cómo se evaluó, qué
+salió, qué no salió, las tres diferencias con el plan de junio que necesitan su visto bueno, qué
+falta y a qué página ir. El documento pasó de 84 a **85 páginas numeradas**.
+
+Meterla al frente corrió toda la numeración en uno. No fueron ochenta y cuatro ediciones: los pies
+de la 3 a la 32 son literales, pero de la 33 al final los gobierna **un solo `pg = 33`** que
+veintiún `pg += 1` van avanzando. Las sustituciones se hicieron **en orden descendente**, porque
+ascendentes convertirían `pie(3)` en `pie(4)` y la pasada siguiente encontraría dos.
+
+Se instaló un **guardián** en el generador: la secuencia de pies del HTML ensamblado tiene que ser
+exactamente 2, 3, 4, …, N, sin huecos ni repetidos, y si no lo es **no escribe ni el HTML ni el
+PDF**. Se probó que discrimina reconstruyendo el defecto real —la carilla insertada sin renumerar— y
+abortó con `faltan [85] · repetidos [2]`, sin tocar el entregable. Y el **bloque 22** del verificador
+cierra la otra puerta: la carilla **no puede estrenar ninguna cifra**, todo decimal que cite tiene
+que aparecer con ese mismo redondeo en otra página del cuerpo, y cada remisión «sección N (pág. M)»
+tiene que caer en la página cuyo encabezado empieza con «N.».
+
+Dos defectos aparecieron en el camino:
+
+- **El Anexo 19 del informe salía con el nombre crudo del archivo**, «Triclobs_Kaptein_1123», donde
+  las otras diecinueve escenas llevan nombre legible. El diccionario `ESCENA` del generador seguía
+  nombrando el par corrupto retirado y no tenía el que lo sustituyó. El `.get(img, img)` no falla
+  nunca, así que nada lo delataba. El **bloque 21** ahora exige que los diccionarios de nombres de
+  escena cubran el corpus vivo y no nombren nada de afuera; sobre el diccionario de antes marca las
+  dos cosas.
+- El chequeo del índice leía la **segunda página física** en lugar de buscar el índice, así que al
+  meter la carilla empezó a leer el resumen e informó que el índice citaba «1 de los 37 comienzos de
+  sección». El fallo era del chequeo. Ahora la busca, y de paso comprueba que **el resumen venga
+  antes del índice**, que es su razón de ser.
 
 Y un defecto que el archivado destapó, ya corregido: **`make_reporte_optimos.py` escribía su PDF en
 `docs/`**, así que el documento archivado habría vuelto a aparecer arriba, con pinta de vigente, la
