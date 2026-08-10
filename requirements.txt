@@ -13,3 +13,13 @@ openpyxl>=3.1        # para exportar a Excel desde pandas
 torch>=2.0
 torchvision>=0.15
 ultralytics>=8.2     # YOLOv8: entrenamiento/eval mAP en LLVIP (experiments/detection_llvip)
+
+# Generacion y verificacion de los entregables. Faltaban las cinco, y sin ellas un clon recien
+# bajado no puede ni generar el informe ni correr los verificadores: fallaba con
+# ModuleNotFoundError. El bloque 19 de experiments/verificar_entregables.py comprueba desde ahora
+# que todo lo que el codigo importa este declarado aca.
+PyMuPDF>=1.24        # fitz: lee y anota los PDF (indice, pies, marcadores, verificadores)
+python-docx>=1.1     # edita el libro y lee su indice
+python-pptx>=1.0     # edita el deck y sus notas del orador
+Pillow>=10.0         # incrusta las figuras en el HTML del informe
+PyYAML>=6.0          # lee los args.yaml que deja cada corrida de YOLO

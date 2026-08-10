@@ -977,6 +977,41 @@ if _pend:
     print(f'  AVISO {len(_pend)} sin generador y con datos: {_pend}')
     avisos.append(f'figuras con datos y sin generador: {_pend}')
 
+# Todo paquete que el codigo importe tiene que estar en requirements.txt. El defecto que motiva el
+# bloque: faltaban CINCO —PyMuPDF, python-docx, python-pptx, Pillow y PyYAML— de modo que un clon
+# recien bajado no podia generar el informe ni correr estos verificadores. Fallaba con
+# ModuleNotFoundError, y no habia forma de enterarse sin probarlo en una maquina limpia.
+print('\n=== 19. requirements.txt declara todo lo que el codigo importa ===')
+_STDLIB = set('''os sys re json math time datetime pathlib collections itertools functools argparse
+subprocess shutil zipfile hashlib io copy random warnings unicodedata typing dataclasses glob
+statistics textwrap html csv traceback base64 xml multiprocessing urllib abc contextlib enum
+tempfile string operator pickle gzip struct threading queue logging inspect importlib'''.split())
+# nombre del modulo -> nombre del paquete en PyPI, cuando no coinciden
+_PAQ = {'cv2': 'opencv-python', 'skimage': 'scikit-image', 'PIL': 'Pillow', 'fitz': 'PyMuPDF',
+        'docx': 'python-docx', 'pptx': 'python-pptx', 'pywt': 'PyWavelets',
+        'sklearn': 'scikit-learn', 'yaml': 'PyYAML'}
+_req_txt = (RAIZ / 'requirements.txt').read_text(encoding='utf-8').lower()
+_imp = {}
+for _py in sorted(list((RAIZ / 'src').rglob('*.py')) + list((RAIZ / 'experiments').rglob('*.py'))):
+    for _m in re.finditer(r'^\s*(?:import|from)\s+([A-Za-z_]\w*)',
+                          _py.read_text(encoding='utf-8', errors='replace'), re.M):
+        _mod = _m.group(1)
+        if _mod in _STDLIB or _mod in ('src', 'experiments', '__future__'):
+            continue
+        _imp.setdefault(_PAQ.get(_mod, _mod), set()).add(_py.name)
+_nodecl = {p: sorted(v)[:3] for p, v in _imp.items() if p.lower() not in _req_txt}
+ok(not _nodecl, f'los {len(_imp)} paquetes importados estan en requirements.txt'
+                + (f' — SIN DECLARAR: {_nodecl}' if _nodecl else ''))
+# y que se puedan importar de verdad en este entorno
+_faltan_inst = []
+for _mod in ('fitz', 'docx', 'pptx', 'PIL', 'yaml', 'cv2', 'pandas', 'numpy'):
+    try:
+        __import__(_mod)
+    except ImportError:
+        _faltan_inst.append(_mod)
+ok(not _faltan_inst, 'los modulos criticos se importan en este entorno'
+                     + (f' — faltan {_faltan_inst}' if _faltan_inst else ''))
+
 # --------------------------------------------- resumen
 print(f'\n=== {len(fallos)} fallos · {len(avisos)} avisos ===')
 for f in fallos:
