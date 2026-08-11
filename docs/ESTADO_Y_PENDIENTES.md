@@ -2,13 +2,13 @@
 
 Punto de retomada. Todo lo que sigue está verificado; lo que no, está marcado como tal.
 
-## Lo primero al retomar: el deck tiene quince láminas pendientes, no cinco
+## Lo primero al retomar: quedan once láminas del deck
 
 El informe de avances **está listo para enviar** (85 páginas, cuatro verificadores en 0 fallos, con
 una carilla de resumen en lenguaje llano en la página 2). Lo que queda abierto es el deck de defensa.
 
 Se contrastó `Plan_Deck_Defensa.md` lámina por lámina contra el pptx real, y el resultado corrige lo
-que se venía diciendo: **quedan quince láminas con prescripciones sin aplicar**, no las cinco que se
+que se venía diciendo: eran **quince láminas con prescripciones sin aplicar**, no las cinco que se
 habían identificado. La estructura del plan sí está hecha —23 láminas, las cuatro nuevas existen, la
 14 y la 15 viejas están fundidas en la 18, los pies dicen «n / 22», las 23 tienen notas—; lo que
 falta es texto de cuerpo. En orden de gravedad:
@@ -17,8 +17,8 @@ falta es texto de cuerpo. En orden de gravedad:
 |---|---|
 | ~~**19**~~ | **HECHA el 11 de agosto.** Las nueve cajas pasaron a un cuadro único con **las siete hipótesis** a 11,5 pt, más la línea de pie. Ver abajo. |
 | ~~**21**~~ | **HECHA el 11 de agosto.** Los cinco párrafos «ANTES» pasaron a dos encabezados y nueve párrafos a 11 pt: las cuatro recomendaciones sobre el protocolo y el uso recomendado acotado. Ver abajo. |
-| **10** | La más atrasada; es el hallazgo n99. Sigue en dos columnas: falta la columna «Controles de la auditoría» que la lámina 4 promete, falta la línea de pie con las limitaciones, la columna C no menciona M3FD. Notas sin aplicar. |
-| **20** | Cinco párrafos con la arquitectura vieja de un solo aporte, donde el plan pide siete numeradas; no cierra con el aporte metodológico y las notas todavía dicen «Cinco conclusiones». |
+| ~~**10**~~ | **HECHA el 11 de agosto.** Tres columnas con los cuatro controles de la auditoría y la línea de pie con las cuatro limitaciones declaradas. Ver abajo. |
+| ~~**20**~~ | **HECHA el 11 de agosto.** Siete conclusiones numeradas —tres del primer aporte, cuatro del segundo— y cierre con el aporte metodológico. Ver abajo. |
 | **12** | Los valores de la tabla ya están bien, pero la tabla sigue con 6 columnas: proyecta EN, FE, SD, SF y SSIM y **no** proyecta MG, MI_vis, MI_ir ni PSNR, que son justo las cuatro que la prosa de cierre cita. La lámina se titula «por bloques» sin que se vea ningún bloque. |
 | **8** | `Text 2` conserva los cinco párrafos «ANTES» palabra por palabra. Ojo: el plan **no** reduce la cantidad de párrafos (antes y después son cinco); pliega la cita de Bala en el p2 y usa el hueco para la línea de la ablación. |
 | **9** | Al título le falta «(OE2 / H5)», y además faltan dos cosas: la declaración de que la aptitud se promedia sobre 3 de las 20 escenas que también integran el conjunto de evaluación, y el segundo párrafo de `Text 4` con la aptitud de la imagen base (`aptitud_operador_configs.csv` da 1,7583). |
@@ -32,10 +32,12 @@ falta es texto de cuerpo. En orden de gravedad:
 | **18** | `Text 2` tiene tres párrafos y falta el cuarto. **No es un olvido**: está registrado más abajo como diferimiento deliberado, porque el cuarto párrafo obliga a encoger la figura a ~69 % de su ancho. Se puede resolver acortando un párrafo en lugar de encoger la figura. |
 
 **Tres cosas que no hay que proyectar sin resolver antes.** (1) Las «13 escenas físicamente
-distintas» que el plan pide para las láminas 10 y 11 **no están en ningún CSV ni script**: la cifra
+distintas» que el plan pide para las láminas 10 y **11 no están en ningún CSV ni script**: la cifra
 aparece sólo en el plan, agrupando los 20 nombres salen 13 o 14 según si las dos tomas de
 `soldier_in_trench` cuentan como una escena, y encima el corpus cambió al sustituir el par corrupto.
-Si se quiere el número, hay que fijar y versionar el criterio de agrupamiento. (2) EN de Curvelet:
+Si se quiere el número, hay que fijar y versionar el criterio de agrupamiento. En la lámina 10 se
+resolvió diciendo la forma verificable —«hay series de hasta tres tomas de la misma escena»—; en la
+11 conviene hacer lo mismo. (2) EN de Curvelet:
 la fuente da 6,6445, el deck imprime 6,644 y el plan 6,645. (3) MI_ir de Curvelet: la fuente da
 0,6695 y el plan 0,670. Los dos últimos son fronteras de redondeo, hay que alinearlas con el
 generador de la tabla.
@@ -79,7 +81,45 @@ clásico (7,600)**. Recién con las diecisiete queda último (10,138). La lámin
 es mejor argumento: una métrica sola no alcanza, y por eso la cuarta recomendación pide el control
 negativo como requisito del benchmark.
 
-Dos cosas de mecánica que conviene recordar para las trece láminas que quedan. **Un `text_frame`
+### Láminas 10 y 20: hechas el 11 de agosto
+
+**Lámina 10.** El diseño experimental pasó de dos columnas a tres. La lámina 4 promete dos aportes, y
+el segundo es la auditoría del protocolo, pero el diseño experimental proyectaba sólo el benchmark de
+calidad y la detección: **los cuatro controles que sostienen el segundo aporte no aparecían en ninguna
+lámina**. Ahora hay una columna «Controles de la auditoría» con el control negativo, la ablación del
+banco, el ajuste simétrico y la sensibilidad del criterio, más una línea de pie con las cuatro
+limitaciones declaradas —CVT como wavelet db4, las series de tomas de la misma escena, la ausencia de
+partición de prueba en LLVIP y la única semilla—, que son las primeras preguntas previsibles de la
+mesa. Cierra el hallazgo **n99**.
+
+Dos apartamientos del plan, los dos a propósito. El plan escribe «Toet, 2014» y el deck dice **«Toet,
+2017»**, que es la entrada correcta. Y el plan pide decir «20 pares correspondientes a 13 escenas
+físicamente distintas»: **esa cifra no está en ningún archivo del repositorio**, sólo en el plan.
+Agrupando los veinte nombres por prefijo dan 13 grupos, pero uno junta `soldier_in_trench_1`
+(meting016) y `_2` (meting055), que son sesiones de medición distintas; contadas aparte son 14. Sin un
+criterio de agrupamiento versionado el número no se defiende, así que la lámina dice la forma que sí
+se verificó —hay series de hasta tres tomas de la misma escena— y las notas explican el 13 o 14 por si
+lo preguntan.
+
+De maquetación aparecieron dos cosas en el render. Los encabezados de una sola línea no alcanzan: el
+tercero, «Evaluación en tarea (dos experimentos)», se parte en dos y **su segunda línea se dibujaba
+encima del primer renglón del cuerpo**. Se les dio alto de dos renglones y los tres cuerpos arrancan
+a la misma altura. Y las columnas de 2.700.000 EMU que proponía el plan dejan calles de 43.200 EMU
+—menos de medio milímetro—, con lo que las tres se leen como un bloque: se usaron 2.600.000 con
+calles de 214.800, que suman el ancho útil exacto.
+
+**Lámina 20.** Las cinco conclusiones con la arquitectura de un solo aporte pasaron a **siete
+numeradas**: las tres primeras del operador y las cuatro del criterio, cerrando con el aporte
+metodológico, que es lo único de la tesis transferible a otro trabajo de fusión y el puente natural a
+la lámina 21.
+
+**Se corrigió otra cifra del plan.** Su conclusión 2 dice «a peso igualado la propuesta gana por
+0,683». Sale del cálculo defectuoso que este documento ya registra —el generador metía al clásico dos
+veces en el pool y diluía los siete rangos—. Se recalculó desde `control_tophat_igual_peso.csv`
+sustituyendo al clásico dentro del benchmark de siete: **3,528 frente a 3,694**. No copiar el 0,683 a
+ninguna lámina.
+
+Dos cosas de mecánica que conviene recordar para las once láminas que quedan. **Un `text_frame`
 siempre conserva su primer párrafo**, así que al vaciar un cuadro hay que quitarle también su
 `<a:pPr>`: si no, ese párrafo mantiene la viñeta y la sangría del original mientras los que crea
 `add_paragraph()` salen limpios, y la lámina queda con el primer renglón viñeteado y los demás no
