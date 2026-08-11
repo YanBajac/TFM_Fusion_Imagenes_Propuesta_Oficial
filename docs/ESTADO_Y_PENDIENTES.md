@@ -15,8 +15,8 @@ falta es texto de cuerpo. En orden de gravedad:
 
 | Lámina | Qué falta |
 |---|---|
-| **19** | La más grave. Sigue en la maqueta vieja de nueve cajas y proyecta **sólo tres hipótesis** (H1, H5, H6): H2, H3, H4 y H7 no aparecen, o sea que la lámina de contraste omite las del segundo aporte que las láminas 14 y 15 acaban de demostrar. Falta también la línea de pie. |
-| **21** | Cuerpo y notas son los «ANTES» íntegros. Las cuatro recomendaciones sobre el protocolo —lo que el plan llama el aporte transferible— no existen en el deck, y el cierre todavía dice «la propuesta es la opción recomendada» sin acotar el costo. |
+| ~~**19**~~ | **HECHA el 11 de agosto.** Las nueve cajas pasaron a un cuadro único con **las siete hipótesis** a 11,5 pt, más la línea de pie. Ver abajo. |
+| ~~**21**~~ | **HECHA el 11 de agosto.** Los cinco párrafos «ANTES» pasaron a dos encabezados y nueve párrafos a 11 pt: las cuatro recomendaciones sobre el protocolo y el uso recomendado acotado. Ver abajo. |
 | **10** | La más atrasada; es el hallazgo n99. Sigue en dos columnas: falta la columna «Controles de la auditoría» que la lámina 4 promete, falta la línea de pie con las limitaciones, la columna C no menciona M3FD. Notas sin aplicar. |
 | **20** | Cinco párrafos con la arquitectura vieja de un solo aporte, donde el plan pide siete numeradas; no cierra con el aporte metodológico y las notas todavía dicen «Cinco conclusiones». |
 | **12** | Los valores de la tabla ya están bien, pero la tabla sigue con 6 columnas: proyecta EN, FE, SD, SF y SSIM y **no** proyecta MG, MI_vis, MI_ir ni PSNR, que son justo las cuatro que la prosa de cierre cita. La lámina se titula «por bloques» sin que se vea ningún bloque. |
@@ -39,6 +39,53 @@ Si se quiere el número, hay que fijar y versionar el criterio de agrupamiento. 
 la fuente da 6,6445, el deck imprime 6,644 y el plan 6,645. (3) MI_ir de Curvelet: la fuente da
 0,6695 y el plan 0,670. Los dos últimos son fronteras de redondeo, hay que alinearlas con el
 generador de la tabla.
+
+### Láminas 19 y 21: hechas el 11 de agosto, y lo que aparecieron en el camino
+
+**Lámina 19.** Las nueve cajas (etiqueta + veredicto + cuerpo, por tres filas) no admiten siete
+filas, así que pasaron a un cuadro único con la geometría que ya usa la lámina 20, a 11,5 pt, que es
+el cuerpo de la lámina 18. Las siete hipótesis con su veredicto, más la línea de pie que separa las
+dos del operador (H1 y H7) de las cinco del criterio (H2 a H6). El render deja 17 pt de aire antes
+del pie.
+
+**Al verificar sus cifras apareció un defecto de fondo: el ρ = +0,214 de H6, que el deck ya
+proyectaba, no lo calculaba ningún script.** Vivía sólo en documentos de texto —el plan del deck y
+dos archivados—, y uno de ellos lo declara como pendiente de versionar («E5»). Una cifra sin
+generador es una cifra que nadie puede rehacer. Se escribió
+`experiments/run_correlacion_calidad_deteccion.py`, que recalcula la correlación de Spearman y de
+Kendall entre el rango medio de calidad de las siete fusiones y su mAP, con tres conjuntos de
+métricas (nueve, nueve sin FE, diecisiete) y dos medidas en LLVIP y M3FD: doce contrastes. **El
+valor del deck se confirmó**: ρ = 0,2143 con p = 0,6445. El script trae tres controles, y uno de
+ellos comprueba que su rango medio con las nueve coincide con `ranking_methods.csv`.
+
+**Y ese script encontró algo que conviene tener a mano en la defensa.** Con las nueve métricas
+reportadas ninguno de los cuatro contrastes es significativo, que es lo que sostiene H6. Pero con el
+conjunto ampliado de diecisiete, sobre el mAP@0,5:0,95 de M3FD, **sí aparece asociación y en la
+dirección esperada: ρ = −0,8929 con p = 0,0068**. Son doce contrastes sobre siete métodos, así que
+no sobrevive a la corrección por multiplicidad (Bonferroni 0,0816) y es una pista, no un resultado.
+Dice lo mismo que el control negativo: la batería de nueve no predice la utilidad y la ampliada
+apunta a que sí. Quedó escrito en las notas del orador de la lámina 19, con la advertencia de
+presentarlo así.
+
+**Lámina 21.** Los cinco párrafos «ANTES» pasaron a dos encabezados y nueve párrafos a 11 pt: las
+cuatro recomendaciones sobre el protocolo —el aporte transferible, que no estaba en ninguna lámina—
+y las cinco sobre el operador, con el uso recomendado acotado. Ya no dice «la propuesta es la opción
+recomendada» sin más: declara el costo en fidelidad y artefactos y nombra al líder de cada métrica.
+
+**Se corrigió una afirmación falsa del plan.** El plan pedía decir que «con Nabf el control negativo
+se corrige por completo». Se comprobó y **no es cierto**: al sumar Nabf el brazo de ruido con
+σ = 0,20 baja del 3.er al 7.º puesto de 14, pero **todavía le gana a Curvelet (7,525) y al Top-Hat
+clásico (7,600)**. Recién con las diecisiete queda último (10,138). La lámina dice eso, que además
+es mejor argumento: una métrica sola no alcanza, y por eso la cuarta recomendación pide el control
+negativo como requisito del benchmark.
+
+Dos cosas de mecánica que conviene recordar para las trece láminas que quedan. **Un `text_frame`
+siempre conserva su primer párrafo**, así que al vaciar un cuadro hay que quitarle también su
+`<a:pPr>`: si no, ese párrafo mantiene la viñeta y la sangría del original mientras los que crea
+`add_paragraph()` salen limpios, y la lámina queda con el primer renglón viñeteado y los demás no
+—se vio en el render de la 21—. Y **el bloque 9 compara contra el PDF comiteado del deck**, de modo
+que después de editar el `.pptx` hay que regenerar `docs/Tesis_Defensa_Presentacion.pdf` con
+LibreOffice o el chequeo informa, con razón, que los párrafos nuevos no llegan al PDF.
 
 **Y un aviso de maquetación.** Nueve de las quince láminas crecen en texto sobre recuadros que ya
 están llenos, y este deck tiene dos antecedentes de texto que no llega al PDF y de texto tapado por

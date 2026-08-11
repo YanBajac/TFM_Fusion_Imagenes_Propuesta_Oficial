@@ -1,0 +1,13 @@
+conjunto_metricas,n_metricas,dataset,medida_deteccion,n_fusiones,spearman_rho,spearman_p,kendall_tau,kendall_p,signo_esperado,signo_observado,apunta_como_se_esperaba,significativo_05,p_bonferroni,sobrevive_multiplicidad
+nueve,9,LLVIP,mAP50,7,0.2143,0.6445,0.1429,0.7726,negativo,positivo,False,False,1.0,False
+nueve,9,LLVIP,mAP50_95,7,0.3929,0.3833,0.2381,0.5619,negativo,positivo,False,False,1.0,False
+nueve,9,M3FD,mAP50,7,-0.1071,0.8192,-0.1429,0.7726,negativo,negativo,True,False,1.0,False
+nueve,9,M3FD,mAP50_95,7,-0.3571,0.4316,-0.3333,0.3813,negativo,negativo,True,False,1.0,False
+nueve_sin_FE,8,LLVIP,mAP50,7,-0.0357,0.9394,-0.0476,1.0,negativo,negativo,True,False,1.0,False
+nueve_sin_FE,8,LLVIP,mAP50_95,7,0.6429,0.1194,0.4286,0.2389,negativo,positivo,False,False,1.0,False
+nueve_sin_FE,8,M3FD,mAP50,7,-0.5,0.2532,-0.3333,0.3813,negativo,negativo,True,False,1.0,False
+nueve_sin_FE,8,M3FD,mAP50_95,7,-0.7143,0.0713,-0.5238,0.1361,negativo,negativo,True,False,0.8556,False
+diecisiete,17,LLVIP,mAP50,7,-0.4286,0.3374,-0.3333,0.3813,negativo,negativo,True,False,1.0,False
+diecisiete,17,LLVIP,mAP50_95,7,0.6429,0.1194,0.5238,0.1361,negativo,positivo,False,False,1.0,False
+diecisiete,17,M3FD,mAP50,7,-0.7143,0.0713,-0.619,0.069,negativo,negativo,True,False,0.8556,False
+diecisiete,17,M3FD,mAP50_95,7,-0.8929,0.0068,-0.8095,0.0107,negativo,negativo,True,True,0.0816,False
