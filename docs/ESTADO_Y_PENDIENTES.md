@@ -2,7 +2,7 @@
 
 Punto de retomada. Todo lo que sigue está verificado; lo que no, está marcado como tal.
 
-## Lo primero al retomar: quedan once láminas del deck
+## Lo primero al retomar: quedan ocho láminas del deck
 
 El informe de avances **está listo para enviar** (85 páginas, cuatro verificadores en 0 fallos, con
 una carilla de resumen en lenguaje llano en la página 2). Lo que queda abierto es el deck de defensa.
@@ -19,9 +19,9 @@ falta es texto de cuerpo. En orden de gravedad:
 | ~~**21**~~ | **HECHA el 11 de agosto.** Los cinco párrafos «ANTES» pasaron a dos encabezados y nueve párrafos a 11 pt: las cuatro recomendaciones sobre el protocolo y el uso recomendado acotado. Ver abajo. |
 | ~~**10**~~ | **HECHA el 11 de agosto.** Tres columnas con los cuatro controles de la auditoría y la línea de pie con las cuatro limitaciones declaradas. Ver abajo. |
 | ~~**20**~~ | **HECHA el 11 de agosto.** Siete conclusiones numeradas —tres del primer aporte, cuatro del segundo— y cierre con el aporte metodológico. Ver abajo. |
-| **12** | Los valores de la tabla ya están bien, pero la tabla sigue con 6 columnas: proyecta EN, FE, SD, SF y SSIM y **no** proyecta MG, MI_vis, MI_ir ni PSNR, que son justo las cuatro que la prosa de cierre cita. La lámina se titula «por bloques» sin que se vea ningún bloque. |
-| **8** | `Text 2` conserva los cinco párrafos «ANTES» palabra por palabra. Ojo: el plan **no** reduce la cantidad de párrafos (antes y después son cinco); pliega la cita de Bala en el p2 y usa el hueco para la línea de la ablación. |
-| **9** | Al título le falta «(OE2 / H5)», y además faltan dos cosas: la declaración de que la aptitud se promedia sobre 3 de las 20 escenas que también integran el conjunto de evaluación, y el segundo párrafo de `Text 4` con la aptitud de la imagen base (`aptitud_operador_configs.csv` da 1,7583). |
+| ~~**12**~~ | **HECHA el 11 de agosto.** Tabla de diez columnas con las nueve métricas, los dos bloques rotulados, y de paso se corrigió un desborde que venía de antes. Ver abajo. |
+| ~~**8**~~ | **HECHA el 11 de agosto.** Los cinco párrafos reescritos: la cita de Bala plegada en la novedad y el renglón liberado con el aporte del banco aislado. Ver abajo. |
+| ~~**9**~~ | **HECHA el 11 de agosto.** Título con «(OE2 / H5)», declarada la circularidad del conjunto de ajuste y agregada la aptitud de la imagen base, con una acotación que el plan no tenía. Ver abajo. |
 | **3** | Falta el párrafo del segundo problema, en la lámina que se titula «dos preguntas, no una»: hoy plantea sólo la primera. Notas sin aplicar. |
 | **4** | Falta el párrafo «Pregunta central», que es el único enunciado explícito de la pregunta de investigación en todo el deck. |
 | **13** | Dos omisiones chicas y reales: «y dos no significativos» (sin eso el desglose no cierra las 20 comparaciones: 17 + 1 = 18) y la frase que descuenta FE de las dimensiones independientes. |
@@ -119,7 +119,53 @@ veces en el pool y diluía los siete rangos—. Se recalculó desde `control_top
 sustituyendo al clásico dentro del benchmark de siete: **3,528 frente a 3,694**. No copiar el 0,683 a
 ninguna lámina.
 
-Dos cosas de mecánica que conviene recordar para las once láminas que quedan. **Un `text_frame`
+### Láminas 12, 8 y 9: hechas el 11 de agosto, y un chequeo nuevo
+
+**Lámina 12.** Se titulaba «Resultados cuantitativos por bloques» y no se veía ningún bloque: la
+tabla proyectaba cinco métricas y su prosa de cierre citaba MG 0,0355, MI_vis, MI_ir y PSNR, **cuatro
+cifras que el tribunal no tenía a la vista**. Es el peor caso en una lámina de resultados: el orador
+nombra números que la pantalla no muestra. Ahora la tabla tiene diez columnas con las nueve métricas,
+y los dos bloques se marcan **dos veces** —un rótulo centrado sobre cada grupo de columnas y dos tonos
+de gris en las cabeceras— por si la proyección pierde el matiz. El script **lee las celdas del CSV** en
+vez de tenerlas escritas, y calcula las negritas con la dirección de cada métrica tomada de
+`src/metrics/evaluators.py`: así ni los valores ni el «cuál es el mejor» pueden quedar viejos.
+
+**Y apareció un defecto que ningún chequeo veía, anterior a este trabajo.** El último renglón de la
+prosa de cierre de la lámina 12 **se dibujaba en y = 408,9 pt sobre una lámina de 405**, o sea fuera
+de la lámina: en la proyección el cierre de la lámina de resultados simplemente no estaba. El bloque 9
+no lo detecta porque comprueba que el texto **llegue** al PDF, y llegaba — LibreOffice lo dibuja
+igual, pasado el borde. Se descubrió mirando el render. Se agregó el **bloque 23**, que exige que
+ningún bloque de texto de ninguna lámina pase el borde; se probó que discrimina corriéndolo contra el
+PDF comiteado de antes, donde marca la lámina 12, y contra el de ahora, donde pasa. Se barrieron las
+23 láminas: era la única.
+
+**Lámina 8.** Los cinco párrafos eran los «ANTES» del plan palabra por palabra. La cita de Bala se
+plegó dentro de la viñeta de la novedad, que es de donde viene el esquema, y el renglón liberado ahora
+dice el **aporte de la suma aislado en la ablación**: mejor de los seis brazos con las nueve métricas,
+**cuarto con las diecisiete**, y duplica la tasa de artefactos del disco único (Nabf 0,374 frente a
+0,185; la razón es 2,02, así que va «duplica» y no «casi duplica»). Se precisó también que el máximo
+opera **entre fuentes** y no entre las ramas del banco, que es la confusión más fácil de cometer
+mirando el flujograma.
+
+**Lámina 9.** Título con el sufijo «(OE2 / H5)»; declarada la circularidad del ajuste —la aptitud se
+promedia sobre 3 de las 20 escenas que **también** integran el conjunto de evaluación, sin partición
+separada—; y agregada la comparación con la imagen base.
+
+**Se corrigió otra afirmación del plan, y esta importa.** El plan pide decir «en la propia aptitud, no
+aplicar el operador puntúa mejor que aplicarlo: la base obtiene F_o = 1,7583, por encima de 1,7350 y
+de 1,7057». Sin acotar **es falso**: `aptitud_operador_configs.csv` muestra que la propuesta con
+m = 0,0703 alcanza 1,7715 y el clásico reoptimizado 1,7715, los dos **por encima** de la base. La
+afirmación vale **dentro del rango publicado**, y así quedó escrita. Con la acotación el argumento es
+más fuerte, porque muestra que lo que produce el resultado es el rango heredado.
+
+De maquetación, la 9 dio dos cosas. Al crecer el p0 con la circularidad, el p1 se fue **fuera de la
+lámina** (y = 406,5): se subió el recuadro a 2.620.000 —justo debajo de la ecuación de F_o— y se le
+quitaron «(1,7350)» y «1,7057», que ahora los dice el recuadro de la derecha en la misma lámina. Y los
+**dos cuadros de la lámina estaban pegados sin calle**: el izquierdo terminaba exactamente donde
+arranca el derecho, y con el texto llegando al borde quedaban 1,7 pt de aire. Se angostó el izquierdo
+a 4.350.000 y se bajó medio punto el cuerpo; la calle real quedó en 20,5 pt.
+
+Dos cosas de mecánica que conviene recordar para las ocho láminas que quedan. **Un `text_frame`
 siempre conserva su primer párrafo**, así que al vaciar un cuadro hay que quitarle también su
 `<a:pPr>`: si no, ese párrafo mantiene la viñeta y la sangría del original mientras los que crea
 `add_paragraph()` salen limpios, y la lámina queda con el primer renglón viñeteado y los demás no

@@ -1029,6 +1029,34 @@ for _mod in ('fitz', 'docx', 'pptx', 'PIL', 'yaml', 'cv2', 'pandas', 'numpy'):
 ok(not _faltan_inst, 'los modulos criticos se importan en este entorno'
                      + (f' — faltan {_faltan_inst}' if _faltan_inst else ''))
 
+# --------------------------------------------- 23. texto del deck dibujado FUERA de la lamina
+# POR QUE, Y EN QUE SE DIFERENCIA DEL BLOQUE 9. El 9 comprueba que el texto de cada shape LLEGUE al
+# PDF, y con eso atrapa lo que LibreOffice recorta del todo. Pero hay un caso que deja pasar: el
+# texto que SI se dibuja y queda pasado el borde de la lamina. Entra en la capa de texto del PDF —de
+# modo que el bloque 9 lo encuentra y da por bueno— y en la proyeccion no esta.
+#
+# Paso de verdad y estuvo asi mucho tiempo: el ultimo renglon de la prosa de cierre de la lamina 12
+# se dibujaba en y = 408,9 pt sobre una lamina de 405, o sea que el tribunal no veia el cierre de la
+# lamina de resultados. Se descubrio mirando el render, no con un chequeo.
+#
+# El margen de 1 pt es tolerancia de redondeo de la extraccion, no holgura de diseño.
+print('\n=== 23. texto del deck dentro de los limites de la lamina ===')
+if 'deck' in DOCUMENTOS:
+    with fitz.open(str(DOCUMENTOS['deck']['ruta'])) as _d:
+        _afuera = []
+        for _i, _pg in enumerate(_d, start=1):
+            _bl = [_b for _b in _pg.get_text('blocks') if _b[4].strip()]
+            if not _bl:
+                continue
+            _abajo = max(_b[3] for _b in _bl)
+            _dcha = max(_b[2] for _b in _bl)
+            if _abajo > _pg.rect.height - 1 or _dcha > _pg.rect.width - 1:
+                _peor = max(_bl, key=lambda _b: _b[3])
+                _afuera.append((_i, round(_abajo, 1), round(_pg.rect.height, 1),
+                                re.sub(r'\s+', ' ', _peor[4]).strip()[-40:]))
+        ok(not _afuera, f'en las {_d.page_count} laminas ningun texto se sale del borde'
+                        + (f' — {_afuera[:3]}' if _afuera else ''))
+
 # --------------------------------------------- 22. la carilla de resumen no introduce cifras nuevas
 # POR QUE. La pagina 2 es un resumen en lenguaje llano, y es lo primero que lee el director. Es
 # tambien el lugar donde una cifra mal copiada hace mas daño: quien la lee ahi no va a ir a buscarla
