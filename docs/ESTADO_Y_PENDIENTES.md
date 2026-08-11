@@ -2,16 +2,18 @@
 
 Punto de retomada. Todo lo que sigue está verificado; lo que no, está marcado como tal.
 
-## Lo primero al retomar: quedan ocho láminas del deck
+## El deck quedó al día: las quince láminas aplicadas
 
 El informe de avances **está listo para enviar** (85 páginas, cuatro verificadores en 0 fallos, con
-una carilla de resumen en lenguaje llano en la página 2). Lo que queda abierto es el deck de defensa.
+una carilla de resumen en lenguaje llano en la página 2). Y el deck de defensa quedó al día: las
+quince láminas con prescripciones sin aplicar están aplicadas, con los apartamientos razonados que se
+detallan abajo.
 
 Se contrastó `Plan_Deck_Defensa.md` lámina por lámina contra el pptx real, y el resultado corrige lo
 que se venía diciendo: eran **quince láminas con prescripciones sin aplicar**, no las cinco que se
 habían identificado. La estructura del plan sí está hecha —23 láminas, las cuatro nuevas existen, la
 14 y la 15 viejas están fundidas en la 18, los pies dicen «n / 22», las 23 tienen notas—; lo que
-falta es texto de cuerpo. En orden de gravedad:
+faltaba era texto de cuerpo. En orden de gravedad, y todas hechas:
 
 | Lámina | Qué falta |
 |---|---|
@@ -22,14 +24,18 @@ falta es texto de cuerpo. En orden de gravedad:
 | ~~**12**~~ | **HECHA el 11 de agosto.** Tabla de diez columnas con las nueve métricas, los dos bloques rotulados, y de paso se corrigió un desborde que venía de antes. Ver abajo. |
 | ~~**8**~~ | **HECHA el 11 de agosto.** Los cinco párrafos reescritos: la cita de Bala plegada en la novedad y el renglón liberado con el aporte del banco aislado. Ver abajo. |
 | ~~**9**~~ | **HECHA el 11 de agosto.** Título con «(OE2 / H5)», declarada la circularidad del conjunto de ajuste y agregada la aptitud de la imagen base, con una acotación que el plan no tenía. Ver abajo. |
-| **3** | Falta el párrafo del segundo problema, en la lámina que se titula «dos preguntas, no una»: hoy plantea sólo la primera. Notas sin aplicar. |
-| **4** | Falta el párrafo «Pregunta central», que es el único enunciado explícito de la pregunta de investigación en todo el deck. |
-| **13** | Dos omisiones chicas y reales: «y dos no significativos» (sin eso el desglose no cierra las 20 comparaciones: 17 + 1 = 18) y la frase que descuenta FE de las dimensiones independientes. |
-| **1** | El subtítulo de la portada sigue diciendo «Una propuesta… optimizada por PSO», el encuadre de un solo aporte que sus propias notas ya desmienten. |
-| **2** | El punto 7 del índice sin su subtítulo, y notas sin aplicar. |
-| **11** | El pie de la lámina cualitativa es el «ANTES», de una línea. |
-| **23** | El plan **no** manda retirar el título: manda reemplazarlo por «Reserva — M3FD: dos escenas de la validación». |
-| **18** | `Text 2` tiene tres párrafos y falta el cuarto. **No es un olvido**: está registrado más abajo como diferimiento deliberado, porque el cuarto párrafo obliga a encoger la figura a ~69 % de su ancho. Se puede resolver acortando un párrafo en lugar de encoger la figura. |
+| ~~**3**~~ | **HECHA el 11 de agosto.** Agregado el párrafo del segundo problema, que es lo que le da sentido al título. |
+| ~~**4**~~ | **HECHA el 11 de agosto.** Agregada la «Pregunta central». |
+| ~~**13**~~ | **HECHA el 11 de agosto.** El desglose de fidelidad cierra las 20 comparaciones y el p5 descuenta FE: cinco de ocho dimensiones. |
+| ~~**1**~~ | **HECHA el 11 de agosto.** Subtítulo con los dos aportes, y de paso se fue un error de tipeo: decía «de **diso** y lineales». |
+| ~~**2**~~ | **HECHA el 11 de agosto.** El punto 7 con su subtítulo y las notas con el corte entre los dos aportes. |
+| ~~**11**~~ | **HECHA el 11 de agosto.** Pie de dos líneas que dice qué mirar y conecta con el análisis cuantitativo. |
+| ~~**23**~~ | **HECHA el 11 de agosto.** «Reserva — M3FD: dos escenas de la validación (conf ≥ 0,30)». |
+| ~~**18**~~ | **HECHA el 11 de agosto.** El cuarto párrafo con el veredicto de H6, con la figura al 85 % y no al 69 % que se temía. |
+
+**Con esto el deck queda con las quince láminas al día.** Lo único que no se aplicó de
+`Plan_Deck_Defensa.md` son las prescripciones que el propio trabajo dejó atrás, listadas más abajo, y
+las tres cifras que no se pueden verificar.
 
 **Tres cosas que no hay que proyectar sin resolver antes.** (1) Las «13 escenas físicamente
 distintas» que el plan pide para las láminas 10 y **11 no están en ningún CSV ni script**: la cifra
@@ -165,7 +171,54 @@ quitaron «(1,7350)» y «1,7057», que ahora los dice el recuadro de la derecha
 arranca el derecho, y con el texto llegando al borde quedaban 1,7 pt de aire. Se angostó el izquierdo
 a 4.350.000 y se bajó medio punto el cuerpo; la calle real quedó en 20,5 pt.
 
-Dos cosas de mecánica que conviene recordar para las ocho láminas que quedan. **Un `text_frame`
+### Las ocho últimas: 1, 2, 3, 4, 11, 13, 18 y 23, hechas el 11 de agosto
+
+Las cuatro que tenían un párrafo faltante son las que más cambian el sentido de su lámina. La **3** se
+titulaba «dos preguntas, no una» y planteaba sólo la primera; ahora enuncia el segundo problema, que
+es la falta de imagen de referencia y las métricas «mayor es mejor» con los hiperparámetros elegidos
+sobre ellas mismas. La **4** ganó la «Pregunta central», que era **el único enunciado explícito de la
+pregunta de investigación en todo el deck** y no estaba en ninguna parte. La **13** cerró dos cuentas
+que quedaban abiertas a la vista: sin «y dos no significativos» el desglose del bloque de fidelidad
+daba 18 de 20, y sin la frase que descuenta FE el deck decía «6 de las 9» dos láminas después de haber
+demostrado que FE no es una dimensión independiente —son **cinco de ocho**—. Y la **18** por fin lleva
+el veredicto de H6.
+
+La **portada** anunciaba un solo aporte, «Una propuesta… optimizada por PSO», que la lámina 4 desmonta
+y que sus propias notas ya corregían. **Y traía un error de tipeo: «de diso y lineales».** En la
+portada de una defensa. Se fue con el reemplazo.
+
+La **23** dejó de titularse «La prueba visual»: llamar «prueba» a dos escenas es exactamente el
+razonamiento anecdótico que el segundo aporte desarma, y así lo dice el §5 del plan.
+
+**El párrafo de la 18 no necesitaba encoger la figura al 69 %.** Estaba diferido por eso. Se intentó
+primero sin tocarla, acortando el p0 y omitiendo el «margen de 0,004» que el plan ofrecía como
+opcional —el p1 ya dice 0,622 contra 0,618, así que el margen se lee solo—, pero el veredicto entrába
+al PDF a medias: LibreOffice recortaba «no la hipótesis. Es un resultado del trabajo, no una
+limitación», que es justo el caso que el bloque 9 está puesto para atrapar. Con la figura al **85 %**,
+manteniendo centro y proporción, entra completo y sobran 15 pt.
+
+En la 18 se usó la formulación de la lámina 19 y no la del plan, que escribe «queda RECHAZADA» a
+secas: eso contradice a la 19, que dice «lo que queda rechazado es la traslación de la calidad a la
+tarea, no la hipótesis». En la 11 se omitió «correspondientes a 13 escenas distintas», por el mismo
+motivo que en la 10.
+
+### Y el bloque 10 y una debilidad del verificador
+
+El **bloque 10** marcó que el párrafo nuevo de la lámina 3 quedaba **1,1 pt por debajo de la figura**:
+el texto terminaba en y = 242,3 y la figura arranca en 241,2. Se bajó el cuerpo a 11,5 pt y quedan
+4,5 pt de aire.
+
+Y apareció algo peor, en el verificador mismo. Al publicar la tabla de diez columnas de la lámina 12
+—que trae MI_vis de la Ratio Pyramid = 0,949— el aviso de los mAP de LLVIP pasó de reclamar tres
+métodos a reclamar uno. **Parecía una mejora y no lo era**: `contiene()` hacía `v in t` a secas, y las
+variantes de dos decimales son cortas, así que la búsqueda de «0,94» (Curvelet 0,9403 y DWT 0,9394)
+quedaba satisfecha por el «0,949» de otra métrica. El chequeo se estaba aflojando solo. Ahora
+`contiene()` exige que el número aparezca **como cifra entera**: ni un dígito ni un separador seguido
+de dígito antes o después. Se probó con doce casos límite, y el discriminador **encontró un error de
+índice** en la primera versión —con un solo carácter después del número se salía del string—. El aviso
+volvió a marcar los tres que de verdad faltan.
+
+Dos cosas de mecánica que conviene recordar si se vuelve a tocar el deck. **Un `text_frame`
 siempre conserva su primer párrafo**, así que al vaciar un cuadro hay que quitarle también su
 `<a:pPr>`: si no, ese párrafo mantiene la viñeta y la sangría del original mientras los que crea
 `add_paragraph()` salen limpios, y la lámina queda con el primer renglón viñeteado y los demás no
@@ -173,7 +226,7 @@ siempre conserva su primer párrafo**, así que al vaciar un cuadro hay que quit
 que después de editar el `.pptx` hay que regenerar `docs/Tesis_Defensa_Presentacion.pdf` con
 LibreOffice o el chequeo informa, con razón, que los párrafos nuevos no llegan al PDF.
 
-**Y un aviso de maquetación.** Nueve de las quince láminas crecen en texto sobre recuadros que ya
+**Y el aviso de maquetación, que se cumplió.** Nueve de las quince láminas crecían en texto sobre recuadros que ya
 están llenos, y este deck tiene dos antecedentes de texto que no llega al PDF y de texto tapado por
 una figura. Después de **cada** edición hay que correr los bloques 9 y 10 de
 `verificar_entregables.py`.

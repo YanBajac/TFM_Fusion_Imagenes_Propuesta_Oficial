@@ -89,9 +89,32 @@ ok(not faltan, f'los cuatro entregables existen (faltan: {faltan or "ninguno"})'
 
 
 def contiene(clave, *variantes):
-    """True si alguna variante aparece en el documento."""
+    """True si alguna variante aparece en el documento COMO CIFRA ENTERA, no como subcadena.
+
+    La version anterior hacia `v in t` a secas, y eso da falsos positivos con las variantes de dos
+    decimales, que son cortas. Paso de verdad: al publicar la tabla de diez columnas de la lamina 12,
+    que trae MI_vis de la Ratio Pyramid = 0,949, el chequeo de los mAP de LLVIP dejo de reclamar
+    Curvelet (0,9403) y DWT (0,9394), porque los dos buscaban «0,94» y «0,949» lo contiene. El aviso
+    paso de tres metodos faltantes a uno y parecia una mejora: no lo era, era el chequeo aflojandose.
+
+    Ahora se exige que ni antes ni despues del numero haya otro digito, ni un separador decimal
+    seguido de digito. Asi «0,94» ya no se satisface con «0,949» ni con «10,94», y sigue encontrandose
+    en «0,94 » o «(0,94)».
+    """
     t = DOCUMENTOS[clave]['texto']
-    return any(v in t for v in variantes)
+    for v in variantes:
+        for m in re.finditer(re.escape(v), t):
+            antes, desp = t[:m.start()], t[m.end():]
+            if antes and antes[-1].isdigit():
+                continue                                 # es la cola de un numero mas largo
+            if len(antes) >= 2 and antes[-1] in ',.' and antes[-2].isdigit():
+                continue                                 # p. ej. buscar «94» dentro de «0,94»
+            if desp and desp[0].isdigit():
+                continue                                 # tiene mas decimales
+            if len(desp) >= 2 and desp[0] in ',.' and desp[1].isdigit():
+                continue                                 # es la parte entera de otro numero
+            return True
+    return False
 
 
 # --------------------------------------------- 1. medias del benchmark
