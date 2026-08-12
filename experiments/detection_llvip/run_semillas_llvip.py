@@ -52,6 +52,17 @@ def pesos_semilla_cero(metodo):
     return c[-1] if c else None
 
 
+def pesos_existentes(metodo, semilla):
+    """Pesos ya entrenados de este par, si estan en disco.
+
+    Se busca con glob y no con una ruta armada, porque ultralytics resuelve «project» bajo su
+    settings.runs_dir y el nivel intermedio depende de esa configuracion.
+    """
+    c = sorted(RAIZ.glob(f'runs/**/llvip_semillas/{metodo}_s{semilla}/weights/last.pt'),
+               key=lambda p: p.stat().st_mtime)
+    return c[-1] if c else None
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--semillas', default='0,1,2,3,4')
@@ -103,15 +114,30 @@ def main():
             model = YOLO(str(w))
             entrenada = False
         else:
-            model = YOLO(a.model)
-            model.train(data=str(data), epochs=a.epochs, imgsz=a.imgsz, batch=a.batch,
-                        seed=s, deterministic=True, project='runs/llvip_semillas',
-                        name=f'{m}_s{s}', exist_ok=True, verbose=False, plots=False,
-                        device=a.device)
-            w = RAIZ / 'runs' / 'llvip_semillas' / f'{m}_s{s}' / 'weights' / 'last.pt'
-            if not w.exists():
-                print(f'[AVISO] no aparecio {w}; salto')
-                continue
+            # Si el entrenamiento de este par ya esta en disco, se REUSA en lugar de repetirlo. Pasa
+            # cuando el proceso se corta despues de entrenar y antes de escribir el CSV, y cuando algo
+            # falla al buscar los pesos: sin esto, una corrida de veinte minutos ya hecha se tira.
+            w = pesos_existentes(m, s)
+            if w is not None:
+                print(f'  ya hay pesos entrenados en {w.parent.parent.name}: se reusan sin reentrenar')
+            else:
+                model = YOLO(a.model)
+                model.train(data=str(data), epochs=a.epochs, imgsz=a.imgsz, batch=a.batch,
+                            seed=s, deterministic=True, project='runs/llvip_semillas',
+                            name=f'{m}_s{s}', exist_ok=True, verbose=False, plots=False,
+                            device=a.device)
+                # La ruta se toma DEL PROPIO TRAINER y no se construye a mano: ultralytics resuelve
+                # «project» bajo su settings.runs_dir, que aca es runs/detect, de modo que la salida
+                # queda en runs/detect/runs/llvip_semillas/<metodo>_s<semilla>. Una ruta armada a mano
+                # no la encuentra, y la primera version de este script tiro por eso un entrenamiento
+                # completo de dieciocho minutos con un «no aparecio; salto».
+                sd = Path(getattr(model.trainer, 'save_dir', '')) if model.trainer else None
+                w = (sd / 'weights' / 'last.pt') if sd else None
+                if w is None or not w.exists():
+                    w = pesos_existentes(m, s)
+                if w is None:
+                    print(f'[AVISO] no se encontraron los pesos de {m} s{s} tras entrenar; salto')
+                    continue
             model = YOLO(str(w))
             entrenada = True
 
@@ -136,8 +162,11 @@ def main():
               f'~{resta / 3600:.1f} h', flush=True)
 
     d = pd.DataFrame(filas)
+    if not len(d):
+        print('\n===== ninguna corrida completada =====')
+        return 1
     print(f'\n===== {len(d)} corridas en total, {d.semilla.nunique()} semillas =====')
-    if len(d) and d.semilla.nunique() > 1:
+    if d.semilla.nunique() > 1:
         r = d.groupby('method').agg(
             n=('mAP50', 'size'), mAP50_media=('mAP50', 'mean'), mAP50_desv=('mAP50', 'std'),
             mAP50_min=('mAP50', 'min'), mAP50_max=('mAP50', 'max')).round(4)
