@@ -1,6 +1,36 @@
-# Estado y pendientes — 10 de agosto de 2026
+# Estado y pendientes — 12 de agosto de 2026
 
 Punto de retomada. Todo lo que sigue está verificado; lo que no, está marcado como tal.
+
+## En curso: las cinco semillas de LLVIP
+
+Se está corriendo el único experimento que puede cambiar una conclusión. Los dos experimentos de
+detección usan **una sola semilla** por entrada, y las siete fusiones se apilan en centésimas con una
+distancia mínima de 0,0001: sin repeticiones no hay forma de separar el orden entre ellas del ruido de
+inicialización. El informe lo declara dos veces, que es honesto, pero declararlo no vuelve defendible
+el orden.
+
+`experiments/detection_llvip/run_semillas_llvip.py` entrena las nueve entradas con las semillas 1 a 4
+—la 0 es la corrida publicada, cuyos pesos están en disco y sólo se re-evalúan— y deja cada resultado
+como una fila `(método, semilla)`. **Medido en el piloto: ~31 s por época, ~21 min por corrida, unas
+12,5 h para las 36.** Es reanudable y **escribe el CSV después de cada corrida**, así que una caída
+cuesta una sola.
+
+Dos cosas que `train_eval_llvip.py` no permitía hacer con `--seed`, y las dos en silencio: entrena con
+`name=<método>` y `exist_ok=True`, de modo que una segunda semilla **sobreescribe los pesos** de la
+primera; y escribe en un CSV indexado por método, que **reemplaza la fila** anterior y pierde el
+resultado. De ahí el script nuevo en lugar de un bucle sobre el existente.
+
+`experiments/run_analisis_semillas_llvip.py` es el análisis, ya escrito y esperando los datos. Compara
+**pareado por semilla** —cada semilla es un bloque, igual que el resto del trabajo rankea dentro de
+cada par de imágenes— y reporta lo que corresponde: no cuál gana, sino **cuáles diferencias son
+distinguibles**. Con cinco bloques el Wilcoxon pareado tiene un p mínimo alcanzable de 1/16 = 0,0625,
+así que **ninguna comparación individual entre fusiones puede dar significativa al 5 % ni en el mejor
+caso**. Eso no es un defecto del análisis: es la resolución que dan cinco semillas, y hay que decirlo
+así en lugar de presentar un orden.
+
+Cuando termine hay que decidir, con los números a la vista, si el informe y el libro pasan de «una sola
+semilla, el orden entre fusiones no es interpretable» a un enunciado con la dispersión medida.
 
 ## El deck quedó al día: las quince láminas aplicadas
 

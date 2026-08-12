@@ -376,6 +376,11 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 │   ├── run_correlacion_calidad_deteccion.py # ¿el orden de calidad predice el mAP? (H6)
 │   ├── run_escenas_distintas.py    # Cuántas escenas físicas hay en los 20 pares, con el criterio
 │   │                               #   tomado de la estructura de carpetas del TNO
+│   ├── run_analisis_semillas_llvip.py # Qué diferencias de mAP sobreviven al cambio de semilla
+│   ├── detection_llvip/
+│   │   ├── prepare_llvip.py        #   Arma los datasets llvip_<método> a partir de las fusiones
+│   │   ├── train_eval_llvip.py     #   Entrena una semilla por entrada (la corrida publicada)
+│   │   └── run_semillas_llvip.py   #   Repite el entrenamiento con varias semillas, reanudable
 │   ├── run_saturacion_vs_m.py      # Recorte por saturación en función de m
 │   ├── run_complementariedad_escenas.py # Conteo por escena en M3FD (232 escenas, H6)
 │   ├── make_montajes_cualitativos.py # 20 montajes por escena (propuesta en rojo)
