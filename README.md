@@ -371,6 +371,11 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 │   ├── run_control_negativo.py     # Auditoría: ruido y desenfoque en el ranking (H3)
 │   ├── run_ablacion_banco.py       # Auditoría: los 6 brazos del banco a (r, m) fijos (H7)
 │   ├── run_ajuste_comparativos.py  # Auditoría: ajuste simétrico de los comparativos
+│   ├── run_ranking_mas_nabf.py     # Auditoría: el ranking con las nueve + Nabf (la recomendación
+│   │                               #   del trabajo aplicada a su propio benchmark)
+│   ├── run_correlacion_calidad_deteccion.py # ¿el orden de calidad predice el mAP? (H6)
+│   ├── run_escenas_distintas.py    # Cuántas escenas físicas hay en los 20 pares, con el criterio
+│   │                               #   tomado de la estructura de carpetas del TNO
 │   ├── run_saturacion_vs_m.py      # Recorte por saturación en función de m
 │   ├── run_complementariedad_escenas.py # Conteo por escena en M3FD (232 escenas, H6)
 │   ├── make_montajes_cualitativos.py # 20 montajes por escena (propuesta en rojo)

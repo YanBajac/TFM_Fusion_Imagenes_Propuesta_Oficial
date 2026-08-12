@@ -37,16 +37,23 @@ faltaba era texto de cuerpo. En orden de gravedad, y todas hechas:
 `Plan_Deck_Defensa.md` son las prescripciones que el propio trabajo dejó atrás, listadas más abajo, y
 las tres cifras que no se pueden verificar.
 
-**Tres cosas que no hay que proyectar sin resolver antes.** (1) Las «13 escenas físicamente
-distintas» que el plan pide para las láminas 10 y **11 no están en ningún CSV ni script**: la cifra
-aparece sólo en el plan, agrupando los 20 nombres salen 13 o 14 según si las dos tomas de
-`soldier_in_trench` cuentan como una escena, y encima el corpus cambió al sustituir el par corrupto.
-Si se quiere el número, hay que fijar y versionar el criterio de agrupamiento. En la lámina 10 se
-resolvió diciendo la forma verificable —«hay series de hasta tres tomas de la misma escena»—; en la
-11 conviene hacer lo mismo. (2) EN de Curvelet:
-la fuente da 6,6445, el deck imprime 6,644 y el plan 6,645. (3) MI_ir de Curvelet: la fuente da
-0,6695 y el plan 0,670. Los dos últimos son fronteras de redondeo, hay que alinearlas con el
-generador de la tabla.
+**Dos cosas que no hay que proyectar sin resolver antes.** (1) EN de Curvelet: la fuente da 6,6445,
+el deck imprime 6,644 y el plan 6,645. (2) MI_ir de Curvelet: la fuente da 0,6695 y el plan 0,670.
+Los dos son fronteras de redondeo, hay que alinearlas con el generador de la tabla.
+
+**RESUELTO el 12 de agosto: las «13 escenas distintas» ya tienen generador.** Era el peor caso de los
+tres: el libro **afirmaba** el número, un chequeo de `verificar_libro.py` **exigía** el literal «trece
+escenas distintas», y ningún script lo calculaba — un control bloqueando una cifra que nadie podía
+rehacer. `experiments/run_escenas_distintas.py` fija el criterio sobre la **estructura de carpetas del
+TNO**, que es la que declara qué es una escena, y no sobre los nombres de par, que son una construcción
+de este proyecto: una carpeta con subcarpetas `view_N` es una escena con varias vistas (APC_1 y APC_3,
+tres cada una), y dos o más carpetas hoja hermanas que sólo difieren en un sufijo `_N` son tomas de la
+misma escena (`soldier_behind_smoke_1/2/3` y `soldier_in_trench_1/2`). **Da 13, así que el libro tenía
+razón.** La distinción hoja/carpeta-con-vistas es la que salva a APC_4, cuyo `_4` es parte del nombre
+del vehículo: la primera versión del script no la hacía y colapsó APC_1, APC_3 y APC_4 en una sola
+«escena APC», dando 11. El chequeo del libro ahora **lee el número del CSV** y pide la palabra
+correspondiente, de modo que si el corpus cambia el script falla primero. Y la lámina 11 del deck
+recuperó la cifra, que se había omitido justamente por no poder verificarla.
 
 ### Láminas 19 y 21: hechas el 11 de agosto, y lo que aparecieron en el camino
 

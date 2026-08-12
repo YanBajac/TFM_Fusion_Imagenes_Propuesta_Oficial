@@ -1,0 +1,8 @@
+method,rango_9,rango_9_mas_Nabf,Nabf_medio,puesto_9,puesto_9_mas_Nabf,cambio_de_puesto
+Propuesta_Novedosa,3.394,3.655,0.3742,1,2,1
+PiramideLaplace,3.911,3.62,0.1138,2,1,-1
+TopHat_Clasico,3.944,4.25,0.5857,3,5,2
+RatioPiramide,3.983,3.965,0.2242,4,4,0
+DTCWT,4.111,3.905,0.1593,5,3,-2
+DWT,4.211,4.265,0.2407,6,6,0
+Curvelet,4.444,4.34,0.2013,7,7,0

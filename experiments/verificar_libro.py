@@ -13,7 +13,14 @@ BASE = RAIZ / 'docs'
 REP = RAIZ / 'experiments' / 'results' / 'metrics_reports'
 doc = fitz.open(str(BASE / 'Tesis_Borrador_V3.pdf'))
 paginas = [p.get_text() for p in doc]
-txt = '\n'.join(paginas)
+# Se COLAPSAN los espacios y saltos antes de comparar. Diecisiete chequeos de este archivo buscan
+# frases literales en el texto, y la extraccion de PDF corta las lineas donde cae el renglon: basta
+# que una edicion reflowe un parrafo para que la frase se parta y el chequeo informe un defecto que
+# no existe. Paso: al nombrar las seis metricas de la Tabla 7 en lugar de llamarlas «clave», el
+# salto de linea cayo entre «global» y «(3,39)» y el control del primer puesto fallo con el libro
+# correcto. Nada de este archivo depende de los saltos dentro de txt —el indice se lee de
+# paginas[i].splitlines(), aparte—, asi que normalizar aca no debilita ningun otro control.
+txt = re.sub(r'\s+', ' ', '\n'.join(paginas))
 fallos = []
 
 
@@ -121,7 +128,21 @@ ok('Diseñar, implementar y caracterizar un operador' in txt,
 ok('ese promedio se suma a la respuesta del disco' in txt,
    'OE1 corrige la combinacion (suma, no maximo)')
 ok('Décimo,' in txt, 'las limitaciones llegan al decimo punto')
-ok('trece escenas distintas' in txt, 'declara las trece escenas del corpus')
+# El numero de escenas se LEE del CSV que lo calcula, no se escribe aca. Antes este chequeo exigia el
+# literal «trece escenas distintas» y con eso bloqueaba una cifra que ningun script producia: agrupar
+# los veinte nombres a ojo da 13 o 14 segun como se cuenten las dos tomas de soldier_in_trench, de modo
+# que el control estaba fijando una afirmacion sin respaldo. run_escenas_distintas.py fija el criterio
+# —la estructura de carpetas del TNO— y lo verifica; si el corpus cambia, ese script falla primero y
+# este chequeo pide la palabra nueva.
+_PALABRA = {11: 'once', 12: 'doce', 13: 'trece', 14: 'catorce', 15: 'quince', 16: 'dieciséis'}
+_esc = REP / 'escenas_distintas.csv'
+if _esc.exists():
+    _n = int(pd.read_csv(_esc).escena.nunique())
+    _pal = _PALABRA.get(_n, str(_n))
+    ok(f'{_pal} escenas distintas' in txt,
+       f'declara las {_pal} ({_n}) escenas que calcula run_escenas_distintas.py')
+else:
+    ok(False, 'falta escenas_distintas.csv: correr experiments/run_escenas_distintas.py')
 ok('aproximación mediante wavelet 2D' in txt, 'declara la aproximacion del CVT')
 
 # ---- 7. ecuaciones -------------------------------------------------------
