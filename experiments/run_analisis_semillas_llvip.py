@@ -75,19 +75,39 @@ def main():
     piv = d.pivot(index='semilla', columns='method', values='mAP50')
     piv95 = d.pivot(index='semilla', columns='method', values='mAP50_95')
     print(f'--- {len(d)} corridas · {piv.shape[0]} semillas × {piv.shape[1]} entradas')
-    completas = [c for c in piv.columns if piv[c].notna().all()]
-    if len(completas) < piv.shape[1]:
-        print(f'    AVISO: incompletas {sorted(set(piv.columns) - set(completas))}; '
-              f'se analizan las {len(completas)} completas')
-    piv, piv95 = piv[completas], piv95[completas]
-    n_sem = piv.shape[0]
+
+    # Se descartan las SEMILLAS incompletas, no los metodos. La comparacion es pareada por semilla, de
+    # modo que una semilla a la que le falte una entrada no forma bloque y no sirve para nada; en cambio
+    # una semilla completa sirve entera. Filtrar por metodo, que es lo que hacia la primera version,
+    # tiraba TODO en cuanto habia una semilla a medio correr: con los bloques 0, 1 y 2 completos y el 3
+    # a mitad, ningun metodo tiene todas las semillas y el analisis se quedaba sin datos.
+    # el pivot ya viene con las semillas en las FILAS y las entradas en las columnas, asi que se
+    # filtran filas. Transponerlo antes de filtrar era volver a filtrar metodos con otro nombre.
+    bloques = [s for s in piv.index if piv.loc[s].notna().all()]
+    parciales = {s: int(piv.loc[s].notna().sum()) for s in piv.index if s not in bloques}
+    if parciales:
+        print(f'    semillas incompletas, se dejan afuera del pareado: '
+              + ' · '.join(f'{s} ({n} de {piv.shape[1]})' for s, n in parciales.items()))
+    if not bloques:
+        print('    todavia no hay ninguna semilla completa: no se puede parear')
+        return 1
+    print(f'    semillas completas, usables para el pareado: {bloques}')
+    piv, piv95 = piv.loc[bloques], piv95.loc[bloques]
+    completas = list(piv.columns)
+    n_sem = len(bloques)
+
+    # La dispersion dentro de una entrada, en cambio, aprovecha TODAS sus corridas, tambien las de
+    # semillas incompletas: para eso no hace falta bloque.
+    todo = d.pivot(index='semilla', columns='method', values='mAP50')
+    print(f'    (la dispersion por entrada usa las {int(todo.notna().sum().sum())} corridas, '
+          f'incluidas las de semillas incompletas)')
 
     # ---------------------------------------------------------------- 1. cuanto se mueve cada entrada
     res = pd.DataFrame({
-        'n_semillas': piv.notna().sum(),
-        'mAP50_media': piv.mean().round(4), 'mAP50_desv': piv.std().round(4),
-        'mAP50_min': piv.min().round(4), 'mAP50_max': piv.max().round(4),
-        'mAP50_recorrido': (piv.max() - piv.min()).round(4),
+        'n_semillas': todo.notna().sum(),
+        'mAP50_media': todo.mean().round(4), 'mAP50_desv': todo.std().round(4),
+        'mAP50_min': todo.min().round(4), 'mAP50_max': todo.max().round(4),
+        'mAP50_recorrido': (todo.max() - todo.min()).round(4),
         'mAP50_95_media': piv95.mean().round(4), 'mAP50_95_desv': piv95.std().round(4),
     }).sort_values('mAP50_media', ascending=False)
     print('\n--- 1. cuanto se mueve una misma entrada al cambiar solo la semilla')
