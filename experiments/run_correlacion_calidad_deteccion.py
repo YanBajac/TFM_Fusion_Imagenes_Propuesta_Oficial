@@ -102,7 +102,19 @@ def main():
     for etiq, arch in (('LLVIP', 'detection_llvip_map.csv'), ('M3FD', 'detection_m3fd_map.csv')):
         d = pd.read_csv(MR / arch).set_index('method')
         DET[etiq] = d
-        print(f'--- deteccion en {etiq}: {len(d)} entradas')
+        print(f'--- deteccion en {etiq}: {len(d)} entradas (una semilla)')
+
+    # LLVIP con las CINCO SEMILLAS, si el estudio ya corrio. Es la mejor estimacion disponible del mAP
+    # de cada entrada, y por eso es la que debe entrar en la correlacion: el valor de una sola semilla
+    # es una tirada, no la posicion del metodo. Se conservan las dos versiones para poder decir cuanto
+    # de la correlacion publicada dependia de esa tirada.
+    _sem = MR / 'semillas_llvip_resumen.csv'
+    if _sem.exists():
+        _s = pd.read_csv(_sem, index_col=0)
+        DET['LLVIP_5sem'] = pd.DataFrame({'mAP50': _s.mAP50_media,
+                                          'mAP50_95': _s.mAP50_95_media})
+        print(f'--- deteccion en LLVIP: {len(DET["LLVIP_5sem"])} entradas '
+              f'(media de cinco semillas)')
 
     filas = []
     for cj, rg in rangos.items():
