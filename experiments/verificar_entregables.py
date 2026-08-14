@@ -816,30 +816,43 @@ if 'avances' in DOCUMENTOS:
     with fitz.open(str(DOCUMENTOS['avances']['ruta'])) as _d:
         for _i in range(_d.page_count):
             _t = plano(_d[_i].get_text())
-            for _m in re.finditer(r'Tabla (\d+)([a-z]?)\.', _t):
+            # «Cuadro» tambien: los anexos rotulan «Cuadro A1.» … «Cuadro A20.» y NINGUN chequeo del
+            # repositorio los miraba. Es la peor forma de quedarse corto, porque invita a esquivar el
+            # control renombrando: bastaba rotular una tabla «Cuadro» para sacarla del inventario.
+            # La zona ('T' o 'C') separa las dos familias, que numeran cada una por su cuenta.
+            for _m in re.finditer(r'(Tabla|Cuadro) (A?\d+)([a-z]?)\.', _t):
                 if _ANTES_REF.search(_t[max(0, _m.start() - 14):_m.start()]):
                     continue      # referencia en prosa, no rotulo
-                _rot.append((_i + 1, int(_m.group(1)), _m.group(2), _m.group(0)[:-1]))
-    print(f'  {len(_rot)} rotulos: ' + ' · '.join(f'p{p}:{e}' for p, _n, _s, e in _rot))
+                _z = _m.group(1)[0] + ('A' if _m.group(2).startswith('A') else '')
+                _rot.append((_i + 1, int(_m.group(2).lstrip('A')), _m.group(3),
+                             _m.group(0)[:-1], _z))
+    print(f'  {len(_rot)} rotulos: ' + ' · '.join(f'p{p}:{e}' for p, _n, _s, e, _z in _rot))
 
-    _etqs = [e for _p, _n, _s, e in _rot]
+    _etqs = [e for _p, _n, _s, e, _z in _rot]
     _rep = sorted({e for e in _etqs if _etqs.count(e) > 1})
     ok(not _rep, 'ningun rotulo de tabla se repite' + (f' — repetidos {_rep}' if _rep else ''))
 
-    _nums = [n for _p, n, _s, _e in _rot]
-    _baja = [(_rot[i - 1][3], _rot[i][3]) for i in range(1, len(_nums))
-             if _nums[i] < _nums[i - 1]]
-    ok(not _baja, 'la parte numerica no retrocede'
+    # La monotonia se exige DENTRO DE CADA ZONA y no sobre la lista entera. Las «Tabla N» del cuerpo y
+    # las «Cuadro AN» de los anexos son dos series independientes que se intercalan en el documento:
+    # compararlas juntas daria un retroceso falso en cada frontera. Lo que no se relaja es la
+    # monotonia: cada serie sigue teniendo que ir creciendo.
+    _baja = []
+    for _zona in sorted({_z for *_r, _z in _rot}):
+        _sec = [(p, n, e) for p, n, _s, e, z in _rot if z == _zona]
+        _baja += [(_sec[i - 1][2], _sec[i][2]) for i in range(1, len(_sec))
+                  if _sec[i][1] < _sec[i - 1][1]]
+    ok(not _baja, f'la parte numerica no retrocede dentro de cada serie de rotulos'
                   + (f' — retrocede en {_baja}' if _baja else ''))
 
     # Dentro de un mismo numero, las letras tienen que ir creciendo. No se exige que la base «N»
     # preceda a «Na»: el informe usa desde antes la convencion inversa —la Tabla 2a esta en la
     # p. 12 y la Tabla 2 en la p. 14— y forzarla obligaria a renumerar todo el documento.
     _mal_letra = []
-    for _num in sorted(set(_nums)):
-        _ls = [s for _p, n, s, _e in _rot if n == _num and s]
-        if _ls != sorted(_ls):
-            _mal_letra.append((_num, _ls))
+    for _zona in sorted({_z for *_r, _z in _rot}):
+        for _num in sorted({n for _p, n, _s, _e, z in _rot if z == _zona}):
+            _ls = [s for _p, n2, s, _e, z in _rot if z == _zona and n2 == _num and s]
+            if _ls != sorted(_ls):
+                _mal_letra.append((_zona, _num, _ls))
     ok(not _mal_letra, 'dentro de cada número las letras van en orden'
                        + (f' — desordenadas {_mal_letra}' if _mal_letra else ''))
 else:

@@ -1334,9 +1334,11 @@ else:
         "que r = 1 <b>no</b> desactiva el banco de elementos estructurantes. Con r = 1 el disco es la "
         "cruz de 3×3 y las cuatro líneas orientadas son cuatro máscaras 3×3 distintas, así que el "
         "banco sigue operativo sobre un vecindario mínimo. El peso m = 0,30 es el que produce el "
-        "barrido con la metodología de referencia y mantiene la saturación por debajo del 2 % de los "
-        "píxeles. Estos hiperparámetros definen la configuración de la propuesta usada en todo el "
-        "benchmark de esta variante.")
+        # el «por debajo del 2 %» que decia aca no lo respaldaba ningun dato, y el propio informe
+        # imprime 0,73 % dos paginas despues. Sale de SAT_030, con dec() para la coma decimal.
+        "barrido con la metodología de referencia y mantiene la saturación de píxeles en el "
+        f"{dec(SAT_030, 2)} % del total. Estos hiperparámetros definen la configuración de la "
+        "propuesta usada en todo el benchmark de esta variante.")
 
 # ------------------------------------------------------------------ posicion por metrica
 _NOM_MET = {"EN": "la entropía", "SD": "el contraste", "FE": "la ganancia de entropía sobre las fuentes",
@@ -1747,10 +1749,29 @@ _R_POR_PAR_LO, _R_POR_PAR_HI = int(_r_por_par.min()), int(_r_por_par.max())
 def formula(key, num):
     return (f'<div class="formula"><img src="{FORM[key]}"><span class="eq">({num})</span></div>')
 
-def figura(src, cap, w=88, n=[0]):
+FIG_REF = {}   # clave -> numero que le toco a esa figura, para poder remitirla desde la prosa
+
+
+def figura(src, cap, w=88, ref=None, n=[0]):
+    """Una figura con su epigrafe. El numero lo pone el contador, NO el texto del epigrafe.
+
+    Dos epigrafes traian su propio «Figura 7.» y «Figura 7b.» adentro, y el rotulo salia DOS VECES
+    impreso en la pagina 54: «Figura 7. Figura 7. mAP por entrada…». Y peor: la unica remision a
+    figura que tiene el informe decia «el recorrido esta en la Figura 7b», rotulo que el contador
+    nunca emite —a esa figura la numera 8—, asi que remitia a una figura inexistente.
+
+    De ahi el parametro ref: la figura anota su numero en FIG_REF y la prosa la nombra con el marcador
+    [[FIG:clave]], que se resuelve despues de ensamblar el documento. Es la misma idea con la que ya se
+    arman el indice y las remisiones de la carilla: la fuente del numero es el documento, no una
+    constante escrita al lado. Se hace asi y no leyendo FIG_REF en el f-string porque la prosa que
+    remite va en una pagina ANTERIOR a la figura, o sea que se evalua antes de que exista el numero.
+    """
     if src is None:
         return ""
     n[0] += 1
+    if ref:
+        assert ref not in FIG_REF, f"la clave de figura «{ref}» esta repetida"
+        FIG_REF[ref] = n[0]
     return (f'<div class="figc" style="width:{w}%"><img src="{src}">'
             f'<div class="cap">Figura {n[0]}. {cap}</div></div>')
 
@@ -1869,7 +1890,7 @@ H.append(f"""
   <ol>
     <li>Datos de entrada: {N_ESC} pares VIS/IR del dataset TNO (sección 2).</li>
     <li>Fundamentos: operadores morfológicos y transformada Top-Hat (sección 3).</li>
-    <li>Propuesta novedosa: formulación completa, ecuaciones 4–15 (sección 4).</li>
+    <li>Propuesta novedosa: formulación completa, ecuaciones 4–14 (sección 4).</li>
     <li>Optimización de (r, m) por PSO (sección 5).</li>
     <li>Métodos comparativos del benchmark (sección 6).</li>
     <li>Métricas de evaluación con sus fórmulas (sección 7).</li>
@@ -2878,7 +2899,7 @@ H.append(f"""
   él: la menor distancia entre dos consecutivas es {DET_GAP_MIN}. Ese desvío es la resolución del
   experimento. La brecha contra el visible solo, en cambio, se confirma en las {SEM_N} semillas y con
   margen: entre {DET_GAP_VIS} y {DET_GAP_VIS_MAX} puntos de mAP. El recorrido de cada entrada está en
-  la Figura 7b.</span></p>
+  la Figura [[FIG:det_disp]].</span></p>
   {tabla_det()}
   <p class="lectura">Lectura: toda fusión supera con claridad al visible solo, en las {SEM_N}
   semillas y muy por encima del ruido de inicialización. El infrarrojo solo es la modalidad más
@@ -2905,15 +2926,15 @@ H.append(f"""
 H.append(f"""
 <div class="page">
   <h2>13. Detección en LLVIP (continuación): el orden y su dispersión</h2>
-  {figura(charts["det"], "Figura 7. mAP por entrada del detector, promediado sobre las "
-                         "{SEM_N} semillas de entrenamiento (YOLOv8n reentrenado por método sobre "
-                         "LLVIP).".format(SEM_N=SEM_N), 76)}
+  {figura(charts["det"], "mAP por entrada del detector, promediado sobre las "
+                       "{SEM_N} semillas de entrenamiento (YOLOv8n reentrenado por método sobre "
+                       "LLVIP).".format(SEM_N=SEM_N), 76, ref="det_orden")}
   {figura(file_img_b64(os.path.join(FIG, "fig_semillas_llvip.png"), 1500, 86),
-          "Figura 7b. Dispersión de cada entrada sobre las {SEM_N} semillas: el punto es la media, "
+          "Dispersión de cada entrada sobre las {SEM_N} semillas: el punto es la media, "
           "la barra une el mínimo con el máximo y los círculos son las corridas. Cuando las barras "
           "de dos entradas se superponen, la diferencia entre ellas no se distingue del ruido del "
           "entrenamiento. Debajo, a escala, el desvío típico dentro de una misma entrada "
-          "({SEM_DESV}).".format(SEM_N=SEM_N, SEM_DESV=SEM_DESV), 76)}
+          "({SEM_DESV}).".format(SEM_N=SEM_N, SEM_DESV=SEM_DESV), 76, ref="det_disp")}
   <p class="lectura">Lectura de las dos figuras juntas: la primera ordena las entradas y la segunda
   muestra cuánto vale ese orden. El visible solo queda separado de todo lo demás, y ésa es la única
   brecha que ninguna semilla discute. El recorrido mediano de una entrada consigo misma es
@@ -3286,6 +3307,23 @@ for _i, _img in enumerate(IMAGENES, 1):
 # los bloques de contenido con su pie interpolado: la fuente de las remisiones de la carilla es el
 # documento mismo y no una lista paralela. Antes estaban escritas a mano y se rompian cada vez que una
 # seccion crecia una pagina.
+# Las remisiones a figura se resuelven ACA, con el documento entero ya armado. La prosa las escribe
+# como [[FIG:clave]] porque la pagina que remite puede ir ANTES de la figura —es el caso: el texto esta
+# en la pagina 53 y la figura en la 54—, asi que en el momento de evaluar ese f-string el numero
+# todavia no existe. Antes esto se resolvia escribiendo el rotulo a mano, y estaba mal: el texto decia
+# «Figura 7b» y el contador numeraba esa figura como 8.
+_sin_resolver = set()
+for _i, _b in enumerate(H):
+    def _rep(_m):
+        _k = _m.group(1)
+        if _k not in FIG_REF:
+            _sin_resolver.add(_k)
+            return _m.group(0)
+        return str(FIG_REF[_k])
+    H[_i] = _re.sub(r'\[\[FIG:([a-z0-9_]+)\]\]', _rep, _b)
+assert not _sin_resolver, f"remisiones a figura sin resolver: {sorted(_sin_resolver)}"
+print(f'remisiones a figura: {len(FIG_REF)} claves declaradas, todas resueltas')
+
 _PAG_SEC = {}
 for _b in "".join(H).split('<div class="page"')[1:]:
     _mh = _re.search(r'<h2>\s*(\d+)\.', _b)
