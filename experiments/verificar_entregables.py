@@ -1391,6 +1391,8 @@ _DOCS_RAIZ = {
     'Tesis_Defensa_Presentacion.pptx': 'entregable: el deck de defensa',
     'Tesis_Defensa_Presentacion.pdf': 'entregable: el deck renderizado',
     'ESTADO_Y_PENDIENTES.md': 'estado vivo del proyecto',
+    'AUDITORIA_LIBRO.md': 'las afirmaciones del libro marcadas al auditarlas contra los CSV, para la '
+                          'revision manual: 987 revisadas, 910 respaldadas',
     'Auditoria_Bibliografia.md': 'vivo: lo reusa la auditoria de referencias',
     'Plan_Deck_Defensa.md': 'vivo: prescripciones del deck todavia sin aplicar',
 }
