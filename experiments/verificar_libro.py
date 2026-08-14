@@ -93,8 +93,19 @@ ok('primer lugar del ranking agregado' in txt or
 
 # ---- 4. deteccion --------------------------------------------------------
 print('\n--- 4. deteccion (Tablas 8 y 9)')
-ll = pd.read_csv(REP / 'detection_llvip_map.csv').set_index('method')
 m3 = pd.read_csv(REP / 'detection_m3fd_map.csv').set_index('method')
+# LLVIP se compara contra la MEDIA DE LAS CINCO SEMILLAS, que es lo que el libro publica desde que
+# el estudio de repeticiones existe. Antes se comparaba contra detection_llvip_map.csv, la corrida de
+# una sola semilla, y al pasar la Tabla 8 a medias este chequeo empezo a reclamar seis cifras que el
+# libro ya no imprime —ni debe—: aquel 0,906 de la propuesta era el mas bajo de sus cinco valores.
+_sem = REP / 'semillas_llvip_resumen.csv'
+if _sem.exists():
+    ll = pd.read_csv(_sem, index_col=0).rename(columns={'mAP50_media': 'mAP50'})
+    _fuente_ll = f'media de {int(pd.read_csv(REP / "detection_llvip_semillas.csv").semilla.nunique())} semillas'
+else:
+    ll = pd.read_csv(REP / 'detection_llvip_map.csv').set_index('method')
+    _fuente_ll = 'corrida de una semilla'
+print(f'    (mAP de LLVIP contra la {_fuente_ll})')
 falt = [f'LLVIP {i}={v:.3f}' for i, v in ll['mAP50'].items()
         if f'{v:.3f}'.replace('.', ',') not in txt]
 falt += [f'M3FD {i}={v:.3f}' for i, v in m3['mAP50'].items()

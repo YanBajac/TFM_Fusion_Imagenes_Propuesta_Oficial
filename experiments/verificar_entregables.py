@@ -156,7 +156,13 @@ for doc in DOCUMENTOS:
 
 # --------------------------------------------- 3. deteccion
 print('\n=== 3. deteccion ===')
-ll = pd.read_csv(REP / 'detection_llvip_map.csv').set_index('method')
+# LLVIP se compara contra la MEDIA DE LAS CINCO SEMILLAS: es lo que los tres entregables publican
+# desde que el estudio de repeticiones existe. La corrida de una semilla se conserva aparte, para
+# los chequeos que hablan expresamente de ella.
+ll_1sem = pd.read_csv(REP / 'detection_llvip_map.csv').set_index('method')
+_sem_res = REP / 'semillas_llvip_resumen.csv'
+ll = (pd.read_csv(_sem_res, index_col=0).rename(columns={'mAP50_media': 'mAP50'})
+      if _sem_res.exists() else ll_1sem)
 m3 = pd.read_csv(REP / 'detection_m3fd_map.csv').set_index('method')
 com = pd.read_csv(REP / 'complementariedad_resumen.csv').set_index('entrada')
 for doc in ('libro', 'deck', 'avances'):

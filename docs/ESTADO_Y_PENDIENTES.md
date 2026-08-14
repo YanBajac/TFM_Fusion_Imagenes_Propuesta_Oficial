@@ -1,36 +1,54 @@
-# Estado y pendientes — 12 de agosto de 2026
+# Estado y pendientes — 13 de agosto de 2026
 
 Punto de retomada. Todo lo que sigue está verificado; lo que no, está marcado como tal.
 
-## En curso: las cinco semillas de LLVIP
+## El estudio de semillas está cerrado y aplicado a los tres entregables
 
-Se está corriendo el único experimento que puede cambiar una conclusión. Los dos experimentos de
-detección usan **una sola semilla** por entrada, y las siete fusiones se apilan en centésimas con una
-distancia mínima de 0,0001: sin repeticiones no hay forma de separar el orden entre ellas del ruido de
-inicialización. El informe lo declara dos veces, que es honesto, pero declararlo no vuelve defendible
-el orden.
+Las 45 corridas —nueve entradas por cinco semillas— están hechas, analizadas y **volcadas al informe,
+al libro y al deck**. Los tres verificadores en 0 fallos.
 
-`experiments/detection_llvip/run_semillas_llvip.py` entrena las nueve entradas con las semillas 1 a 4
-—la 0 es la corrida publicada, cuyos pesos están en disco y sólo se re-evalúan— y deja cada resultado
-como una fila `(método, semilla)`. **Medido en el piloto: ~31 s por época, ~21 min por corrida, unas
-12,5 h para las 36.** Es reanudable y **escribe el CSV después de cada corrida**, así que una caída
-cuesta una sola.
+**Lo que el experimento midió.** Una misma entrada se mueve, sólo por cambiar la inicialización, un
+desvío mediano de 0,0128 y un recorrido mediano de 0,0308 de mAP@0,5. El caso extremo es la wavelet
+discreta: 0,0710 consigo misma, más que la distancia entre la mejor y la peor de las siete fusiones.
 
-Dos cosas que `train_eval_llvip.py` no permitía hacer con `--seed`, y las dos en silencio: entrena con
-`name=<método>` y `exist_ok=True`, de modo que una segunda semilla **sobreescribe los pesos** de la
-primera; y escribe en un CSV indexado por método, que **reemplaza la fila** anterior y pierde el
-resultado. De ahí el script nuevo en lugar de un bucle sobre el existente.
+**Tres cosas cambiaron en los documentos, y todas a favor del trabajo.**
 
-`experiments/run_analisis_semillas_llvip.py` es el análisis, ya escrito y esperando los datos. Compara
-**pareado por semilla** —cada semilla es un bloque, igual que el resto del trabajo rankea dentro de
-cada par de imágenes— y reporta lo que corresponde: no cuál gana, sino **cuáles diferencias son
-distinguibles**. Con cinco bloques el Wilcoxon pareado tiene un p mínimo alcanzable de 1/16 = 0,0625,
-así que **ninguna comparación individual entre fusiones puede dar significativa al 5 % ni en el mejor
-caso**. Eso no es un defecto del análisis: es la resolución que dan cinco semillas, y hay que decirlo
-así en lugar de presentar un orden.
+1. **La propuesta pasó de 6.ª a 3.ª de siete** en detección. El 0,906 que publicaba la Tabla 10 era
+   **el más bajo de sus cinco valores**: la posición publicada era el extremo desfavorable de su propio
+   rango. Con la media queda 0,9283 e **indistinguible de cuatro de sus seis rivales**; le gana a la
+   Ratio Pyramid en 5 de 5 y pierde con la pirámide de Laplace en 5 de 5.
+2. **«Ninguna fusión supera al infrarrojo solo» era demasiado fuerte.** El infrarrojo supera a **seis**
+   de las siete, con ventajas de 0,0246 a 0,0568 y 5 de 5 semillas; de la séptima, la pirámide de
+   Laplace, **no se distingue**: 0,0094 de ventaja, por debajo del ruido, y 3 de 5 semillas.
+3. **El ρ de calidad contra mAP cambió de signo.** Era +0,214 sobre la corrida de una semilla y es
+   **−0,357** sobre la media de cinco. La cláusula «con el signo contrario al esperado», que aparecía
+   en cuatro lugares del deck, era un artefacto de esa única tirada. H6 se sostiene igual y por la
+   razón correcta: no hay asociación detectable.
 
-Cuando termine hay que decidir, con los números a la vista, si el informe y el libro pasan de «una sola
-semilla, el orden entre fusiones no es interpretable» a un enunciado con la dispersión medida.
+**Lo que quedó confirmado.** Todas las fusiones le ganan al visible solo por entre 0,109 y 0,157, en
+las cinco semillas y muy por encima del ruido. El informe afirmaba que la única brecha que sobrevive a
+cualquier semilla es ésa, de 0,092: queda validada y con margen.
+
+**Y el ranking de calidad de imagen no se tocó.** La propuesta sigue 1.ª de 7 con las nueve métricas
+del TNO (3,394). Que el orden de calidad y el de detección no coincidan **es el segundo aporte**, no una
+contradicción.
+
+### Lo que hay que saber al retomar
+
+- **M3FD sigue con una sola semilla.** Todos los pasajes sobre el conteo por escena conservan su
+  advertencia, y el libro incorporó una recomendación propia en §6.2: repetir toda evaluación en tarea
+  con varias semillas y reportar la dispersión, empezando por M3FD. Son unas 3 h de GPU.
+- **Nada de esto se apoya en valores p.** Con cinco bloques el Wilcoxon pareado tiene un p mínimo
+  alcanzable de 0,0625, así que ninguna comparación individual entre fusiones puede cruzar el 5 %: cero
+  sobreviven a Holm, y eso es aritmética, no evidencia de igualdad. El argumento va por magnitudes y
+  consistencia de signo, y así está redactado en los tres documentos.
+- **Los verificadores comparan LLVIP contra las medias de cinco semillas**, no contra la corrida única.
+  Si algún día se agregan semillas, se recorre `run_semillas_llvip.py`, después
+  `run_analisis_semillas_llvip.py`, `make_figura_semillas.py` y el generador del informe, y los textos
+  se mueven con el dato porque ninguna cifra está escrita a mano.
+- **Dos avisos abiertos, ninguno bloqueante.** `image7.png` del libro tiene datos y no tiene generador;
+  y el deck no imprime los mAP de seis entradas de LLVIP, que es correcto —proyecta el desvío y la
+  figura de dispersión, no la tabla entera—.
 
 ## El deck quedó al día: las quince láminas aplicadas
 
