@@ -1200,16 +1200,21 @@ if 'avances' in DOCUMENTOS and _html_inf.exists():
     _S5 = {
         'barrido de configuraciones': 'seccion',
         'convergencia y óptimo': 'seccion',
-        'justificación del peso adoptado': 'seccion',
-        'la equivalencia del realce físico': 'seccion',
-        'rango dinámico y tensión de criterios': 'seccion',
-        'estabilidad del barrido en': 'seccion',
-        'las 500 corridas, una por una': 'seccion',
-        'el óptimo exacto, por enumeración': 'seccion',
-        'por qué el barrido de la referencia dispersa': 'seccion',
-        'el mismo barrido, imagen por imagen': 'seccion',
-        'el mismo barrido con el peso libre': 'seccion',
-        'el registro de las 500 corridas': 'seccion',
+        # las diez que pasaron al anexo A21. Cambiar un valor de aqui es TODO lo que hace falta si
+        # algun dia una vuelve al cuerpo; perder un bloque, en cambio, falla y lo nombra.
+        'justificación del peso adoptado': 'anexo',
+        'la equivalencia del realce físico': 'anexo',
+        'rango dinámico y tensión de criterios': 'anexo',
+        'estabilidad del barrido en': 'anexo',
+        'las 500 corridas, una por una': 'anexo',
+        'el óptimo exacto, por enumeración': 'anexo',
+        'por qué el barrido de la referencia dispersa': 'anexo',
+        'el mismo barrido, imagen por imagen': 'anexo',
+        'el mismo barrido con el peso libre': 'anexo',
+        'el registro de las 500 corridas': 'anexo',
+        # y las dos paginas nuevas que las reemplazan en la seccion 5
+        'el punto de operación adoptado': 'seccion',
+        'la conclusión de H5': 'seccion',
     }
     # la frontera entre el cuerpo y los anexos se DERIVA: la ultima pagina con un titulo que empieza
     # por un digito. Escribirla a mano la dejaria vieja al primer cambio de tamaño del informe.

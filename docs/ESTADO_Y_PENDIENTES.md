@@ -1,54 +1,70 @@
-# Estado y pendientes — 13 de agosto de 2026
+# Estado y pendientes — 14 de agosto de 2026
 
 Punto de retomada. Todo lo que sigue está verificado; lo que no, está marcado como tal.
 
-## El estudio de semillas está cerrado y aplicado a los tres entregables
+## La sección 5 del informe pasó de doce páginas a cuatro, y nada se eliminó
 
-Las 45 corridas —nueve entradas por cinco semillas— están hechas, analizadas y **volcadas al informe,
-al libro y al deck**. Los tres verificadores en 0 fallos.
+El informe dedicaba **doce páginas y 5.683 palabras** a la optimización por PSO —más que a ninguna
+otra sección— sobre un componente cuya propia conclusión (H5) es que **el optimizador no determina la
+configuración adoptada**. La sección 4, que describe el aporte del trabajo, ocupaba dos páginas y 259
+palabras. Un lector que arrancaba por el principio se empantanaba ahí y llegaba cansado a los dos
+aportes.
 
-**Lo que el experimento midió.** Una misma entrada se mueve, sólo por cambiar la inicialización, un
-desvío mediano de 0,0128 y un recorrido mediano de 0,0308 de mAP@0,5. El caso extremo es la wavelet
-discreta: 0,0710 consigo misma, más que la distancia entre la mejor y la peor de las siete fusiones.
+Ahora §5 tiene cuatro páginas (12–15): el barrido, el punto de operación, y dos páginas nuevas que
+condensan los cuatro criterios del peso y el veredicto de H5. Las otras diez pasaron al **anexo A21**
+(79–88), en el mismo orden. **El contenido está intacto y medido**: las diez páginas movidas suman
+4.762 palabras contra 4.758 antes, y las cuatro de diferencia son una remisión que se agregó a
+propósito. El informe quedó en 88 páginas y 86 marcadores.
 
-**Tres cosas cambiaron en los documentos, y todas a favor del trabajo.**
+### Lo que hubo que arreglar para que el movimiento fuera seguro
 
-1. **La propuesta pasó de 6.ª a 3.ª de siete** en detección. El 0,906 que publicaba la Tabla 10 era
-   **el más bajo de sus cinco valores**: la posición publicada era el extremo desfavorable de su propio
-   rango. Con la media queda 0,9283 e **indistinguible de cuatro de sus seis rivales**; le gana a la
-   Ratio Pyramid en 5 de 5 y pierde con la pirámide de Laplace en 5 de 5.
-2. **«Ninguna fusión supera al infrarrojo solo» era demasiado fuerte.** El infrarrojo supera a **seis**
-   de las siete, con ventajas de 0,0246 a 0,0568 y 5 de 5 semillas; de la séptima, la pirámide de
-   Laplace, **no se distingue**: 0,0094 de ventaja, por debajo del ruido, y 3 de 5 semillas.
-3. **El ρ de calidad contra mAP cambió de signo.** Era +0,214 sobre la corrida de una semilla y es
-   **−0,357** sobre la media de cinco. La cláusula «con el signo contrario al esperado», que aparecía
-   en cuatro lugares del deck, era un artefacto de esa única tirada. H6 se sostiene igual y por la
-   razón correcta: no hay asociación detectable.
+**La numeración pasó a ser posicional.** Las páginas 4 a 33 llevaban su número escrito a mano y desde
+la 34 había un contador con su `pg += 1` en veintidós lugares. Ahora `pie()` numera por el orden de
+los `H.append()`, y el índice, los marcadores y las remisiones de la carilla se mueven solos porque ya
+se calculaban escaneando el documento. Se comprobó sobre la salida: el HTML quedó **idéntico byte a
+byte** al de antes del refactor.
 
-**Lo que quedó confirmado.** Todas las fusiones le ganan al visible solo por entre 0,109 y 0,157, en
-las cinco semillas y muy por encima del ruido. El informe afirmaba que la única brecha que sobrevive a
-cualquier semilla es ésa, de 0,092: queda validada y con margen.
+**Y ese refactor se llevó un guardrail que nadie había declarado.** Con los pies a mano, perder un
+bloque dejaba un hueco en la secuencia y el generador abortaba. Con el contador, perder un bloque
+produce un documento de páginas consecutivas y todo pasa en verde. Se repuso por dos lados: un control
+estructural en el generador (un pie por bloque, la portada como único sin pie) y el **bloque 26 del
+verificador**, que exige que el PDF tenga tantas páginas como bloques el HTML que lo produjo y que los
+doce títulos de §5 estén declarados uno por uno con el lado del documento donde deben caer. Eso es lo
+que convierte «nada se eliminó» en algo verificable.
 
-**Y el ranking de calidad de imagen no se tocó.** La propuesta sigue 1.ª de 7 con las nueve métricas
-del TNO (3,394). Que el orden de calidad y el de detección no coincidan **es el segundo aporte**, no una
-contradicción.
+### Los defectos que aparecieron de paso, y ya están corregidos
+
+- **La carilla de resumen decía una cosa y la sección 13 la contraria.** La página 2 seguía con las
+  cifras de una sola semilla (0,971 y 0,906, «un solo entrenamiento por entrada») treinta páginas
+  antes de la tabla que ya daba 0,961 y 0,928 sobre cinco. El bloque 22 no lo cazó porque exigía que
+  las cifras **aparecieran** en el cuerpo, y 0,906 aparece: §13 lo cita para desautorizarlo. El
+  bloque 24 nuevo exige que sean las medias **vigentes**.
+- **«Figura 7. Figura 7.»** impreso en la página 54: dos epígrafes traían su rótulo escrito adentro
+  además del que pone el contador. Y la única remisión a figura del informe apuntaba a una «Figura 7b»
+  que el contador nunca emite. Ahora la figura declara una clave y la prosa la nombra con un marcador
+  que se resuelve con el documento armado.
+- **Una carrera entre Edge y el posproceso** dejaba el PDF con cero marcadores mientras el generador
+  informaba 84: la espera comparaba tamaños del archivo de destino y no distinguía el volcado nuevo
+  del PDF anterior. Ahora Edge escribe a un temporal y el destino se escribe una sola vez.
+- **Dos cifras escritas a mano y mal**: la saturación «por debajo del 2 %» (es 0,73 %) y las
+  «ecuaciones 4–15» de §4 (termina en la 14). Y en la nota del Anexo 1, un «cero tramos crecientes en
+  34» que ningún CSV respaldaba.
+- **El bloque 15 del verificador no veía la mitad de las tablas**: su regex sólo miraba «Tabla N» y los
+  anexos rotulan «Cuadro AN». Veinte rótulos fuera de auditoría. Ahora son 50 y la monotonía se exige
+  por serie.
 
 ### Lo que hay que saber al retomar
 
-- **M3FD sigue con una sola semilla.** Todos los pasajes sobre el conteo por escena conservan su
-  advertencia, y el libro incorporó una recomendación propia en §6.2: repetir toda evaluación en tarea
-  con varias semillas y reportar la dispersión, empezando por M3FD. Son unas 3 h de GPU.
-- **Nada de esto se apoya en valores p.** Con cinco bloques el Wilcoxon pareado tiene un p mínimo
-  alcanzable de 0,0625, así que ninguna comparación individual entre fusiones puede cruzar el 5 %: cero
-  sobreviven a Holm, y eso es aritmética, no evidencia de igualdad. El argumento va por magnitudes y
-  consistencia de signo, y así está redactado en los tres documentos.
-- **Los verificadores comparan LLVIP contra las medias de cinco semillas**, no contra la corrida única.
-  Si algún día se agregan semillas, se recorre `run_semillas_llvip.py`, después
-  `run_analisis_semillas_llvip.py`, `make_figura_semillas.py` y el generador del informe, y los textos
-  se mueven con el dato porque ninguna cifra está escrita a mano.
-- **Dos avisos abiertos, ninguno bloqueante.** `image7.png` del libro tiene datos y no tiene generador;
-  y el deck no imprime los mAP de seis entradas de LLVIP, que es correcto —proyecta el desvío y la
-  figura de dispersión, no la tabla entera—.
+- **M3FD sigue con una sola semilla.** El libro ya lleva la recomendación de repetirlo; son unas 3 h
+  de GPU.
+- **Nada se apoya en valores p** en el estudio de semillas: con cinco bloques el mínimo alcanzable del
+  Wilcoxon es 0,0625, así que ninguna comparación individual cruza el 5 %. El argumento va por
+  magnitudes y consistencia de signo, y así está redactado.
+- **Dos avisos abiertos, ninguno bloqueante.** `image7.png` del libro tiene datos y no tiene
+  generador; y el deck no imprime los mAP de seis entradas de LLVIP, que es correcto porque proyecta
+  la dispersión y no la tabla.
+- **El libro y el deck no mencionan el informe en ninguna parte**, así que este movimiento no los
+  toca. Verificado.
 
 ## El deck quedó al día: las quince láminas aplicadas
 

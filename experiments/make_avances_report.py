@@ -342,7 +342,7 @@ _HIP = [
      "§9"),
     ("H5", "criterio", "La optimización no determina la configuración adoptada. Los dos "
      "hiperparámetros se apoyan en parte del mismo criterio con que después se evalúa.",
-     "§5, once páginas"),
+     "§5 y el anexo A21"),
     ("H6", "criterio", "El orden de mérito de las métricas de imagen no predice el orden de "
      "utilidad en la tarea. Ninguna fusión supera por un margen distinguible a la mejor "
      "modalidad individual.",
@@ -922,7 +922,7 @@ _ppl = pd.read_csv(os.path.join(MR, "pso_por_imagen_libre.csv"))
 _falta = sorted(set(_ppi.imagen) - set(_ppl.imagen))
 _sobra = sorted(set(_ppl.imagen) - set(_ppi.imagen))
 assert not _falta and not _sobra, (
-    "los dos barridos por imagen no cubren el mismo corpus, asi que la Tabla 3e compararia "
+    "los dos barridos por imagen no cubren el mismo corpus, asi que el Cuadro A21h compararia "
     f"columnas de corpus distintos. Falta(n) en el de piso bajado: {_falta}. Sobra(n): {_sobra}. "
     "Correr:  .venv\\Scripts\\python.exe -X utf8 experiments/pso_por_imagen.py "
     "--m-min 0.01 --salida pso_por_imagen_libre.csv")
@@ -1321,11 +1321,14 @@ else:
         "publicado, porque los dos términos de fidelidad de F<sub>o</sub> dominan sobre la entropía y "
         "decrecen al aumentar el realce. <b>El radio, en cambio, no lo fija el PSO.</b> Dentro de este "
         f"rango la aptitud prefiere r = {R_PREFERIDO} ({FO_MEJOR} frente a {FO_R25} en r = 25), así "
-        "que <b>r = 25 es una decisión de diseño</b> y no el resultado de la optimización. Se tomó "
+        "que <b>dentro de este rango</b> r = 25 es una decisión de diseño y no el resultado de la "
+        "optimización. Con el peso libre, en cambio, el óptimo exacto de la misma aptitud es r = 25: "
+        "la conclusión de H5, dos páginas más adelante, lo mide en las dos direcciones. Se tomó "
         "mirando las métricas de evaluación, donde cinco de las nueve favorecen ese radio y las "
-        "cuatro de fidelidad favorecen r = 1. Las páginas que siguen desarrollan las dos cosas: la "
-        "justificación del peso, y con un barrido determinista y 500 corridas repetidas, el alcance "
-        "exacto de esa preferencia.")
+        "cuatro de fidelidad favorecen r = 1. Las dos páginas que siguen desarrollan las dos cosas, la "
+        "justificación del peso y el alcance exacto de esa preferencia; el detalle instrumental —los "
+        "registros corrida por corrida, la enumeración exacta del óptimo y los barridos repetidos— "
+        "está en el <b>anexo A21</b>.")
     PARRAFO_RADIO = (
         "El radio r = 25 (elementos estructurantes de 51 píxeles) permite que el operador aproveche un "
         "vecindario amplio y capture los objetivos térmicos completos. A igual peso supera a "
@@ -1891,7 +1894,7 @@ H.append(f"""
     <li>Datos de entrada: {N_ESC} pares VIS/IR del dataset TNO (sección 2).</li>
     <li>Fundamentos: operadores morfológicos y transformada Top-Hat (sección 3).</li>
     <li>Propuesta novedosa: formulación completa, ecuaciones 4–14 (sección 4).</li>
-    <li>Optimización de (r, m) por PSO (sección 5).</li>
+    <li>Optimización de (r, m) por PSO (sección 5), con su desarrollo técnico en el anexo A21.</li>
     <li>Métodos comparativos del benchmark (sección 6).</li>
     <li>Métricas de evaluación con sus fórmulas (sección 7).</li>
     <li>Resultados cuantitativos: tabla general y gráficas (sección 8).</li>
@@ -1903,7 +1906,7 @@ H.append(f"""
         M3FD (sección 14).</li>
     <li>Cuadro comparativo de las metodologías en la prueba de detección y comparativa cualitativa
         sobre una escena (sección 15), y conclusiones (sección 16).</li>
-    <li>Anexos 1-{N_ESC}: las 25 configuraciones del PSO en cada uno de los {N_ESC} pares.</li>
+    <li>Anexos 1-{N_ESC}: las 25 configuraciones del PSO en cada uno de los {N_ESC} pares, y anexo A21: el desarrollo técnico de la optimización.</li>
   </ol>
   {pie()}
 </div>
@@ -2103,359 +2106,83 @@ H.append(f"""
 
 H.append(f"""
 <div class="page">
-  <h2>5. Optimización por PSO (continuación): justificación del peso adoptado</h2>
-  <p>El peso <b>m = 0,30</b> necesita una justificación explícita. Es el límite inferior del
-  rango publicado y a primera vista puede parecer una elección arbitraria o un valor
-  artificialmente bajo. No lo es. Cuatro criterios <b>independientes entre sí</b> llevan a él.</p>
-
-  <p><b>Primero, el óptimo lo fuerza la forma de la aptitud; no es una elección.</b> Un barrido
-  determinista muestra que F<sub>o</sub> <b>decrece de forma estrictamente monótona</b> al aumentar m
-  dentro del rango publicado. De los {M_TRAMOS} tramos, {M_CRECIENTES} son crecientes. El valor va de
-  {f"{FO_M030:.4f}".replace(".", ",")} en m = 0,30 a {f"{FO_M200:.4f}".replace(".", ",")} en
-  m = 2,00. Por eso m* = 0,30 es el <b>único máximo posible</b> dentro del intervalo, y
-  cualquier optimizador termina ahí. No depende de la semilla ni de la suerte de la búsqueda. Eso
-  explica que las 25 configuraciones del enjambre coincidan, y hace que el resultado sea
-  reproducible por construcción.</p>
-
-  <p><b>Segundo, el rango viene del trabajo de referencia, pero el valor no.</b> El intervalo
-  m &isin; [0,30; 2,00] es el espacio de búsqueda publicado por Ortega y Espinoza (2025). Ellos lo
-  acotan para «evitar estos extremos», el escaso realce por un lado y el sobrecontraste con
-  artefactos por el otro. Adoptarlo es lo que hace comparable este trabajo con aquel. Acá hay que
-  ser claro con lo que le corresponde a cada uno, porque es fácil atribuir de más. <b>Con el
-  disco único de la referencia, su PSO elige valores interiores del rango, no el piso</b>. Sobre las
-  {REF_N} corridas de sus cinco escenas (sus anexos publican las 25 configuraciones de cada una) la
-  mediana del peso es <b>{REF_M_MED}</b>, con recorrido [{REF_M_MIN}; {REF_M_MAX}], y solo una escena
-  ({REF_ESC_PISO}) se ancla en el piso, en {REF_PISO} de sus 25 configuraciones. Entonces el anclaje
-  que este trabajo observa en las {N_CFG} configuraciones es <b>una propiedad del operador</b>, y no
-  de la función de aptitud ni del rango. La misma aptitud y el mismo intervalo dan óptimo interior
-  sobre un disco y óptimo de borde sobre el banco de cinco.</p>
-
-  <p><b>Tabla 2a.</b> Peso óptimo por escena en el trabajo de referencia (disco único, 25
-  configuraciones de enjambre por escena; extraído de sus anexos con
-  <i>referencia_pso_ortega_espinoza.py</i>).</p>
-  {TAB_REFERENCIA}
-
+  <h2>5. Optimización por PSO (continuación): el punto de operación adoptado</h2>
+  <p>El peso <b>m = 0,30</b> es el límite inferior del rango publicado, y a primera vista puede
+  parecer arbitrario o artificialmente bajo. No lo es: cuatro criterios <b>independientes entre
+  sí</b> llevan a él. Van acá en su forma corta; el desarrollo completo, con sus tablas, está en el
+  <b>anexo A21</b>.</p>
+  <p><b>Primero, la forma de la aptitud lo fuerza.</b> Un barrido determinista muestra que
+  F<sub>o</sub> decrece de forma estrictamente monótona al aumentar m dentro del rango publicado: de
+  los {M_TRAMOS} tramos, {M_CRECIENTES} son crecientes, y el valor cae de {dec(FO_M030, 4)} en
+  m = 0,30 a {dec(FO_M200, 4)} en m = 2,00. Por eso m* = 0,30 es el único máximo posible del
+  intervalo y cualquier optimizador termina ahí, sin depender de la semilla, lo que explica que las
+  {N_CFG} configuraciones del enjambre coincidan.</p>
+  <p><b>Segundo, el rango es heredado pero el valor no.</b> El intervalo m &isin; {V['rango']} es el
+  espacio de búsqueda de Ortega y Espinoza (2025), y adoptarlo es lo que hace comparables los dos
+  trabajos. Pero con el disco único de la referencia su propio PSO elige valores interiores: la
+  mediana de su peso es {REF_M_MED}. El anclaje en el piso que este trabajo observa es entonces una
+  propiedad del operador de cinco elementos, y no de la aptitud ni del rango.</p>
+  <p><b>Tercero, y es el argumento central, la equivalencia del realce físico.</b> Lo que entra en
+  la reconstrucción no es m sino el producto <b>m · |W|</b> del peso por la energía de detalle. El
+  banco extrae {dec(W_PROP, 4)} frente a {dec(W_CLAS, 4)} del disco único, o sea
+  {dec(GANANCIA, 2)} veces más, así que un mismo peso no produce el mismo realce en los dos
+  operadores. Corregido: m = 0,30 sobre el banco equivale a <b>m = {dec(M_EQUIV, 2)}</b> sobre un
+  disco único, que cae dentro del rango publicado, al {POS_EN_RANGO:.0f} % de su recorrido. El peso
+  adoptado no es un valor bajo: es el que reproduce el realce físico del rango publicado una vez
+  corregida la diferencia de energía entre los dos operadores.</p>
+  <p><b>Cuarto, el rango dinámico de la reconstrucción.</b> La imagen fusionada se recorta a [0, 1] y
+  los píxeles que caen fuera quedan aplastados. Con m = 0,30 la saturación es de {dec(SAT_030, 2)} %
+  de los píxeles; con el peso canónico de la metodología clásica (m = 1) este operador saturaría
+  {dec(SAT_100, 2)} % —{dec(SAT_VECES, 1)} veces más— y con m = 2,00 más del {SAT_200:.0f} % de la
+  imagen. Este criterio <b>no depende de la función de aptitud</b>, y es el que vuelve el punto
+  adoptado compatible con el operador.</p>
+  <p>Los dos criterios del trabajo empujan m en sentidos opuestos: la aptitud hacia abajo, porque dos
+  de sus tres términos miden fidelidad a las fuentes, y las nueve métricas de evaluación hacia
+  arriba, porque todas son de tipo «mayor es mejor». <b>m = 0,30 es el punto donde esa tensión se
+  resuelve</b> del lado de la aptitud publicada, y respeta además el rango dinámico. El PSO no
+  <i>descubre</i> ese valor: confirma un óptimo que la forma de la aptitud ya determina.</p>
   {pie()}
 </div>
 """)
 
 H.append(f"""
 <div class="page">
-  <h2>5. Optimización por PSO (continuación): la equivalencia del realce físico</h2>
-  <p><b>Tercero, el argumento central: la equivalencia del realce físico.</b> El realce que
-  de verdad entra en la reconstrucción no es m. Es el producto <b>m · |W|</b> del peso por
-  la energía de detalle que extrae el operador. El banco de cinco elementos estructurantes extrae
-  {f"{W_PROP:.4f}".replace(".", ",")} frente a {f"{W_CLAS:.4f}".replace(".", ",")} del disco único de
-  la metodología clásica, es decir <b>{f"{GANANCIA:.2f}".replace(".", ",")} veces más energía</b>. Así
-  que un mismo peso no produce el mismo realce en los dos operadores. Comparar los valores de m
-  sin corregir esa ganancia es comparar unidades distintas. Corrigiendo:</p>
-  <ul>
-    <li>m = 0,30 sobre el banco propuesto equivale a <b>m = {f"{M_EQUIV:.2f}".replace(".", ",")}</b>
-        sobre un disco único. Ese valor cae <b>dentro</b> del rango publicado [0,30; 2,00], al
-        {f"{POS_EN_RANGO:.0f}"} % de su recorrido y a
-        {f"{abs(M_EQUIV - 1.0):.2f}".replace(".", ",")} del peso canónico m = 1. Al revés pasa lo
-        mismo. Ese rango traducido a este operador es
-        [{f"{RANGO_LO:.4f}".replace(".", ",")}; {f"{RANGO_HI:.4f}".replace(".", ",")}], y m = 0,30
-        también cae dentro.</li>
-  </ul>
-  <p>Es decir que el peso adoptado <b>no es un valor bajo</b>. Es el que reproduce el realce físico
-  del rango publicado, una vez corregida la diferencia de energía entre los dos operadores. Solo
-  parece bajo si se olvida que el operador cambió.</p>
-
-  {pie()}
-</div>
-""")
-
-H.append(f"""
-<div class="page">
-  <h2>5. Optimización por PSO (continuación): rango dinámico y tensión de criterios</h2>
-  <p><b>Cuarto criterio: el rango dinámico de la reconstrucción.</b> La imagen fusionada se recorta a
-  [0, 1] antes de evaluarse. Los píxeles que caen fuera quedan aplastados y su información se pierde.
-  El operador propuesto inyecta
-  {f"{GANANCIA:.2f}".replace(".", ",")} veces más detalle que un disco único, así que el recorte se
-  vuelve restrictivo mucho antes.</p>
-  <p><b>Tabla 2.</b> Porcentaje de píxeles saturados por el recorte según el peso, con r = 25 sobre
-  los {N_ESC} pares.</p>
-  {TAB_SATURACION}
-  <p class="lectura">Lectura: con m = 0,30 la saturación es de
-  {f"{SAT_030:.2f}".replace(".", ",")} %, o sea por debajo del 1 % de los píxeles. Con el peso
-  canónico de la metodología clásica (m = 1) este operador saturaría
-  {f"{SAT_100:.2f}".replace(".", ",")} % ({f"{SAT_VECES:.1f}".replace(".", ",")} veces más) y con
-  m = 2,00 más de {f"{SAT_200:.0f}"} % de la imagen. El peso adoptado es entonces compatible con el
-  rango dinámico del operador, y este criterio <b>no depende de la función de aptitud</b>.</p>
-
-  <p><b>Por qué el punto es un compromiso y no un máximo de todo.</b> Los dos criterios del trabajo
-  empujan m en sentidos opuestos. La aptitud F<sub>o</sub> lo empuja hacia abajo, porque dos de sus
-  tres términos miden fidelidad a las fuentes. Las nueve métricas de evaluación lo empujan hacia
-  arriba, porque todas son de tipo «mayor es mejor» y premian la actividad.</p>
-  <p><b>Tabla 3.</b> Comportamiento opuesto de los dos criterios al variar el peso (r = 25).</p>
-  {TAB_TENSION}
-  <p class="lectura">Lectura: al pasar de m = 0,30 a m = 2,00 la aptitud cae de
-  {f"{FO_M030:.4f}".replace(".", ",")} a {f"{FO_M200:.4f}".replace(".", ",")} mientras la suma de las
-  nueve métricas sube de {f"{FN_M030:.3f}".replace(".", ",")} a
-  {f"{FN_M200:.3f}".replace(".", ",")}. El mismo cambio de peso mejora un criterio y empeora el otro.
-  La columna de aptitud es la del enjambre, la misma que reporta la Tabla 1; las tres restantes
-  provienen del barrido determinista sobre las mismas tres escenas.
-  El SSIM se derrumba y la frecuencia espacial se dispara. <b>m = 0,30 es el punto donde esa tensión
-  se resuelve</b> del lado de la aptitud publicada, y respeta además el rango dinámico. El PSO no
-  <i>descubre</i> este valor explorando un espacio con óptimo interior. Lo que hace es
-  <b>confirmar un óptimo que la forma de la aptitud determina</b>. Del trabajo de referencia se
-  hereda la elección del rango.</p>
-
-  {pie()}
-</div>
-""")
-
-H.append(f"""
-<div class="page">
-  <h2>5. Optimización por PSO (continuación): estabilidad del barrido en {REP_N} corridas</h2>
-  <p>El barrido publicado tiene una configuración por celda y una sola semilla, así que sus 25
-  resultados <b>no son 25 confirmaciones independientes</b>. La aptitud es determinista y las semillas
-  estaban fijadas por la configuración y por el número de iteración. Repetir una celda devolvía
-  entonces el mismo resultado. Para medir de verdad la dispersión se repitió
-  <b>{REP_REPS} veces cada configuración</b>, con la semilla en función de (n, T, repetición). Son
-  <b>{REP_N} corridas</b> y {REP_EVALS} evaluaciones de aptitud. Como control de que no cambió nada
-  más que la semilla, la repetición 0 conserva las semillas originales y reproduce el barrido
-  publicado celda por celda.</p>
-
-  <p><b>Tabla 3a.</b> Distribución del radio óptimo hallado sobre las {REP_N} corridas.</p>
-  {TAB_REP_RADIO}
-
-  <p class="lectura">Lectura, en tres puntos. <b>Primero, el peso es robusto</b>: m* = 0,30 en
-  {REP_PISO} de las {REP_N} corridas ({REP_PISO_PCT} %), {REP_VEREDICTO_PESO}. Esto confirma con
-  datos el argumento de la página anterior. <b>Segundo, el radio no lo es.</b>
-  La búsqueda se reparte entre los dos bordes del intervalo: r = 1 en el {REP_R1_PCT} % de las
-  corridas y r = 25 en el {REP_R25_PCT} %, con un {REP_OTROS_PCT} % que queda en radios
-  intermedios. El problema no es que el argmax sea r = 1. Es que <b>la optimización no identifica un
-  radio estable</b>, y por eso el r = 25 adoptado no puede atribuirse a ella. Es la evidencia más
-  firme de H5 que contiene el trabajo. Hay un detalle más, y cierra el
-  argumento: <b>el radio que la búsqueda encuentra con más frecuencia no es el que maximiza la
-  aptitud</b>. r = {REP_R_FREC} aparece más veces pero rinde {REP_FO_FREC}, mientras
-  r = {REP_R_MEJOR} rinde {REP_FO_MEJOR}. El mejor óptimo está en el borde del intervalo y atrae
-  menos inicializaciones. La frecuencia con que el enjambre devuelve un radio no mide, entonces,
-  su calidad. Usar el resultado de la búsqueda para justificar el radio sería usar
-  el argumento equivocado dos veces. <b>Tercero, agrandar el enjambre no cambia el cuadro.</b> La
-  proporción de corridas que terminan en r = 1 va del {REP_PORN_MIN} % al {REP_PORN_MAX} % según el
-  número de partículas y del {REP_PORT_MIN} % al {REP_PORT_MAX} % según las iteraciones, sin
-  tendencia. La aptitud media se mueve en una banda de {REP_BANDA}. La rejilla de {N_CFG}
-  configuraciones del trabajo de referencia no gana estabilidad con más partículas ni más
-  iteraciones.</p>
-  {pie()}
-</div>
-""")
-
-H.append(f"""
-<div class="page">
-  <h2>5. Optimización por PSO (continuación): las {REP_N} corridas, una por una</h2>
-  <p>La tabla siguiente abre el estudio de estabilidad por configuración, que es lo que permite ver
-  de dónde viene la dispersión. Cada fila resume las {REP_REPS} repeticiones de una celda del
-  barrido.</p>
-  <p><b>Tabla 3b.</b> Dispersión de las {REP_N} corridas por configuración de enjambre.</p>
-  {TAB_DISPERSION}
-  <p class="lectura">Lectura: la aptitud mínima y la máxima de casi todas las filas son las mismas
-  ({OE_FO_PUB} y el valor de r = 25), porque la búsqueda termina en uno de los dos bordes del
-  intervalo del radio. La excepción es la primera fila, la configuración con menos evaluaciones. Es
-  también la única que no llega al piso del peso en el 100 % de sus repeticiones. La columna del
-  radio confirma lo que resume la tabla anterior: la proporción que termina en r = 1 no sigue
-  ninguna tendencia con el número de partículas ni con las iteraciones.</p>
-  {pie()}
-</div>
-""")
-
-H.append(f"""
-<div class="page">
-  <h2>5. Optimización por PSO (continuación): el óptimo exacto, por enumeración</h2>
-  <p>La pregunta de si más corridas mejorarían el resultado no se contesta con más corridas. La
-  aptitud es <b>determinista</b> y el radio es <b>entero</b>, porque el operador lo redondea al
-  intervalo [1, 25]. El espacio de búsqueda tiene entonces veinticinco valores en una dimensión y un
-  continuo suave en la otra. Se puede dejar de muestrear y <b>enumerarlo</b>:
-  {OE_N} evaluaciones (los 25 radios por {OE_PASOS} pesos) dan el máximo sin azar, a una fracción
-  del costo de mil corridas de enjambre.</p>
-
-  <p><b>Tabla 3c.</b> Mejor peso y mejor aptitud por radio, con el peso libre y con el peso
-  restringido al rango publicado (primeros y últimos radios del orden).</p>
-  {TAB_OPTIMO_EXACTO}
-
-  <p class="lectura">El resultado corrige el enunciado de H5 en un punto importante. <b>Con el
-  peso restringido</b> al rango publicado, el máximo está en r = {OE_R_PUB} con
-  F<sub>o</sub> = {OE_FO_PUB}. <b>Con el peso libre</b>, el máximo está en
-  r = {OE_R_LIBRE}, el radio que esta tesis adopta, con m = {OE_M_LIBRE} y
-  F<sub>o</sub> = {OE_FO_LIBRE}. El rango heredado cuesta {OE_COSTO} de aptitud. Y el orden de los
-  radios <b>se invierte</b>: con el peso libre la aptitud decrece al bajar el radio y r =
-  {OE_PEOR_LIBRE} pasa a ser el peor ({OE_FO_PEOR_LIBRE}). El mecanismo es simple. Con un peso alto,
-  un radio grande inyecta demasiado detalle y la similitud estructural se derrumba, así que gana el
-  radio chico. En el óptimo verdadero del peso la inyección es pequeña y el radio grande aporta
-  estructura sin costo de fidelidad.</p>
-
-  <p><b>La discrepancia está en el peso, no en el radio.</b> El
-  r = 25 adoptado <b>es</b> el óptimo de la aptitud del trabajo de referencia, una vez que el peso no
-  está atado al piso de un intervalo calibrado para otro operador. El «argmax es r = 1» que se
-  observa dentro del rango publicado es un artefacto de esa restricción, no un desacuerdo entre la
-  aptitud y la batería de evaluación. Lo que sí queda en desacuerdo es el peso, y ahí la
-  equivalencia de energía cierra el cuadro. El óptimo libre m = {OE_M_LIBRE} equivale a
-  m = {f"{float(OE_M_LIBRE.replace(',', '.')) * GANANCIA:.3f}".replace(".", ",")} sobre un disco
-  único, esencialmente el piso 0,30 que la referencia publicó <b>para su disco</b>. El intervalo
-  estaba calibrado para un operador con {f"{GANANCIA:.2f}".replace(".", ",")} veces menos energía de
-  detalle.</p>
-
-  <p class="lectura">Dos consecuencias sobre el estudio de estabilidad. El PSO encontró este óptimo
-  en <b>{OE_HALLADO} de las {REP_N} corridas</b> ({OE_HALLADO_PCT} %) y
-  <b>{"ninguna lo superó" if OE_SUPERAN == 0 else f"{OE_SUPERAN} lo superaron"}</b>: más corridas no
-  pueden mejorarlo, porque el máximo ya está alcanzado. Y el argumento de monotonía del peso, que
-  hasta aquí estaba medido con r = 25, se verifica ahora en <b>los veinticinco radios</b>: el mejor
-  peso dentro del rango publicado es el piso {"en todos" if OE_PISO_SIEMPRE else "en algunos"}.</p>
-  {pie()}
-</div>
-""")
-
-H.append(f"""
-<div class="page">
-  <h2>5. Optimización por PSO (continuación): por qué el barrido de la referencia dispersa</h2>
-  <p>Queda una asimetría por explicar, y explicarla cambia su lectura. El barrido de la referencia
-  devuelve pesos muy distintos entre corridas: mediana {REF_M_MED} y recorrido
-  [{REF_M_MIN}; {REF_M_MAX}] sobre sus {REF_N} corridas. El de esta tesis devuelve
-  {REP_PISO} veces el mismo valor de {REP_N}. Parece una diferencia de calidad de la búsqueda, pero
-  es una diferencia en la <b>forma de la superficie</b>, y su causa se puede medir en sus propios
-  anexos.</p>
-
-  <p><b>Tabla 3d.</b> Recorrido de cada término de la aptitud en las {REF_N} corridas publicadas por
-  el trabajo de referencia.</p>
-  {TAB_REF_RECORRIDO}
-  <p><b>Y la referencia lo confirma con sus propios datos.</b> El equivalente de esta tesis sobre un
-  disco único (m = {f"{M_EQUIV:.2f}".replace(".", ",")}) cae en la banda donde su búsqueda aterrizó:
-  sus {REF_N} corridas seleccionan pesos entre {REF_M_MIN} y {REF_M_MAX}, con medianas por escena de
-  {REF_M_MED_MIN} a {REF_M_MED_MAX}. Los dos trabajos coinciden en el <b>orden de magnitud del
-  realce</b> y difieren solo en el valor de m que lo expresa. El acuerdo no es exacto:
-  {f"{M_EQUIV:.2f}".replace(".", ",")} queda por encima de cuatro de sus cinco medianas, así que el
-  realce adoptado aquí es algo <b>mayor</b> que su valor típico, no idéntico.</p>
-  <p><b>El fenómeno no es exclusivo de este trabajo.</b> En la referencia el que se apoya en la cota
-  es el radio, no el peso: <b>r = 25, el límite superior del intervalo, aparece en {REF_R25} de sus
-  {REF_N} corridas</b> ({REF_R25_PCT} %) y r = 1 en {REF_R1}. También allí, entonces, uno de los dos
-  hiperparámetros lo fija una decisión de acotación y no la búsqueda. Esa decisión está argumentada
-  de forma cualitativa, «evitar el sobresuavizado y la pérdida de características térmicas», mientras
-  su conclusión afirma que el PSO «logró determinar de forma autónoma los valores óptimos». La
-  observación no le quita mérito a la optimización. Solo separa qué decide la optimización y qué
-  sigue siendo diseño.</p>
-
-  <p class="lectura">El término que debía penalizar la distorsión aporta el
-  {REF_REC['PSNR_n'][1]} % de la variación. Con el desplazamiento de la ecuación (29) su PSNR
-  normalizado queda entre 0,94 y 0,99, casi saturado, y suma una constante a cada evaluación sin
-  distinguir entre candidatos. Su criterio efectivo es entonces <b>SSIM + entropía</b>, y esos dos
-  términos se mueven en sentidos <b>opuestos</b> con el peso: al aumentar el realce, la similitud
-  estructural cae y la entropía sube. Dos tendencias opuestas dan un máximo <b>interior</b>. Y un
-  máximo interior sobre una superficie plana quiere decir que cada corrida, con presupuesto finito,
-  se detiene en un punto distinto de su vecindad. De ahí la dispersión.</p>
-
-  <p>En esta tesis, con la definición estándar del PSNR, ese término vale alrededor de 0,17 y sí
-  varía. Por eso la similitud estructural domina la variación y la superficie resulta
-  <b>monótona</b> en el peso. El óptimo cae en el borde del intervalo, y el borde actúa como
-  atractor porque el recorte devuelve todas las partículas al mismo valor. <b>La estabilidad de este
-  barrido no es entonces una virtud del método: es el síntoma de un óptimo contra la pared.</b> Y
-  la dispersión del suyo tampoco es un defecto de su búsqueda. Es lo esperable cuando el
-  óptimo es genuinamente interior, que es el caso más difícil. Hay además una diferencia de
-  diseño que amplifica el contraste. La referencia optimiza <b>por escena</b>, con una corrida
-  independiente para cada una, mientras este trabajo promedia la aptitud sobre tres escenas, y eso
-  suaviza la superficie y hace que un solo óptimo domine.</p>
-  {pie()}
-</div>
-""")
-
-H.append(f"""
-<div class="page">
-  <h2>5. Optimización por PSO (continuación): el mismo barrido, imagen por imagen</h2>
-  <p>El estudio de estabilidad anterior repite la semilla veinte veces sobre las mismas tres
-  imágenes, así que mide dispersión <b>entre semillas</b>. El trabajo de referencia hace otra
-  cosa: una corrida independiente <b>por escena</b>, cinco escenas por veinticinco configuraciones
-  de enjambre. Comparar uno con otro directamente sería comparar cosas distintas. Este trabajo tiene
-  también un barrido con la misma estructura, {_P_NUE['unidades']} imágenes por veinticinco
-  configuraciones, y es el que permite el contraste limpio.</p>
-
-  <p><b>Tabla 3e.</b> El mismo experimento, imagen por imagen, en los dos trabajos y con el piso
-  del peso bajado.</p>
-  {TAB_POR_IMAGEN}
-
-  <p class="lectura">Lectura, en tres pasos. <b>Primero</b>, con el <i>mismo</i> rango los dos
-  operadores se comportan al revés. El disco único de la referencia encuentra pesos interiores
-  (mediana {_P_REF['m_med']}, solo el {_P_REF['piso_pct']} % de sus corridas en el piso), mientras el
-  banco de cinco elementos se clava en el piso en el <b>{_P_NUE['piso_pct']} %</b>.
-  <b>Segundo</b>, al bajar el piso el banco deja de pegarse al borde y su radio modal pasa a
-  <b>r = {_P_LIB['r_moda']}</b>, con el {_P_LIB['r25_pct']} % de las corridas ahí. Es el mismo radio
-  modal que la referencia obtiene con su propio rango ({_P_REF['r25_pct']} % de sus corridas).
-  <b>Tercero</b>, la conclusión. La diferencia de comportamiento no está en la calidad de la
-  búsqueda, está en <b>dónde cae el óptimo de cada operador respecto del intervalo heredado</b>.</p>
-
-  <p>La razón es física y está medida. El banco de cinco elementos extrae
-  <b>{GANANCIA_BANCO} veces</b> la energía de detalle del disco clásico, así que para inyectar
-  el mismo realce necesita un peso {GANANCIA_BANCO} veces menor. La mediana
-  {_P_REF['m_med']} que selecciona la referencia sobre su disco equivale a
-  <b>m = {REF_M_EQUIV}</b> sobre este operador, y ese valor queda <b>por debajo del piso 0,30</b>
-  del intervalo que ambos trabajos heredan. Para este operador ese piso no es un piso: está
-  ya pasado el óptimo. El optimizador no falla. Está detenido contra una pared colocada donde su
-  óptimo no está, y la prueba es que al retirarla se comporta como el de la referencia. Los dos
-  trabajos coinciden en el orden de magnitud del realce físico y difieren en el número que lo
-  expresa.</p>
-  {pie()}
-</div>
-""")
-
-H.append(f"""
-<div class="page">
-  <h2>5. Optimización por PSO (continuación): el mismo barrido con el peso libre</h2>
-  <p>El barrido determinista dice <i>dónde</i> está el óptimo. Queda comprobar si la búsqueda lo
-  <i>encuentra</i> cuando el rango no lo empuja contra la pared. Se repitió entonces el estudio
-  completo ({LIB_REPS} repeticiones de las 25 configuraciones, {LIB_N} corridas) con un único cambio:
-  bajar el piso del peso de 0,30 a {LIB_PISO}. Todo lo demás es idéntico, mismas escenas, mismas
-  semillas, mismo operador.</p>
-
-  <p><b>Tabla 3f.</b> El mismo barrido bajo los dos rangos de búsqueda.</p>
-  {TAB_DOS_RANGOS}
-
-  <p class="lectura">Lectura, y confirma el apartado anterior. <b>El peso</b>: con el rango
-  libre la búsqueda ya no se pega a un borde, converge al óptimo interior, con mediana
-  {LIB_M_MED} frente al {OE_M_LIBRE} que la enumeración señala como exacto. No es perfecta.
-  {LIB_PISO_N} corridas ({LIB_PISO_PCT} %) quedan atascadas en el piso nuevo, así que un óptimo
-  interior es de verdad más difícil de alcanzar que un borde. <b>El radio</b>: acá está el
-  dato que importa. Con el peso libre la búsqueda se concentra en <b>r = 25 en el
-  {LIB_R25_PCT} %</b> de las corridas, contra el {REP_R25_PCT} % del rango publicado, y r = 1 cae del
-  {REP_R1_PCT} % al {LIB_R1_PCT} %. <b>La indefinición del radio era, también, un artefacto del
-  rango.</b></p>
-
-  <p>El cuadro completo de H5 queda así. El radio r = 25 que esta tesis adopta es
-  el óptimo exacto de la aptitud con el peso libre, y es además la respuesta modal de la búsqueda en
-  esas condiciones. No hay que defenderlo contra la optimización: es el radio que la
-  optimización elige cuando no la restringe un intervalo ajeno. Lo que el intervalo heredado
-  determina es el <b>peso</b>, y lo determina por completo. Fija m = 0,30 en el
-  {REP_PISO_PCT} % de las corridas, cuando el óptimo real de la aptitud está cuatro veces más abajo.
-  El aporte de la tesis en este punto no es que el PSO falle. Es que <b>el rango de
-  búsqueda heredado, y no el optimizador, es lo que fija uno de los dos hiperparámetros</b>. Es una
-  afirmación sobre el protocolo, y ahora está medida en las dos direcciones.</p>
-  {pie()}
-</div>
-""")
-
-H.append(f"""
-<div class="page">
-  <h2>5. Optimización por PSO (continuación): el registro de las {CORRIDAS_TOTAL} corridas</h2>
-  <p>El trabajo de referencia publica sus 125 corridas en anexos, una por fila. Este publica las
-  {CORRIDAS_TOTAL} en la matriz siguiente. <b>Cada celda es una corrida</b>: las filas son las 25
-  configuraciones de enjambre y las columnas las {REP_REPS} repeticiones independientes de cada una.
-  El valor de la celda es el <b>radio</b> que esa corrida devolvió, que es lo que varía. El peso
-  resultó m* = 0,30 en todas menos {"una" if len(_fuera_piso) == 1 else str(len(_fuera_piso))}, que se
-  identifica al pie. El total son {CORRIDAS_EVALS} evaluaciones de aptitud y {CORRIDAS_HORAS} horas de
-  cálculo.</p>
-
-  <p><b>Tabla 3g.</b> Radio óptimo devuelto por cada una de las {CORRIDAS_TOTAL} corridas. Filas:
-  partículas (n) e iteraciones (T). Columnas: número de repetición.</p>
-  {TAB_500_RADIO}
-
-  <p class="lectura">La matriz muestra de un vistazo lo que las tablas anteriores resumen. Las
-  celdas alternan entre 1 y 25 sin patrón por fila ni por columna, y los radios intermedios aparecen
-  de forma aislada. Ni el número de partículas ni el de iteraciones concentran un valor. La
-  repetición 1 es la que conserva las semillas del barrido publicado, y su columna reproduce ese
-  barrido celda por celda, lo que permite verificar que el estudio no cambió nada más que la semilla.
-  Excepción en el peso: {CORRIDAS_EXCEPCION}. El registro completo, con el peso, la aptitud y el
-  tiempo de cada corrida, está en <i>pso_repeticiones_propuesta.csv</i>; el del barrido con el peso
-  libre, en <i>pso_repeticiones_propuesta_libre.csv</i>.</p>
+  <h2>5. Optimización por PSO (continuación): la conclusión de H5</h2>
+  <p>Queda la pregunta que da nombre a la hipótesis: cuánto de la configuración adoptada la
+  determina la optimización. El barrido publicado tiene una configuración por celda y una sola
+  semilla, así que sus {N_CFG} resultados <b>no son {N_CFG} confirmaciones independientes</b> —la
+  aptitud es determinista y las semillas estaban fijadas por la configuración y el número de
+  iteración, de modo que repetir una celda devolvía el mismo resultado—. Para medir la dispersión de
+  verdad se repitió {REP_REPS} veces cada configuración, con la semilla en función de
+  (n, T, repetición): {REP_N} corridas.</p>
+  <p><b>El peso es robusto; el radio no.</b> m* = 0,30 sale en {REP_PISO} de las {REP_N} corridas
+  ({REP_PISO_PCT} %). El radio, en cambio, se reparte entre los dos bordes del intervalo: r = 1 en el
+  {REP_R1_PCT} % y r = 25 en el {REP_R25_PCT} %, con un {REP_OTROS_PCT} % en radios intermedios. El
+  problema no es que el argmax sea r = 1, sino que <b>la optimización no identifica un radio
+  estable</b>, y por eso el r = 25 adoptado no puede atribuírsele. Un detalle cierra el argumento: el
+  radio que la búsqueda encuentra con más frecuencia no es el que maximiza la aptitud
+  —r = {REP_R_FREC} aparece más veces pero rinde {REP_FO_FREC}, mientras r = {REP_R_MEJOR} rinde
+  {REP_FO_MEJOR}—, así que la frecuencia con que el enjambre devuelve un radio no mide su
+  calidad.</p>
+  <p><b>Y no hace falta seguir muestreando.</b> La aptitud es determinista y el radio es entero,
+  porque el operador lo redondea al intervalo [1, 25], así que el espacio se puede <b>enumerar</b>:
+  {OE_N} evaluaciones dan el máximo sin azar. Con el peso restringido al rango publicado el máximo
+  está en r = {OE_R_PUB} con F<sub>o</sub> = {OE_FO_PUB}; con el peso libre está en
+  <b>r = {OE_R_LIBRE}</b>, el radio que esta tesis adopta, con m = {OE_M_LIBRE} y
+  F<sub>o</sub> = {OE_FO_LIBRE}. El rango heredado cuesta {OE_COSTO} de aptitud. Y al repetir el
+  estudio completo con el piso del peso bajado, la búsqueda se concentra en r = 25 en el
+  <b>{LIB_R25_PCT} %</b> de las corridas contra el {REP_R25_PCT} % del rango publicado: la
+  indefinición del radio era, también, un artefacto del rango.</p>
+  <p><b>El cuadro completo de H5 queda así.</b> El radio r = 25 que esta tesis adopta es el óptimo
+  exacto de la aptitud con el peso libre, y es además la respuesta modal de la búsqueda en esas
+  condiciones: no hay que defenderlo contra la optimización. Lo que el intervalo heredado determina
+  es el <b>peso</b>, y lo determina por completo, fijándolo en m = 0,30 en el {REP_PISO_PCT} % de las
+  corridas cuando el óptimo real de la aptitud está cuatro veces más abajo. El aporte de la tesis en
+  este punto no es que el PSO falle: es que <b>el rango de búsqueda heredado, y no el optimizador, es
+  lo que fija uno de los dos hiperparámetros</b>. Es una afirmación sobre el protocolo, y está medida
+  en las dos direcciones. El desarrollo —el registro de las {CORRIDAS_TOTAL} corridas, la enumeración
+  exacta, el barrido de la referencia y el barrido con el peso libre— está en el
+  <b>anexo A21</b>.</p>
   {pie()}
 </div>
 """)
@@ -3258,14 +2985,12 @@ _nota_anexo = f"""
   {_R_DISTINTOS} radios distintos y entre {_R_POR_PAR_LO} y {_R_POR_PAR_HI} valores diferentes por
   par. El <b>peso, en cambio, se fija en
   m = {_m_moda}</b> (en {_m30} de {N_ESC} pares) porque F<sub>o</sub> <b>decrece de forma estrictamente
-  monótona</b> al aumentar m en todo el rango publicado —verificado con un barrido de paso 0,05: cero
-  tramos crecientes en 34, tanto con r = 1 como con r = 25—, de modo que el máximo se ubica
+  monótona</b> al aumentar m en todo el rango publicado —de los {M_TRAMOS} tramos del barrido determinista, {M_CRECIENTES} son crecientes, y la enumeración exacta lo confirma {"en los veinticinco radios" if OE_PISO_SIEMPRE else "en la mayoría de los radios"}—, de modo que el máximo se ubica
   necesariamente en el <b>límite inferior del intervalo</b>. No es una limitación de la búsqueda: las
-  únicas {_n_no_borde} filas (de 500) con m &ne; {_m_moda} corresponden a configuraciones de pocas partículas o
+  únicas {_n_no_borde} de las {N_ESC} × {N_CFG} filas de estos anexos con m &ne; {_m_moda} corresponden a configuraciones de pocas partículas o
   iteraciones que no alcanzaron el óptimo. <b>Dentro de este rango de búsqueda</b> el radio que
   maximiza F<sub>o</sub> es r = 1 en {_r1} de {N_ESC} imágenes, coherente con que la aptitud premia la
-  fidelidad a las fuentes y por lo tanto el mínimo realce. El calificador importa y la sección 5 lo
-  desarrolla: <b>sin la restricción del rango heredado el argmax de F<sub>o</sub> es r = 25</b>, con
+  fidelidad a las fuentes y por lo tanto el mínimo realce. El calificador importa, y el anexo A21 lo desarrolla: <b>sin la restricción del rango heredado el argmax de F<sub>o</sub> es r = 25</b>, con
   m = {OE_M_LIBRE} y F<sub>o</sub> = {OE_FO_LIBRE}, de modo que r = 1 es el óptimo del intervalo
   ajeno y no de la aptitud. La configuración adoptada (<b>r = 25</b>) no proviene de F<sub>o</sub>
   restringida sino del criterio de
@@ -3285,6 +3010,379 @@ for _i, _img in enumerate(IMAGENES, 1):
   la configuración de mayor aptitud.</p>
   {tabla_anexo(_img)}
   {_nota_anexo if _i == 1 else ""}
+  {pie()}
+</div>
+""")
+
+# ---------- Anexo A21: el desarrollo tecnico de la optimizacion por PSO ----------
+# Estas diez paginas estaban en la seccion 5, que asi ocupaba doce paginas y 5.683 palabras: mas que
+# ninguna otra seccion del informe, y sobre un componente cuya conclusion es que el optimizador no
+# determina la configuracion adoptada. En la seccion 5 quedaron el barrido, el punto de operacion y el
+# veredicto de H5, cuatro paginas; el desarrollo instrumental —los registros corrida por corrida, la
+# enumeracion exacta, los barridos repetidos— vino a parar aca. NADA SE ELIMINO.
+#
+# El orden entre ellas se conserva a proposito: se remiten entre si con «la pagina anterior» y «el
+# apartado anterior», y reordenarlas dejaria esas remisiones apuntando a otra cosa.
+#
+# Van DESPUES del bucle de los anexos por escena y no en una lista aparte porque pie() numera en el
+# momento en que se evalua su f-string: puestas en una lista con H.extend al final, llevarian los
+# numeros de pagina de su posicion vieja.
+
+H.append(f"""
+<div class="page">
+  <h2>A21. Desarrollo técnico de la optimización por PSO: justificación del peso adoptado</h2>
+  <p>El peso <b>m = 0,30</b> necesita una justificación explícita. Es el límite inferior del
+  rango publicado y a primera vista puede parecer una elección arbitraria o un valor
+  artificialmente bajo. No lo es. Cuatro criterios <b>independientes entre sí</b> llevan a él.</p>
+
+  <p><b>Primero, el óptimo lo fuerza la forma de la aptitud; no es una elección.</b> Un barrido
+  determinista muestra que F<sub>o</sub> <b>decrece de forma estrictamente monótona</b> al aumentar m
+  dentro del rango publicado. De los {M_TRAMOS} tramos, {M_CRECIENTES} son crecientes. El valor va de
+  {f"{FO_M030:.4f}".replace(".", ",")} en m = 0,30 a {f"{FO_M200:.4f}".replace(".", ",")} en
+  m = 2,00. Por eso m* = 0,30 es el <b>único máximo posible</b> dentro del intervalo, y
+  cualquier optimizador termina ahí. No depende de la semilla ni de la suerte de la búsqueda. Eso
+  explica que las 25 configuraciones del enjambre coincidan, y hace que el resultado sea
+  reproducible por construcción.</p>
+
+  <p><b>Segundo, el rango viene del trabajo de referencia, pero el valor no.</b> El intervalo
+  m &isin; [0,30; 2,00] es el espacio de búsqueda publicado por Ortega y Espinoza (2025). Ellos lo
+  acotan para «evitar estos extremos», el escaso realce por un lado y el sobrecontraste con
+  artefactos por el otro. Adoptarlo es lo que hace comparable este trabajo con aquel. Acá hay que
+  ser claro con lo que le corresponde a cada uno, porque es fácil atribuir de más. <b>Con el
+  disco único de la referencia, su PSO elige valores interiores del rango, no el piso</b>. Sobre las
+  {REF_N} corridas de sus cinco escenas (sus anexos publican las 25 configuraciones de cada una) la
+  mediana del peso es <b>{REF_M_MED}</b>, con recorrido [{REF_M_MIN}; {REF_M_MAX}], y solo una escena
+  ({REF_ESC_PISO}) se ancla en el piso, en {REF_PISO} de sus 25 configuraciones. Entonces el anclaje
+  que este trabajo observa en las {N_CFG} configuraciones es <b>una propiedad del operador</b>, y no
+  de la función de aptitud ni del rango. La misma aptitud y el mismo intervalo dan óptimo interior
+  sobre un disco y óptimo de borde sobre el banco de cinco.</p>
+
+  <p><b>Cuadro A21a.</b> Peso óptimo por escena en el trabajo de referencia (disco único, 25
+  configuraciones de enjambre por escena; extraído de sus anexos con
+  <i>referencia_pso_ortega_espinoza.py</i>).</p>
+  {TAB_REFERENCIA}
+
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>A21. Desarrollo técnico de la optimización por PSO (continuación): la equivalencia del realce físico</h2>
+  <p><b>Tercero, el argumento central: la equivalencia del realce físico.</b> El realce que
+  de verdad entra en la reconstrucción no es m. Es el producto <b>m · |W|</b> del peso por
+  la energía de detalle que extrae el operador. El banco de cinco elementos estructurantes extrae
+  {f"{W_PROP:.4f}".replace(".", ",")} frente a {f"{W_CLAS:.4f}".replace(".", ",")} del disco único de
+  la metodología clásica, es decir <b>{f"{GANANCIA:.2f}".replace(".", ",")} veces más energía</b>. Así
+  que un mismo peso no produce el mismo realce en los dos operadores. Comparar los valores de m
+  sin corregir esa ganancia es comparar unidades distintas. Corrigiendo:</p>
+  <ul>
+    <li>m = 0,30 sobre el banco propuesto equivale a <b>m = {f"{M_EQUIV:.2f}".replace(".", ",")}</b>
+        sobre un disco único. Ese valor cae <b>dentro</b> del rango publicado [0,30; 2,00], al
+        {f"{POS_EN_RANGO:.0f}"} % de su recorrido y a
+        {f"{abs(M_EQUIV - 1.0):.2f}".replace(".", ",")} del peso canónico m = 1. Al revés pasa lo
+        mismo. Ese rango traducido a este operador es
+        [{f"{RANGO_LO:.4f}".replace(".", ",")}; {f"{RANGO_HI:.4f}".replace(".", ",")}], y m = 0,30
+        también cae dentro.</li>
+  </ul>
+  <p>Es decir que el peso adoptado <b>no es un valor bajo</b>. Es el que reproduce el realce físico
+  del rango publicado, una vez corregida la diferencia de energía entre los dos operadores. Solo
+  parece bajo si se olvida que el operador cambió.</p>
+
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>A21. Desarrollo técnico de la optimización por PSO (continuación): rango dinámico y tensión de criterios</h2>
+  <p><b>Cuarto criterio: el rango dinámico de la reconstrucción.</b> La imagen fusionada se recorta a
+  [0, 1] antes de evaluarse. Los píxeles que caen fuera quedan aplastados y su información se pierde.
+  El operador propuesto inyecta
+  {f"{GANANCIA:.2f}".replace(".", ",")} veces más detalle que un disco único, así que el recorte se
+  vuelve restrictivo mucho antes.</p>
+  <p><b>Cuadro A21b.</b> Porcentaje de píxeles saturados por el recorte según el peso, con r = 25 sobre
+  los {N_ESC} pares.</p>
+  {TAB_SATURACION}
+  <p class="lectura">Lectura: con m = 0,30 la saturación es de
+  {f"{SAT_030:.2f}".replace(".", ",")} %, o sea por debajo del 1 % de los píxeles. Con el peso
+  canónico de la metodología clásica (m = 1) este operador saturaría
+  {f"{SAT_100:.2f}".replace(".", ",")} % ({f"{SAT_VECES:.1f}".replace(".", ",")} veces más) y con
+  m = 2,00 más de {f"{SAT_200:.0f}"} % de la imagen. El peso adoptado es entonces compatible con el
+  rango dinámico del operador, y este criterio <b>no depende de la función de aptitud</b>.</p>
+
+  <p><b>Por qué el punto es un compromiso y no un máximo de todo.</b> Los dos criterios del trabajo
+  empujan m en sentidos opuestos. La aptitud F<sub>o</sub> lo empuja hacia abajo, porque dos de sus
+  tres términos miden fidelidad a las fuentes. Las nueve métricas de evaluación lo empujan hacia
+  arriba, porque todas son de tipo «mayor es mejor» y premian la actividad.</p>
+  <p><b>Cuadro A21c.</b> Comportamiento opuesto de los dos criterios al variar el peso (r = 25).</p>
+  {TAB_TENSION}
+  <p class="lectura">Lectura: al pasar de m = 0,30 a m = 2,00 la aptitud cae de
+  {f"{FO_M030:.4f}".replace(".", ",")} a {f"{FO_M200:.4f}".replace(".", ",")} mientras la suma de las
+  nueve métricas sube de {f"{FN_M030:.3f}".replace(".", ",")} a
+  {f"{FN_M200:.3f}".replace(".", ",")}. El mismo cambio de peso mejora un criterio y empeora el otro.
+  La columna de aptitud es la del enjambre, la misma que reporta la Tabla 1 de la sección 5; las tres restantes
+  provienen del barrido determinista sobre las mismas tres escenas.
+  El SSIM se derrumba y la frecuencia espacial se dispara. <b>m = 0,30 es el punto donde esa tensión
+  se resuelve</b> del lado de la aptitud publicada, y respeta además el rango dinámico. El PSO no
+  <i>descubre</i> este valor explorando un espacio con óptimo interior. Lo que hace es
+  <b>confirmar un óptimo que la forma de la aptitud determina</b>. Del trabajo de referencia se
+  hereda la elección del rango.</p>
+
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>A21. Desarrollo técnico de la optimización por PSO (continuación): estabilidad del barrido en {REP_N} corridas</h2>
+  <p>El barrido publicado tiene una configuración por celda y una sola semilla, así que sus 25
+  resultados <b>no son 25 confirmaciones independientes</b>. La aptitud es determinista y las semillas
+  estaban fijadas por la configuración y por el número de iteración. Repetir una celda devolvía
+  entonces el mismo resultado. Para medir de verdad la dispersión se repitió
+  <b>{REP_REPS} veces cada configuración</b>, con la semilla en función de (n, T, repetición). Son
+  <b>{REP_N} corridas</b> y {REP_EVALS} evaluaciones de aptitud. Como control de que no cambió nada
+  más que la semilla, la repetición 0 conserva las semillas originales y reproduce el barrido
+  publicado celda por celda.</p>
+
+  <p><b>Cuadro A21d.</b> Distribución del radio óptimo hallado sobre las {REP_N} corridas.</p>
+  {TAB_REP_RADIO}
+
+  <p class="lectura">Lectura, en tres puntos. <b>Primero, el peso es robusto</b>: m* = 0,30 en
+  {REP_PISO} de las {REP_N} corridas ({REP_PISO_PCT} %), {REP_VEREDICTO_PESO}. Esto confirma con
+  datos el argumento de la página anterior. <b>Segundo, el radio no lo es.</b>
+  La búsqueda se reparte entre los dos bordes del intervalo: r = 1 en el {REP_R1_PCT} % de las
+  corridas y r = 25 en el {REP_R25_PCT} %, con un {REP_OTROS_PCT} % que queda en radios
+  intermedios. El problema no es que el argmax sea r = 1. Es que <b>la optimización no identifica un
+  radio estable</b>, y por eso el r = 25 adoptado no puede atribuirse a ella. Es la evidencia más
+  firme de H5 que contiene el trabajo. Hay un detalle más, y cierra el
+  argumento: <b>el radio que la búsqueda encuentra con más frecuencia no es el que maximiza la
+  aptitud</b>. r = {REP_R_FREC} aparece más veces pero rinde {REP_FO_FREC}, mientras
+  r = {REP_R_MEJOR} rinde {REP_FO_MEJOR}. El mejor óptimo está en el borde del intervalo y atrae
+  menos inicializaciones. La frecuencia con que el enjambre devuelve un radio no mide, entonces,
+  su calidad. Usar el resultado de la búsqueda para justificar el radio sería usar
+  el argumento equivocado dos veces. <b>Tercero, agrandar el enjambre no cambia el cuadro.</b> La
+  proporción de corridas que terminan en r = 1 va del {REP_PORN_MIN} % al {REP_PORN_MAX} % según el
+  número de partículas y del {REP_PORT_MIN} % al {REP_PORT_MAX} % según las iteraciones, sin
+  tendencia. La aptitud media se mueve en una banda de {REP_BANDA}. La rejilla de {N_CFG}
+  configuraciones del trabajo de referencia no gana estabilidad con más partículas ni más
+  iteraciones.</p>
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>A21. Desarrollo técnico de la optimización por PSO (continuación): las {REP_N} corridas, una por una</h2>
+  <p>La tabla siguiente abre el estudio de estabilidad por configuración, que es lo que permite ver
+  de dónde viene la dispersión. Cada fila resume las {REP_REPS} repeticiones de una celda del
+  barrido.</p>
+  <p><b>Cuadro A21e.</b> Dispersión de las {REP_N} corridas por configuración de enjambre.</p>
+  {TAB_DISPERSION}
+  <p class="lectura">Lectura: la aptitud mínima y la máxima de casi todas las filas son las mismas
+  ({OE_FO_PUB} y el valor de r = 25), porque la búsqueda termina en uno de los dos bordes del
+  intervalo del radio. La excepción es la primera fila, la configuración con menos evaluaciones. Es
+  también la única que no llega al piso del peso en el 100 % de sus repeticiones. La columna del
+  radio confirma lo que resume la tabla anterior: la proporción que termina en r = 1 no sigue
+  ninguna tendencia con el número de partículas ni con las iteraciones.</p>
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>A21. Desarrollo técnico de la optimización por PSO (continuación): el óptimo exacto, por enumeración</h2>
+  <p>La pregunta de si más corridas mejorarían el resultado no se contesta con más corridas. La
+  aptitud es <b>determinista</b> y el radio es <b>entero</b>, porque el operador lo redondea al
+  intervalo [1, 25]. El espacio de búsqueda tiene entonces veinticinco valores en una dimensión y un
+  continuo suave en la otra. Se puede dejar de muestrear y <b>enumerarlo</b>:
+  {OE_N} evaluaciones (los 25 radios por {OE_PASOS} pesos) dan el máximo sin azar, a una fracción
+  del costo de mil corridas de enjambre.</p>
+
+  <p><b>Cuadro A21f.</b> Mejor peso y mejor aptitud por radio, con el peso libre y con el peso
+  restringido al rango publicado (primeros y últimos radios del orden).</p>
+  {TAB_OPTIMO_EXACTO}
+
+  <p class="lectura">El resultado corrige el enunciado de H5 en un punto importante. <b>Con el
+  peso restringido</b> al rango publicado, el máximo está en r = {OE_R_PUB} con
+  F<sub>o</sub> = {OE_FO_PUB}. <b>Con el peso libre</b>, el máximo está en
+  r = {OE_R_LIBRE}, el radio que esta tesis adopta, con m = {OE_M_LIBRE} y
+  F<sub>o</sub> = {OE_FO_LIBRE}. El rango heredado cuesta {OE_COSTO} de aptitud. Y el orden de los
+  radios <b>se invierte</b>: con el peso libre la aptitud decrece al bajar el radio y r =
+  {OE_PEOR_LIBRE} pasa a ser el peor ({OE_FO_PEOR_LIBRE}). El mecanismo es simple. Con un peso alto,
+  un radio grande inyecta demasiado detalle y la similitud estructural se derrumba, así que gana el
+  radio chico. En el óptimo verdadero del peso la inyección es pequeña y el radio grande aporta
+  estructura sin costo de fidelidad.</p>
+
+  <p><b>La discrepancia está en el peso, no en el radio.</b> El
+  r = 25 adoptado <b>es</b> el óptimo de la aptitud del trabajo de referencia, una vez que el peso no
+  está atado al piso de un intervalo calibrado para otro operador. El «argmax es r = 1» que se
+  observa dentro del rango publicado es un artefacto de esa restricción, no un desacuerdo entre la
+  aptitud y la batería de evaluación. Lo que sí queda en desacuerdo es el peso, y ahí la
+  equivalencia de energía cierra el cuadro. El óptimo libre m = {OE_M_LIBRE} equivale a
+  m = {f"{float(OE_M_LIBRE.replace(',', '.')) * GANANCIA:.3f}".replace(".", ",")} sobre un disco
+  único, esencialmente el piso 0,30 que la referencia publicó <b>para su disco</b>. El intervalo
+  estaba calibrado para un operador con {f"{GANANCIA:.2f}".replace(".", ",")} veces menos energía de
+  detalle.</p>
+
+  <p class="lectura">Dos consecuencias sobre el estudio de estabilidad. El PSO encontró este óptimo
+  en <b>{OE_HALLADO} de las {REP_N} corridas</b> ({OE_HALLADO_PCT} %) y
+  <b>{"ninguna lo superó" if OE_SUPERAN == 0 else f"{OE_SUPERAN} lo superaron"}</b>: más corridas no
+  pueden mejorarlo, porque el máximo ya está alcanzado. Y el argumento de monotonía del peso, que
+  hasta aquí estaba medido con r = 25, se verifica ahora en <b>los veinticinco radios</b>: el mejor
+  peso dentro del rango publicado es el piso {"en todos" if OE_PISO_SIEMPRE else "en algunos"}.</p>
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>A21. Desarrollo técnico de la optimización por PSO (continuación): por qué el barrido de la referencia dispersa</h2>
+  <p>Queda una asimetría por explicar, y explicarla cambia su lectura. El barrido de la referencia
+  devuelve pesos muy distintos entre corridas: mediana {REF_M_MED} y recorrido
+  [{REF_M_MIN}; {REF_M_MAX}] sobre sus {REF_N} corridas. El de esta tesis devuelve
+  {REP_PISO} veces el mismo valor de {REP_N}. Parece una diferencia de calidad de la búsqueda, pero
+  es una diferencia en la <b>forma de la superficie</b>, y su causa se puede medir en sus propios
+  anexos.</p>
+
+  <p><b>Cuadro A21g.</b> Recorrido de cada término de la aptitud en las {REF_N} corridas publicadas por
+  el trabajo de referencia.</p>
+  {TAB_REF_RECORRIDO}
+  <p><b>Y la referencia lo confirma con sus propios datos.</b> El equivalente de esta tesis sobre un
+  disco único (m = {f"{M_EQUIV:.2f}".replace(".", ",")}) cae en la banda donde su búsqueda aterrizó:
+  sus {REF_N} corridas seleccionan pesos entre {REF_M_MIN} y {REF_M_MAX}, con medianas por escena de
+  {REF_M_MED_MIN} a {REF_M_MED_MAX}. Los dos trabajos coinciden en el <b>orden de magnitud del
+  realce</b> y difieren solo en el valor de m que lo expresa. El acuerdo no es exacto:
+  {f"{M_EQUIV:.2f}".replace(".", ",")} queda por encima de cuatro de sus cinco medianas, así que el
+  realce adoptado aquí es algo <b>mayor</b> que su valor típico, no idéntico.</p>
+  <p><b>El fenómeno no es exclusivo de este trabajo.</b> En la referencia el que se apoya en la cota
+  es el radio, no el peso: <b>r = 25, el límite superior del intervalo, aparece en {REF_R25} de sus
+  {REF_N} corridas</b> ({REF_R25_PCT} %) y r = 1 en {REF_R1}. También allí, entonces, uno de los dos
+  hiperparámetros lo fija una decisión de acotación y no la búsqueda. Esa decisión está argumentada
+  de forma cualitativa, «evitar el sobresuavizado y la pérdida de características térmicas», mientras
+  su conclusión afirma que el PSO «logró determinar de forma autónoma los valores óptimos». La
+  observación no le quita mérito a la optimización. Solo separa qué decide la optimización y qué
+  sigue siendo diseño.</p>
+
+  <p class="lectura">El término que debía penalizar la distorsión aporta el
+  {REF_REC['PSNR_n'][1]} % de la variación. Con el desplazamiento de la ecuación (29) su PSNR
+  normalizado queda entre 0,94 y 0,99, casi saturado, y suma una constante a cada evaluación sin
+  distinguir entre candidatos. Su criterio efectivo es entonces <b>SSIM + entropía</b>, y esos dos
+  términos se mueven en sentidos <b>opuestos</b> con el peso: al aumentar el realce, la similitud
+  estructural cae y la entropía sube. Dos tendencias opuestas dan un máximo <b>interior</b>. Y un
+  máximo interior sobre una superficie plana quiere decir que cada corrida, con presupuesto finito,
+  se detiene en un punto distinto de su vecindad. De ahí la dispersión.</p>
+
+  <p>En esta tesis, con la definición estándar del PSNR, ese término vale alrededor de 0,17 y sí
+  varía. Por eso la similitud estructural domina la variación y la superficie resulta
+  <b>monótona</b> en el peso. El óptimo cae en el borde del intervalo, y el borde actúa como
+  atractor porque el recorte devuelve todas las partículas al mismo valor. <b>La estabilidad de este
+  barrido no es entonces una virtud del método: es el síntoma de un óptimo contra la pared.</b> Y
+  la dispersión del suyo tampoco es un defecto de su búsqueda. Es lo esperable cuando el
+  óptimo es genuinamente interior, que es el caso más difícil. Hay además una diferencia de
+  diseño que amplifica el contraste. La referencia optimiza <b>por escena</b>, con una corrida
+  independiente para cada una, mientras este trabajo promedia la aptitud sobre tres escenas, y eso
+  suaviza la superficie y hace que un solo óptimo domine.</p>
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>A21. Desarrollo técnico de la optimización por PSO (continuación): el mismo barrido, imagen por imagen</h2>
+  <p>El estudio de estabilidad anterior repite la semilla veinte veces sobre las mismas tres
+  imágenes, así que mide dispersión <b>entre semillas</b>. El trabajo de referencia hace otra
+  cosa: una corrida independiente <b>por escena</b>, cinco escenas por veinticinco configuraciones
+  de enjambre. Comparar uno con otro directamente sería comparar cosas distintas. Este trabajo tiene
+  también un barrido con la misma estructura, {_P_NUE['unidades']} imágenes por veinticinco
+  configuraciones, y es el que permite el contraste limpio.</p>
+
+  <p><b>Cuadro A21h.</b> El mismo experimento, imagen por imagen, en los dos trabajos y con el piso
+  del peso bajado.</p>
+  {TAB_POR_IMAGEN}
+
+  <p class="lectura">Lectura, en tres pasos. <b>Primero</b>, con el <i>mismo</i> rango los dos
+  operadores se comportan al revés. El disco único de la referencia encuentra pesos interiores
+  (mediana {_P_REF['m_med']}, solo el {_P_REF['piso_pct']} % de sus corridas en el piso), mientras el
+  banco de cinco elementos se clava en el piso en el <b>{_P_NUE['piso_pct']} %</b>.
+  <b>Segundo</b>, al bajar el piso el banco deja de pegarse al borde y su radio modal pasa a
+  <b>r = {_P_LIB['r_moda']}</b>, con el {_P_LIB['r25_pct']} % de las corridas ahí. Es el mismo radio
+  modal que la referencia obtiene con su propio rango ({_P_REF['r25_pct']} % de sus corridas).
+  <b>Tercero</b>, la conclusión. La diferencia de comportamiento no está en la calidad de la
+  búsqueda, está en <b>dónde cae el óptimo de cada operador respecto del intervalo heredado</b>.</p>
+
+  <p>La razón es física y está medida. El banco de cinco elementos extrae
+  <b>{GANANCIA_BANCO} veces</b> la energía de detalle del disco clásico, así que para inyectar
+  el mismo realce necesita un peso {GANANCIA_BANCO} veces menor. La mediana
+  {_P_REF['m_med']} que selecciona la referencia sobre su disco equivale a
+  <b>m = {REF_M_EQUIV}</b> sobre este operador, y ese valor queda <b>por debajo del piso 0,30</b>
+  del intervalo que ambos trabajos heredan. Para este operador ese piso no es un piso: está
+  ya pasado el óptimo. El optimizador no falla. Está detenido contra una pared colocada donde su
+  óptimo no está, y la prueba es que al retirarla se comporta como el de la referencia. Los dos
+  trabajos coinciden en el orden de magnitud del realce físico y difieren en el número que lo
+  expresa.</p>
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>A21. Desarrollo técnico de la optimización por PSO (continuación): el mismo barrido con el peso libre</h2>
+  <p>El barrido determinista dice <i>dónde</i> está el óptimo. Queda comprobar si la búsqueda lo
+  <i>encuentra</i> cuando el rango no lo empuja contra la pared. Se repitió entonces el estudio
+  completo ({LIB_REPS} repeticiones de las 25 configuraciones, {LIB_N} corridas) con un único cambio:
+  bajar el piso del peso de 0,30 a {LIB_PISO}. Todo lo demás es idéntico, mismas escenas, mismas
+  semillas, mismo operador.</p>
+
+  <p><b>Cuadro A21i.</b> El mismo barrido bajo los dos rangos de búsqueda.</p>
+  {TAB_DOS_RANGOS}
+
+  <p class="lectura">Lectura, y confirma el apartado anterior. <b>El peso</b>: con el rango
+  libre la búsqueda ya no se pega a un borde, converge al óptimo interior, con mediana
+  {LIB_M_MED} frente al {OE_M_LIBRE} que la enumeración señala como exacto. No es perfecta.
+  {LIB_PISO_N} corridas ({LIB_PISO_PCT} %) quedan atascadas en el piso nuevo, así que un óptimo
+  interior es de verdad más difícil de alcanzar que un borde. <b>El radio</b>: acá está el
+  dato que importa. Con el peso libre la búsqueda se concentra en <b>r = 25 en el
+  {LIB_R25_PCT} %</b> de las corridas, contra el {REP_R25_PCT} % del rango publicado, y r = 1 cae del
+  {REP_R1_PCT} % al {LIB_R1_PCT} %. <b>La indefinición del radio era, también, un artefacto del
+  rango.</b></p>
+
+  <p>El cuadro completo de H5 queda así. El radio r = 25 que esta tesis adopta es
+  el óptimo exacto de la aptitud con el peso libre, y es además la respuesta modal de la búsqueda en
+  esas condiciones. No hay que defenderlo contra la optimización: es el radio que la
+  optimización elige cuando no la restringe un intervalo ajeno. Lo que el intervalo heredado
+  determina es el <b>peso</b>, y lo determina por completo. Fija m = 0,30 en el
+  {REP_PISO_PCT} % de las corridas, cuando el óptimo real de la aptitud está cuatro veces más abajo.
+  El aporte de la tesis en este punto no es que el PSO falle. Es que <b>el rango de
+  búsqueda heredado, y no el optimizador, es lo que fija uno de los dos hiperparámetros</b>. Es una
+  afirmación sobre el protocolo, y ahora está medida en las dos direcciones.</p>
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>A21. Desarrollo técnico de la optimización por PSO (continuación): el registro de las {CORRIDAS_TOTAL} corridas</h2>
+  <p>El trabajo de referencia publica sus 125 corridas en anexos, una por fila. Este publica las
+  {CORRIDAS_TOTAL} en la matriz siguiente. <b>Cada celda es una corrida</b>: las filas son las 25
+  configuraciones de enjambre y las columnas las {REP_REPS} repeticiones independientes de cada una.
+  El valor de la celda es el <b>radio</b> que esa corrida devolvió, que es lo que varía. El peso
+  resultó m* = 0,30 en todas menos {"una" if len(_fuera_piso) == 1 else str(len(_fuera_piso))}, que se
+  identifica al pie. El total son {CORRIDAS_EVALS} evaluaciones de aptitud y {CORRIDAS_HORAS} horas de
+  cálculo.</p>
+
+  <p><b>Cuadro A21j.</b> Radio óptimo devuelto por cada una de las {CORRIDAS_TOTAL} corridas. Filas:
+  partículas (n) e iteraciones (T). Columnas: número de repetición.</p>
+  {TAB_500_RADIO}
+
+  <p class="lectura">La matriz muestra de un vistazo lo que las tablas anteriores resumen. Las
+  celdas alternan entre 1 y 25 sin patrón por fila ni por columna, y los radios intermedios aparecen
+  de forma aislada. Ni el número de partículas ni el de iteraciones concentran un valor. La
+  repetición 1 es la que conserva las semillas del barrido publicado, y su columna reproduce ese
+  barrido celda por celda, lo que permite verificar que el estudio no cambió nada más que la semilla.
+  Excepción en el peso: {CORRIDAS_EXCEPCION}. El registro completo, con el peso, la aptitud y el
+  tiempo de cada corrida, está en <i>pso_repeticiones_propuesta.csv</i>; el del barrido con el peso
+  libre, en <i>pso_repeticiones_propuesta_libre.csv</i>.</p>
   {pie()}
 </div>
 """)
@@ -3386,7 +3484,7 @@ _RESUMEN = f"""
   hizo con LLVIP. Y sumar una validación perceptual con observadores.</p>
 
   <p><b>Dónde mirar.</b> El método en la sección 4 (pág. {_PAG_SEC[4]}); la elección de r y m en
-  la 5 (pág. {_PAG_SEC[5]}); los resultados y la estadística en las 8 y 9 (págs. {_PAG_SEC[8]} y
+  la 5 (pág. {_PAG_SEC[5]}), con su desarrollo en el anexo A21; los resultados y la estadística en las 8 y 9 (págs. {_PAG_SEC[8]} y
   {_PAG_SEC[9]}); la robustez en la 10 (pág. {_PAG_SEC[10]}); la detección en las 13 y 14
   (págs. {_PAG_SEC[13]} y {_PAG_SEC[14]}); y las conclusiones en la 16 (pág. {_PAG_SEC[16]}).</p>
 
@@ -3423,7 +3521,12 @@ def _clave(t):
     que ocupan tres paginas y corren toda la numeracion."""
     if t.lower().startswith('anexo'):
         return 'anexos'
-    m = _re.match(r'\s*(\d+)\.', t)
+    # La «A?» del regex es para el anexo A21, cuyas diez paginas se titulan «A21. Desarrollo tecnico
+    # de la optimizacion por PSO (continuacion): …». Sin ella cada pagina cae en la rama final, que
+    # devuelve el titulo entero, y el indice sale con diez renglones casi identicos en lugar de uno
+    # con su rango. El titulo empieza con «A21» y no con «Anexo» a proposito: la rama de arriba mete
+    # todo lo que empieza con «anexo» en el renglon de los veinte anexos por escena.
+    m = _re.match(r'\s*(A?\d+)\.', t)
     return m.group(1) if m else t
 
 
