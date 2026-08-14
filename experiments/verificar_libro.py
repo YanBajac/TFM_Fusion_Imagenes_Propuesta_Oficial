@@ -229,6 +229,53 @@ else:
                 h2 = hashlib.md5(ruta.read_bytes()).hexdigest()
                 ok(h1 == h2, f'{interno} == docs/figures/{fig}')
 
+# ---- el RESUMEN y el SUMMARY tienen que decir lo mismo -------------------
+# POR QUE. El libro lleva su resumen dos veces, en español y en ingles, y son dos textos separados que
+# hay que editar los dos. Cuando LLVIP paso a cinco semillas se corrigio el español —«la propuesta
+# alcanza 0,9283 y queda 3.a de siete»— y el ingles quedo con las cifras de la corrida unica: «the
+# proposal falls at the lower end of the fusion band (0.906)». El libro se contradecia entre su resumen
+# y su abstract, y el abstract se contradecia consigo mismo, porque ya declaraba las cinco semillas y
+# despues daba el valor de una. Nada lo detectaba: los dos parrafos son texto libre y ningun chequeo los
+# comparaba entre si.
+# COMO. Se extraen los mAP de los dos parrafos —el español con coma, el ingles con punto— y se exige
+# que sean el MISMO conjunto y que cada uno sea una media del estudio de semillas. Compararlos entre si
+# no alcanzaria: los dos podrian estar viejos a la vez.
+print('\n=== el resumen y el abstract dan las mismas cifras de LLVIP ===')
+_sem_res = REP / 'semillas_llvip_resumen.csv' if 'REP' in dir() else None
+_p_sem = BASE.parent / 'experiments' / 'results' / 'metrics_reports' / 'semillas_llvip_resumen.csv'
+if _p_sem.exists():
+    import pandas as _pd
+    _sm = _pd.read_csv(_p_sem, index_col=0)
+    _validos = set()
+    for _c in ('mAP50_media', 'mAP50_95_media'):
+        for _v in _sm[_c]:
+            _validos |= {f'{_v:.3f}', f'{_v:.4f}'}
+    _desv = {f'{_v:.4f}' for _v in _sm.mAP50_desv} | {f'{_sm.mAP50_desv.median():.4f}'}
+
+    from docx import Document as _Doc
+    _d = _Doc(str(BASE / 'Tesis_Borrador_V3.docx'))
+    _res = next((p.text for p in _d.paragraphs if p.text.strip().startswith('El presente trabajo')
+                 or 'reentrenamiento de un detector' in p.text), '')
+    _sum = next((p.text for p in _d.paragraphs if 'retraining a detector' in p.text), '')
+    ok(bool(_res) and bool(_sum), 'se encontraron el resumen y el abstract')
+
+    def _maps(t, sep):
+        """Los mAP del pasaje de LLVIP: entre «LLVIP» y «M3FD», que es donde estan."""
+        _i, _j = t.find('LLVIP'), t.find('M3FD')
+        _frag = t[_i:_j] if 0 <= _i < _j else t
+        return {x.replace(sep, '.') for x in re.findall(r'0[' + re.escape(sep) + r']\d{3,4}', _frag)}
+
+    _m_es, _m_en = _maps(_res, ','), _maps(_sum, '.')
+    ok(_m_es == _m_en,
+       f'los {len(_m_es)} mAP del resumen son los mismos del abstract'
+       + (f' — solo en español {sorted(_m_es - _m_en)} · solo en ingles {sorted(_m_en - _m_es)}'
+          if _m_es != _m_en else ''))
+    _viejos = sorted((_m_es | _m_en) - _validos - _desv)
+    ok(not _viejos, 'y todos son medias vigentes del estudio de semillas'
+                    + (f' — RETIRADOS: {_viejos}' if _viejos else ''))
+else:
+    print('  AVISO no esta semillas_llvip_resumen.csv: resumen y abstract sin comparar')
+
 # ---- resumen -------------------------------------------------------------
 print(f'\n=== {len(fallos)} fallos ===')
 for f in fallos:

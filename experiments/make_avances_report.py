@@ -1237,6 +1237,12 @@ assert "TopHat_Clasico" not in _rc.index, "el clasico quedo compitiendo dos vece
 assert len(_rc) == 7, f"el pool del control tiene {len(_rc)} brazos y deben ser siete"
 CTRL_TH_M030 = _rc["TopHat_r25_m030"]
 CTRL_PROP = _rc[PROP]
+# SE PERSISTE, por el mismo motivo que el ranking de las diecisiete: el «3,528 frente a 3,694» que
+# publican el informe y el libro no estaba en ningun CSV. control_tophat_igual_peso.csv guarda las
+# metricas por imagen, que son la ENTRADA de este calculo, no su resultado.
+_rc.sort_values().rename("rango_9").rename_axis("clave").to_frame().assign(
+    puesto=range(1, len(_rc) + 1)).to_csv(
+        os.path.join(MR, "control_tophat_igual_peso_ranking.csv"))
 # El margen se calcula sobre los valores REDONDEADOS que se publican, para que la resta le
 # cierre a quien la haga: 3,694 - 3,528 = 0,166. Sobre los rangos sin redondear da 0,167 y el
 # lector encontraria una diferencia de un milesimo que no puede reproducir.
@@ -1594,6 +1600,14 @@ def _rk17(mets):
     return pd.DataFrame(_o).mean(axis=1).sort_values()
 _r17 = _rk17(_TODAS)
 _POS_17 = list(_r17.index).index(PROP) + 1
+# SE PERSISTE. Este ranking lo citan el informe, el libro y el deck —«con las diecisiete la propuesta
+# pasa a 3.a (3,459), la piramide de Laplace al primer puesto (3,147) y DTCWT al segundo (3,259)»— y
+# hasta ahora no existia ningun archivo donde comprobarlo: se calculaba aca, se imprimia y se perdia.
+# Un rastreo de las cifras del libro contra los CSV lo dejo a la vista. Se escribe DONDE SE CALCULA y
+# no en un script aparte a proposito: una segunda implementacion de la misma formula es justo lo que
+# despues se separa del documento sin que nadie lo note.
+_r17.rename("rango_17").rename_axis("method").to_frame().assign(
+    puesto=range(1, len(_r17) + 1)).to_csv(os.path.join(MR, "ranking_17_metricas.csv"))
 
 # Tamano del corpus tomado del dato, no fijado a mano: el par Athena_heather_IR_hei_vis_g
 # quedo excluido por tener el slot VIS duplicado del IR (ver src/datasets.PARES_EXCLUIDOS).
