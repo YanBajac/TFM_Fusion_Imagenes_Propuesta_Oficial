@@ -263,6 +263,11 @@ DET_N_FUS = len(_lld_o)
 SEM_PUESTO = list(_lld_o.index).index(PROP) + 1
 SEM_PROP = f"{float(_lld_o.loc[PROP, 'mAP50']):.4f}".replace(".", ",")
 SEM_LIDER = f"{float(_lld_o.mAP50.iloc[0]):.4f}".replace(".", ",")
+# Las dos camaras solas, para la carilla de resumen. Iban escritas a mano —0,971 y 0,813, los valores
+# de la corrida unica— y quedaron viejas cuando la Tabla 10 paso a las medias: la carilla decia una
+# cosa y la seccion 13 otra. Ahora salen del mismo dato que la tabla.
+SEM_IR = f"{float(semr.loc['IR', 'mAP50']):.3f}".replace(".", ",")
+SEM_VIS = f"{float(semr.loc['VIS', 'mAP50']):.3f}".replace(".", ",")
 _sm_par = pd.read_csv(os.path.join(MR, "semillas_llvip_pareadas.csv"))
 _sm_fus = list(_lld_o.index)
 _sm_pp = _sm_par[((_sm_par.a == PROP) | (_sm_par.b == PROP)) & _sm_par.a.isin(_sm_fus) & _sm_par.b.isin(_sm_fus)].copy()
@@ -3211,7 +3216,9 @@ H.append(f"""
         benchmark con la batería ampliada.</li>
     <li>Aislar el aporte del banco con un ajuste de hiperparámetros simétrico para todos los
         operadores morfológicos.</li>
-    <li>Extender la evaluación de detección a otros detectores y a más semillas de entrenamiento.</li>
+    <li>Extender la evaluación de detección a otros detectores, y repetir la de M3FD con varias
+        semillas de entrenamiento como se hizo con LLVIP, donde conserva un único entrenamiento por
+        entrada.</li>
     <li>Complementar con una validación perceptual por observadores.</li>
   </ul>
   {pie(pg)}
@@ -3304,43 +3311,45 @@ _RESUMEN = f"""
 
   <p><b>Cómo se evaluó.</b> Se compararon siete entradas sobre los {N_ESC} pares del banco de
   imágenes TNO: la propuesta, la metodología clásica del Top-Hat y cinco métodos multiescala del
-  estado del arte. Se usaron nueve métricas de calidad de imagen y pruebas estadísticas no
-  paramétricas. Además se entrenó un detector de objetos sobre cada versión fusionada, para ver si
-  la mejora de calidad sirve de algo en una tarea posterior.</p>
+  estado del arte. Se usaron nueve métricas de calidad de imagen y pruebas estadísticas basadas en
+  rangos. Además se entrenó un detector de objetos sobre cada versión fusionada —{SEM_N} veces
+  cada una, cambiando sólo la semilla de arranque, para saber cuánto mueve el azar al resultado— y así
+  ver si la mejora de calidad sirve de algo en una tarea posterior.</p>
 
   <p><b>Lo que salió.</b> El método <b>desplaza el punto de operación</b> de la fusión; no mejora
   todo a la vez. Gana con claridad en detalle y contraste espacial: 24 de 25 comparaciones contra
   las cinco configuraciones de referencia, ninguna en contra. Y cede en fidelidad al original: 17
-  de 20. Con el criterio del trabajo de referencia queda primero de siete, con 3,39 de rango medio.
+  de 20. Con el criterio del trabajo de referencia queda primero de siete, con 3,39 de rango medio: el promedio del puesto que saca en cada
+  métrica, así que más bajo es mejor.
   Ese primer puesto <b>depende del criterio</b>: medido con las diecisiete métricas que el mismo
   evaluador calcula, pasa a tercero.</p>
 
   <p><b>Lo que no salió, y terminó siendo el segundo aporte.</b> La mejora de calidad no se
-  traslada a la tarea. Ninguna fusión le gana a la mejor cámara sola: en LLVIP el infrarrojo por sí
-  mismo llega a 0,971 de mAP y la propuesta a 0,906, con las siete fusiones apiladas dentro de unas
-  centésimas y un solo entrenamiento por entrada, de modo que entre ellas no hay orden que sostener.
+  traslada a la tarea. En LLVIP —peatones nocturnos etiquetados— la cámara térmica sola llega a {SEM_IR} de mAP, el
+  puntaje del detector entre 0 y 1, y le gana a {IR_SUPERA} de las
+  siete fusiones, y de la séptima, {IR_INDIST_NOM}, no se distingue. Entre las fusiones no hay orden
+  que sostener: entrenar la misma entrada {SEM_N} veces cambiando sólo la semilla la mueve
+  {SEM_DESV} de mAP, más que la distancia que las separa entre sí. La propuesta alcanza {SEM_PROP},
+  queda {SEM_PUESTO}.ª de siete e indistinguible de {SEM_INDIST} de sus {SEM_RIVALES} rivales.
   Y el conjunto de nueve métricas no distingue
   detalle útil de ruido: una imagen a la que se le agregó ruido a propósito queda tercera entre
-  catorce entradas, por delante de cinco de los seis métodos reales. De ahí salió el segundo aporte
-  del trabajo, que es auditar si el protocolo con que se evalúa la fusión mide lo que dice medir.</p>
+  catorce entradas, por delante de cinco de los seis métodos reales. De ahí salió el segundo aporte: auditar si el protocolo con que se evalúa la fusión mide lo que dice medir.</p>
 
   <p><b>Tres diferencias con el plan de junio, para su visto bueno.</b> El método quedó de una sola
   escala y no multiescala. Se reportan nueve métricas de las doce previstas, sobre diecisiete
   calculadas. Y la detección se evaluó con un detector, YOLOv8n, en lugar de los tres acordados
-  (YOLO, RF-DETR y un modelo en Keras), aunque sobre dos conjuntos etiquetados y no uno. Los
-  motivos de cada cambio están en el informe; la decisión de darlos por buenos es suya.</p>
+  (YOLO, RF-DETR y un modelo en Keras), aunque sobre dos conjuntos etiquetados y no uno. Los motivos están en el informe; la decisión es suya.</p>
 
   <p><b>Lo que falta.</b> Agregar al conjunto de evaluación por lo menos una métrica que castigue
-  los artefactos, y repetir la comparación con esa batería ampliada. Darles a todos los operadores
+  los artefactos —los halos y bordes falsos que la fusión puede inventar—, y repetir la comparación con esa batería ampliada. Darles a todos los operadores
   morfológicos el mismo presupuesto de ajuste, para aislar cuánto aporta el banco de cinco elementos.
-  Repetir la prueba de detección con otros detectores y con más semillas de entrenamiento. Y sumar
-  una validación perceptual con observadores.</p>
+  Repetir la prueba de detección con otros detectores, y la de M3FD con varias semillas como ya se
+  hizo con LLVIP. Y sumar una validación perceptual con observadores.</p>
 
   <p><b>Dónde mirar.</b> El método en la sección 4 (pág. {_PAG_SEC[4]}); la elección de r y m en
-  la 5 (pág. {_PAG_SEC[5]}); los resultados y la estadística en las secciones 8 y 9
-  (págs. {_PAG_SEC[8]} y {_PAG_SEC[9]}); la prueba de robustez en la 10 (pág. {_PAG_SEC[10]}); la
-  detección en las 13 y 14 (págs. {_PAG_SEC[13]} y {_PAG_SEC[14]}); y las conclusiones con su
-  evidencia en la 16 (pág. {_PAG_SEC[16]}).</p>
+  la 5 (pág. {_PAG_SEC[5]}); los resultados y la estadística en las 8 y 9 (págs. {_PAG_SEC[8]} y
+  {_PAG_SEC[9]}); la robustez en la 10 (pág. {_PAG_SEC[10]}); la detección en las 13 y 14
+  (págs. {_PAG_SEC[13]} y {_PAG_SEC[14]}); y las conclusiones en la 16 (pág. {_PAG_SEC[16]}).</p>
 
   {pie(2)}
 </div>
@@ -3443,28 +3452,50 @@ EDGE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 if not os.path.exists(EDGE):
     EDGE = r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"
 if os.path.exists(EDGE):
+    # EDGE ESCRIBE A UN TEMPORAL, NO AL DESTINO. Antes imprimia directamente sobre PDF_OUT y la
+    # espera de mas abajo comparaba tamaños de ESE archivo, sin poder distinguir el volcado nuevo del
+    # PDF de la corrida anterior. Cuando las dos versiones pesaban lo mismo —8,9 MB las dos— la
+    # espera daba «estable» en la primera lectura, sobre el archivo VIEJO: los marcadores se
+    # calculaban contra sus 87 paginas, se escribian ahi, y despues el volcado real de Edge caia
+    # encima y dejaba el PDF con CERO marcadores. El generador informaba «84 verificados» porque
+    # habia contado los del temporal. Con el destino escrito UNA SOLA VEZ, ya con el indice adentro,
+    # esa carrera no existe: no hay ninguna ventana en la que Edge y PyMuPDF miren el mismo archivo.
+    _edge_pdf = PDF_OUT + ".edge.tmp"
+    if os.path.exists(_edge_pdf):
+        os.remove(_edge_pdf)
     subprocess.run([EDGE, "--headless", "--disable-gpu",
-                    f"--print-to-pdf={PDF_OUT}", "--no-pdf-header-footer",
+                    f"--print-to-pdf={_edge_pdf}", "--no-pdf-header-footer",
                     HTML_OUT], capture_output=True, timeout=300)
     # ESPERAR A QUE EDGE TERMINE DE VOLCAR. subprocess.run devuelve cuando el proceso sale, pero Edge
-    # sale antes de que el sistema haya terminado de escribir el PDF, y entonces los marcadores que
-    # se le agregan mas abajo se los lleva el volcado final: el generador informaba «84 escritos» y el
-    # PDF quedaba con CERO. Silencioso y difícil de ver, porque el mensaje decia que habia funcionado.
-    # Se espera a que el tamaño no cambie en dos lecturas seguidas.
+    # sale antes de que el sistema haya terminado de escribir el PDF. Ahora el temporal arranca
+    # inexistente, asi que la espera no puede confundirse con nada anterior; y no alcanza con que el
+    # tamaño se repita: se exige que el documento ABRA y que su cantidad de paginas sea la misma en
+    # dos lecturas seguidas, que es lo que de verdad se va a usar para ubicar los marcadores.
     import time as _time
-    _ant, _estable = -1, 0
-    for _ in range(60):
-        _tam = os.path.getsize(PDF_OUT) if os.path.exists(PDF_OUT) else -1
-        _estable = _estable + 1 if (_tam == _ant and _tam > 0) else 0
+
+    def _paginas(_ruta):
+        try:
+            import fitz as _f
+            with _f.open(_ruta) as _dd:
+                return _dd.page_count
+        except Exception:
+            return -1
+
+    _ant, _ant_pg, _estable = -1, -1, 0
+    for _ in range(75):
+        _tam = os.path.getsize(_edge_pdf) if os.path.exists(_edge_pdf) else -1
+        _pg = _paginas(_edge_pdf) if _tam > 0 else -1
+        _estable = _estable + 1 if (_tam == _ant and _pg == _ant_pg and _pg > 0) else 0
         if _estable >= 2:
             break
-        _ant = _tam
+        _ant, _ant_pg = _tam, _pg
         _time.sleep(0.4)
     else:
-        print("AVISO: el PDF no se estabilizo en 24 s; los marcadores pueden perderse")
+        print("AVISO: el PDF no se estabilizo en 30 s; los marcadores pueden perderse")
 
-    if os.path.exists(PDF_OUT):
-        print("PDF:", PDF_OUT, f"{os.path.getsize(PDF_OUT)/1e6:.1f} MB")
+    if os.path.exists(_edge_pdf) and _paginas(_edge_pdf) > 0:
+        print("PDF:", PDF_OUT, f"{os.path.getsize(_edge_pdf)/1e6:.1f} MB")
+        PDF_LEER = _edge_pdf
         # Los marcadores se agregan aca y no en el HTML: Edge no los emite, y la regla CSS
         # bookmark-level solo la entiende WeasyPrint. La pagina fisica coincide con la impresa
         # porque la portada es la 1 sin pie y el indice la 2 con pie: se comprueba antes de
@@ -3472,7 +3503,7 @@ if os.path.exists(EDGE):
         _pendiente = None
         try:
             import fitz as _fitz
-            with _fitz.open(PDF_OUT) as _doc:
+            with _fitz.open(PDF_LEER) as _doc:
                 _npag = _doc.page_count
                 _malos = [t for t in _TOC if not 1 <= t[2] <= _npag]
                 if _malos:
@@ -3513,6 +3544,12 @@ if os.path.exists(EDGE):
         # lado un .marcadores.tmp que nadie miraba.
         if _pendiente:
             os.replace(_pendiente, PDF_OUT)
+            os.remove(_edge_pdf)
+        else:
+            # Sin marcadores —PyMuPDF ausente, o alguno fuera de rango— el volcado de Edge igual
+            # tiene que llegar al destino. Sin esta rama el informe se quedaba en la version anterior
+            # y nada lo decia, que es peor que un PDF sin indice de navegacion.
+            os.replace(_edge_pdf, PDF_OUT)
         # Y SE COMPRUEBA QUE QUEDARON. Escribirlos y confiar es lo que dejo el PDF sin un solo
         # marcador mientras el generador informaba que habia escrito 84: hay que reabrir el archivo
         # y contarlos. Va fuera del «with» a proposito, sobre el archivo cerrado, que es el que

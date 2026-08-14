@@ -1128,6 +1128,73 @@ if 'avances' in DOCUMENTOS:
                f'las {len(set(_rem))} remisiones del resumen caen en la seccion que nombran'
                + (f' — {_malas[:4]}' if _malas else ''))
 
+# --------------------------------------------- 24. el resumen cita el mAP VIGENTE, no uno que existio
+# POR QUE. El bloque 22 exige que toda cifra del resumen APAREZCA en el cuerpo, y con eso alcanzaba
+# hasta que LLVIP paso a cinco semillas. Ahi el chequeo se quedo corto de la forma mas incomoda: el
+# resumen seguia diciendo que la propuesta llega a «0,906» y que hay «un solo entrenamiento por
+# entrada», y 22 lo dejaba pasar porque 0,906 SI aparece en el cuerpo — la seccion 13 lo cita para
+# explicar que era el valor de la semilla publicada y el mas bajo de los cinco. O sea que el bloque
+# verificaba PROCEDENCIA y no VIGENCIA: una cifra retirada, que el cuerpo menciona justamente para
+# desautorizarla, seguia sirviendo de respaldo. El resultado era un informe que en la pagina 2 decia
+# una cosa y en la 53 la contraria, y la pagina 2 es la que el director lee primero.
+# COMO SE ARREGLA. Todo mAP que el resumen le atribuya a una entrada del detector tiene que ser una
+# MEDIA del estudio de semillas, con su mismo redondeo. Y el resumen no puede declarar una sola
+# semilla en LLVIP cuando el estudio tiene cinco.
+print('\n=== 24. los mAP del resumen son las medias vigentes del estudio de semillas ===')
+_sem_res = REP / 'semillas_llvip_resumen.csv'
+if 'avances' in DOCUMENTOS and _sem_res.exists():
+    _sm = pd.read_csv(_sem_res, index_col=0)
+    _n_sem = int(pd.read_csv(REP / 'detection_llvip_semillas.csv').semilla.nunique())
+    with fitz.open(str(DOCUMENTOS['avances']['ruta'])) as _d:
+        _i_res = next((_i for _i in range(min(6, _d.page_count))
+                       if plano(_d[_i].get_text()).lstrip().startswith('Resumen')), None)
+    if _i_res is None:
+        ok(False, 'no se encontro la carilla de resumen')
+    else:
+        with fitz.open(str(DOCUMENTOS['avances']['ruta'])) as _d:
+            _t = re.sub(r'\s+', ' ', _d[_i_res].get_text())
+        # el parrafo del hallazgo de deteccion: de «no se traslada a la tarea» hasta el punto final
+        _m = re.search(r'no se traslada a la tarea\.(.{0,900}?)(?=Y el conjunto de nueve)', _t)
+        if not _m:
+            ok(False, 'no se encontro en el resumen el parrafo del hallazgo de deteccion')
+        else:
+            _frag = _m.group(1)
+            # los mAP validos: las medias de las nueve entradas, a tres y a cuatro decimales
+            _validos = set()
+            for _col in ('mAP50_media', 'mAP50_95_media'):
+                for _v in _sm[_col]:
+                    _validos |= {f'{_v:.3f}'.replace('.', ','), f'{_v:.4f}'.replace('.', ',')}
+            _desv = {f'{_v:.4f}'.replace('.', ',') for _v in _sm.mAP50_desv}
+            _desv |= {f'{_sm.mAP50_desv.median():.4f}'.replace('.', ',')}
+            _citados = set(re.findall(r'0,\d{3,4}', _frag))
+            _viejos = sorted(_citados - _validos - _desv)
+            ok(not _viejos,
+               f'los {len(_citados)} mAP que el resumen atribuye a LLVIP son medias del estudio'
+               + (f' — RETIRADOS: {_viejos}' if _viejos else ''))
+            _una = [_f for _f in ('un solo entrenamiento', 'una sola semilla', 'un único entrenamiento')
+                    if _f in plano(_frag)]
+            ok(not _una or _n_sem == 1,
+               f'el resumen no declara un unico entrenamiento habiendo {_n_sem} semillas'
+               + (f' — dice «{_una[0]}»' if _una else ''))
+            ok(f'{_n_sem} veces' in _frag or f'{_n_sem} semillas' in _frag
+               or f'{_n_sem} entrenamientos' in _frag,
+               f'el resumen declara las {_n_sem} semillas al dar el hallazgo de deteccion')
+
+        # Y LAS DOS UNIDADES CON QUE DA SUS RESULTADOS SE EXPLICAN EN LA PROPIA CARILLA. El resumen
+        # esta escrito en lenguaje llano, pero llegaba con «3,39 de rango medio» y «0,961 de mAP» sin
+        # decir en ninguna parte que son. El rango medio es el peor de los dos: es un promedio de
+        # PUESTOS, asi que mas bajo es mejor, y sin eso «primero de siete con 3,39» se lee al reves.
+        # La lista de glosas admitidas puede crecer si algun dia se reformula: lo que se exige es que
+        # haya alguna, no una redaccion en particular.
+        _GLOSAS = {'mAP': ('puntaje del detector', 'entre 0 y 1', 'de 0 a 1'),
+                   'rango medio': ('promedio del puesto', 'promedio de los puestos',
+                                   'más bajo es mejor', 'mas bajo es mejor')}
+        _sin = [_u for _u, _gs in _GLOSAS.items()
+                if _u.lower() in _t.lower() and not any(_g in plano(_t) for _g in map(plano, _gs))]
+        ok(not _sin,
+           f'las {len(_GLOSAS)} unidades con que el resumen da sus resultados se explican ahi mismo'
+           + (f' — SIN GLOSA: {_sin}' if _sin else ''))
+
 # --------------------------------------------- 21. los nombres de escena cubren el corpus vivo
 # POR QUE. Los generadores traducen el nombre de archivo de cada par a un rotulo legible con un
 # diccionario a mano: «Triclobs_Bosnia_R» -> «Bosnia». Si al diccionario le falta una escena, el
