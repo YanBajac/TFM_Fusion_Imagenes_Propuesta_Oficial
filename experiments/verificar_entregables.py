@@ -924,7 +924,11 @@ if 'avances' in DOCUMENTOS:
     with fitz.open(str(DOCUMENTOS['avances']['ruta'])) as _d:
         _toc = _d.get_toc()
         _npg = _d.page_count
-        ok(len(_toc) >= 40, f'el PDF trae marcadores de navegacion ({len(_toc)})')
+        # El umbral era «>= 40» con 84 marcadores en el documento: se podia perder la mitad del
+        # informe y el chequeo pasaba. Ahora se exige uno por pagina salvo la portada y el indice,
+        # que es el invariante real y el que el bloque 26 usa del otro lado.
+        ok(len(_toc) == _npg - 2,
+           f'el PDF trae un marcador por pagina salvo portada e indice ({len(_toc)} de {_npg - 2})')
 
         # Cada marcador tiene que caer en la pagina cuyo PIE IMPRESO es ese mismo numero. Si el
         # posproceso se corriera sobre un PDF con otra paginacion, los marcadores quedarian
@@ -1127,6 +1131,124 @@ if 'avances' in DOCUMENTOS:
             ok(_rem and not _malas,
                f'las {len(set(_rem))} remisiones del resumen caen en la seccion que nombran'
                + (f' — {_malas[:4]}' if _malas else ''))
+
+# --------------------------------------------- 26. inventario del informe: ninguna pagina se pierde
+# POR QUE, Y ES EL CHEQUEO MAS IMPORTANTE DE LOS QUE MIRAN EL INFORME. Los pies del informe se
+# escribian a mano, uno por pagina, y el generador abortaba si la secuencia no era 2..N. Eso tenia un
+# efecto lateral valiosisimo que nadie habia declarado: si un bloque de pagina se perdia en una
+# edicion, quedaba un hueco en la secuencia y el generador no escribia nada. Al pasar pie() a un
+# contador posicional —para poder mover paginas sin renumerar a mano— ese efecto lateral desaparecio:
+# perder un bloque ahora produce un documento de 85 paginas consecutivas, con el indice y los
+# marcadores coherentes, y TODO pasa en verde. Se cambio una clase de error por otra.
+# Este bloque es la reposicion. El HTML que el generador deja en docs/_local es el molde del PDF, asi
+# que las dos cosas tienen que cuadrar exactamente; y los titulos de la seccion 5 se declaran uno por
+# uno, porque son el contenido que se movio a un anexo y «nada se elimino» tiene que ser verificable y
+# no una afirmacion. Los marcadores son los bloques menos DOS: la portada, que no lleva ninguno, y la
+# pagina del indice, que se inserta despues de armar el arbol y por eso queda sin marcador propio.
+print('\n=== 26. inventario del informe: el PDF tiene todas las paginas del HTML que lo produjo ===')
+_html_inf = RAIZ / 'docs' / '_local' / 'Avances_Tesis.html'
+if 'avances' in DOCUMENTOS and _html_inf.exists():
+    _h = _html_inf.read_text(encoding='utf-8')
+    # Con regex y no con split de cadena: la portada es <div class="page portada">, y partir por
+    # '<div class="page"' la saltea. La primera version de este bloque lo hacia asi y contaba 85
+    # bloques contra 86 paginas del PDF, informando un descuadre que no existia.
+    _divs = re.split(r'<div class="page[^"]*"', _h)[1:]
+    _tits = []
+    for _b in _divs:
+        _mh = re.search(r'<h2>(.*?)</h2>', _b, re.S)
+        _mp = re.search(r'<div class="pie">(\d+)</div>', _b)
+        if _mh and _mp:
+            _tits.append((re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', '', _mh.group(1))).strip(),
+                          int(_mp.group(1))))
+    with fitz.open(str(DOCUMENTOS['avances']['ruta'])) as _d:
+        _npg_pdf, _ntoc = _d.page_count, len(_d.get_toc())
+        _primera = {}
+        for _i in range(_npg_pdf):
+            _ls = [l.strip() for l in _d[_i].get_text().splitlines() if l.strip()]
+            _primera[_i + 1] = _ls[0] if _ls else ''
+    ok(_npg_pdf == len(_divs),
+       f'el PDF tiene {_npg_pdf} paginas y el HTML {len(_divs)} bloques: coinciden'
+       if _npg_pdf == len(_divs) else
+       f'el PDF tiene {_npg_pdf} paginas y el HTML {len(_divs)} bloques: NO coinciden')
+    ok(_ntoc == len(_divs) - 2,
+       f'los marcadores son {_ntoc} = {len(_divs)} bloques menos la portada y el indice'
+       + ('' if _ntoc == len(_divs) - 2 else f' — esperaba {len(_divs) - 2}'))
+    # cada titulo del HTML tiene que abrir la pagina que su pie declara. Un bloque que Edge fusione
+    # o parta se ve aca y en ningun otro lado.
+    _desfasados = [(t, p, _primera.get(p, '')[:40]) for t, p in _tits
+                   if not _primera.get(p, '').startswith(t[:34])]
+    ok(not _desfasados,
+       f'los {len(_tits)} titulos del HTML abren la pagina que declara su pie'
+       + (f' — {_desfasados[:3]}' if _desfasados else ''))
+
+    # LOS DOCE TITULOS DE LA SECCION 5, declarados. El valor dice donde tiene que estar cada uno:
+    # 'seccion' en el cuerpo y 'anexo' despues de la ultima seccion numerada. Mover un bloque cambia
+    # su valor aca y nada mas; PERDER un bloque falla, que es el punto.
+    _S5 = {
+        'barrido de configuraciones': 'seccion',
+        'convergencia y óptimo': 'seccion',
+        'justificación del peso adoptado': 'seccion',
+        'la equivalencia del realce físico': 'seccion',
+        'rango dinámico y tensión de criterios': 'seccion',
+        'estabilidad del barrido en': 'seccion',
+        'las 500 corridas, una por una': 'seccion',
+        'el óptimo exacto, por enumeración': 'seccion',
+        'por qué el barrido de la referencia dispersa': 'seccion',
+        'el mismo barrido, imagen por imagen': 'seccion',
+        'el mismo barrido con el peso libre': 'seccion',
+        'el registro de las 500 corridas': 'seccion',
+    }
+    # la frontera entre el cuerpo y los anexos se DERIVA: la ultima pagina con un titulo que empieza
+    # por un digito. Escribirla a mano la dejaria vieja al primer cambio de tamaño del informe.
+    _ult_cuerpo = max([p for t, p in _tits if re.match(r'\d+\.', t)] or [0])
+    _falt, _mal_lugar, _dup = [], [], []
+    for _frag, _donde in _S5.items():
+        _hits = [p for t, p in _tits if _frag in t]
+        if not _hits:
+            _falt.append(_frag)
+        elif len(_hits) > 1:
+            _dup.append((_frag, _hits))
+        else:
+            _p = _hits[0]
+            if _donde == 'anexo' and _p <= _ult_cuerpo:
+                _mal_lugar.append((_frag, _p, 'deberia estar en el anexo'))
+            if _donde == 'seccion' and _p > _ult_cuerpo:
+                _mal_lugar.append((_frag, _p, 'deberia estar en el cuerpo'))
+    ok(not _falt, f'los {len(_S5)} bloques declarados de la seccion 5 siguen en el documento'
+                  + (f' — PERDIDOS: {_falt}' if _falt else ''))
+    ok(not _dup, 'ninguno de esos bloques aparece dos veces'
+                 + (f' — {_dup}' if _dup else ''))
+    ok(not _mal_lugar, f'cada uno esta del lado que declara (cuerpo hasta la pag. {_ult_cuerpo})'
+                       + (f' — {_mal_lugar[:4]}' if _mal_lugar else ''))
+else:
+    print('  AVISO no esta el HTML del informe en docs/_local: inventario sin revisar')
+
+# --------------------------------------------- 25. el README no declara un conteo de paginas viejo
+# POR QUE. El README es lo que lee quien clona el repositorio, y describe el estado ACTUAL: cuando
+# dice «Avances_Tesis.pdf — Informe de avances (85 págs)» y el informe tiene 86, la primera cifra que
+# ve un tercero ya esta mal. Y no es una cifra que alguien vaya a revisar: se escribio una vez y se
+# quedo. Aparecio al reestructurar la seccion 5, que cambia el conteo, pero estaba desactualizada
+# desde antes. Se controla solo el README a proposito: ESTADO_Y_PENDIENTES.md es un registro con
+# entradas fechadas, y ahi «85 paginas» bajo un encabezado de agosto es verdadero para su fecha.
+print('\n=== 25. el README declara el conteo de paginas real de cada entregable ===')
+if 'readme' in DOCUMENTOS:
+    _txt_rm = (RAIZ / 'README.md').read_text(encoding='utf-8')
+    _NOMBRE = {'avances': 'Avances_Tesis.pdf', 'libro': 'Tesis_Borrador_V3.pdf',
+               'deck': 'Tesis_Defensa_Presentacion.pdf'}
+    _mal = []
+    for _cl, _arch in _NOMBRE.items():
+        if _cl not in DOCUMENTOS:
+            continue
+        _real = DOCUMENTOS[_cl]['paginas']
+        for _m in re.finditer(re.escape(_arch), _txt_rm):
+            # la ventana es el resto del renglon: ahi va la descripcion del archivo
+            _fin = _txt_rm.find('\n', _m.end())
+            _vent = _txt_rm[_m.end():_fin if _fin > 0 else len(_txt_rm)]
+            for _d in re.findall(r'(\d{2,3})\s*(?:p[áa]gs?\b|p[áa]ginas)', _vent):
+                if int(_d) != _real:
+                    _mal.append(f'{_arch} dice {_d} y tiene {_real}')
+    ok(not _mal, f'los conteos de paginas del README coinciden con los PDF'
+                 + (f' — {_mal}' if _mal else ''))
 
 # --------------------------------------------- 24. el resumen cita el mAP VIGENTE, no uno que existio
 # POR QUE. El bloque 22 exige que toda cifra del resumen APAREZCA en el cuerpo, y con eso alcanzaba

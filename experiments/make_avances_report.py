@@ -3425,10 +3425,36 @@ _INDICE = f"""
 H.insert(2, _INDICE)
 print(f"indice: {len(_FILAS_IDX)} entradas · marcadores: {len(_TOC)}")
 
-# Control duro de la numeracion. No alcanza con que el script no reviente: los pies son literales
-# repartidos por tres mil lineas, y basta equivocar uno para que el indice apunte a la pagina de al
-# lado y los marcadores queden corridos. La secuencia de pies del documento ensamblado tiene que ser
-# exactamente 2, 3, 4, ..., N: sin huecos, sin repetidos y en orden. Si no lo es, no se escribe nada.
+# Control duro de la numeracion, en DOS partes. La segunda —que la secuencia sea 2, 3, ..., N— es la
+# que existia de antes, y auditaba de verdad cuando los pies eran cuarenta y cuatro literales escritos
+# a mano. Al pasar pie() a un contador quedo casi tautologica, y hay que decirlo: si un bloque llevara
+# DOS pies y otro ninguno, el contador igual emite numeros consecutivos y la secuencia sale 2..N
+# perfecta, con el documento roto y el chequeo en verde. Lo mismo si un bloque se queda sin pie: la
+# secuencia sigue siendo consecutiva, una pagina mas corta. O sea que la conversion se llevo los
+# dientes del control y hay que devolverselos por otro lado.
+# La primera parte es esa reposicion, y es ESTRUCTURAL: un pie por bloque de pagina, exactamente, con
+# la portada como unico bloque sin pie. Eso es lo que el contador necesita para ser correcto, y es lo
+# que ninguna asercion verificaba.
+# El corte va con regex y no con split de cadena: la portada es <div class="page portada">, asi que
+# partir por '<div class="page"' —con la comilla de cierre— la salta y deja fuera de la auditoria
+# justamente al unico bloque que legitimamente no lleva pie.
+_BL_HTML = _re.split(r'<div class="page[^"]*"', "".join(H))[1:]
+_sin_pie, _dos_pies = [], []
+for _i, _b in enumerate(_BL_HTML):
+    _n = len(_re.findall(r'<div class="pie">\d+</div>', _b))
+    _t = _re.search(r'<h2>(.*?)</h2>', _b, _re.S)
+    _rot = _re.sub(r'\s+', ' ', _re.sub(r'<[^>]+>', '', _t.group(1))).strip()[:44] if _t else \
+        ('portada' if _i == 0 else '(sin titulo)')
+    if _n == 0:
+        _sin_pie.append((_i, _rot))
+    elif _n > 1:
+        _dos_pies.append((_i, _rot, _n))
+if _dos_pies or [x for x in _sin_pie if x[0] != 0] or (_sin_pie and _sin_pie[0][0] != 0):
+    raise SystemExit(
+        f'ABORTA: la estructura de pies esta mal. Bloques con mas de un pie: {_dos_pies[:4]} · '
+        f'bloques sin pie que no son la portada: {[x for x in _sin_pie if x[0] != 0][:4]}')
+print(f'estructura: {len(_BL_HTML)} bloques de pagina, un pie cada uno salvo la portada')
+
 _PIES = [int(x) for x in _re.findall(r'<div class="pie">(\d+)</div>', "".join(H))]
 _ESPERADA = list(range(2, len(_PIES) + 2))
 if _PIES != _ESPERADA:
