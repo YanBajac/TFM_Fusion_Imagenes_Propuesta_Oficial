@@ -1807,8 +1807,32 @@ li { margin-bottom: 1mm; text-align: justify; }
 .portada .datos { font-size: 11.5pt; line-height: 2.1; }
 """
 
-def pie(n):
-    return f'<div class="pie">{n}</div>'
+_PG = 3   # la ultima pagina con numero explicito es la 3, la del indice
+
+
+def pie(n=None):
+    """El pie de pagina. Sin argumento lleva el numero que le toca por POSICION en el documento.
+
+    Antes cada pie llevaba su numero escrito a mano —{pie()} hasta {pie()}— y desde la 34 un
+    contador `pg` con su `pg += 1` repartido por cuarenta lugares del archivo. Con eso, agregar una
+    pagina en el medio o mover un bloque obligaba a renumerar a mano todo lo que venia despues, y un
+    solo numero mal deja el indice apuntando a la pagina de al lado y los marcadores corridos. Ahora
+    el numero lo pone el orden de los H.append(), que es el orden del documento: mover un bloque de
+    lugar renumera todo solo, y el indice, los marcadores y las remisiones de la carilla —que se
+    calculan escaneando H— se mueven con el.
+
+    Las paginas 2 y 3, el resumen y el indice, siguen pasando su numero explicito: se construyen al
+    final, cuando ya se sabe en que pagina arranca cada seccion, y se insertan al frente.
+
+    El control duro del final del script sigue siendo el que manda: exige que la secuencia de pies
+    del documento ensamblado sea exactamente 2, 3, ..., N, sin huecos ni repetidos y en orden. Que
+    hoy lo cumpla con los numeros escritos a mano es la prueba de que este contador da lo mismo.
+    """
+    global _PG
+    if n is not None:
+        return f'<div class="pie">{n}</div>'
+    _PG += 1
+    return f'<div class="pie">{_PG}</div>'
 
 H = []
 H.append(f"""
@@ -1860,7 +1884,7 @@ H.append(f"""
         sobre una escena (sección 15), y conclusiones (sección 16).</li>
     <li>Anexos 1-{N_ESC}: las 25 configuraciones del PSO en cada uno de los {N_ESC} pares.</li>
   </ol>
-  {pie(4)}
+  {pie()}
 </div>
 """)
 
@@ -1902,7 +1926,7 @@ H.append(f"""
   páginas. En su lugar está el conteo por escena de la sección 14, con su análisis de potencia.
   Cinco de las siete hipótesis son sobre el <b>criterio</b> y solo dos sobre el <b>operador</b>.
   Ese reparto es el que justifica hablar de dos aportes y no de uno.</p>
-  {pie(5)}
+  {pie()}
 </div>
 """)
 
@@ -1926,17 +1950,17 @@ H.append(f"""
   independientes</b>, y el tamaño de muestra efectivo es menor que {N_ESC}. Los resultados de las
   secciones 8 y 9 hay que leerlos con ese alcance. El libro lo declara también entre las limitaciones.</p>
   <div class="grid2">{"".join(chunks[0])}</div>
-  {pie(6)}
+  {pie()}
 </div>
 <div class="page">
   <h2>2. Datos de entrada (continuación)</h2>
   <div class="grid2">{"".join(chunks[1])}</div>
-  {pie(7)}
+  {pie()}
 </div>
 <div class="page">
   <h2>2. Datos de entrada (continuación)</h2>
   <div class="grid2">{"".join(chunks[2])}</div>
-  {pie(8)}
+  {pie()}
 </div>
 """)
 
@@ -1952,7 +1976,7 @@ H.append(f"""
   se queda con el detalle brillante fino y la Black Top-Hat (BTH) con el detalle oscuro fino:</p>
   {formula("tophat", 3)}
   {figura(EXIST.get("fig_morfologia_tophat.png"), "Efecto de las operaciones morfológicas y de las transformadas WTH/BTH sobre una señal del dataset.", 80)}
-  {pie(9)}
+  {pie()}
 </div>
 """)
 
@@ -1973,7 +1997,7 @@ H.append(f"""
   <p>Las cuatro respuestas direccionales se <b>promedian</b>. Así ninguna orientación queda
   privilegiada y el ruido direccional se atenúa:</p>
   {formula("wth_lin4", 7)}
-  {pie(10)}
+  {pie()}
 </div>
 <div class="page">
   <h2>4. Propuesta novedosa (continuación)</h2>
@@ -1997,7 +2021,7 @@ H.append(f"""
   contraste m:</p>
   {formula("fuse_src", 13)}
   {formula("recon", 14)}
-  {pie(11)}
+  {pie()}
 </div>
 """)
 
@@ -2038,7 +2062,7 @@ H.append(f"""
   <p><b>Tabla 1.</b> Resultado del barrido: mejor aptitud F<sub>o</sub> alcanzada por cada configuración
   con el rango m &isin; {V['rango']}.</p>
   {tabla_grid}
-  {pie(12)}
+  {pie()}
 </div>
 <div class="page">
   <h2>5. Optimización por PSO (continuación): convergencia y óptimo</h2>
@@ -2052,7 +2076,7 @@ H.append(f"""
   realce conservador. El operador propuesto (disco + líneas por suma, aptitud orientada a
   fusión) usa el radio máximo disponible con un peso un orden de magnitud menor. Eso pasa
   porque la suma de cinco respuestas concentra más energía de detalle por unidad de peso.</p>
-  {pie(13)}
+  {pie()}
 </div>
 """)
 
@@ -2090,7 +2114,7 @@ H.append(f"""
   <i>referencia_pso_ortega_espinoza.py</i>).</p>
   {TAB_REFERENCIA}
 
-  {pie(14)}
+  {pie()}
 </div>
 """)
 
@@ -2117,7 +2141,7 @@ H.append(f"""
   del rango publicado, una vez corregida la diferencia de energía entre los dos operadores. Solo
   parece bajo si se olvida que el operador cambió.</p>
 
-  {pie(15)}
+  {pie()}
 </div>
 """)
 
@@ -2157,7 +2181,7 @@ H.append(f"""
   <b>confirmar un óptimo que la forma de la aptitud determina</b>. Del trabajo de referencia se
   hereda la elección del rango.</p>
 
-  {pie(16)}
+  {pie()}
 </div>
 """)
 
@@ -2195,7 +2219,7 @@ H.append(f"""
   tendencia. La aptitud media se mueve en una banda de {REP_BANDA}. La rejilla de {N_CFG}
   configuraciones del trabajo de referencia no gana estabilidad con más partículas ni más
   iteraciones.</p>
-  {pie(17)}
+  {pie()}
 </div>
 """)
 
@@ -2213,7 +2237,7 @@ H.append(f"""
   también la única que no llega al piso del peso en el 100 % de sus repeticiones. La columna del
   radio confirma lo que resume la tabla anterior: la proporción que termina en r = 1 no sigue
   ninguna tendencia con el número de partículas ni con las iteraciones.</p>
-  {pie(18)}
+  {pie()}
 </div>
 """)
 
@@ -2259,7 +2283,7 @@ H.append(f"""
   pueden mejorarlo, porque el máximo ya está alcanzado. Y el argumento de monotonía del peso, que
   hasta aquí estaba medido con r = 25, se verifica ahora en <b>los veinticinco radios</b>: el mejor
   peso dentro del rango publicado es el piso {"en todos" if OE_PISO_SIEMPRE else "en algunos"}.</p>
-  {pie(19)}
+  {pie()}
 </div>
 """)
 
@@ -2311,7 +2335,7 @@ H.append(f"""
   diseño que amplifica el contraste. La referencia optimiza <b>por escena</b>, con una corrida
   independiente para cada una, mientras este trabajo promedia la aptitud sobre tres escenas, y eso
   suaviza la superficie y hace que un solo óptimo domine.</p>
-  {pie(20)}
+  {pie()}
 </div>
 """)
 
@@ -2349,7 +2373,7 @@ H.append(f"""
   óptimo no está, y la prueba es que al retirarla se comporta como el de la referencia. Los dos
   trabajos coinciden en el orden de magnitud del realce físico y difieren en el número que lo
   expresa.</p>
-  {pie(21)}
+  {pie()}
 </div>
 """)
 
@@ -2384,7 +2408,7 @@ H.append(f"""
   El aporte de la tesis en este punto no es que el PSO falle. Es que <b>el rango de
   búsqueda heredado, y no el optimizador, es lo que fija uno de los dos hiperparámetros</b>. Es una
   afirmación sobre el protocolo, y ahora está medida en las dos direcciones.</p>
-  {pie(22)}
+  {pie()}
 </div>
 """)
 
@@ -2411,7 +2435,7 @@ H.append(f"""
   Excepción en el peso: {CORRIDAS_EXCEPCION}. El registro completo, con el peso, la aptitud y el
   tiempo de cada corrida, está en <i>pso_repeticiones_propuesta.csv</i>; el del barrido con el peso
   libre, en <i>pso_repeticiones_propuesta_libre.csv</i>.</p>
-  {pie(23)}
+  {pie()}
 </div>
 """)
 
@@ -2447,7 +2471,7 @@ H.append(f"""
   {formula("th_clasico", 17)}
   <p>Todos los métodos se ejecutan sobre los mismos {N_ESC} pares y con la misma implementación de
   métricas (<i>src/metrics/evaluators.py</i>). Así la comparación es directa.</p>
-  {pie(24)}
+  {pie()}
 </div>
 """)
 
@@ -2483,7 +2507,7 @@ H.append(f"""
   {CN_RANGO_RUIDO}), por delante de {CN_COMPAR_DETRAS} de los seis métodos comparativos, y su rango
   mejora de forma monótona al aumentar la varianza. Los resultados de las secciones siguientes deben
   leerse con ese alcance.</p>
-  {pie(25)}
+  {pie()}
 </div>
 """)
 
@@ -2495,7 +2519,7 @@ H.append(f"""
   {tabla_metodos(ORDEN, resaltar=PROP)}
   <p class="lectura">{LECTURA_BENCH}</p>
   {figura(charts["quality"], "Cuatro métricas representativas (EN, FE, SF, SSIM); la barra azul es la propuesta.", 96)}
-  {pie(26)}
+  {pie()}
 </div>
 """)
 
@@ -2528,7 +2552,7 @@ for _b, _imgs in enumerate(_bloques, 1):
   <p><b>Tabla 4{chr(96 + _b)}.</b> Resultados por par — pares {(_b - 1) * 4 + 1} a
   {(_b - 1) * 4 + len(_imgs)} de {N_ESC}.</p>
   {tabla_por_imagen(_imgs)}{_lect}
-  {pie(26 + _b)}
+  {pie()}
 </div>
 """)
 
@@ -2539,7 +2563,7 @@ H.append(f"""
   {formula("friedman", 23)}
   <p><b>Tabla 5.</b> Resultados del test de Friedman.</p>
   {tabla_friedman()}
-  {pie(32)}
+  {pie()}
 </div>
 <div class="page">
   <h2>9. Análisis estadístico (continuación): Wilcoxon y ranking</h2>
@@ -2560,11 +2584,10 @@ H.append(f"""
   recuentos dicen lo mismo. <b>No es una mejora uniforme. Es un desplazamiento del punto de
   operación</b>, y eso es lo que afirma H1. Las conclusiones citan el recuento por bloques.</p>
   {figura(charts["ranking"], "Ranking promedio global de los 7 métodos (9 métricas, dirección respetada); la barra azul es la propuesta.", 78)}
-  {pie(33)}
+  {pie()}
 </div>
 """)
 
-pg = 34
 
 # El informe afirmaba que el primer puesto se obtiene «con separacion estadisticamente
 # significativa». No habia ningun test que respaldara eso: Friedman y Wilcoxon corren por metrica
@@ -2599,10 +2622,9 @@ H.append(f"""
   mismo examen a la composición del conjunto y al ajuste de los comparativos. Lo que queda en pie es
   lo verificable. <b>Con el criterio del trabajo de referencia, y con esa agregación declarada, la
   propuesta encabeza el benchmark</b>.</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 H.append(f"""
 <div class="page">
@@ -2627,10 +2649,9 @@ H.append(f"""
   no una indefinición. <b>Esto no contradice el primer puesto del ranking</b>. Aquel promedia rangos
   sobre las nueve métricas, y esta tabla enfrenta cada una con su campeón, que no es siempre el
   mismo método. Es un punto de operación desplazado y no una dominancia. Eso es lo que afirma H1.</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 H.append(f"""
 <div class="page">
@@ -2663,10 +2684,9 @@ H.append(f"""
   {POS_D}.º puesto ({f"{VAL_D:.3f}".replace(".", ",")}), detrás de
   {LBL.get(LID_D, LID_D).split(" (")[0]}. El orden lo determina la composición del conjunto de
   métricas, no solo el método. Este hallazgo se discute en el apartado 14.</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 H.append(f"""
 <div class="page">
@@ -2698,10 +2718,9 @@ H.append(f"""
   (VIS+IR)/2 <b>sin operador</b> queda última de los seis brazos con las diecisiete métricas
   ({f"{_abl.loc['base','rango_17']:.3f}".replace(".", ",")}), así que el mérito no viene de la
   imagen de partida.</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 H.append(f"""
 <div class="page">
@@ -2719,10 +2738,9 @@ H.append(f"""
   diferencian solo en el operador: disco único contra banco de cinco elementos. Es la ablación del
   operador vista a ojo, y van uno al lado del otro en la última fila.</p>
   {mont_html[0].replace('class="mont"', 'class="mont solo"')}
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 # Un solo montaje en la pagina de apertura: con los dos parrafos de arriba, dos montajes
 # desbordaban la pagina y el bloque 8b lo marcaba. Los pares arrancan entonces en el segundo.
 for i in range(1, N_ESC, 2):
@@ -2730,8 +2748,7 @@ for i in range(1, N_ESC, 2):
     blk = mont_html[i] + ("" if solo else mont_html[i + 1])
     rot = (f'par {i+1} de {N_ESC}' if solo else f'pares {i+1} y {i+2} de {N_ESC}')
     H.append(f'<div class="page"><h2>11. Resultados cualitativos ({rot})</h2>'
-             f'{blk}{pie(pg)}</div>')
-    pg += 1
+             f'{blk}{pie()}</div>')
 
 H.append(f"""
 <div class="page">
@@ -2764,10 +2781,9 @@ H.append(f"""
         que una regresión directa.</li>
   </ul>
 
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 H.append(f"""
 <div class="page">
@@ -2789,10 +2805,9 @@ H.append(f"""
   uno pequeño con el mismo paso de la red. El <b>cabezal</b> toma las salidas
   {ARQ_SALIDAS} y predice en los tres niveles a la vez, con ramas separadas de clasificación y de
   caja.</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 H.append(f"""
 <div class="page">
@@ -2808,10 +2823,9 @@ H.append(f"""
   entradas para no introducir una variable más. El mosaico se desactiva en las últimas
   {YOLO_CLOSE_MOSAIC} épocas, que es la práctica recomendada para que el modelo cierre sobre imágenes
   sin composición artificial.</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 H.append(f"""
 <div class="page">
@@ -2843,10 +2857,9 @@ H.append(f"""
   época se elige sobre la validación mixta y se reporta sobre conjuntos distintos. Las
   {YOLO_EPOCAS} épocas se completaron en todos los casos: con paciencia {YOLO_PATIENCE} no hubo
   corte temprano.</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 H.append(f"""
 <div class="page">
@@ -2879,10 +2892,9 @@ H.append(f"""
   quedaba en el extremo inferior de la banda. El primer puesto de la propuesta en las métricas de
   imagen no se traslada al primer puesto en detección, así que los dos criterios se reportan por
   separado.</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 # La seccion 13 se parte en dos paginas. Con la Tabla 10 de seis columnas —media, desvio y recorrido de
 # cinco semillas— el bloque dejo de entrar en una: el div desbordaba, se llevaba su pie a la pagina
@@ -2910,10 +2922,9 @@ H.append(f"""
   la barra del infrarrojo solo se superpone con la de {IR_INDIST_NOM}. De las {SEM_RIVALES}
   comparaciones de la propuesta contra sus rivales, {SEM_INDIST} caen dentro del desvío de una misma
   entrada.</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 _M3_ORDEN = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT",
              "Curvelet", "TopHat_Clasico", PROP]
@@ -2959,20 +2970,18 @@ H.append(f"""
   de prueba, disjunta de la de entrenamiento y de la de selección del modelo).</p>
   {TAB_M3FD}
   <p class="lectura">{LECTURA_M3FD}</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 H.append(f"""
 <div class="page">
   <h2>14. Clases complementarias (continuación): la prueba visual</h2>
   <p>{PARRAFO_DETECCIONES}</p>
   {figura(EXIST.get("fig_m3fd_detecciones.png"), PIE_DETECCIONES, 92)}
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 H.append(f"""
 <div class="page">
@@ -3000,10 +3009,9 @@ H.append(f"""
   {f"{CP_PP:.4f}".replace(".", ",")}), y resuelve {CP_PROP_CRIT} escenas críticas. Al aplicar la
   corrección de Holm a las catorce comparaciones de la familia, el <b>único contraste
   significativo</b> es la Pirámide de Laplace frente al infrarrojo.</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 # La conclusion de H6 va en su propia pagina. Al declarar la potencia el parrafo crecio y la
 # pagina anterior —que ya lleva la tabla de las 232 escenas— derramaba; lo marco el bloque 8b.
@@ -3026,10 +3034,9 @@ H.append(f"""
   visible, pero ninguna diferencia sobrevive la corrección por multiplicidad. El hallazgo acota
   el alcance práctico de la fusión morfológica de realce para esta tarea. El cálculo de potencia
   está en <span class="mono">experiments/potencia_mcnemar.py</span>.</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 H.append(f"""
 <div class="page">
@@ -3053,10 +3060,9 @@ H.append(f"""
   propuesta. La propuesta queda en la mitad inferior de las fusiones en las dos pruebas. Encaja con
   su perfil: gana en las métricas de actividad de la imagen y cede en las de fidelidad,
   y la tarea posterior no premia la actividad.</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 H.append(f"""
 <div class="page">
@@ -3088,10 +3094,9 @@ H.append(f"""
   el conteo de aciertos, así que una escena puede aparecer con detecciones de ambas clases sin
   que ambas sean correctas. Un valor de luces <b>mayor</b> que la verdad de campo es, por
   construcción, falso positivo.</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 for _e in DME_ESCENAS:
     _p, _l = DME_GT[_e]
@@ -3124,10 +3129,9 @@ for _e in DME_ESCENAS:
    "Sobredetectan luces por encima de la verdad de campo: "
    + ", ".join(f"{r.etiqueta.split(' (')[0]} ({int(r.lamp_detectadas)})" for r in _sob.itertuples())
    + ", lo que es coherente con la tasa de artefactos que Nabf mide sobre la imagen."}</p>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-    pg += 1
 
 H.append(f"""
 <div class="page">
@@ -3170,10 +3174,9 @@ H.append(f"""
         produciría m = 1.</li>
   </ol>
 
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-pg += 1
 
 H.append(f"""
 <div class="page">
@@ -3221,11 +3224,10 @@ H.append(f"""
         entrada.</li>
     <li>Complementar con una validación perceptual por observadores.</li>
   </ul>
-  {pie(pg)}
+  {pie()}
 </div>
 """)
 
-pg += 1
 
 # ---------- Anexos 1-20: las 25 configuraciones del PSO en cada escena ----------
 _nota_anexo = f"""
@@ -3262,10 +3264,9 @@ for _i, _img in enumerate(IMAGENES, 1):
   la configuración de mayor aptitud.</p>
   {tabla_anexo(_img)}
   {_nota_anexo if _i == 1 else ""}
-  {pie(pg)}
+  {pie()}
 </div>
 """)
-    pg += 1
 
 # ------------------------------------------------------------------ indice y marcadores
 # El informe tenia 83 paginas sin indice y sin un solo marcador de PDF: en la reunion no habia
