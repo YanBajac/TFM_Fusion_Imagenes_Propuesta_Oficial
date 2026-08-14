@@ -227,12 +227,60 @@ BL_ACT, BL_FID = _bloque(BLOQ_ACT), _bloque(BLOQ_FID)
 # «una sola semilla» en las 83 paginas es sobre el barrido PSO, que es otra cosa. Sin repeticiones
 # no se puede separar el orden entre fusiones del ruido de inicializacion, y las fusiones estan a
 # centesimas unas de otras. Lo que SI se sostiene es la brecha grande contra el visible.
-_lld_o = det.drop(index=[x for x in ("VIS", "IR") if x in det.index]).sort_values(
+sem = pd.read_csv(os.path.join(MR, "detection_llvip_semillas.csv"))
+SEM_N = int(sem.semilla.nunique())
+SEM_CORRIDAS = len(sem)
+semr = sem.groupby("method").agg(
+    mAP50=("mAP50", "mean"), mAP50_d=("mAP50", "std"),
+    mAP50_min=("mAP50", "min"), mAP50_max=("mAP50", "max"),
+    mAP50_95=("mAP50_95", "mean"), mAP50_95_d=("mAP50_95", "std"),
+    precision=("precision", "mean"), recall=("recall", "mean"))
+assert set(semr.index) == set(det.index), "el estudio de semillas no cubre las mismas entradas"
+# La semilla 0 es la corrida publicada: si sus mAP no coincidieran con detection_llvip_map.csv,
+# las cinco semillas no compartirian el protocolo de medicion y la tabla no seria comparable.
+_sm_s0 = sem[sem.semilla == 0].set_index("method")
+assert all(abs(float(_sm_s0.loc[m, "mAP50"]) - float(det.loc[m, "mAP50"])) < 5e-4
+           for m in det.index), "la semilla 0 no reproduce los mAP publicados"
+
+# El RUIDO del experimento: cuanto se mueve una misma entrada al cambiar solo la semilla. Es la
+# vara con la que se lee cualquier diferencia, y por eso se calcula aca y no se escribe a mano.
+SEM_DESV = f"{float(semr.mAP50_d.median()):.4f}".replace(".", ",")
+SEM_RECORR = f"{float((semr.mAP50_max - semr.mAP50_min).median()):.4f}".replace(".", ",")
+_sm_peor = (semr.mAP50_max - semr.mAP50_min).idxmax()
+SEM_PEOR = f"{float((semr.mAP50_max - semr.mAP50_min).max()):.4f}".replace(".", ",")
+
+_lld_o = semr.drop(index=[x for x in ("VIS", "IR") if x in semr.index]).sort_values(
     "mAP50", ascending=False)
 _gaps = _lld_o.mAP50.to_numpy()[:-1] - _lld_o.mAP50.to_numpy()[1:]
 DET_GAP_MIN = f"{float(_gaps.min()):.4f}".replace(".", ",")
-DET_GAP_VIS = f"{float(_lld_o.mAP50.min() - det.loc['VIS', 'mAP50']):.3f}".replace(".", ",")
+DET_GAP_VIS = f"{float(_lld_o.mAP50.min() - semr.loc['VIS', 'mAP50']):.3f}".replace(".", ",")
+DET_GAP_VIS_MAX = f"{float(_lld_o.mAP50.max() - semr.loc['VIS', 'mAP50']):.3f}".replace(".", ",")
 DET_N_FUS = len(_lld_o)
+
+# El puesto de la propuesta entre las fusiones, y contra cuantas rivales es indistinguible. Se
+# lee del analisis pareado, que compara semilla contra semilla; el umbral de «indistinguible» es
+# el desvio dentro de una entrada, que es la resolucion del experimento.
+SEM_PUESTO = list(_lld_o.index).index(PROP) + 1
+SEM_PROP = f"{float(_lld_o.loc[PROP, 'mAP50']):.4f}".replace(".", ",")
+SEM_LIDER = f"{float(_lld_o.mAP50.iloc[0]):.4f}".replace(".", ",")
+_sm_par = pd.read_csv(os.path.join(MR, "semillas_llvip_pareadas.csv"))
+_sm_fus = list(_lld_o.index)
+_sm_pp = _sm_par[((_sm_par.a == PROP) | (_sm_par.b == PROP)) & _sm_par.a.isin(_sm_fus) & _sm_par.b.isin(_sm_fus)].copy()
+_sm_pp["dif"] = [r.dif_media if r.a == PROP else -r.dif_media for r in _sm_pp.itertuples()]
+SEM_INDIST = int((~_sm_pp.mayor_que_el_ruido).sum())
+SEM_RIVALES = len(_sm_pp)
+SEM_GANA = int(((_sm_pp.dif > 0) & _sm_pp.mayor_que_el_ruido).sum())
+SEM_PIERDE = int(((_sm_pp.dif < 0) & _sm_pp.mayor_que_el_ruido).sum())
+assert SEM_INDIST + SEM_GANA + SEM_PIERDE == SEM_RIVALES, "el recuento de rivales no cierra"
+# Y contra el infrarrojo solo: a cuantas fusiones supera de verdad y de cuantas no se distingue.
+_sm_pi = _sm_par[((_sm_par.a == "IR") | (_sm_par.b == "IR"))].copy()
+_sm_pi["rival"] = [r.b if r.a == "IR" else r.a for r in _sm_pi.itertuples()]
+_sm_pi = _sm_pi[_sm_pi.rival.isin(_sm_fus)]
+IR_SUPERA = int(_sm_pi.mayor_que_el_ruido.sum())
+IR_INDIST = int((~_sm_pi.mayor_que_el_ruido).sum())
+_sm_ind = _sm_pi[~_sm_pi.mayor_que_el_ruido]
+IR_INDIST_DIF = (f"{abs(float(_sm_ind.dif_media.iloc[0])):.4f}".replace(".", ",")
+                 if len(_sm_ind) else "—")
 
 _disp = pd.read_csv(os.path.join(MR, "dispersion_pareada.csv"))
 DISP_N = len(_disp)
@@ -1618,23 +1666,40 @@ DET_ORDEN = ["VIS", "IR", "PiramideLaplace", "RatioPiramide", "DWT", "DTCWT",
              "Curvelet", "TopHat_Clasico", PROP]
 DET_LBL = {**LBL, "VIS": "VIS (solo)", "IR": "IR (solo)",
            "Propuesta_Novedosa": f"Propuesta Novedosa (r=25, m={V['m']})"}
+# Los nombres legibles de tres claves que se calcularon mucho mas arriba, junto con los datos. Se
+# resuelven aca porque DET_LBL recien existe en esta linea, y no antes: dejarlos arriba daba NameError.
+SEM_PEOR_NOM = DET_LBL.get(_sm_peor, _sm_peor).split(" (")[0]
+SEM_LIDER_NOM = DET_LBL.get(_lld_o.index[0], _lld_o.index[0]).split(" (")[0]
+IR_INDIST_NOM = (DET_LBL.get(_sm_ind.rival.iloc[0], _sm_ind.rival.iloc[0]).split(" (")[0]
+                 if len(_sm_ind) else "ninguna")
+
 def tabla_det():
-    best50 = det["mAP50"].idxmax(); best5095 = det["mAP50_95"].idxmax()
-    bestp = det["precision"].idxmax(); bestr = det["recall"].idxmax()
+    """La Tabla 10, sobre las CINCO semillas: media, desvio y recorrido de cada entrada.
+
+    Antes mostraba los valores de la corrida de semilla 0. Esa version dejaba a la propuesta con
+    0,906, que resulto ser el peor de sus cinco valores, y de ahi salia la lectura de que quedaba
+    en el extremo inferior de la banda de fusiones. La media es 0,9283 y la deja 3.a de siete.
+    """
+    best50 = semr["mAP50"].idxmax(); best5095 = semr["mAP50_95"].idxmax()
+    bestp = semr["precision"].idxmax(); bestr = semr["recall"].idxmax()
     rows = []
     for m in DET_ORDEN:
-        r = det.loc[m]
+        r = semr.loc[m]
         nm = DET_LBL.get(m, m)
         if m == PROP:
             nm = f"<b>{nm}</b>"
-        def c(v, isbest):
-            s = f"{v:.3f}".replace(".", ",")
+        def c(v, isbest, nd=3):
+            s = f"{v:.{nd}f}".replace(".", ",")
             return f"<b>{s}</b>" if isbest else s
-        rows.append(f'<tr><td class="l">{nm}</td><td>{c(r.mAP50, m==best50)}</td>'
-                    f'<td>{c(r.mAP50_95, m==best5095)}</td><td>{c(r.precision, m==bestp)}</td>'
+        rows.append(f'<tr><td class="l">{nm}</td>'
+                    f'<td>{c(r.mAP50, m==best50)} ± {c(r.mAP50_d, False, 4)}</td>'
+                    f'<td>{c(r.mAP50_95, m==best5095)} ± {c(r.mAP50_95_d, False, 4)}</td>'
+                    f'<td>{c(r.precision, m==bestp)}</td>'
                     f'<td>{c(r.recall, m==bestr)}</td></tr>')
-    return ('<table class="chica"><tr><th class="l">Entrada</th><th>mAP@0,5 ↑</th>'
-            '<th>mAP@0,5:0,95 ↑</th><th>Precisión ↑</th><th>Recall ↑</th></tr>'
+    return ('<table class="chica"><tr><th class="l">Entrada</th>'
+            '<th>mAP@0,5 ↑ (media ± desv.)</th>'
+            '<th>mAP@0,5:0,95 ↑ (media ± desv.)</th>'
+            '<th>Precisión ↑</th><th>Recall ↑</th></tr>'
             f'{"".join(rows)}</table>')
 
 # ------------------------------------------------------------------ anexos: PSO por escena
@@ -2752,7 +2817,8 @@ H.append(f"""
   <p><b>LLVIP — un detector por entrada.</b> {LLVIP_TRAIN} imágenes de entrenamiento y
   {LLVIP_VAL} de validación, una sola clase (<i>person</i>). Se entrena un YOLOv8n <b>independiente
   sobre cada entrada</b> (las dos modalidades y los siete métodos de fusión) con idéntica
-  configuración y semilla. Como los pares VIS/IR están registrados, las anotaciones valen para toda
+  configuración y <b>{SEM_N} semillas de entrenamiento</b> por entrada, para poder separar la
+  diferencia entre métodos del ruido de inicialización. Como los pares VIS/IR están registrados, las anotaciones valen para toda
   versión fusionada. Lo único que cambia entre corridas son los píxeles, así que la diferencia de
   mAP se le puede atribuir al método de fusión. La pregunta que responde es <i>¿cuánto ayuda esta
   imagen a un detector entrenado sobre ella?</i></p>
@@ -2781,24 +2847,64 @@ H.append(f"""
 <div class="page">
   <h2>13. Evaluación orientada a tarea: detección en LLVIP</h2>
   <p>Para medir el efecto práctico de la fusión se reentrenó el mismo detector <b>YOLOv8n</b> (40 épocas,
-  misma configuración y semilla) sobre cada versión fusionada del dataset etiquetado <b>LLVIP</b>
+  idéntica configuración y {SEM_N} semillas de entrenamiento por entrada) sobre cada versión fusionada del dataset etiquetado <b>LLVIP</b>
   (peatones nocturnos; subconjunto de 2.000 imágenes de entrenamiento y 500 de validación). Los
   pares VIS/IR están registrados, así que las anotaciones valen para toda versión fusionada. Por eso
   la diferencia de mAP aísla el efecto del método de fusión.</p>
   <p><b>Tabla 10.</b> Detección de peatones en LLVIP — mAP por entrada del detector.
-  <span style="font-weight:normal">Hubo un entrenamiento por entrada, con una sola semilla. Sin
-  repeticiones <b>no se puede separar el orden entre fusiones del ruido de inicialización</b>. Las
-  {DET_N_FUS} fusiones se apilan en centésimas, y la menor distancia entre dos consecutivas es
-  {DET_GAP_MIN}. La brecha que sobrevive a cualquier semilla es la que hay contra el visible solo, de
-  {DET_GAP_VIS} puntos de mAP.</span></p>
+  <span style="font-weight:normal">Media y desvío sobre {SEM_N} semillas de entrenamiento: cada
+  entrada se entrenó {SEM_N} veces cambiando únicamente la inicialización, {SEM_CORRIDAS} corridas
+  en total. La semilla 0 es la corrida publicada y sus mAP se reproducen exactamente, así que las
+  {SEM_N} comparten el protocolo de medición. <b>Sólo por cambiar la semilla, una misma entrada se
+  mueve un desvío mediano de {SEM_DESV}</b> de mAP@0,5, y las {DET_N_FUS} fusiones se apilan dentro de
+  él: la menor distancia entre dos consecutivas es {DET_GAP_MIN}. Ese desvío es la resolución del
+  experimento. La brecha contra el visible solo, en cambio, se confirma en las {SEM_N} semillas y con
+  margen: entre {DET_GAP_VIS} y {DET_GAP_VIS_MAX} puntos de mAP. El recorrido de cada entrada está en
+  la Figura 7b.</span></p>
   {tabla_det()}
-  <p class="lectura">Lectura: toda fusión supera con claridad al visible solo (mAP@0,5 de {LLVIP_VIS} a la banda
-  {LLVIP_LO}–{LLVIP_HI}). El infrarrojo solo es la modalidad más fuerte ({LLVIP_IR}) y ninguna
-  fusión lo supera, algo esperable porque el peatón nocturno es sobre todo térmico. Entre las fusiones,
-  la propuesta alcanza <b>{LLVIP_PROP}</b>. La ventaja de la propuesta en las
-  métricas de imagen no se traslada a la detección, así que los dos criterios se
-  reportan por separado.</p>
-  {figura(charts["det"], "mAP por entrada del detector (YOLOv8n reentrenado por método sobre LLVIP).", 88)}
+  <p class="lectura">Lectura: toda fusión supera con claridad al visible solo, en las {SEM_N}
+  semillas y muy por encima del ruido de inicialización. El infrarrojo solo es la modalidad más
+  fuerte y supera a {IR_SUPERA} de las {DET_N_FUS} fusiones; de la restante, {IR_INDIST_NOM},
+  <b>no se distingue</b>: la ventaja es de {IR_INDIST_DIF}, por debajo del desvío de una misma
+  entrada. Que encabece es esperable, porque el peatón nocturno es sobre todo térmico. Entre las
+  fusiones la propuesta alcanza <b>{SEM_PROP}</b> y queda {SEM_PUESTO}.ª de {DET_N_FUS}: es
+  indistinguible de {SEM_INDIST} de sus {SEM_RIVALES} rivales, le gana a {SEM_GANA} en las {SEM_N}
+  semillas y pierde con {SEM_PIERDE} en las {SEM_N}. Con la semilla publicada alcanzaba
+  {LLVIP_PROP}, que resultó ser el más bajo de sus {SEM_N} valores: de ahí venía la lectura de que
+  quedaba en el extremo inferior de la banda. El primer puesto de la propuesta en las métricas de
+  imagen no se traslada al primer puesto en detección, así que los dos criterios se reportan por
+  separado.</p>
+  {pie(pg)}
+</div>
+""")
+pg += 1
+
+# La seccion 13 se parte en dos paginas. Con la Tabla 10 de seis columnas —media, desvio y recorrido de
+# cinco semillas— el bloque dejo de entrar en una: el div desbordaba, se llevaba su pie a la pagina
+# fisica siguiente y desde ahi la numeracion impresa se desfasaba de la fisica, con lo que los 33
+# marcadores posteriores apuntaban una pagina antes. Lo marcaron el chequeo de derrame y el control de
+# pies del propio generador. Partirlo, ademas, le da lugar a las dos figuras juntas, que es donde se
+# leen mejor: la de barras muestra el orden y la de dispersion muestra por que ese orden es fragil.
+H.append(f"""
+<div class="page">
+  <h2>13. Detección en LLVIP (continuación): el orden y su dispersión</h2>
+  {figura(charts["det"], "Figura 7. mAP por entrada del detector, promediado sobre las "
+                         "{SEM_N} semillas de entrenamiento (YOLOv8n reentrenado por método sobre "
+                         "LLVIP).".format(SEM_N=SEM_N), 76)}
+  {figura(file_img_b64(os.path.join(FIG, "fig_semillas_llvip.png"), 1500, 86),
+          "Figura 7b. Dispersión de cada entrada sobre las {SEM_N} semillas: el punto es la media, "
+          "la barra une el mínimo con el máximo y los círculos son las corridas. Cuando las barras "
+          "de dos entradas se superponen, la diferencia entre ellas no se distingue del ruido del "
+          "entrenamiento. Debajo, a escala, el desvío típico dentro de una misma entrada "
+          "({SEM_DESV}).".format(SEM_N=SEM_N, SEM_DESV=SEM_DESV), 76)}
+  <p class="lectura">Lectura de las dos figuras juntas: la primera ordena las entradas y la segunda
+  muestra cuánto vale ese orden. El visible solo queda separado de todo lo demás, y ésa es la única
+  brecha que ninguna semilla discute. El recorrido mediano de una entrada consigo misma es
+  {SEM_RECORR}, y en el caso extremo {SEM_PEOR_NOM} recorre {SEM_PEOR}, más que la distancia entre la
+  mejor y la peor de las {DET_N_FUS} fusiones. Las {DET_N_FUS} fusiones, en cambio, se superponen entre sí, y
+  la barra del infrarrojo solo se superpone con la de {IR_INDIST_NOM}. De las {SEM_RIVALES}
+  comparaciones de la propuesta contra sus rivales, {SEM_INDIST} caen dentro del desvío de una misma
+  entrada.</p>
   {pie(pg)}
 </div>
 """)
@@ -3168,6 +3274,19 @@ for _i, _img in enumerate(IMAGENES, 1):
 # Va antes del indice porque es lo primero que se lee. No repite el contenido de la seccion 1: esa
 # describe el planteamiento para quien va a leer las ochenta y cuatro paginas, y esta responde que
 # se hizo, que salio y que falta para quien tiene cinco minutos.
+# En que pagina impresa arranca cada seccion numerada. Se lee de H, que en este punto ya tiene todos
+# los bloques de contenido con su pie interpolado: la fuente de las remisiones de la carilla es el
+# documento mismo y no una lista paralela. Antes estaban escritas a mano y se rompian cada vez que una
+# seccion crecia una pagina.
+_PAG_SEC = {}
+for _b in "".join(H).split('<div class="page"')[1:]:
+    _mh = _re.search(r'<h2>\s*(\d+)\.', _b)
+    _mp = _re.search(r'<div class="pie">(\d+)</div>', _b)
+    if _mh and _mp:
+        _PAG_SEC.setdefault(int(_mh.group(1)), int(_mp.group(1)))
+for _n in (4, 5, 8, 9, 10, 13, 14, 16):
+    assert _n in _PAG_SEC, f"la carilla remite a la seccion {_n} y no se encontro su pagina"
+
 _RESUMEN = f"""
 <div class="page">
   <h2>Resumen</h2>
@@ -3217,10 +3336,11 @@ _RESUMEN = f"""
   Repetir la prueba de detección con otros detectores y con más semillas de entrenamiento. Y sumar
   una validación perceptual con observadores.</p>
 
-  <p><b>Dónde mirar.</b> El método en la sección 4 (pág. 10); la elección de r y m en la 5
-  (pág. 12); los resultados y la estadística en las secciones 8 y 9 (págs. 26 y 32); la prueba de
-  robustez en la 10 (pág. 36); la detección en las 13 y 14 (págs. 53 y 54); y las conclusiones con
-  su evidencia en la 16 (pág. 64).</p>
+  <p><b>Dónde mirar.</b> El método en la sección 4 (pág. {_PAG_SEC[4]}); la elección de r y m en
+  la 5 (pág. {_PAG_SEC[5]}); los resultados y la estadística en las secciones 8 y 9
+  (págs. {_PAG_SEC[8]} y {_PAG_SEC[9]}); la prueba de robustez en la 10 (pág. {_PAG_SEC[10]}); la
+  detección en las 13 y 14 (págs. {_PAG_SEC[13]} y {_PAG_SEC[14]}); y las conclusiones con su
+  evidencia en la 16 (pág. {_PAG_SEC[16]}).</p>
 
   {pie(2)}
 </div>
@@ -3326,12 +3446,30 @@ if os.path.exists(EDGE):
     subprocess.run([EDGE, "--headless", "--disable-gpu",
                     f"--print-to-pdf={PDF_OUT}", "--no-pdf-header-footer",
                     HTML_OUT], capture_output=True, timeout=300)
+    # ESPERAR A QUE EDGE TERMINE DE VOLCAR. subprocess.run devuelve cuando el proceso sale, pero Edge
+    # sale antes de que el sistema haya terminado de escribir el PDF, y entonces los marcadores que
+    # se le agregan mas abajo se los lleva el volcado final: el generador informaba «84 escritos» y el
+    # PDF quedaba con CERO. Silencioso y difícil de ver, porque el mensaje decia que habia funcionado.
+    # Se espera a que el tamaño no cambie en dos lecturas seguidas.
+    import time as _time
+    _ant, _estable = -1, 0
+    for _ in range(60):
+        _tam = os.path.getsize(PDF_OUT) if os.path.exists(PDF_OUT) else -1
+        _estable = _estable + 1 if (_tam == _ant and _tam > 0) else 0
+        if _estable >= 2:
+            break
+        _ant = _tam
+        _time.sleep(0.4)
+    else:
+        print("AVISO: el PDF no se estabilizo en 24 s; los marcadores pueden perderse")
+
     if os.path.exists(PDF_OUT):
         print("PDF:", PDF_OUT, f"{os.path.getsize(PDF_OUT)/1e6:.1f} MB")
         # Los marcadores se agregan aca y no en el HTML: Edge no los emite, y la regla CSS
         # bookmark-level solo la entiende WeasyPrint. La pagina fisica coincide con la impresa
         # porque la portada es la 1 sin pie y el indice la 2 con pie: se comprueba antes de
         # escribir, para no dejar marcadores corridos si algun dia deja de coincidir.
+        _pendiente = None
         try:
             import fitz as _fitz
             with _fitz.open(PDF_OUT) as _doc:
@@ -3356,10 +3494,40 @@ if os.path.exists(EDGE):
                               f"{len(_ctrl)} marcadores; se escriben igual. Primeros: "
                               f"{[(t[1][:34], t[2]) for t in _ctrl[:3]]}")
                     _doc.set_toc([[n, t, p] for n, t, p in _TOC])
-                    _doc.saveIncr()
+                    # GUARDADO COMPLETO A UN TEMPORAL Y REEMPLAZO, no saveIncr(). El guardado
+                    # incremental apendea el indice al final del archivo, y sobre el PDF que produce
+                    # Edge ese apendice no sobrevivia: una lectura inmediata devolvia los 84
+                    # marcadores y minutos despues el archivo tenia CERO, con el mismo tamaño de
+                    # antes. Un save() completo reescribe el documento entero con el indice adentro,
+                    # y os.replace lo pone en su lugar de una sola operacion.
+                    _tmp = PDF_OUT + ".marcadores.tmp"
+                    _doc.save(_tmp, garbage=0, deflate=False)
+                    _pendiente = _tmp
                     print(f"marcadores: {len(_TOC)} escritos en el PDF")
         except ImportError:
             print("AVISO: PyMuPDF no instalado; el PDF queda sin marcadores")
+        # El reemplazo va aca, FUERA del «with»: en Windows os.replace falla si el destino sigue
+        # abierto, y cerrar el documento a mano dentro del with hace que su __exit__ reviente con
+        # «document closed». Sin esta linea el temporal se escribe y nunca se mueve, que es
+        # exactamente lo que paso: el PDF quedaba con el volcado de Edge y cero marcadores, y al
+        # lado un .marcadores.tmp que nadie miraba.
+        if _pendiente:
+            os.replace(_pendiente, PDF_OUT)
+        # Y SE COMPRUEBA QUE QUEDARON. Escribirlos y confiar es lo que dejo el PDF sin un solo
+        # marcador mientras el generador informaba que habia escrito 84: hay que reabrir el archivo
+        # y contarlos. Va fuera del «with» a proposito, sobre el archivo cerrado, que es el que
+        # va a abrir el lector.
+        try:
+            import fitz as _fz2
+            with _fz2.open(PDF_OUT) as _rev:
+                _n_toc = len(_rev.get_toc())
+            if _n_toc != len(_TOC):
+                print(f"FALLA: el PDF quedo con {_n_toc} marcadores y se escribieron "
+                      f"{len(_TOC)}. Edge probablemente aun estaba volcando el archivo.")
+            else:
+                print(f"marcadores verificados sobre el archivo cerrado: {_n_toc}")
+        except Exception as _e:
+            print(f"AVISO: no se pudo verificar los marcadores ({type(_e).__name__}: {_e})")
     else:
         print("AVISO: Edge no genero el PDF; reintentar o imprimir el HTML con Ctrl+P.")
 else:
