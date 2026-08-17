@@ -1613,6 +1613,70 @@ _r17.rename("rango_17").rename_axis("method").to_frame().assign(
 # quedo excluido por tener el slot VIS duplicado del IR (ver src/datasets.PARES_EXCLUIDOS).
 N_ESC = int(allm["image"].nunique())
 
+# ------------------------------------------------- la metodologia de referencia en SU punto de operacion
+# El brazo «TopHat_Clasico» del benchmark es el clasico GENERICO —r = 5, m = 1—, no la metodologia de
+# Ortega y Espinoza. Su punto de operacion es el mismo operador de disco unico con el (r, m) que su
+# propio PSO elige, y hasta ahora el informe no lo comparaba con nada. Lo calcula
+# experiments/run_metodologia_referencia.py y aca solo se lee.
+_ref_m = pd.read_csv(os.path.join(MR, "metodologia_referencia.csv"))
+_ref_rk = pd.read_csv(os.path.join(MR, "metodologia_referencia_ranking.csv"), index_col=0)
+_ref_par = pd.read_csv(os.path.join(MR, "metodologia_referencia_pareado.csv"))
+REF_CLAVE, REF_CLAVE_S = "Referencia_OyE", "Referencia_OyE_m0622"
+REF_N_PUB = len(pd.read_csv(os.path.join(MR, "referencia_pso_ortega_espinoza.csv")))
+# los dos pesos como float, para poder multiplicarlos por la energia de detalle: V["m"] y REF_M
+# son cadenas con coma decimal, pensadas para imprimir.
+V_M_FLOAT = float(str(V["m"]).replace(",", "."))
+REF_R = int(_ref_m[_ref_m.method == REF_CLAVE].r.iloc[0])
+REF_M_FLOAT = float(_ref_m[_ref_m.method == REF_CLAVE].m.iloc[0])
+REF_M = dec(float(_ref_m[_ref_m.method == REF_CLAVE].m.iloc[0]), 3)
+REF_M_S = dec(float(_ref_m[_ref_m.method == REF_CLAVE_S].m.iloc[0]), 3)
+_ref_9 = _ref_rk.sort_values("rango_9")
+REF_N_ENT = len(_ref_9)
+REF_PUESTO = int(_ref_rk.loc[REF_CLAVE, "puesto_9"])
+REF_RANGO = dec(float(_ref_rk.loc[REF_CLAVE, "rango_9"]), 3)
+REF_PROP_PUESTO = int(_ref_rk.loc[PROP, "puesto_9"])
+REF_PROP_RANGO = dec(float(_ref_rk.loc[PROP, "rango_9"]), 3)
+REF_RANGO_17 = dec(float(_ref_rk.loc[REF_CLAVE, "rango_17"]), 3)
+REF_PROP_RANGO_17 = dec(float(_ref_rk.loc[PROP, "rango_17"]), 3)
+REF_PROP_PUESTO_17 = int(_ref_rk.loc[PROP, "puesto_17"])
+REF_PUESTO_17 = int(_ref_rk.loc[REF_CLAVE, "puesto_17"])
+_rp = _ref_par[_ref_par.referencia == REF_CLAVE].iloc[0]
+REF_GANA = int(_rp.gana_propuesta)
+REF_PIERDE = int(_rp.pierde_propuesta)
+REF_PARES = int(_rp.pares)
+REF_P = dec(float(_rp.p), 4)
+REF_NABF_P = dec(float(_rp.nabf_propuesta), 4)
+REF_NABF_R = dec(float(_rp.nabf_referencia), 4)
+REF_NABF_GANA = int(_rp.nabf_gana_propuesta)
+_rps = _ref_par[_ref_par.referencia == REF_CLAVE_S].iloc[0]
+REF_S_RANGO = dec(float(_rps.rango9_referencia), 3)
+REF_S_P = dec(float(_rps.p), 4)
+
+# El reparto de las nueve: en cuantas de actividad y en cuantas de fidelidad gana cada una. Es lo que
+# distingue una diferencia de OPERADOR de una diferencia de PESO, y por eso se cuenta y no se afirma.
+_ref_med = pd.concat([allm[allm.method.isin([PROP, "TopHat_Clasico"])],
+                      _ref_m.drop(columns=["r", "m"])], ignore_index=True).groupby("method")[METS].mean()
+_ACT9 = ["EN", "SD", "FE", "MG", "SF"]
+_FID9 = ["MI_vis", "MI_ir", "SSIM", "PSNR"]
+REF_ACT_GANA = sum(1 for m in _ACT9 if _ref_med.loc[PROP, m] > _ref_med.loc[REF_CLAVE, m])
+REF_FID_GANA = sum(1 for m in _FID9 if _ref_med.loc[PROP, m] > _ref_med.loc[REF_CLAVE, m])
+
+_ref_rot = {PROP: f"Propuesta (banco de 5, r = 25, m = {V['m']})",
+            REF_CLAVE: f"Referencia O. y E. (disco, r = {REF_R}, m = {REF_M})",
+            REF_CLAVE_S: f"Referencia O. y E. (disco, r = {REF_R}, m = {REF_M_S})",
+            "TopHat_Clasico": "Top-Hat clásico genérico (disco, r = 5, m = 1)"}
+_nd_ref = {"SD": 4, "MG": 4, "SF": 3, "SSIM": 4, "PSNR": 4}
+TAB_REFERENCIA_OP = (
+    '<table class="chica"><thead><tr><th class="l">Entrada</th>'
+    + "".join(f"<th>{m}</th>" for m in METS) + '</tr></thead><tbody>'
+    + "".join(
+        f'<tr><td class="l">{_ref_rot[k]}</td>'
+        + "".join(f"<td>{dec(_ref_med.loc[k, m], _nd_ref.get(m, 3))}</td>" for m in METS)
+        + "</tr>"
+        for k in (PROP, REF_CLAVE, REF_CLAVE_S, "TopHat_Clasico"))
+    + '</tbody></table>')
+
+
 # La galeria cualitativa se arma aqui, despues de conocer N_ESC: antes tenia el 20
 # fijo en el codigo y habria quedado desalineada si cambiaba el tamano del corpus.
 # Se afirma que existe un montaje por escena para que la falta no pase inadvertida.
@@ -2480,6 +2544,51 @@ H.append(f"""
   (VIS+IR)/2 <b>sin operador</b> queda última de los seis brazos con las diecisiete métricas
   ({f"{_abl.loc['base','rango_17']:.3f}".replace(".", ",")}), así que el mérito no viene de la
   imagen de partida.</p>
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>10. Robustez (continuación): la metodología de referencia en su punto de operación</h2>
+  <p><b>Qué faltaba comparar.</b> El brazo <i>Top-Hat clásico</i> del benchmark es el clásico
+  <b>genérico</b>: un disco único con r = 5 y m = 1. No es la metodología de Ortega y Espinoza (2025),
+  que usa el mismo operador de disco pero en el punto de operación que elige su propio PSO. Es decir
+  que hasta acá el trabajo se comparaba con un clásico genérico y con ese operador puesto en los
+  hiperparámetros de la propuesta, pero <b>nunca con el punto de operación de la metodología que toma
+  como referencia</b>. Se agrega esa comparación.</p>
+  <p>El punto se lee de sus {REF_N_PUB} corridas publicadas, no se elige: el radio es
+  <b>r = {REF_R}</b> —la moda y la mediana, y el argmax de su propia aptitud en cuatro de sus cinco
+  escenas— y el peso, la mediana de esas corridas, <b>m = {REF_M}</b>. Se agrega además el mismo
+  operador con m = {REF_M_S}, la mediana de sus cinco óptimos por escena, como control de que la
+  lectura no dependa de cómo se agrega su peso.</p>
+  <p><b>Tabla 8a.</b> Medias de las nueve métricas sobre los {N_ESC} pares: la propuesta, la metodología
+  de referencia en su punto de operación con los dos criterios de agregación, y el clásico genérico.</p>
+  {TAB_REFERENCIA_OP}
+  <p class="lectura">Lectura, y es la del segundo aporte aplicada a la referencia misma. Agregada al
+  benchmark como entrada adicional, la metodología de referencia queda <b>{REF_PUESTO}.ª de
+  {REF_N_ENT}</b> con las nueve métricas ({REF_RANGO}) y la propuesta {REF_PROP_PUESTO}.ª
+  ({REF_PROP_RANGO}); con su peso agregado por el otro criterio el resultado no cambia ({REF_S_RANGO}).
+  Pero <b>esa comparación no aísla el operador</b>, y el reparto lo muestra sin lugar a dudas: la
+  propuesta pierde en <b>las {len(_ACT9)} métricas de actividad</b> y gana en <b>las {len(_FID9)} de
+  fidelidad</b>. Su punto de operación queda entonces más hacia la actividad en esta batería, y la
+  batería de nueve —cinco de actividad y cuatro de fidelidad, todas «mayor es mejor»— le paga eso.
+  Conviene ser preciso con la causa, porque la explicación cómoda es falsa: <b>no</b> es que inyecte
+  más detalle. Medido como m · |W|, que es el realce que de verdad entra en la reconstrucción, la
+  propuesta inyecta más ({dec(V_M_FLOAT * W_PROP, 4)} frente a {dec(REF_M_FLOAT * W_CLAS, 4)}). Las dos
+  entradas difieren <b>a la vez</b> en el operador y en el peso, de modo que esta comparación no
+  permite atribuirle la diferencia a ninguno de los dos. La que sí aísla el operador es la de la página
+  anterior, a peso igualado, donde la propuesta gana {dec(CTRL_PROP, 3)} frente a
+  {dec(CTRL_TH_M030, 3)}.</p>
+  <p class="lectura">Dos datos más, en la misma dirección. <b>Con las diecisiete métricas el orden se
+  invierte</b>: la propuesta queda {REF_PROP_PUESTO_17}.ª ({REF_PROP_RANGO_17}) y la referencia
+  {REF_PUESTO_17}.ª ({REF_RANGO_17}). Y en <b>Nabf</b>, la única métrica del evaluador que penaliza
+  artefactos, la propuesta tiene menos en <b>{REF_NABF_GANA} de los {REF_PARES} pares</b>
+  ({REF_NABF_P} frente a {REF_NABF_R}; menor es mejor). Sobre los rangos por par la ventaja de la
+  referencia con las nueve no alcanza significancia (Wilcoxon p = {REF_P}; gana en {REF_PIERDE} de
+  {REF_PARES} pares y pierde en {REF_GANA}), y con el otro criterio de agregación sí (p = {REF_S_P}).
+  El punto no es cuál gana esa batería: es que <b>el orden se da vuelta al completar el conjunto de
+  métricas</b>, sin que cambie ninguna imagen fusionada.</p>
   {pie()}
 </div>
 """)
