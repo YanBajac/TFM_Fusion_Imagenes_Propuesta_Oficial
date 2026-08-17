@@ -53,6 +53,22 @@ que convierte «nada se eliminó» en algo verificable.
   anexos rotulan «Cuadro AN». Veinte rótulos fuera de auditoría. Ahora son 50 y la monotonía se exige
   por serie.
 
+## Lo abierto: la revisión manual del libro
+
+Está todo en **`docs/AUDITORIA_LIBRO.md`**. Ocho revisiones en paralelo contra los CSV, más un
+escéptico por hallazgo con la instrucción de refutarlo: **987 afirmaciones revisadas, 910 respaldadas,
+54 confirmadas** (11 altas) y 23 refutadas, que quedan anotadas para no volver a levantarlas.
+
+**Seis de las once altas son el mismo problema**: la Tabla 2 de §2.2.5, §3.15, el párrafo 338 de §4.3,
+la operacionalización de §4.4 y el apéndice D dicen que el radio se ajusta por PSO y que el óptimo
+hallado es r = 25, cuando el argmax del barrido dentro del rango publicado es r = 1. Es H5, que el
+capítulo 5 del mismo libro demuestra: el frente contradice lo que el fondo prueba.
+
+Las cifras, en cambio, ya están cubiertas: **`experiments/trazar_libro.py`** traza las 502 del libro
+contra los CSV y da **cero sin fuente**. Lo que la auditoría agrega son las afirmaciones verbales.
+
+El libro no se tocó: la hoja es para la reescritura manual.
+
 ### Lo que hay que saber al retomar
 
 - **M3FD sigue con una sola semilla.** El libro ya lleva la recomendación de repetirlo; son unas 3 h
