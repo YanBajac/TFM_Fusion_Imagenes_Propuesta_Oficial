@@ -85,6 +85,52 @@ Está enunciada como «ninguna fusión supera por un margen distinguible a la me
 Con el protocolo correcto eso no se sostiene: hay que reformularla o desdoblarla en la parte que
 LLVIP contrasta y la parte que M3FD contrasta.
 
+## La condición de éxito, en su forma estricta: hay que agrandar la muestra antes de medir nada
+
+El criterio del autor es más preciso que «recupera ambas clases»: **si el objeto A se detecta sólo en
+VIS y el objeto B sólo en IR, entonces A y B tienen que detectarse en la fusionada**. O sea que cada
+modalidad aporta justo lo que a la otra le falta.
+
+Eso NO es lo que mide hoy `run_complementariedad_escenas.py`. Su línea 186 define crítica como «ni VIS
+ni IR recuperan ambas», que incluye escenas donde una clase se le escapa a las **dos** modalidades —y
+ahí ninguna fusión puede recuperarla, porque no se puede crear información que ninguna fuente tiene—.
+Esas escenas castigan a todos los métodos por algo que no es de la fusión.
+
+Calculada la condición estricta sobre `complementariedad_por_escena.csv`:
+
+| | |
+|---|---|
+| Escenas con ambas clases anotadas | 232 |
+| Críticas según la definición del script | 90 |
+| **Estrictamente complementarias (la condición del autor)** | **5** |
+
+Y de esas cinco: seis de las siete fusiones resuelven **2 de 5**, y la propuesta **1 de 5**.
+
+**Con n = 5 no se puede demostrar nada, ni a favor ni en contra.** Y la causa no es el operador sino el
+dataset: las cinco son todas en la dirección VIS→Lamp / IR→People, y **ninguna** al revés, porque en
+M3FD el visible también detecta personas bastante bien (AP@0,5 = 0,6207), así que casi nunca se da el
+caso de que las pierda. La complementariedad estricta existe, pero es rarísima en esta partición.
+
+### Consecuencia para el orden de trabajo
+
+**La grilla de (r, m) NO se puede medir sobre cinco escenas**: sería ruido. Antes hay que conseguir una
+muestra donde la condición estricta esté disponible en cantidad. Tres palancas, de la más barata a la
+más cara:
+
+1. **Medir por OBJETO y no por clase.** El autor habla de «objeto A» y «objeto B», y la medida actual es
+   por clase: «recupera» significa al menos un verdadero positivo de esa clase en la escena. Contando
+   objeto por objeto —para cada objeto anotado, ¿lo detecta sólo el VIS, sólo el IR, los dos, o
+   ninguno?— la muestra pasa de 5 escenas a cientos de objetos, y es **más fiel a la condición
+   enunciada**. Es la palanca más fuerte y no requiere reentrenar ni volver a fusionar: el script ya
+   calcula los verdaderos positivos, hay que emparejarlos por caja en lugar de agregarlos por clase.
+2. **Usar M3FD completo** (`data/M3FD_Detection`) en lugar de las 232 escenas, que son sólo la partición
+   de validación con ambas clases anotadas. Más escenas, más casos complementarios.
+3. **Filtrar escenas nocturnas**, que es donde el visible de verdad pierde a las personas. En las
+   carpetas del dataset no hay metadata de día/noche, pero se puede derivar de la luminancia media del
+   canal visible, que es barato y defendible.
+
+Recién con la muestra agrandada tiene sentido correr la grilla.
+
 ## Lo que queda pendiente de medir, y es la oportunidad
 
 Si el objetivo es detectar ambas clases, **el punto de operación hay que elegirlo sobre ese criterio** y
