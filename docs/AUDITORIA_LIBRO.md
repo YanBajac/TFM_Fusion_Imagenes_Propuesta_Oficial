@@ -1,647 +1,1305 @@
-# Auditoría del libro contra los datos — 14 de agosto de 2026
-
-Ocho revisiones en paralelo, una por bloque del libro, cada una verificando las afirmaciones
-de su bloque **contra los CSV de `experiments/results/`** y no contra el informe ni el deck,
-para que un error propagado a los tres no se valide solo.
-
-**987 afirmaciones revisadas · 910 respaldadas · 77 marcadas.**
-
-Una revisión adversarial estaba filtrando los falsos positivos cuando se cerró la sesión, así
-que **cada punto de esta lista hay que confirmarlo abriendo el CSV antes de tocar el libro**.
-Están ordenados por gravedad.
-
-
-## Gravedad alta (16)
-
-### parrafo 370 (§5.4.3 Ranking promedio) — CONTRADICE
-
-> la piramide de Laplace alcanza un SD promedio mayor (0,1550 frente a 0,1439), pero la propuesta la supera en mas pares de los que pierde, y el rango medio recoge esa consistencia por escena que el promedio aritmetico oculta
-
-**El dato:** Conteo pareado sobre all_metrics.csv (columna SD, 20 filas de Propuesta_Novedosa contra 20 de PiramideLaplace): la propuesta tiene SD mayor en 9 de los 20 pares y menor en 11. Pierde en mas pares de los que gana, justo al reves de lo escrito. Lo confirma wilcoxon_results.csv fila 14 (metric=SD, tophat=Propuesta_Novedosa, baseline=PiramideLaplace): diff=-0,0111, W=72, p=0,2305, effect_r=-0,314, sig_holm_05=False; el signo negativo del rank-biserial dice que la mayoria de los pares favorece a la Laplace. El primer puesto en rango medio (1,65 frente a 2,00) es real pero se explica por otro mecanismo: la propuesta NUNCA baja del 2.o puesto en los 20 pares, mientras la Laplace cae al 3.o, 4.o o 6.o en 5 pares (APC_4_fennek 3.o, APC_1_view_1 4.o, APC_3_view_1 4.o, jeep_in_smoke 4.o, heather 6.o). Es consistencia por no tener malos casos, no por ganar mas duelos.
-
-*(bloque: Parrafos 347-385 (capitulo 5, primera parte: calidad de imagen §5.1-5.4 y evaluacion orientada a tarea §5.5), mas las Tablas 4, 5, 6, 7, 8 y 9 del libro (indices python-docx 27, 28, 29, 30, 31, 32))*
-
-### párrafo 423 (conclusión específica 1) — CONTRADICE
-
-> En el experimento de clases complementarias (M3FD), la fusión muestra su valor distintivo —detecta simultáneamente los objetos térmicos (personas) y los exclusivamente visibles (luces) que cada modalidad pierde por separado—
-
-**El dato:** complementariedad_resumen.csv dice lo contrario para la propuesta: recupera_ambas = 116 de 232 escenas (pct_ambas = 50,0 %) frente a 123 (53,0 %) del VIS solo; gana_vs_VIS = 8 y pierde_vs_VIS = 15; resuelve_criticas = 2 de las 90 escenas críticas. Por clase queda intermedia, no superior: recupera_People 164 (IR: 186) y recupera_Lamp 145 (VIS: 163). Y en detection_m3fd_map.csv el promedio del par (AP50_People + AP50_Lamp)/2 da VIS solo 0,6184 por encima de seis de las siete fusiones y muy por encima de la propuesta (0,5643, 8.º de 9 entradas, solo delante del Top-Hat clásico 0,5065). La única entrada que supera al visible es RatioPiramide (0,6222). La misma conclusión, escrita en §5.8.5 (párrafo 419), es la contraria: «la propuesta recupera ambas en el 50,0 % de los casos, frente al 53,0 % del visible solo». Nota: este mismo exceso («solo la fusión detecta ambas») ya se retiró del README, pero sobrevive en la conclusión 1.
-
-*(bloque: Párrafos 420–442 — Capítulo 6 CONCLUSIONES Y RECOMENDACIONES)*
-
-### párrafo 439 (recomendación 5) — CONTRADICE
-
-> Evaluar híbridos Top-Hat ↔ pirámide de Laplace que combinen la fidelidad a fuentes del primero con la riqueza global del segundo.
-
-**El dato:** La atribución está invertida. descriptive_means.csv: TopHat_Clasico es el ÚLTIMO de los siete en las tres métricas de fidelidad — MI_vis 0,7867, MI_ir 0,4928, SSIM 0,5640 — y PiramideLaplace es el PRIMERO en MI con ambas fuentes (MI_vis 1,9242; MI_ir 0,9178) además de liderar el contraste (SD 0,1550). En ranking_methods.csv los rangos medios del clásico son MI_vis 6,70, MI_ir 6,70 y SSIM 7,00 (peor posible). Si «Top-Hat» refiere a la propuesta, tampoco: MI_vis 0,8970, MI_ir 0,6003, SSIM 0,6584, y el propio párrafo 425 la declara «penalizada por las métricas de fidelidad a las fuentes». La frase habría que darla vuelta: la fidelidad la aporta la pirámide, la actividad el Top-Hat.
-
-*(bloque: Párrafos 420–442 — Capítulo 6 CONCLUSIONES Y RECOMENDACIONES)*
-
-### Parrafo 86 (SUMMARY), parrafo de la evaluacion orientada a tarea — CONTRADICE
-
-> the proposal falls at the lower end of the fusion band (0.906)
-
-**El dato:** semillas_llvip_resumen.csv, columna mAP50_media: Propuesta_Novedosa = 0,9283, que es la 3.a de las siete fusiones (por detras de PiramideLaplace 0,9517 y DTCWT 0,9365, y por delante de Curvelet 0,9259, TopHat_Clasico 0,9234, DWT 0,9183 y RatioPiramide 0,9043). El valor 0,906 es el de UNA semilla: en detection_llvip_semillas.csv, fila method=Propuesta_Novedosa / semilla=0, mAP50 = 0,9057, donde si quedaba 6.a de siete. El SUMMARY no solo cambia la cifra, invierte la conclusion cualitativa, y lo hace despues de anunciar el protocolo de 5 semillas. El RESUMEN en espanol dice lo correcto.
-
-*(bloque: Parrafos 82-167: RESUMEN (p. 83) y SUMMARY (p. 86). Los parrafos 88-167 son el indice de CONTENIDO (titulos y numeros de pagina), sin afirmaciones empiricas.)*
-
-### Parrafo 86 (SUMMARY) — CONTRADICE
-
-> the infrared alone remains the strongest modality (0.971)
-
-**El dato:** semillas_llvip_resumen.csv, fila IR, columna mAP50_media = 0,9611 (desv 0,0139). El 0,971 corresponde a la semilla 0 aislada: detection_llvip_semillas.csv, fila IR / semilla=0, mAP50 = 0,9708 (igual a la corrida unica de detection_llvip_map.csv, ya superada). El RESUMEN en espanol dice 0,961, que es el valor vigente.
-
-*(bloque: Parrafos 82-167: RESUMEN (p. 83) y SUMMARY (p. 86). Los parrafos 88-167 son el indice de CONTENIDO (titulos y numeros de pagina), sin afirmaciones empiricas.)*
-
-### Parrafo 86 (SUMMARY) — CONTRADICE
-
-> every fusion clearly outperforms the visible modality alone (mAP@0.5 from 0.81 to 0.91-0.95)
-
-**El dato:** semillas_llvip_resumen.csv: VIS mAP50_media = 0,7951 (no 0,81) y la banda de las siete fusiones va de 0,9043 (RatioPiramide) a 0,9517 (PiramideLaplace), es decir 0,904-0,952 (no 0,91-0,95). Los valores 0,81 y 0,91-0,95 son los de la semilla 0 (detection_llvip_semillas.csv, semilla=0: VIS 0,8133; fusiones 0,9056-0,9515). El RESUMEN dice 0,795 y 0,904-0,952, que si coinciden con el CSV.
-
-*(bloque: Parrafos 82-167: RESUMEN (p. 83) y SUMMARY (p. 86). Los parrafos 88-167 son el indice de CONTENIDO (titulos y numeros de pagina), sin afirmaciones empiricas.)*
-
-### Parrafos 83 y 86, comparados entre si — INCOHERENCIA
-
-> El SUMMARY invoca el protocolo de 5 semillas ('repeated with 5 training seeds per input, 45 runs in total') y a continuacion reporta las cuatro cifras de una sola semilla, omitiendo los tres resultados que el RESUMEN si da: que el IR supera a 6 de las siete fusiones y no se distingue de la septima, que la propuesta es indistinguible de 4 de sus seis rivales, y el ruido de inicializacion de 0,0128.
-
-**El dato:** Los dos textos describen el mismo experimento con dos conjuntos de numeros distintos. El vigente es el de 5 semillas: semillas_llvip_resumen.csv y semillas_llvip_pareadas.csv (generados por experiments/run_analisis_semillas_llvip.py, fechados 13-ago), frente a detection_llvip_map.csv (29-jul, corrida unica). El SUMMARY quedo con la version vieja. Un lector que compare los dos resumenes concluye cosas opuestas sobre el lugar de la propuesta.
-
-*(bloque: Parrafos 82-167: RESUMEN (p. 83) y SUMMARY (p. 86). Los parrafos 88-167 son el indice de CONTENIDO (titulos y numeros de pagina), sin afirmaciones empiricas.)*
-
-### parrafos 515 y 516 (apendice D, cierre del pseudocodigo y nota) — CONTRADICE
-
-> (r, m) se optimizan por PSO (barrido de 25 configuraciones) -> r = 25, m = 0,30 ... optimiza (r, m) por PSO mediante un barrido de 25 configuraciones de enjambre, con optimo r = 25, m = 0,30
-
-**El dato:** experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv -el CSV que el propio apendice designa como tabla resumen del barrido en el parrafo 490- dice lo contrario: el maximo de la columna Fo_opt es 1,7350 y corresponde a r_opt = 1 (fila n=2, T=20, y otras 15 filas mas: 16 de las 25 configuraciones convergen a r=1); las 8 filas con r_opt = 25 alcanzan solo Fo_opt = 1,7057. Lo confirma el estado reanudable experiments/results/pso/pso_grid_fo_propuesta_state.json (mejor configuracion n2_T20, gbest r=1,0, m=0,3, gbest_fit=1,734991) y el barrido determinista experiments/results/metrics_reports/optimo_exacto_fo.csv (5.000 filas, 25 radios x 200 pesos): dentro del rango publicado m>=0,30 el argmax es r=1, m=0,30, Fo=1,734991, y r=25 con m=0,30 da 1,705696; el argmax global es r=25 con m=0,07 (Fo=1,771465), que tampoco es la configuracion adoptada. Ademas el apendice se contradice con el resto del libro, que lo dice bien: el parrafo 418 (seccion 5.8.5) afirma «El argmax de la aptitud dentro del rango publicado es r = 1 (Fo = 1,7350) y no r = 25 (1,7057) ... El radio adoptado proviene, pues, de la bateria de evaluacion», y los parrafos 179, 274, 305, 386, 423 y 428 califican r=25 de decision de diseno. El comentario de experiments/run_all_fusions.py (lineas del bloque PROP_R) tambien lo declara: «El RADIO no lo fija el PSO ... r = 25 es una DECISION DE DISENO». La palabra «optimo» es el error: hay que decir que el PSO fija m=0,30 (piso del rango) y que r=25 se adopta sobre la bateria de evaluacion.
-
-*(bloque: Parrafos 482-521 - Capitulo 8 APENDICE (A. Repositorio del codigo; B. Configuraciones del barrido PSO; C. Tablas estadisticas extendidas; D. Pseudocodigos; E. Refinamiento de la regla de fusion; F. Hardware y tiempos))*
-
-### parrafo 518 (apendice E, Refinamiento metodologico de la regla de fusion) — CONTRADICE
-
-> La distincion correcta separa las dos clases de capas: las de detalle se fusionan por maxima actividad local y la base por promedio simple. ... Esto concierne a los metodos comparativos multiescala
-
-**El dato:** El refinamiento NO esta aplicado en la piramide de Laplace, uno de los cuatro comparativos multiescala y el segundo del ranking. En src/fusion/comparatives.py, _build_laplacian_pyramid termina con laplacian.append(gaussian[-1])  # capa base, y laplacian_pyramid_fusion recorre TODAS las capas con el mismo enmascarado: for lv_layer, li_layer in zip(lv, li) ... mask = (act_v >= act_i); es decir, la base sigue fusionandose por maxima actividad local, exactamente la «primera version» que el apendice dice haber corregido. Los otros tres si lo aplican: ratio_pyramid_fusion usa img = 0.5*(gv[levels]+gi[levels]) («base promediada»), dwt_fusion y curvelet_fusion promedian la aproximacion (0.5*cv_item+0.5*ci_item) y dtcwt_fusion promedia el lowpass. Reimplemente la LP con la base por promedio simple sobre los 20 pares: la imagen cambia en 0,10761 de media absoluta (maximo 0,23632) sobre un rango [0,1], y MI_vis pasa de 1,9242 a 1,1171 y MI_ir de 0,9178 a 0,6885. El valor 1,9242 es precisamente el que figura en experiments/results/metrics_reports/all_metrics.csv y en descriptive_means.csv (fila PiramideLaplace, columna MI_vis), de modo que todo el benchmark publicado se calculo con la regla sin refinar. Tiene consecuencia sobre resultados: ranking_methods.csv da a PiramideLaplace el mejor rango medio en MI_vis (1,85) y MI_ir (2,20), y el parrafo 399 del libro afirma que «la piramide de Laplace lidera el contraste (SD) y la informacion mutua». Nota: la Tabla 13 del libro describe la LP solo como «fusion por maxima actividad local», sin mencionar promedio en la base, o sea que coincide con el codigo y discrepa del apendice.
-
-*(bloque: Parrafos 482-521 - Capitulo 8 APENDICE (A. Repositorio del codigo; B. Configuraciones del barrido PSO; C. Tablas estadisticas extendidas; D. Pseudocodigos; E. Refinamiento de la regla de fusion; F. Hardware y tiempos))*
-
-### parrafo 519 (apendice F, Hardware y tiempos de ejecucion) — CONTRADICE
-
-> La totalidad de los experimentos se ejecuto en una notebook estandar (Intel i7, 16 GB de RAM, sin GPU dedicada) bajo Windows 11 con Python 3.11.
-
-**El dato:** experiments/results/metrics_reports/detector_perfil.json, que produce experiments/perfil_detector.py leyendo torch.cuda.is_available() y torch.cuda.get_device_name(0) (lineas 68-69), registra en el bloque «entorno»: "cuda": true y "gpu": "NVIDIA GeForce RTX 4050 Laptop GPU", con torch 2.5.1+cu121 y ultralytics 8.4.68. Los entrenamientos de deteccion no son marginales: el mismo JSON declara amp: true (precision mixta, que requiere GPU para tener sentido), 40 epocas, lote 16, imgsz 640, 12 entrenamientos en LLVIP y 2 en M3FD, con 4.000 pares de entrenamiento en m3fd_mixto. Asi que «la totalidad de los experimentos ... sin GPU dedicada» es falso para la seccion 5.5. Lo que si verifique: Python 3.11 (el interprete del repo es 3.11.14) y Windows 11. El «Intel i7, 16 GB de RAM» no lo registra ningun CSV ni JSON del repositorio (busque columnas y claves con cpu/ram/hardware/entorno en los 68 archivos de metrics_reports).
-
-*(bloque: Parrafos 482-521 - Capitulo 8 APENDICE (A. Repositorio del codigo; B. Configuraciones del barrido PSO; C. Tablas estadisticas extendidas; D. Pseudocodigos; E. Refinamiento de la regla de fusion; F. Hardware y tiempos))*
-
-### parrafo 492 (apendice C, ultima frase) — SIN FUENTE
-
-> Los 54 contrastes de la propuesta frente a sus seis rivales (9 metricas x 6 rivales: los cinco del estado del arte y el Top-Hat clasico, Wilcoxon con Holm y tamano de efecto rank-biserial) se consignan en wilcoxon_propuesta_vs_metodos.csv.
-
-**El dato:** El archivo no existe. `find . -iname "*wilcoxon*"` excluyendo .venv devuelve solo experiments/results/metrics_reports/wilcoxon_results.csv, experiments/results/metrics_reports_libre/wilcoxon_results.csv y experiments/results/metrics_reports/comparacion_aptitudes_wilcoxon.csv. Ningun script lo genera: run_stats_analysis.py escribe exactamente cuatro CSV (lineas 42, 77, 86 y 148: descriptive_means.csv, ranking_methods.csv, friedman_results.csv y wilcoxon_results.csv), y la cadena «wilcoxon_propuesta_vs_metodos» no aparece en ningun .py del arbol. La aritmetica y el desglose si son correctos esta vez: wilcoxon_results.csv tiene 54 filas con tophat=Propuesta_Novedosa (9 por cada uno de Curvelet, DTCWT, DWT, PiramideLaplace, RatioPiramide y TopHat_Clasico) y 45 con tophat=TopHat_Clasico. O sea que los 54 contrastes existen, pero dentro de wilcoxon_results.csv, el archivo que el mismo parrafo cita tres frases antes; la frase es redundante y apunta a un archivo inexistente. Es residuo de una version anterior: docs/fuentes/reverificacion_hallazgos.json ya lo habia senalado (la version vieja decia «48 contrastes ... 9 x 4 rivales»); se corrigieron los numeros pero se dejo el nombre del archivo.
-
-*(bloque: Parrafos 482-521 - Capitulo 8 APENDICE (A. Repositorio del codigo; B. Configuraciones del barrido PSO; C. Tablas estadisticas extendidas; D. Pseudocodigos; E. Refinamiento de la regla de fusion; F. Hardware y tiempos))*
-
-### Tabla 2 «Configuración de la Propuesta Novedosa y del PSO» (d.tables[11]), última fila — CONTRADICE
-
-> Óptimo hallado | r = 25; m = 0,30 (m* del barrido en las 25 configuraciones; Fo = 1,7057)
-
-**El dato:** experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv: el máximo de Fo_opt en las 25 configuraciones es 1,7350 con r_opt = 1 y m_opt = 0,30, y se alcanza en 16 de las 25 filas. El valor 1,7057 (r_opt = 25) aparece en solo 8 filas, y la fila n=2/T=10 da 1,6990 con r_opt = 14. La rejilla exhaustiva optimo_exacto_fo.csv (5.000 puntos) lo confirma: restringida al rango publicado m >= 0,30, su máximo es r = 1, m = 0,30, Fo = 1,7349913, mientras r = 25, m = 0,30 vale Fo = 1,7056961. Es decir, r = 25 con Fo = 1,7057 no es ni el mejor del barrido ni el óptimo exacto; es el segundo valor más frecuente del barrido.
-
-*(bloque: Las 38 tablas de docs/Tesis_Borrador_V3.docx (d.tables), verificadas celda por celda contra los CSV de experiments/results/metrics_reports/ y, donde fue posible, recomputadas desde los datos por imagen.)*
-
-### Tabla 2 (d.tables[11], fila «Escala (radio)») y tabla de operacionalización de las variables de §4.4 (d.tables[26], fila «Radio del SE (r)») — CONTRADICE
-
-> Escala (radio) | Única, de radio r (ajustado por PSO)  —y— Radio del SE (r) | ... | 1–25 (ajustado por PSO)
-
-**El dato:** El PSO no arroja r = 25: en pso_grid_search_fo_propuesta.csv devuelve r_opt = 1 en 16 de 25 configuraciones, r_opt = 25 en 8 y r_opt = 14 en 1. El r = 25 adoptado proviene de otro criterio: ajuste_comparativos_mejores.csv marca Propuesta_Novedosa|25 con elegida=True y rango_interno_9 = 4,867, es decir fue elegido por el promedio de rangos sobre las nueve métricas de evaluación (run_ajuste_comparativos.py), no por la función de aptitud Fo. El propio libro lo dice en el epígrafe de la Figura 10 («r = 25 por diseño»), de modo que la atribución al PSO en estas dos tablas contradice tanto el CSV como el resto del texto. En cambio m = 0,30 sí es del PSO: m_opt = 0,30 en las 25 configuraciones.
-
-*(bloque: Las 38 tablas de docs/Tesis_Borrador_V3.docx (d.tables), verificadas celda por celda contra los CSV de experiments/results/metrics_reports/ y, donde fue posible, recomputadas desde los datos por imagen.)*
-
-### parrafo 338, §4.3 Diseno — CONTRADICE
-
-> la configuracion optima resultante (r = 25, m = 0,30) se compara sobre los 20 pares con las nueve metricas
-
-**El dato:** experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv: de las 25 configuraciones, 16 devuelven r_opt = 1 con Fo_opt = 1,7350, ocho devuelven r_opt = 25 con Fo_opt = 1,7057 y una r_opt = 14 (1,6990); el maximo del barrido es r = 1. experiments/results/metrics_reports/optimo_exacto_fo.csv (rejilla exhaustiva 5.000 puntos): dentro del rango publicado m >= 0,30 el argmax es r = 1, m = 0,30, Fo = 1,734991, mientras que (r = 25, m = 0,30) da Fo = 1,705696; el argmax global es r = 25, m = 0,07 con Fo = 1,771465. Es decir, r = 25 no es optimo de la aptitud en ninguna lectura. La configuracion realmente evaluada si es r = 25, m = 0,30 (all_metrics.config.json), pero proviene de la bateria de evaluacion, no del PSO: el propio libro lo dice en el parrafo 418 («El argmax de la aptitud dentro del rango publicado es r = 1 (Fo = 1,7350) y no r = 25 (1,7057)»), en el 423 («r=25 adoptado como decision de diseno») y en la limitacion Novena del parrafo 229 («la configuracion adoptada se apoya en el criterio de evaluacion y no en la optimizacion, que si determina el peso m»)
-
-*(bloque: Parrafos 299-346 (cap. 3 MARCO CONCEPTUAL y cap. 4 MARCO METODOLOGICO), mas la Tabla 26 de operacionalizacion que cuelga del parrafo 339)*
-
-### parrafo 329, §3.15 PSO; y fila «Radio del SE (r) ... 1-25 (ajustado por PSO)» de la Tabla 26 (§4.4) — INCOHERENCIA
-
-> En esta tesis ajusta automaticamente los hiperparametros (r, m) dla Propuesta Novedosa
-
-**El dato:** El PSO determina solo m: en las 25 filas de pso_grid_search_fo_propuesta.csv m_opt = 0,30 sin excepcion (piso del rango LO=[1,0.30], HI=[25,2.00] de experiments/pso_grid_search_fo.py), y optimo_exacto_fo.csv muestra que Fo decrece estrictamente en m desde m = 0,07 (r=25: 1,771465 en m=0,07 -> 1,705696 en m=0,30 -> 1,206633 en m=2,00). El radio no lo fija el PSO: 16 de las 25 configuraciones apuntan a r = 1 y el libro mismo lo declara decision de diseno en los parrafos 418, 423 y en la limitacion Novena. La Tabla 26 repite la atribucion al PSO para r. Nota menor de tipeo en el mismo parrafo: «(r, m) dla Propuesta» por «de la Propuesta»
-
-*(bloque: Parrafos 299-346 (cap. 3 MARCO CONCEPTUAL y cap. 4 MARCO METODOLOGICO), mas la Tabla 26 de operacionalizacion que cuelga del parrafo 339)*
-
-### Tabla 2 «Configuracion de la Propuesta Novedosa y del PSO», ultima fila (tabla que sigue al parrafo 277, seccion 2.2.5) — CONTRADICE
-
-> Optimo hallado: r = 25; m = 0,30 (m* del barrido en las 25 configuraciones; Fo = 1,7057)
-
-**El dato:** El optimo de Fo dentro del rango publicado NO es r = 25. pso_grid_search_fo_propuesta.csv: 15 de las 25 configuraciones devuelven r_opt = 1 con Fo_opt = 1,7350, y las 10 restantes r_opt = 25 con Fo_opt = 1,7057 (el maximo de la columna Fo_opt es 1,7350). optimo_exacto_fo.csv (enumeracion exacta de los 25 radios x 200 pesos): argmax con m >= 0,30 en r = 1, m = 0,30, Fo = 1,734991; en r = 25, m = 0,30 da 1,705696. El valor 1,7057 de la celda es correcto, pero corresponde a la configuracion ADOPTADA, no al optimo; el propio libro lo dice en 5.8.5 («El argmax de la aptitud dentro del rango publicado es r = 1 (Fo = 1,7350) y no r = 25 (1,7057)») y en la limitacion novena. Solo m* = 0,30 es resultado del barrido.
-
-*(bloque: Parrafos 202-298: capitulo 1 PROBLEMA DE INVESTIGACION y capitulo 2 MARCO TEORICO (incluye la Tabla 2 «Configuracion de la Propuesta Novedosa y del PSO» y la Tabla 3 «Metodos comparativos»))*
-
-
-## Gravedad media (29)
-
-### parrafo 377 (§5.5, tercera lectura de la Tabla 8) — CONTRADICE
-
-> el infrarrojo solo es la modalidad mas fuerte (mAP@0,5 = 0,971; mAP@0,5:0,95 = 0,621)
-
-**El dato:** Esas dos cifras son la corrida de UNA semilla: detection_llvip_map.csv, fila method=IR, mAP50=0,9708 y mAP50_95=0,6211 (equivale a detection_llvip_semillas.csv, IR semilla=0). La Tabla 8 del propio libro publica medias de 5 semillas: IR 0,961 +- 0,0139 y 0,592 +- 0,0259, que es lo que dice semillas_llvip_resumen.csv (mAP50_media=0,9611, mAP50_95_media=0,5919). El mismo parrafo usa medias para todo lo demas (VIS 0,795, LP 0,952, DTCWT 0,936, propuesta 0,9283), asi que mezcla dos bases en una sola oracion y contradice la tabla que esta interpretando. El parrafo 399 del libro ya usa el 0,961 correcto. La conclusion de fondo se sostiene: con medias, IR 0,9611 sigue por encima de toda fusion (mejor fusion LP 0,9517) y en mAP@0,5:0,95 IR 0,5919 supera a la mejor fusion (DTCWT 0,5894).
-
-*(bloque: Parrafos 347-385 (capitulo 5, primera parte: calidad de imagen §5.1-5.4 y evaluacion orientada a tarea §5.5), mas las Tablas 4, 5, 6, 7, 8 y 9 del libro (indices python-docx 27, 28, 29, 30, 31, 32))*
-
-### parrafo 377 (§5.5, primera lectura de la Tabla 8); la misma cifra se repite en el parrafo 399 — CONTRADICE
-
-> toda fusion mejora con claridad sobre el visible solo (0,795 de media frente a una banda de 0,904-0,952, en las 5 semillas, es decir entre +0,09 y +0,14 puntos)
-
-**El dato:** La resta de las cifras que el propio parrafo enuncia da otro resultado: semillas_llvip_resumen.csv, VIS mAP50_media=0,7951; banda de medias de fusion de RatioPiramide 0,9043 a PiramideLaplace 0,9517. 0,9043-0,7951=+0,109 y 0,9517-0,7951=+0,157, o sea entre +0,11 y +0,16, no +0,09 y +0,14. El +0,09/+0,14 sale de restar contra 0,8133, que es el VIS de una sola semilla (detection_llvip_map.csv fila VIS, mAP50=0,8133; tambien el mAP50_max de VIS en semillas_llvip_resumen.csv): 0,9043-0,8133=0,0910 y 0,9517-0,8133=0,1384. Es un resto del calculo viejo con una semilla y subestima la propia ventaja de la fusion.
-
-*(bloque: Parrafos 347-385 (capitulo 5, primera parte: calidad de imagen §5.1-5.4 y evaluacion orientada a tarea §5.5), mas las Tablas 4, 5, 6, 7, 8 y 9 del libro (indices python-docx 27, 28, 29, 30, 31, 32))*
-
-### parrafo 368 (§5.4.2 Comparaciones pareadas Wilcoxon) — CONTRADICE
-
-> cede de manera sistematica en las metricas de fidelidad a las fuentes (SSIM, PSNR) y en la informacion mutua, donde lideran los metodos multiescala
-
-**El dato:** En SSIM si es sistematico: wilcoxon_results.csv filas 77-81, la propuesta pierde significativamente contra los cinco comparativos. En PSNR no: fila 91 (metric=PSNR, tophat=Propuesta_Novedosa, baseline=PiramideLaplace) da diff=+1,9009, effect_r=+0,990, p_holm=0,000021, sig_holm_05=True: la propuesta GANA el PSNR contra la piramide de Laplace de forma significativa, y la Laplace es precisamente un metodo multiescala y el peor PSNR del banco (descriptive_means.csv, PSNR=14,9401, el minimo de los siete; rango medio 6,95 en ranking_methods.csv). Son 4 de 5 derrotas, no cinco. En informacion mutua tampoco: filas 48 (MI_vis vs RatioPiramide, p_holm=0,2162) y 59 (MI_ir vs RatioPiramide, p_holm=0,1231) son no significativas, o sea 4 de 5 en cada una de las dos MI. La palabra «sistematica» sobreafirma tres de las cuatro metricas citadas.
-
-*(bloque: Parrafos 347-385 (capitulo 5, primera parte: calidad de imagen §5.1-5.4 y evaluacion orientada a tarea §5.5), mas las Tablas 4, 5, 6, 7, 8 y 9 del libro (indices python-docx 27, 28, 29, 30, 31, 32))*
-
-### párrafo 428 (conclusión específica 6) — SIN FUENTE
-
-> el radio gobierna la escala de las estructuras que el operador extrae —la aptitud del trabajo de referencia favorece r = 1 y la batería de evaluación r = 25—
-
-**El dato:** La primera mitad sí está: optimo_exacto_fo.csv da con m ≥ 0,30 el máximo en r = 1 (Fo = 1,734991) frente a r = 25 (1,705696). La segunda mitad no tiene CSV. Busqué un barrido de radios sobre la batería de nueve: barrido_metricas_vs_m.csv solo tiene la propuesta en r = 25 (11 pesos; el clásico en r = 5 y r = 25); all_metrics.csv solo contiene la configuración r = 25; y en las tablas del libro solo la Tabla 36 fija r = 25 sin comparar radios. El único CSV que compara los dos radios es comparacion_aptitudes.csv / comparacion_aptitudes_wilcoxon.csv, y ahí (r = 1; m = 0,30) frente a (r = 25; m = 0,070) sale 4 a 4 en la batería de nueve: r = 25 gana EN, SD, FE y SSIM; r = 1 gana MG, MI_vis, MI_ir y SF (PSNR no figura). O sea que ni con pesos distintos la batería «favorece r = 25».
-
-*(bloque: Párrafos 420–442 — Capítulo 6 CONCLUSIONES Y RECOMENDACIONES)*
-
-### párrafo 441 (recomendación 7) — SIN FUENTE
-
-> la metodología clásica Top-Hat conserva su valor como referencia interpretable y de muy bajo costo computacional
-
-**El dato:** Ningún CSV mide el costo de las fusiones. Recorrí las columnas de los 50 CSV de metrics_reports buscando tiempo: solo hay 'segundos' en detection_llvip_semillas.csv (entrenamiento de YOLO) y en pso_grid_search*.csv / pso_repeticiones*.csv (corridas del enjambre). La única fuente de la cifra es el Apéndice F (párrafo 520: «entre 20 y 80 milisegundos», «90 segundos el benchmark»), que es texto sin CSV ni script asociado. Además ese mismo apéndice dice que «la pirámide de Laplace y el curvelet se sitúan en órdenes de magnitud comparables», lo que quita al Top-Hat el «muy bajo costo» como ventaja diferencial.
-
-*(bloque: Párrafos 420–442 — Capítulo 6 CONCLUSIONES Y RECOMENDACIONES)*
-
-### párrafo 431 (conclusión específica 9) — SIN FUENTE
-
-> aplicar selección por actividad a la capa base introduce discontinuidades de iluminación y sesga las métricas de información mutua. Este aprendizaje es transferible a cualquier descomposición multiescala.
-
-**El dato:** No existe ninguna corrida con la base fusionada por máxima actividad. Los seis brazos de ablacion_banco.csv comparten la misma reconstrucción (run_ablacion_banco.py, línea 58: f = base + m*max(wv,wi) - m*max(bv,bi)), y control_negativo.csv solo agrega desenfoques, ruidos y comparativos. La única fuente es el Apéndice (párrafo 518), que lo declara como observación del desarrollo iterativo («Durante el desarrollo iterativo … se identificó») y no como medición; ese apéndice tampoco menciona discontinuidades de iluminación ni sesgo de MI, y aclara que el punto concierne a los comparativos multiescala y no al operador propuesto. Las dos consecuencias afirmadas (discontinuidades, sesgo de MI) y la generalización a «cualquier descomposición multiescala» no están medidas.
-
-*(bloque: Párrafos 420–442 — Capítulo 6 CONCLUSIONES Y RECOMENDACIONES)*
-
-### párrafo 437 (recomendación 3) — INCOHERENCIA
-
-> Replicar la evaluación sobre datasets adicionales (RoadScene, M3FD, MS-COCO multiespectral) para verificar la transferibilidad de las conclusiones.
-
-**El dato:** La recomendación propone como trabajo futuro algo que el trabajo ya hizo: M3FD está evaluado en detection_m3fd_map.csv (9 entradas, mAP y AP50 por clase), en complementariedad_por_escena.csv / complementariedad_resumen.csv / complementariedad_criticas.csv (232 escenas) y en correlacion_calidad_deteccion.csv (filas dataset = M3FD), con script propio en experiments/detection_m3fd/train_eval_m3fd.py. El propio capítulo 6 lo usa dos veces (párrafos 423 y 435). RoadScene y MS-COCO multiespectral sí quedan pendientes.
-
-*(bloque: Párrafos 420–442 — Capítulo 6 CONCLUSIONES Y RECOMENDACIONES)*
-
-### párrafo 428 (conclusión específica 6) — INCOHERENCIA
-
-> la aptitud del trabajo de referencia favorece r = 1
-
-**El dato:** Enunciado sin la salvedad que la propia tesis demostró, queda al revés de §5.8.5. optimo_exacto_fo.csv: con el peso atado al piso heredado (m ≥ 0,30) el máximo está en r = 1 (1,734991), pero con el peso libre el máximo global está en r = 25, m = 0,070 (Fo = 1,771465) y r = 1 pasa a ser el PEOR radio (mejor Fo 1,760748, monótono creciente en r de 1,7607 a 1,7715). El párrafo 418 lo dice explícitamente: «El orden de los radios se invierte … r = 1 pasa a ser el peor». La conclusión 6 conserva la lectura vieja.
-
-*(bloque: Párrafos 420–442 — Capítulo 6 CONCLUSIONES Y RECOMENDACIONES)*
-
-### párrafo 441 (recomendación 7) — INCOHERENCIA
-
-> para aplicaciones donde prima la fidelidad a las fuentes, los métodos multiescala (DTCWT, CVT) siguen siendo preferibles
-
-**El dato:** Vale para SSIM y PSNR, no para la información mutua. descriptive_means.csv: DTCWT lidera SSIM (0,7249) y Curvelet PSNR (17,6523), pero en MI con las fuentes la pirámide de Laplace los duplica (MI_vis 1,9242 frente a 1,0781 de DTCWT y 1,0961 de CVT; MI_ir 0,9178 frente a 0,6728 y 0,6695), y ranking_methods.csv le da a LP el mejor rango medio en ambas (1,85 y 2,20 frente a 3,25/3,30 de DTCWT y 2,65/3,20 de CVT). El párrafo 424 del mismo capítulo se lo atribuye a la pirámide («la pirámide de Laplace … la información mutua con las fuentes»). Conviene precisar de qué fidelidad se habla.
-
-*(bloque: Párrafos 420–442 — Capítulo 6 CONCLUSIONES Y RECOMENDACIONES)*
-
-### Parrafo 83 (RESUMEN); identico en el parrafo 86 del SUMMARY ('tuned automatically by PSO' + 'r=25 by design') — INCOHERENCIA
-
-> el radio r del banco de elementos estructurantes y el peso de contraste m se ajustan automaticamente por Optimizacion por Enjambre de Particulas (PSO) [...] En su configuracion optima (r=25 por diseno; m=0,30, el piso del rango de busqueda)
-
-**El dato:** La misma frase afirma y desmiente que el PSO fije r. El CSV confirma que NO lo fija: en pso_grid_search_fo_propuesta.csv (25 filas, columnas r_opt y Fo_opt) la aptitud es MAYOR con r=1 (Fo_opt = 1,7350 en 15 de las 25 configuraciones) que con r=25 (Fo_opt = 1,7057 en 9), o sea que r=25 es peor para el criterio que supuestamente lo eligio. El propio codigo lo declara (experiments/make_avances_excel.py: 'El radio NO lo fija el PSO [...] r = 25 es una decision de diseno tomada sobre las metricas de evaluacion'). Ademas, ambos parametros adoptados caen en un borde del rango de busqueda r en [1,25] y m en [0,30;2,00] (make_avances_excel.py, 'Rango de busqueda'): el texto lo aclara para m ('el piso del rango') pero no para r, que es el techo. Llamarla 'configuracion optima' sin decir respecto de que induce a error.
-
-*(bloque: Parrafos 82-167: RESUMEN (p. 83) y SUMMARY (p. 86). Los parrafos 88-167 son el indice de CONTENIDO (titulos y numeros de pagina), sin afirmaciones empiricas.)*
-
-### Parrafo 83 (RESUMEN) y parrafo 86 (SUMMARY), tres pasajes cada uno — INCOHERENCIA
-
-> lidera la entropia y la eficiencia de fusion del estudio (EN=6,9855; FE=1,1047) [...] con ventaja estadisticamente significativa sobre los cinco metodos del estado del arte en EN, FE, MG y SF [...] superando de forma significativa al estado del arte en cuatro de las nueve metricas
-
-**El dato:** Las cifras son exactas, pero EN y FE no son dos metricas independientes: verifique en all_metrics.csv que los rangos intra-par de EN y FE son IDENTICOS en los 20 pares (FE es EN dividida por una constante propia de cada par), y esto se ve tambien en friedman_results.csv (EN y FE comparten chi2 = 88,2857 y p = 6,876e-17) y en ranking_methods.csv (columnas EN y FE identicas fila por fila: 1,5 / 3,25 / 2,45 / 3,55 / 4,9 / 5,5 / 6,85). Por lo tanto 'cuatro de las nueve metricas' son en realidad tres resultados independientes (EN=FE, MG, SF), y 'lidera la entropia y la eficiencia de fusion' enuncia dos veces el mismo hecho. El repositorio ya reconoce el problema con la columna avg_rank_sin_FE de ranking_methods.csv, que el resumen no menciona.
-
-*(bloque: Parrafos 82-167: RESUMEN (p. 83) y SUMMARY (p. 86). Los parrafos 88-167 son el indice de CONTENIDO (titulos y numeros de pagina), sin afirmaciones empiricas.)*
-
-### parrafo 399, quinta observacion de la Discusion integrada (la frase abre con «la evaluacion orientada a tarea (deteccion sobre LLVIP, repetida con 5 semillas de entrenamiento por entrada)») — CONTRADICE
-
-> toda fusion supera netamente al visible solo (+0,09 a +0,14 en mAP@0,5)
-
-**El dato:** semillas_llvip_resumen.csv, columna mAP50_media: VIS = 0,7951 y las siete fusiones van de 0,9043 (RatioPiramide) a 0,9517 (PiramideLaplace), o sea de +0,109 a +0,157, no de +0,09 a +0,14. El rango que el libro escribe es el de la corrida de UNA sola semilla: detection_llvip_map.csv da VIS = 0,8133 y fusiones de 0,9056 a 0,9515, es decir +0,092 a +0,138. La cifra quedo sin actualizar cuando se paso a las cinco semillas. La conclusion 1 (parrafo 423) SI reporta el rango de cinco semillas bien («0,795 de media frente a 0,904-0,952, en las 5 semillas»), de modo que el libro se contradice consigo mismo entre §5.7 y §6.1.
-
-*(bloque: Parrafos 386 a 419 (§5.6 Propuesta Novedosa, §5.7 Discusion integrada, §5.8 Auditoria del protocolo: 5.8.1 a 5.8.5) mas las Tablas 10, 11, 12, 13 y 14 del docx (indices python-docx 33, 34, 35, 36 y 37))*
-
-### parrafo 419, cierre de §5.8.5 — SIN FUENTE
-
-> Se sostiene H6, y con muestra suficiente: la hipotesis de que la mejora en las metricas de imagen se traslade a la tarea de deteccion queda rechazada, no simplemente sin confirmar.
-
-**El dato:** El unico calculo de potencia del repositorio es potencia_mcnemar.csv (lo produce experiments/potencia_mcnemar.py). Con los n = 23 discordantes del conteo por escena la potencia llega a 0,80 solo a partir de delta = 5,8 puntos porcentuales (fila delta_pp = 5,8 -> potencia 0,816; delta_pp = 5,7 -> 0,799), y en la diferencia realmente observada de 3,0 pp la potencia es 0,258 (fila delta_pp = 3,0). Los dos contrastes que el parrafo cita no rechazan nada: Spearman p = 0,432 y McNemar p = 0,2100. La afirmacion de suficiencia es correcta unicamente si se le agrega el calificador «para diferencias de 5,8 puntos porcentuales o mas», que el parrafo no pone y cuya cifra no cita. El docstring de experiments/potencia_mcnemar.py senala exactamente esta frase: «Esa frase no tenia ningun calculo detras, y ademas es delicada».
-
-*(bloque: Parrafos 386 a 419 (§5.6 Propuesta Novedosa, §5.7 Discusion integrada, §5.8 Auditoria del protocolo: 5.8.1 a 5.8.5) mas las Tablas 10, 11, 12, 13 y 14 del docx (indices python-docx 33, 34, 35, 36 y 37))*
-
-### parrafo 412, §5.8.3 (lectura de la Tabla 13) — CONTRADICE
-
-> lo que si queda firme en todas las composiciones es que el merito no proviene de la imagen base
-
-**El dato:** ablacion_banco_resumen.csv, columna rango_9_sin_FE: base = 3,506 queda 5.a de los seis brazos, POR DELANTE del brazo de las lineas solas (3,631) y a solo 0,006 de la suma que adopta la propuesta (3,500). O sea que en la composicion sin FE —la que el propio parrafo propone como la lectura prudente— la imagen base no queda ultima y le gana a uno de los brazos del operador. El «en todas las composiciones» solo se cumple en las columnas rango_9 (base 3,783, ultima empatada) y rango_17 (base 4,359, ultima).
-
-*(bloque: Parrafos 386 a 419 (§5.6 Propuesta Novedosa, §5.7 Discusion integrada, §5.8 Auditoria del protocolo: 5.8.1 a 5.8.5) mas las Tablas 10, 11, 12, 13 y 14 del docx (indices python-docx 33, 34, 35, 36 y 37))*
-
-### parrafo 484 (apendice A, inventario de modulos) — CONTRADICE
-
-> src/metrics/evaluators.py (las nueve metricas)
-
-**El dato:** El modulo calcula DIECISIETE metricas, no nueve. El docstring de evaluate_all lo enumera: «Claves: EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PSNR, Qabf, Nabf, SCD, VIF, FMI, Q0, QW, QE», y METRIC_DIRECTION (lineas 28-33) declara direccion para esas mismas 17. experiments/results/metrics_reports/all_metrics.csv tiene 19 columnas: method, image y las 17 metricas. Las nueve son un subconjunto que selecciona otro archivo: experiments/run_stats_analysis.py, linea 31, METRICS = ["EN", "SD", "FE", "MG", "MI_vis", "MI_ir", "SF", "SSIM", "PSNR"], con el comentario «Se descartan Qabf, Nabf, SCD, VIF y las del review (FMI, Q0, QW, QE)». En un apendice que promete reproducibilidad la atribucion importa: quien clone el repo y ejecute evaluators.py obtiene 17 columnas, y las cuatro metricas del review (FMI, Q0, QW, QE) y Nabf sostienen las secciones 5.8.1 y los CSV ranking_mas_nabf.csv y escenas_distintas.csv.
-
-*(bloque: Parrafos 482-521 - Capitulo 8 APENDICE (A. Repositorio del codigo; B. Configuraciones del barrido PSO; C. Tablas estadisticas extendidas; D. Pseudocodigos; E. Refinamiento de la regla de fusion; F. Hardware y tiempos))*
-
-### parrafo 519 (apendice F) — CONTRADICE
-
-> Cada fusion Top-Hat consume entre 20 y 80 milisegundos segun la configuracion
-
-**El dato:** El intervalo no contiene ninguna de las dos configuraciones Top-Hat del benchmark. Medicion directa (mediana de 5 corridas, par APC_1_view_1_fk_06_005, 439x609, mismo interprete del repo): Propuesta_Novedosa con r=25 y m=0,30 -la configuracion adoptada, CONFIG de run_all_fusions.py- 168,1 ms; TopHat_Clasico con r=5 11,6 ms. Es decir, la adoptada cuesta mas del doble del techo declarado y la clasica esta por debajo del piso. El CSV lo corrobora sin necesidad de cronometrar: en pso_grid_search_fo_propuesta.csv el cociente segundos/evaluaciones vale 0,799 s de media en las 8 filas que convergen a r_opt=25 (min 0,75, max 0,833) frente a 0,203 s en las 16 que convergen a r_opt=1; como cada evaluacion de aptitud fusiona las 3 escenas del cache (list_pairs()[::7], las tres que imprime el script), eso da unos 266 ms por fusion a radio grande contra unos 68 ms a radio 1. La cifra a corregir es el techo: con r=25 el banco aplica un disco de 51x51 y cuatro lineas de longitud 51.
-
-*(bloque: Parrafos 482-521 - Capitulo 8 APENDICE (A. Repositorio del codigo; B. Configuraciones del barrido PSO; C. Tablas estadisticas extendidas; D. Pseudocodigos; E. Refinamiento de la regla de fusion; F. Hardware y tiempos))*
-
-### parrafo 484 (apendice A) — INCOHERENCIA
-
-> La totalidad del codigo de esta tesis esta disponible en el repositorio del proyecto, organizado en modulos: [lista de nueve modulos y carpetas]
-
-**El dato:** El inventario omite los scripts que producen varios resultados centrales del libro, y la frase promete «la totalidad del codigo». Faltan, todos existentes y todos con CSV publicado: experiments/detection_m3fd/ (prepare_m3fd.py y train_eval_m3fd.py), que sostiene el experimento de clases complementarias del parrafo 380 y produce detection_m3fd_map.csv, figura_detecciones_m3fd.json y arquitectura_yolo.json -el apendice nombra solo detection_llvip/-; experiments/run_ablacion_banco.py, que produce ablacion_banco.csv, ablacion_banco_resumen.csv y ablacion_banco_contrastes.csv, base de la Tabla 13 y de la seccion 5.8.3 (H7); experiments/optimo_exacto_fo.py, que produce optimo_exacto_fo.csv, el barrido determinista que la seccion 5.8.5 usa para acotar el alcance de H5; experiments/pso_repeticiones.py, que produce las cuatro tablas de repeticiones del estudio de estabilidad; experiments/run_control_negativo.py (seccion 5.8.2, H3) y experiments/run_ajuste_comparativos.py (seccion 5.8.4). En total el directorio experiments/ tiene 46 scripts y el apendice nombra cuatro. Verificado en cambio: los diez archivos y carpetas que si nombra existen todos, y detection_llvip/ contiene exactamente los tres roles que el texto le atribuye (prepare_llvip.py, train_eval_llvip.py, run_semillas_llvip.py).
-
-*(bloque: Parrafos 482-521 - Capitulo 8 APENDICE (A. Repositorio del codigo; B. Configuraciones del barrido PSO; C. Tablas estadisticas extendidas; D. Pseudocodigos; E. Refinamiento de la regla de fusion; F. Hardware y tiempos))*
-
-### parrafo 518 (apendice E, ultima frase) — SIN FUENTE
-
-> El refinamiento elimino discontinuidades de iluminacion y sesgos artificiales en la informacion mutua.
-
-**El dato:** Ningun CSV documenta un antes/despues de ese refinamiento. Los unicos respaldos con nombre de copia en metrics_reports son all_metrics.csv.bak_m0703 y all_metrics.csv.bak_n20, que corresponden a otro peso (m=0,0703) y a otro corpus (n=20 pares), no a un cambio en la regla de fusion. Y en el sentido contrario: el sesgo en la informacion mutua sigue presente, porque la piramide de Laplace conserva la base por maxima actividad local (ver el hallazgo del mismo parrafo). Al recalcular la LP con la base promediada, MI_vis cae de 1,9242 a 1,1171 y MI_ir de 0,9178 a 0,6885; los valores altos son los que estan en all_metrics.csv. La «discontinuidad de iluminacion» tambien es visible en el dato publicado: descriptive_means.csv da a PiramideLaplace el peor PSNR de los siete metodos (14,9401 frente a 17,6523 de Curvelet), que es el sintoma esperable de una base tomada pixel a pixel de una u otra fuente.
-
-*(bloque: Parrafos 482-521 - Capitulo 8 APENDICE (A. Repositorio del codigo; B. Configuraciones del barrido PSO; C. Tablas estadisticas extendidas; D. Pseudocodigos; E. Refinamiento de la regla de fusion; F. Hardware y tiempos))*
-
-### parrafo 519 (apendice F, ultima frase) — SIN FUENTE
-
-> Esta liviandad computacional confirma la viabilidad del metodo para aplicaciones en tiempo real.
-
-**El dato:** Ningun CSV del repositorio mide latencia ni cuadros por segundo del operador; las unicas columnas de tiempo en metrics_reports son «segundos» en pso_grid_search.csv, pso_grid_search_fo_propuesta.csv, pso_grid_search_fo_clasico.csv, las dos de pso_repeticiones y detection_llvip_semillas.csv, y ninguna cronometra una fusion aislada (run_all_fusions.py no importa time ni mide nada). Ademas la medicion directa va en contra: la configuracion adoptada (r=25, m=0,30) tarda 168,1 ms por par de 439x609, es decir unos 6 cuadros por segundo en una sola escala y sin contar captura ni registro, lo que no sostiene «tiempo real» sin calificar la resolucion y la tasa objetivo. Conviene o retirar la frase o acotarla a la resolucion y al radio medidos.
-
-*(bloque: Parrafos 482-521 - Capitulo 8 APENDICE (A. Repositorio del codigo; B. Configuraciones del barrido PSO; C. Tablas estadisticas extendidas; D. Pseudocodigos; E. Refinamiento de la regla de fusion; F. Hardware y tiempos))*
-
-### Tabla de métricas al cierre de §2.2.7, la que sigue a la ecuación (26) (d.tables[25]) — INCOHERENCIA
-
-> Métrica | Definición operativa | Interpretación | Dirección — con doce filas: EN, SD, FE, MG, MI_vis, MI_ir, SF, Qabf, Nabf, SSIM, SCD, VIF
-
-**El dato:** La tabla no cubre ninguno de los dos conjuntos que el libro usa después. Omite PSNR, que es una de las nueve métricas del criterio principal y aparece en las Tablas 5, 6, 7, 12, 13 y 14 (columna PSNR de all_metrics.csv y de ranking_methods.csv). Y omite FMI, Q0, QW y QE, que sí integran el conjunto de diecisiete de las columnas «Con 17» de las Tablas 12, 13 y 14 (METRIC_DIRECTION en src/metrics/evaluators.py tiene exactamente 17 entradas: las 9 más Qabf, Nabf, SCD, VIF, FMI, Q0, QW, QE). El lector no encuentra en el marco la definición de PSNR ni de los cuatro índices de Piella y Haghighat que después ve rankeados.
-
-*(bloque: Las 38 tablas de docs/Tesis_Borrador_V3.docx (d.tables), verificadas celda por celda contra los CSV de experiments/results/metrics_reports/ y, donde fue posible, recomputadas desde los datos por imagen.)*
-
-### Tabla 8 «Detección de peatones en LLVIP» (d.tables[31]), fila de encabezado y las nueve filas de datos — INCOHERENCIA
-
-> Encabezados «mAP@0,5 ↑ (media ± desv.)» y «mAP@0,5:0,95 ↑ (media ± desv.)» frente a «Precisión ↑» y «Recall ↑» sin rótulo
-
-**El dato:** Las columnas de precisión y recall también son medias sobre las cinco semillas, pero el encabezado no lo dice. Recomputado desde detection_llvip_semillas.csv (5 filas por método): Propuesta_Novedosa precisión media 0,9438 y recall medio 0,8285, que son los 0,944 y 0,828 impresos. En cambio detection_llvip_map.csv —el CSV de una sola corrida, semilla 0— da para Propuesta_Novedosa precisión 0,8756 y recall 0,7613. Quien contraste la tabla con ese archivo encontrará una brecha de casi 0,07 punto y creerá que hay un error donde no lo hay. Conviene extender «(media ± desv.)» o al menos «(media)» a las cuatro columnas.
-
-*(bloque: Las 38 tablas de docs/Tesis_Borrador_V3.docx (d.tables), verificadas celda por celda contra los CSV de experiments/results/metrics_reports/ y, donde fue posible, recomputadas desde los datos por imagen.)*
-
-### parrafo 338, §4.3 Diseno — SIN FUENTE
-
-> seleccionando la configuracion del enjambre con un barrido de 25 combinaciones (particulas 2-10 x iteraciones 10-50 ...) sobre un subconjunto de tres escenas representativas
-
-**El dato:** El barrido de 25 combinaciones existe y coincide (pso_grid_search_fo_propuesta.csv, 25 filas con n en {2,4,6,8,10} y Tmax en {10,20,30,40,50}; tres escenas = list_pairs()[::7] -> APC_1_view_1, Athena_APC_4_fennek01, Athena_soldier_behind_smoke_3, tres escenas distintas). Lo que no tiene respaldo es la «seleccion»: ningun CSV registra cual par (n, Tmax) quedo adoptado, y las configuraciones no convergen a un mismo resultado (16 dan r=1, 8 dan r=25, 1 da r=14). pso_repeticiones_resumen_propuesta.csv confirma la inestabilidad: sobre 20 corridas por configuracion, la moda de r alterna entre 1 y 25 y pct_r1 va de 20 % a 65 %. Busque en los 50 CSV de metrics_reports y en experiments/make_reporte_optimos.py, eval_fo_optima.py y analizar_repeticiones.py un artefacto que declare la configuracion elegida del enjambre; no existe
-
-*(bloque: Parrafos 299-346 (cap. 3 MARCO CONCEPTUAL y cap. 4 MARCO METODOLOGICO), mas la Tabla 26 de operacionalizacion que cuelga del parrafo 339)*
-
-### parrafo 342, §4.5 Dataset y preprocesamiento — INCOHERENCIA
-
-> reentrenando el detector YOLOv8n durante 40 epocas con configuracion identica en todas las modalidades
-
-**El dato:** Las 40 epocas, el checkpoint de partida y la configuracion identica se verifican (runs/detect/runs/llvip/*/args.yaml: model yolov8n.pt, epochs 40, seed 0, imgsz 640, batch 16, deterministic True en las 12 modalidades). Lo que falta declarar es el protocolo de checkpoint evaluado: experiments/detection_llvip/train_eval_llvip.py usa --pesos last por defecto y todas las filas de detection_llvip_map.csv y detection_llvip_semillas.csv traen checkpoint = last. El propio script explica que la decision importa («con best.pt se reporta el MAXIMO sobre las epocas medido en el mismo conjunto que se reporta ... sesgo optimista del orden de las diferencias entre metodos», porque LLVIP no tiene test disjunto y el val cumple los dos roles). Busque «pesos», «best», «ultima epoca» y «checkpoint» en los 521 parrafos del libro: no aparece en ninguno
-
-*(bloque: Parrafos 299-346 (cap. 3 MARCO CONCEPTUAL y cap. 4 MARCO METODOLOGICO), mas la Tabla 26 de operacionalizacion que cuelga del parrafo 339)*
-
-### parrafo 342, §4.5 — INCOHERENCIA
-
-> Se utilizo un subconjunto de 2.000 imagenes de entrenamiento y 500 de validacion por modalidad (VIS, IR y cada fusion), reentrenando el detector YOLOv8n
-
-**El dato:** Los tamanos son exactos: las 12 carpetas datasets/llvip_* tienen 2.000 imagenes en images/train y 500 en images/val. Pero el metodo describe un solo entrenamiento por modalidad, y el experimento que sostiene §5.5.1 son cinco semillas: detection_llvip_semillas.csv tiene 45 filas (9 entradas x semillas 0-4), semillas_llvip_resumen.csv reporta n_semillas = 5 en las nueve entradas, y existen runs/detect/runs/llvip_semillas/<metodo>_s1..s4 con seed 1 a 4 y epochs 40. La limitacion Tercera (parrafo 229) si menciona «5 semillas de entrenamiento por entrada en LLVIP», de modo que el capitulo de metodo es el unico lugar donde el protocolo queda incompleto
-
-*(bloque: Parrafos 299-346 (cap. 3 MARCO CONCEPTUAL y cap. 4 MARCO METODOLOGICO), mas la Tabla 26 de operacionalizacion que cuelga del parrafo 339)*
-
-### parrafo 341, §4.5 — INCOHERENCIA
-
-> Las imagenes se reorganizaron en dos directorios paralelos (data/raw/VIS y data/raw/IR) con nombres de archivo coincidentes para emparejado automatico [y] el corpus experimental son veinte pares
-
-**El dato:** data/raw/VIS y data/raw/IR tienen 21 archivos cada uno con nombres coincidentes, no 20: src/datasets.py excluye explicitamente un par (PARES_EXCLUIDOS = {Athena_heather_IR_hei_vis_g}) porque el archivo del slot VIS es copia byte a byte del IR, y list_pairs() devuelve 20. Los residuos siguen en disco: experiments/results/fused_images/<metodo>/ tiene 21 fusiones cada una, la sobrante es justamente Athena_heather_IR_hei_vis_g (all_metrics.csv, en cambio, trae las 140 filas correctas = 7 x 20). Tal como esta redactado el parrafo, el lector que aplique la regla «nombres coincidentes» sobre data/raw obtiene 21 pares y no puede reproducir el veinte; conviene declarar la exclusion y su motivo
-
-*(bloque: Parrafos 299-346 (cap. 3 MARCO CONCEPTUAL y cap. 4 MARCO METODOLOGICO), mas la Tabla 26 de operacionalizacion que cuelga del parrafo 339)*
+# Auditoría del libro contra los datos — 17 de agosto de 2026
+
+Ocho revisiones en paralelo, una por bloque del libro, verificando cada afirmación **contra
+los CSV de `experiments/results/`** y no contra el informe ni el deck, para que un error
+propagado a los tres no se valide solo. Después, un escéptico por hallazgo, con la instrucción
+de **refutarlo**: abrir el dato él mismo y decidir si el revisor tenía razón. Casi un tercio no
+sobrevivió a ese filtro.
+
+| | |
+|---|---|
+| Afirmaciones revisadas | 987 |
+| Respaldadas por el dato | 910 |
+| Marcadas | 77 |
+| **Confirmadas tras la refutación** | **54** |
+| Refutadas — falsos positivos | 23 |
+
+Las **cifras** ya están cubiertas por otro lado: `experiments/trazar_libro.py` traza las 502
+del libro y da **cero sin fuente**. Lo que esta auditoría agrega son las afirmaciones
+**verbales** —«supera a», «lidera», «sistemáticamente», «se ajustan por PSO»—, que un rastreo
+de números no puede juzgar.
+
+En cada entrada, «el escéptico» es el revisor adversarial: varias veces confirma el hallazgo y
+**corrige de paso al revisor original**, que es la parte más útil de leer.
+
+
+## Confirmadas — gravedad alta (11)
 
 ### Tabla 2, fila «Escala (radio)»; refuerza la apertura del parrafo 276 («Los hiperparametros (r, m) se ajustan maximizando la funcion objetivo del trabajo de referencia») — CONTRADICE
 
+**Dice el libro:**
+
 > Escala (radio): Unica, de radio r (ajustado por PSO)
 
-**El dato:** El PSO no fija el radio adoptado: con la aptitud Fo y el rango publicado la busqueda devuelve r = 1 (optimo_exacto_fo.csv y pso_grid_search_fo_propuesta.csv, Fo 1,7350 > 1,7057). El propio parrafo 276 se corrige mas abajo («Para el radio, Fo favorece r = 1»), y 5.6 y 5.8.5 declaran r = 25 decision de diseno. La tabla y la primera frase del parrafo dicen lo contrario que el final del mismo parrafo.
+**Dice el dato:** Con la aptitud Fo declarada en la propia Tabla 2 y el rango publicado, el PSO devuelve r = 1: pso_grid_search_fo_propuesta.csv, r_opt = 1 en 16/25 configuraciones (25 en 8, 14 en 1), mejor fila n=2/Tmax=20 con Fo_opt = 1,7350; r=25 alcanza solo 1,7057. Barrido determinista optimo_exacto_fo.csv: argmax en el rango publicado = fila 29, r=1, m=0,30, Fo=1,734991, contra fila 4829, r=25, m=0,30, Fo=1,705696. Con la aptitud paralela F_apt (pso_grid_search.csv) el optimo es r=25 pero con m=0,0703, F_opt=1,9843, y m=0,30 no aparece en ninguna de las 25 filas (max m_opt = 0,1117). Conclusion: el par adoptado (r=25; m=0,30) no es salida de ninguna corrida de PSO. Ademas, la fila «Optimo hallado» de la misma tabla (r = 25; m = 0,30; Fo = 1,7057) contradice el maximo del barrido, que es 1,7350 en r = 1.
 
-*(bloque: Parrafos 202-298: capitulo 1 PROBLEMA DE INVESTIGACION y capitulo 2 MARCO TEORICO (incluye la Tabla 2 «Configuracion de la Propuesta Novedosa y del PSO» y la Tabla 3 «Metodos comparativos»))*
+**El escéptico:** Abri el dato yo mismo y el hallazgo se sostiene. En pso_grid_search_fo_propuesta.csv (25 filas), con la aptitud Fo que la propia Tabla 2 declara, r_opt = 1 en 16 de las 25 configuraciones, 25 en 8 y 14 en 1; la mejor fila es n=2, Tmax=20 -> r_opt=1, m_opt=0,30, Fo_opt=1,7350, mientras las que devuelven r=25 dan 1,7057 (peor). En optimo_exacto_fo.csv el argmax dentro del rango publicado (r en [1,25], m >= 0,30) es la fila 29: r=1, m=0,30, Fo=1,734991, frente a la fila 4829 con la configuracion adoptada r=25, m=0,30, Fo=1,705696. Probe la defensa mas fuerte —la aptitud paralela F_apt de ¶274, cuyo optimo si es r=25— y tambien cae: en pso_grid_search.csv r_opt=25 en 13 de 25 y el mejor es r=25, m=0,0703, F_opt=1,9843, pero ningun m_opt de ese archivo supera 0,1117, de modo que m=0,30 no aparece nunca. Ninguna corrida de PSO, con ninguna de las dos aptitudes, devuelve el par adoptado (r=25; m=0,30): bajo Fo el PSO dice r=1 y bajo F_apt dice m aprox. 0,07. La contradiccion interna que alega el revisor tambien es real: ¶418 declara «La optimizacion no determina la configuracion evaluada. El argmax de la aptitud dentro del rango publicado es r = 1 (Fo = 1,7350) y no r = 25 (1,7057)», ¶423 llama a r=25 «decision de diseno» y ¶428 dice «la aptitud del trabajo de referencia favorece r = 1 y la bateria de evaluacion r = 25». Dos matices. Primero, el revisor senalo la fila menos danina: la fila «Optimo hallado» de la misma tabla es peor, porque llama «optimo hallado» a r=25 con Fo=1,7057 cuando el maximo de Fo_opt del barrido es 1,7350 (los dos numeros sueltos estan bien; lo falso es la etiqueta «optimo»), y la misma afirmacion se propaga a ¶83 resumen, ¶86 abstract, ¶338 diseno y ¶516 nota de apendice, que dicen que (r, m) «se ajustan automaticamente por PSO» con «optimo r = 25, m = 0,30». Segundo, la parte del hallazgo que apunta a la primera frase del ¶276 es la mas debil: esa frase presenta la aptitud del trabajo de referencia y el mismo parrafo se corrige de forma transparente unas lineas mas abajo, asi que ahi no hay engano al lector; el problema real es la tabla resumen, donde cada fila se lee al pie de la letra. Aviso contra la sobrecorreccion: en optimo_exacto_fo.csv el argmax global es la fila 4806, r=25, m=0,07, Fo=1,771465, o sea que Fo favorece r=1 solo porque m esta pisado en 0,30 por el rango publicado; no conviene reescribirlo como si Fo prefiriera radios pequenos en general.
+
+*(bloque: cap1-2)*
 
 ### Parrafo 276 (seccion 2.2.5, Funcion de aptitud) — CONTRADICE
 
+**Dice el libro:**
+
 > Las nueve metricas de evaluacion de esta tesis, todas de tipo «mayor es mejor», favorecen en cambio r = 25.
 
-**El dato:** A igual peso m = 0,30 solo 5 de las 9 favorecen r = 25. Comparando fo_ablacion_per_image.csv (metodo «Propuesta_Fo(r=1,m=0.30)», medias de los 20 pares) con all_metrics.csv (metodo Propuesta_Novedosa, r = 25, m = 0,30): favorecen r = 25 EN 6,5981 -> 6,9855; SD 0,1129 -> 0,1439; FE 1,0423 -> 1,1047; MG 0,0232 -> 0,0355; SF 12,4030 -> 17,4425. Favorecen r = 1 MI_vis 1,3681 -> 0,8970; MI_ir 0,9316 -> 0,6003; SSIM 0,7607 -> 0,6584; y PSNR 17,7407 (pso_por_imagen.csv, filas r = 1, m = 0,30) -> 16,8409, con r = 1 mejor en los 20 pares. Ningun CSV barre las nueve metricas sobre r, de modo que la afirmacion agregada tampoco tiene fuente directa. La version correcta ya esta en el parrafo 389 (5.6): «supera a r = 1 en entropia, contraste, eficiencia de fusion, gradiente medio y frecuencia espacial, mientras r = 1 preserva mejor la fidelidad».
+**Dice el dato:** Solo 5 de las 9 métricas favorecen r = 25 a igual m = 0,30: EN (6,5981→6,9855), SD (0,1129→0,1439), FE (1,0423→1,1047), MG (0,0232→0,0355) y SF (12,4030→17,4425). Las otras 4 favorecen r = 1: MI_vis (1,3681→0,8970), MI_ir (0,9316→0,6003), SSIM (0,7607→0,6584) y PSNR (17,7407→16,8409, con r=1 mejor en 20/20 pares). Fuentes: experiments/results/metrics_reports/fo_ablacion_per_image.csv (filas method='Propuesta_Fo(r=1,m=0.30)', 20 imágenes), experiments/results/metrics_reports/all_metrics.csv (filas method='Propuesta_Novedosa', 20 imágenes) y experiments/results/metrics_reports/pso_por_imagen.csv (filas r=1 y m=0.30, columna PSNR) para el PSNR de r=1. Redacción correcta ya disponible en el párrafo 389.
 
-*(bloque: Parrafos 202-298: capitulo 1 PROBLEMA DE INVESTIGACION y capitulo 2 MARCO TEORICO (incluye la Tabla 2 «Configuracion de la Propuesta Novedosa y del PSO» y la Tabla 3 «Metodos comparativos»))*
+**El escéptico:** Intenté refutarlo y no pude: el hallazgo se reproduce cifra por cifra, y además el propio libro se contradice dos veces.
 
-### Parrafo 229, limitacion novena — CONTRADICE
+1) CONTEXTO COMPLETO DEL PÁRRAFO 276. Leí la frase entera en su lugar. Va inmediatamente después de «Para el radio, Fo favorece r = 1, el extremo inferior del rango... la fusión se acerca a la imagen base», y antes de «Se adopta por tanto la configuración r = 25, m = 0,30... el radio que maximiza el criterio de evaluación». No hay ninguna atenuación ni acotación: la comparación es sin ambigüedad r = 1 frente a r = 25 a igual m = 0,30, y el predicado es universal sobre las nueve. El recorte no distorsiona nada. De hecho, el contexto la agrava, porque esa frase es la única justificación empírica de la configuración adoptada.
 
-> Fo favorece r = 1 y las nueve metricas r = 25
+2) EL DATO. Verifiqué el mapeo de imágenes antes de comparar: eval_fo_optima.py numera con list_pairs(), y comprobé que los 20 nombres coinciden exactamente con los de all_metrics.csv (set igual), así que el pareo por imagen es válido. Medias sobre los 20 pares, r=1,m=0,30 (fo_ablacion_per_image.csv, método «Propuesta_Fo(r=1,m=0.30)») → r=25,m=0,30 (all_metrics.csv, «Propuesta_Novedosa»; su config.json confirma r=25, m=0.3, mode=sum), con el conteo pareado de pares en que gana r=25:
+  EN     6,5981 → 6,9855  favorece r=25  (19/20)
+  SD     0,1129 → 0,1439  favorece r=25  (17/20)
+  FE     1,0423 → 1,1047  favorece r=25  (16/20)
+  MG     0,0232 → 0,0355  favorece r=25  (19/20)
+  SF    12,4030 → 17,4425 favorece r=25  (18/20)
+  MI_vis 1,3681 → 0,8970  favorece r=1   (solo 3/20)
+  MI_ir  0,9316 → 0,6003  favorece r=1   (solo 3/20)
+  SSIM   0,7607 → 0,6584  favorece r=1   (solo 1/20)
+  PSNR  17,7407 → 16,8409 favorece r=1   (0/20)
+Total: 5 de 9 favorecen r = 25. Cuatro favorecen r = 1, y tres de esas cuatro lo hacen de forma casi unánime pareada.
 
-**El dato:** La primera mitad es correcta (optimo_exacto_fo.csv: argmax con m >= 0,30 en r = 1). La segunda repite el error del parrafo 276: al mismo peso m = 0,30 solo el bloque de actividad (EN, SD, FE, MG, SF) mejora con r = 25; MI_vis, MI_ir, SSIM y PSNR mejoran con r = 1 (all_metrics.csv frente a fo_ablacion_per_image.csv y pso_por_imagen.csv, cifras del hallazgo anterior).
+3) CONTROL DE LA PATA DÉBIL DEL HALLAZGO. El PSNR de r=1 sale de otro archivo (pso_por_imagen.csv, filas r=1 y m=0,30), así que era el punto donde el revisor podía haber comparado peras con manzanas. Lo verifiqué: en las 19 imágenes que ambos archivos comparten a r=25, m=0,30, pso_por_imagen.csv y all_metrics.csv coinciden en PSNR con diferencia máxima 0,0 exacta, y en EN/SD/SF/SSIM al nivel de 1e-15. Es el mismo evaluador. La comparación cruzada es legítima. También confirmé que 17,7407 es la media de las medias por imagen (la media cruda de las 304 filas da 17,8596, porque las imágenes están repetidas un número desigual de veces; el revisor usó la correcta).
 
-*(bloque: Parrafos 202-298: capitulo 1 PROBLEMA DE INVESTIGACION y capitulo 2 MARCO TEORICO (incluye la Tabla 2 «Configuracion de la Propuesta Novedosa y del PSO» y la Tabla 3 «Metodos comparativos»))*
+4) TAMBIÉN CONFIRMO SU OBSERVACIÓN SECUNDARIA. Ningún CSV barre las nueve métricas sobre r. Revisé los tres únicos archivos con columna r y columnas de métrica: barrido_metricas_vs_m.csv tiene las nueve pero solo r=25 (propuesta) y r=25/r=5 (clásico), nunca r=1; pso_por_imagen.csv y pso_por_imagen_libre.csv sí barren r=1..25 pero solo llevan cinco cantidades (SSIM_avg, E, SF, SD, PSNR). La comparación hay que armarla a mano con tres archivos, como hizo el revisor.
 
-### Parrafo 229, limitacion novena, frente a H5 en el parrafo 227 y a la seccion 5.8.5 (parrafo 418) — INCOHERENCIA
+5. AGRAVANTE QUE EL REVISOR SEÑALA Y CONFIRMO. La versión correcta está en el párrafo 389: «supera a r = 1 en entropía, contraste, eficiencia de fusión, gradiente medio y frecuencia espacial, mientras r = 1 preserva mejor la fidelidad a las fuentes» — exactamente los 5 y los 4 que dan los CSV. Y el párrafo 386 también dice bien «maximiza el bloque de actividad de las nueve métricas». El párrafo 276 es el único de los tres que hace el salto ilegítimo: que las nueve sean «mayor es mejor» no implica que las nueve prefieran más realce, porque cuatro de ellas (MI_vis, MI_ir, SSIM, PSNR) son métricas de fidelidad y se degradan al aumentar r. Ese razonamiento implícito es el error.
 
-> la configuracion adoptada se apoya en el criterio de evaluacion y no en la optimizacion, que si determina el peso m
+Ningún falso positivo acá. El revisor tenía razón y sus números son exactos.
 
-**El dato:** H5 enuncia lo contrario («la optimizacion no determina la configuracion adoptada, dado que ambos hiperparametros resultan de decisiones apoyadas en parte del mismo criterio con el que despues se evalua») y 5.8.5 concluye «el peso [proviene] del piso del rango publicado». El dato respalda la lectura de frontera, no la de optimo: m = 0,30 es el limite inferior del rango heredado y la aptitud decrece monotonamente en m (curva_aptitud_vs_m.csv, columna Fo_propuesta: 1,7715 en m = 0,0703; 1,7057 en m = 0,30; 1,2067 en m = 2,00), por eso las 25 configuraciones de pso_grid_search_fo_propuesta.csv devuelven m_opt = 0,30. Con el piso liberado el optimo se va a m ~ 0,07 (pso_grid_search.csv, F_apt maximo 1,9843 en r = 25, m = 0,0703). Hay que unificar las tres formulaciones: la del parrafo 229 dice «si determina el peso», H5 dice que ninguno de los dos lo determina.
+*(bloque: cap1-2)*
 
-*(bloque: Parrafos 202-298: capitulo 1 PROBLEMA DE INVESTIGACION y capitulo 2 MARCO TEORICO (incluye la Tabla 2 «Configuracion de la Propuesta Novedosa y del PSO» y la Tabla 3 «Metodos comparativos»))*
+### parrafo 338, §4.3 Diseno — CONTRADICE
 
+**Dice el libro:**
 
-## Gravedad baja (32)
+> la configuracion optima resultante (r = 25, m = 0,30) se compara sobre los 20 pares con las nueve metricas
 
-### parrafo 359 (§5.3) — INCOHERENCIA
+**Dice el dato:** experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv (25 filas, columnas r_opt / m_opt / Fo_opt): maximo del barrido Fo_opt = 1,7350 con r_opt = 1 en 16 filas; r_opt = 25 con Fo_opt = 1,7057 en 8 filas (n,Tmax = 2/30, 4/20, 8/10, 8/30, 8/40, 10/10, 10/40, 10/50); r_opt = 14 con Fo_opt = 1,6990 en 1 fila (2/10). m_opt = 0,30 en las 25 filas.
 
-> presenta la mayor tasa de artefactos del benchmark despues del Top-Hat clasico (Nabf 0,3742, frente a 0,1593 de DTCWT)
+experiments/results/metrics_reports/optimo_exacto_fo.csv (5.000 filas, r = 1..25 x m = 0,01..2,00): fila 29 -> r = 1, m = 0,30, Fo = 1,734991 (argmax con m >= 0,30); fila 4829 -> r = 25, m = 0,30, Fo = 1,705696; fila 4806 -> r = 25, m = 0,07, Fo = 1,771465 (argmax global). Perfil a m = 0,30: r = 1 -> 1,734991 (mejor), r = 8 -> 1,696666 (peor), r = 25 -> 1,705696 (segundo mejor, maximo local de borde).
 
-**El dato:** Las tres cifras son correctas (media de all_metrics.csv columna Nabf: TopHat_Clasico 0,5857, Propuesta_Novedosa 0,3742, DTCWT 0,1593), pero el punto de comparacion elegido no es el mejor del benchmark: el Nabf mas bajo —recordar que en Nabf menor es mejor— es PiramideLaplace con 0,1138, tambien listado en ranking_mas_nabf.csv columna Nabf_medio, y es exactamente la cifra que usa el parrafo 370 para el mismo argumento. Citar a DTCWT como referencia deja la impresion de que es la entrada con menos artefactos y descuadra los dos pasajes entre si.
+experiments/results/metrics_reports/pso_repeticiones_propuesta.csv (500 corridas): r_opt = 25 en 257, r_opt = 1 en 228, resto disperso; Fo_opt es constante por radio (1,705696 en r = 25 y 1,734991 en r = 1), es decir el PSO cae mas seguido en r = 25 pero siempre con aptitud menor. m_opt = 0,30 en 499 de 500.
 
-*(bloque: Parrafos 347-385 (capitulo 5, primera parte: calidad de imagen §5.1-5.4 y evaluacion orientada a tarea §5.5), mas las Tablas 4, 5, 6, 7, 8 y 9 del libro (indices python-docx 27, 28, 29, 30, 31, 32))*
+experiments/results/metrics_reports/pso_repeticiones_resumen_propuesta.csv: r_moda = 25 en 14 de 25 configuraciones, r_moda = 1 en 11; Fo_max = 1,735 en las 25.
 
-### parrafo 359 (§5.3), en relacion con las Tablas 4 y 5 (parrafos 357 y 358) — INCOHERENCIA
+experiments/results/metrics_reports/all_metrics.config.json: Propuesta_Novedosa = {r: 25, m: 0.3, mode: sum} (la configuracion efectivamente evaluada).
 
-> Estas metricas, ponderadas por bordes y estructura local, complementan a las anteriores: la piramide de Laplace lidera FMI (0,2362), QW (0,8470) y QE (0,3856), y DTCWT lidera Q0 (0,7411) [...] La Propuesta Novedosa lidera en cambio SCD (1,5427) y VIF (0,3805)
+El mismo defecto de redaccion se repite en el parrafo 515 («(r, m) se optimizan por PSO (barrido de 25 configuraciones) -> r = 25, m = 0,30») y en el 516 («optimiza (r, m) por PSO mediante un barrido de 25 configuraciones de enjambre, con optimo r = 25, m = 0,30»); el parrafo 387 usa «en su configuracion optima (r = 25, m = 0,30)» como etiqueta, sin atribuirla al PSO, por lo que es limitrofe.
 
-**El dato:** Los seis valores y los tres liderazgos son correctos contra all_metrics.csv (medias por metodo: FMI PiramideLaplace 0,2362 maximo; QW 0,8470 maximo; QE 0,3856 maximo; Q0 DTCWT 0,7411 maximo; SCD Propuesta 1,5427 maximo; VIF Propuesta 0,3805 maximo; y la propuesta no encabeza ninguna de las cuatro primeras: FMI 0,1686, QW 0,8087, QE 0,3648, Q0 0,7072). El problema es de trazabilidad: el «Estas metricas» no tiene antecedente. La Tabla 4 trae solo las seis clasicas (EN, SD, FE, MG, MI_vis, MI_ir) y la Tabla 5 solo SF, SSIM y PSNR; ninguna tabla del capitulo 5 presenta FMI, Q0, QW, QE, SCD, VIF, Qabf ni Nabf. Recorri las 38 tablas del docx: la unica que menciona Nabf es la Tabla 14 (indice 35, «Rango con 9 / Con 9 + Nabf / Con 17»), en §5.8. El lector no tiene donde verificar las seis cifras del parrafo.
+**El escéptico:** Abri el parrafo 338 completo y la frase no se salva por contexto: dice «Los dos hiperparametros de la propuesta (el radio r del banco... y el peso de contraste m) se ajustan mediante PSO, seleccionando la configuracion del enjambre con un barrido de 25 combinaciones... sobre un subconjunto de tres escenas representativas; la configuracion optima resultante (r = 25, m = 0,30) se compara sobre los 20 pares». El parentesis atribuye explicitamente (r = 25, m = 0,30) al PSO como su resultado optimo, y eso es lo que los CSV contradicen.
 
-*(bloque: Parrafos 347-385 (capitulo 5, primera parte: calidad de imagen §5.1-5.4 y evaluacion orientada a tarea §5.5), mas las Tablas 4, 5, 6, 7, 8 y 9 del libro (indices python-docx 27, 28, 29, 30, 31, 32))*
+Intente tres refutaciones y las tres fallan:
 
-### parrafo 350 (§5.1 Caracterizacion del dataset) — CONTRADICE
+(1) «Configuracion optima» podria referirse a la configuracion del ENJAMBRE (n, Tmax), no a (r, m). No se sostiene: el parentesis da (r = 25, m = 0,30), que son r y m, no n y Tmax.
 
-> resoluciones del orden de 360x270 a 768x576 pixeles
+(2) Quiza el maximo del barrido si esta en r = 25. No: en pso_grid_search_fo_propuesta.csv (25 filas) el maximo de Fo_opt es 1,7350 y ocurre SIEMPRE en r_opt = 1 (16 filas); las 8 filas con r_opt = 25 dan 1,7057 y la fila con r_opt = 14 da 1,6990. Conteo exacto reproducido: 16 / 8 / 1. Confirmado tal cual lo reporto el revisor.
 
-**El dato:** Medi los 20 pares efectivos en data/raw/VIS y data/raw/IR con PIL: el maximo es 768x576 (correcto, 11 pares) y el minimo es 359x247 —Athena_helicopter_helib_011.bmp, identico en VIS y en IR—, no 360x270. La altura difiere en 23 pixeles (9 %). El resto del corpus va de 599x446 a 749x551. La expresion «del orden de» amortigua, pero el 270 no sale de ningun archivo.
+(3) Quiza r = 25 gana en la rejilla exhaustiva. No: en optimo_exacto_fo.csv (5.000 puntos = 25 radios x 200 pesos), con m >= 0,30 el argmax es la fila 29 (r = 1, m = 0,30, Fo = 1,734991); la fila 4829 (r = 25, m = 0,30) da Fo = 1,705696. El argmax global es la fila 4806 (r = 25, m = 0,07, Fo = 1,771465), fuera del rango publicado.
 
-*(bloque: Parrafos 347-385 (capitulo 5, primera parte: calidad de imagen §5.1-5.4 y evaluacion orientada a tarea §5.5), mas las Tablas 4, 5, 6, 7, 8 y 9 del libro (indices python-docx 27, 28, 29, 30, 31, 32))*
+Ademas el libro se contradice a si mismo: el parrafo 418 dice «El argmax de la aptitud dentro del rango publicado es r = 1 (Fo = 1,7350) y no r = 25 (1,7057)»; el 389 dice «La eleccion del radio se apoya, por tanto, en el criterio de evaluacion y no en la optimizacion»; el 423 dice «r=25 adoptado como decision de diseno»; el 229 (limitacion Novena) dice «la configuracion adoptada se apoya en el criterio de evaluacion y no en la optimizacion, que si determina el peso m»; y los pies de figura 179 y 392 dicen «r = 25 por diseno». El parrafo 338 es el unico lugar que invierte la historia, junto con el 515 y el 516 del apendice.
 
-### parrafo 352 (§5.2 Analisis cualitativo) — INCOHERENCIA
+NUANCE que atenua el enunciado del revisor (no el veredicto): la mitad del reclamo sobre m SI esta respaldada —m_opt = 0,30 en las 25 filas del barrido y en 499 de las 500 corridas de pso_repeticiones_propuesta.csv—, y la configuracion realmente evaluada es en efecto r = 25, m = 0,30 (all_metrics.config.json: Propuesta_Novedosa r=25, m=0.3), de modo que ningun numero de las tablas de resultados queda mal. Tampoco r = 25 es arbitrario frente al PSO: en pso_repeticiones_propuesta.csv el PSO devuelve r = 25 en 257 de 500 corridas contra 228 en r = 1, y en pso_repeticiones_resumen_propuesta.csv r_moda = 25 en 14 de las 25 configuraciones de enjambre. La razon la da la forma del paisaje que verifique en optimo_exacto_fo.csv: a m = 0,30 la aptitud NO es monotona en r —baja de 1,734991 (r = 1) a un minimo de 1,696666 (r = 8) y vuelve a subir hasta 1,705696 (r = 25)—, asi que r = 25 es un maximo local en el borde de la caja de busqueda y el segundo mejor radio, pero no el optimo. El error esta en la palabra «optima»: lo correcto seria «mas frecuente» o «adoptada por diseno», no «optima resultante».
 
-> el Top-Hat clasico produce la imagen de mayor contraste aparente, pero con halos visibles alrededor de los objetivos termicos
+*(bloque: cap3-4)*
 
-**El dato:** Es un juicio visual sobre la figura 6, no una afirmacion metrica, pero choca con la metrica de contraste del propio trabajo y con el parrafo 356: en descriptive_means.csv la desviacion estandar del Top-Hat clasico es 0,1352, tercera de siete, detras de PiramideLaplace 0,1550 y de la propia Propuesta 0,1439 (rango medio SD en ranking_methods.csv: Propuesta 1,65, Laplace 2,00, TopHat 2,85). Lo que el Top-Hat si lidera es actividad: SF 23,1000 y MG 0,0478, ambos maximos. Conviene decir «mayor realce de bordes» o «mayor frecuencia espacial» para no dejar dos afirmaciones de contraste enfrentadas a cuatro parrafos de distancia.
+### parrafo 329, §3.15 PSO; y fila «Radio del SE (r) ... 1-25 (ajustado por PSO)» de la Tabla 26 (§4.4) — INCOHERENCIA
 
-*(bloque: Parrafos 347-385 (capitulo 5, primera parte: calidad de imagen §5.1-5.4 y evaluacion orientada a tarea §5.5), mas las Tablas 4, 5, 6, 7, 8 y 9 del libro (indices python-docx 27, 28, 29, 30, 31, 32))*
+**Dice el libro:**
 
-### párrafo 441 (recomendación 7) — INCOHERENCIA
+> En esta tesis ajusta automaticamente los hiperparametros (r, m) dla Propuesta Novedosa
 
-> emplear la Propuesta Novedosa (r = 25, m = 0,30), que lidera la entropía y la eficiencia de fusión del benchmark con un realce controlado
+**Dice el dato:** pso_grid_search_fo_propuesta.csv (25 filas): r_opt = 1 en 16 filas, 25 en 8 filas, 14 en 1 fila; m_opt = 0,30 en 25/25; Fo_opt máximo = 1,7350 (fila n=2, Tmax=20, r_opt=1), mientras las filas con r_opt=25 dan Fo_opt = 1,7057. optimo_exacto_fo.csv, r=25: Fo = 1,771465 en m=0,07 → 1,705696 en m=0,30 → 1,206687 en m=2,00 (decrecimiento estricto desde m=0,07); argmax global de las 5.000 filas = r=25, m=0,07, Fo=1,771465; argmax restringido al rango publicado m≥0,30 = r=1, m=0,30, Fo=1,734991. Rango de búsqueda en experiments/pso_grid_search_fo.py: LO=[1,0; 0,30], HI=[25,0; 2,00]. El propio libro lo declara decisión de diseño en los párrafos 418, 423 y en la limitación Novena del párrafo 229.
 
-**El dato:** «Realce controlado» choca con la conclusión 8 del mismo capítulo. ranking_mas_nabf.csv / all_metrics.csv: Nabf medio de la propuesta 0,3742, el segundo más alto de los siete y 3,3 veces el de la pirámide de Laplace (0,1138); el párrafo 430 lo describe como «los dos operadores morfológicos son los más agresivos del benchmark». Lo único que sostiene «controlado» es saturacion_vs_m.csv (0,7271 % de recorte en m = 0,30), que es otro fenómeno. Habría que decir «con el recorte por saturación por debajo del 1 %» y no «realce controlado», o declarar el Nabf ahí mismo.
+**El escéptico:** Leí el párrafo 329 completo: «Metaheurística poblacional (Kennedy y Eberhart, 1995)... En esta tesis ajusta automáticamente los hiperparámetros (r, m) dla Propuesta Novedosa». No hay matiz alguno en el contexto que salve la atribución: la frase adjudica al PSO los DOS hiperparámetros, y la fila de la Tabla 26 la repite («Radio del SE (r) ... 1–25 (ajustado por PSO)»). El dato la desmiente en el radio. En experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv (25 filas) el conteo de r_opt es 1 → 16 filas, 25 → 8 filas, 14 → 1 fila: el PSO no converge a r = 25, y las 8 corridas que sí llegan a 25 lo hacen con aptitud PEOR (Fo = 1,7057) que las 16 que llegan a r = 1 (Fo = 1,7350). El máximo del barrido es la fila n=2, Tmax=20 con r_opt=1, m_opt=0,30, Fo_opt=1,7350. El radio adoptado (25) no es el argmax del PSO en ningún sentido. En m sí acierta el revisor: m_opt = 0,30 en las 25 filas sin excepción, y es el piso exacto del rango declarado en experiments/pso_grid_search_fo.py línea `LO = np.array([1.0, 0.30]); HI = np.array([25.0, 2.00])`; optimo_exacto_fo.csv (5.000 filas, r=1..25 × 200 pesos) confirma que para r = 25 Fo decrece estrictamente desde m = 0,07 en adelante y en todo el intervalo [0,30; 2,00], de modo que el PSO no puede sino pegarse al piso. Lo decisivo para calificar esto de incoherencia es que EL LIBRO MISMO dice lo contrario en otros tres lugares: párrafo 418 («El argmax de la aptitud dentro del rango publicado es r = 1 (Fo = 1,7350) y no r = 25 (1,7057)... El radio adoptado proviene, pues, de la batería de evaluación»), párrafo 423 («r=25 adoptado como decisión de diseño sobre la batería de evaluación») y la limitación Novena del párrafo 229 («la configuración adoptada se apoya en el criterio de evaluación y no en la optimización, que sí determina el peso m»). El hallazgo, además, está SUBESTIMADO en su extensión: la misma atribución indebida aparece en otros cuatro sitios que el revisor no listó — párrafo 338 (§4.3: «Los dos hiperparámetros de la propuesta (el radio r ... y el peso de contraste m) se ajustan mediante PSO»), párrafo 422 (apertura de conclusiones: «parámetros optimizados por PSO»), Tabla 11 fila «Escala (radio) | Única, de radio r (ajustado por PSO)» y la última fila de esa misma Tabla 11, «Óptimo hallado | r = 25; m = 0,30», que presenta r = 25 como óptimo hallado cuando el argmax dentro del rango publicado es r = 1. Único desliz del revisor, irrelevante: cita Fo(r=25, m=2,00) = 1,206633 y el CSV dice 1,206687. La errata de tipeo «dla Propuesta» también está verificada literalmente en el párrafo 329.
 
-*(bloque: Párrafos 420–442 — Capítulo 6 CONCLUSIONES Y RECOMENDACIONES)*
+*(bloque: cap3-4)*
 
-### párrafo 423, contra el párrafo 425 («sostenido por su liderazgo en el rango medio de entropía, contraste y eficiencia de fusión») — INCOHERENCIA
+### parrafo 377 (§5.5, tercera lectura de la Tabla 8) — CONTRADICE
 
-> quedando segunda en contraste, gradiente medio y frecuencia espacial
+**Dice el libro:**
 
-**El dato:** Las dos frases son ciertas pero con bases distintas y sin decirlo, y sobre la misma métrica dicen «segunda» y «lidera». En medias (descriptive_means.csv) la propuesta es segunda en SD: 0,1439 detrás de LP 0,1550. En rango medio (ranking_methods.csv) es primera en SD: 1,65, mejor que LP 2,00 y el clásico 2,85. En MG y SF, en cambio, «segunda» es correcto por rango (2,00 en ambas, detrás del clásico con 1,00) pero por media también es segunda, así que la mezcla de criterios solo afecta al contraste.
+> el infrarrojo solo es la modalidad mas fuerte (mAP@0,5 = 0,971; mAP@0,5:0,95 = 0,621)
 
-*(bloque: Párrafos 420–442 — Capítulo 6 CONCLUSIONES Y RECOMENDACIONES)*
+**Dice el dato:** IR (solo) en LLVIP, medias de 5 semillas: mAP@0,5 = 0,9611 ± 0,0139 y mAP@0,5:0,95 = 0,5919 ± 0,0259 (experiments\results\metrics_reports\semillas_llvip_resumen.csv, fila 0), que es lo que ya publica la Tabla 8 del libro (0,961 y 0,592). Las cifras del texto —0,9708 y 0,6211— son la semilla 0 (detection_llvip_map.csv fila 0 = detection_llvip_semillas.csv fila 15). Con medias, IR sigue por encima de toda fusión pero por márgenes que el propio proyecto marca como ruido: mAP@0,5 0,9611 vs LP 0,9517 (p_wilcoxon=0,3125, mayor_que_el_ruido=False en semillas_llvip_pareadas.csv fila 21) y mAP@0,5:0,95 0,5919 vs DTCWT 0,5894, apenas 0,0025.
 
-### párrafo 423 (conclusión específica 1) — INCOHERENCIA
+**El escéptico:** Intenté refutarlo y no pude: el hallazgo es correcto en todos sus puntos, y su gravedad está más bien SUBESTIMADA, no exagerada.
 
-> el infrarrojo solo (0,961) supera a 6 de las siete, sin distinguirse de la séptima
+FRASE COMPLETA (párrafo 377, §5.5): «Segundo, el infrarrojo solo es la modalidad más fuerte (mAP@0,5 = 0,971; mAP@0,5:0,95 = 0,621) y ninguna fusión lo supera, coherente con que LLVIP es detección de peatones en baja luz, donde la firma térmica domina.» El contexto no la salva, lo agrava: el párrafo 375 que la precede declara «5 veces por entrada cambiando únicamente la semilla», el párrafo 377 arranca con «La Tabla 8 admite tres lecturas» y su primera lectura dice literalmente «0,795 de media frente a una banda de 0,904–0,952, en las 5 semillas». O sea, la oración se presenta como lectura de una tabla de medias de 5 semillas.
 
-**El dato:** El conteo es exacto pero el verbo «supera» no descansa en una prueba. semillas_llvip_pareadas.csv: la columna mayor_que_el_ruido es True para IR contra Curvelet, DTCWT, DWT, Propuesta, RatioPiramide y TopHat (6) y False contra PiramideLaplace (dif 0,0094; gana 3 de 5; p_wilcoxon 0,3125), o sea 6 y 1 tal como dice el libro. Pero sig_holm es False en las 36 comparaciones (p_holm = 1,0000) y run_analisis_semillas_llvip.py define mayor_que_el_ruido como |dif_media| > desvío típico (0,0128), no como significancia; con 5 semillas el p mínimo alcanzable del Wilcoxon pareado es 0,0625. Como el párrafo 429 abre con «Las pruebas no paramétricas confirman que las diferencias observadas no son fruto del azar», conviene aclarar que en la parte de detección el criterio es descriptivo (diferencia mayor que el ruido de inicialización) y no una prueba.
+EL DATO. Las dos cifras son de UNA sola corrida:
+- C:\Users\Usuario\Documents\unv\mastertesis\tesis_mciencias_datos\experiments\results\metrics_reports\detection_llvip_map.csv, fila 0 (method=IR): mAP50=0,9708 y mAP50_95=0,6211.
+- C:\Users\Usuario\Documents\unv\mastertesis\tesis_mciencias_datos\experiments\results\metrics_reports\detection_llvip_semillas.csv, fila 15 (IR, semilla=0): idénticos 0,9708 y 0,6211 (con entrenada_aqui=False, 18,2 s: es la corrida heredada).
+- Las medias de 5 semillas están en semillas_llvip_resumen.csv, fila 0: mAP50_media=0,9611 (desv 0,0139) y mAP50_95_media=0,5919 (desv 0,0259).
+La Tabla 8 del libro (tabla 31 del .docx, fila «IR (solo)») publica exactamente 0,961 ± 0,0139 y 0,592 ± 0,0259. Entonces el texto contradice la tabla que está interpretando, en la misma página.
 
-*(bloque: Párrafos 420–442 — Capítulo 6 CONCLUSIONES Y RECOMENDACIONES)*
+EL RESTO DEL PÁRRAFO SÍ USA MEDIAS, verificado uno por uno contra semillas_llvip_resumen.csv: VIS 0,795 (=0,7951), banda 0,904–0,952 (=RatioPiramide 0,9043 y PiramideLaplace 0,9517), LP 0,952 (=0,9517), DTCWT 0,936 (=0,9365), Propuesta 0,9283 (=0,9283) y el desvío 0,0128 (=mediana exacta de las nueve columnas mAP50_desv). Es decir, seis cifras de 5 semillas y una sola pareja de semilla 0 metida en la misma oración.
 
-### párrafo 427 (conclusión específica 5) — INCOHERENCIA
+NO HAY FUENTE ALTERNATIVA que dé 0,971 como media. Recorrí todos los CSV con columnas de mAP: detection_llvip_map.csv.bak_best y metrics_reports_libre\detection_llvip_map.csv dan IR=0,9570/0,6627 (otro checkpoint, tampoco coincide); detection_m3fd_map.csv es otro dataset. Tampoco es «la mejor semilla»: el máximo de IR es 0,9766 (semilla 3), así que el 0,971 no se puede defender como reporte de best-case.
 
-> Dentro de la familia Top-Hat, la forma de combinar las respuestas del banco introduce diferencias modestas.
+POR QUÉ LA GRAVEDAD NO ESTÁ EXAGERADA, SINO AL REVÉS. El revisor dice «la conclusión de fondo se sostiene», y en dirección es verdad, pero el número inflado esconde que el margen es minúsculo. En mAP@0,5:0,95 con medias: IR 0,5919 frente a la mejor fusión DTCWT 0,5894 — diferencia de 0,0025, la décima parte del propio desvío de IR (0,0259) y muy por debajo del piso de ruido de 0,0128 que el mismo párrafo invoca dos oraciones después. Con el 0,621 de semilla 0 la ventaja parece cómoda; con las medias, «ninguna fusión lo supera» es cierto por 0,0025, es decir indistinguible del ruido de inicialización por el criterio que el propio trabajo estableció. Peor: semillas_llvip_pareadas.csv, fila 21 (a=IR, b=PiramideLaplace) da dif_media=0,0094, gana_a_en=3 de 5, p_wilcoxon=0,3125 y mayor_que_el_ruido=False. O sea, la ventaja de IR sobre la mejor fusión ni siquiera en mAP@0,5 pasa el filtro de ruido del propio proyecto. Corregir 0,971→0,961 y 0,621→0,592 obliga a matizar «ninguna fusión lo supera», no solo a cambiar dos dígitos.
 
-**El dato:** «Modestas» se sostiene en el rango agregado (ablacion_banco_resumen.csv: 3,222 a 3,783, contra 3,394–4,444 del benchmark principal), pero ablacion_banco_contrastes.csv da los 40 contrastes de la suma contra los otros cinco brazos significativos con p_holm = 0,000010 y, en magnitud, mayores que los que el libro llama superioridades: suma menos disco en EN es +0,1939, tres veces el +0,0636 de la propuesta frente al Top-Hat clásico que el párrafo 423 declara «estadísticamente significativa». Modesto en el ranking, no en las métricas: conviene decir cuál de las dos cosas.
+CONFIRMACIÓN CRUZADA: el párrafo 399 (§5.7, quinta observación) ya dice «el infrarrojo solo es la modalidad más fuerte (0,961)», con la cifra correcta. Es inconsistencia interna del libro, no una convención distinta.
 
-*(bloque: Párrafos 420–442 — Capítulo 6 CONCLUSIONES Y RECOMENDACIONES)*
+ÚNICA IMPRECISIÓN DEL REVISOR, trivial y sin efecto: dice «tercera lectura de la Tabla 8»; el párrafo 377 es correcto, pero esta afirmación es la SEGUNDA lectura («Segundo, el infrarrojo solo es…»); la tercera es la del ranking entre fusiones.
 
-### párrafo 435 (recomendación 1) — INCOHERENCIA
+*(bloque: cap5-calidad)*
 
-> el desvío de una misma entrada (0,0128 de mAP@0,5)
+### parrafo 419, cierre de §5.8.5 — SIN FUENTE
 
-**El dato:** Falta la palabra «mediano». En semillas_llvip_resumen.csv los nueve desvíos son 0,0063 a 0,0288 y 0,0128 es la mediana (y, por casualidad, el desvío de Curvelet); la media es 0,0129 y el máximo 0,0288 (DWT). El párrafo 379, al pie de la Figura 12, sí dice «el desvío mediano de una misma entrada es 0,0128». La comparación con las distancias entre fusiones sí es correcta: las brechas consecutivas entre las siete medias van de 0,0024 a 0,0152.
+**Dice el libro:**
 
-*(bloque: Párrafos 420–442 — Capítulo 6 CONCLUSIONES Y RECOMENDACIONES)*
+> Se sostiene H6, y con muestra suficiente: la hipotesis de que la mejora en las metricas de imagen se traslade a la tarea de deteccion queda rechazada, no simplemente sin confirmar.
 
-### Parrafo 83 (RESUMEN); 'low cost' implicito en el parrafo 86 ('interpretable single-scale morphological operator') — SIN FUENTE
+**Dice el dato:** experiments/results/metrics_reports/potencia_mcnemar.csv, con n = 23 discordantes (b = 8, c = 15 de complementariedad_resumen.csv, fila Propuesta_Novedosa): en la diferencia REALMENTE OBSERVADA de 3,0 pp (fila delta_pp = 3,0) la potencia es 0,257769; la potencia alcanza 0,80 solo desde delta_pp = 5,8 (potencia 0,816201), y en delta_pp = 5,7 todavia es 0,799118. Los dos contrastes citados no rechazan: Spearman p = 0,4316 (correlacion_calidad_deteccion.csv, fila LLVIP_5sem/mAP50, rho = -0,3571) y McNemar exacto p = 0,2100 (reproducido con binomtest(8, 23, 0.5)). Ademas la diferencia observada es NEGATIVA, -3,0 pp: la propuesta recupera ambas clases en 116 de 232 escenas frente a 123 del visible solo. El libro afirma «con muestra suficiente» sin citar ninguna de estas cifras: en todo el docx no aparecen las palabras «potencia» ni «discordantes» ni el umbral de 5,8 pp. La frase seria correcta solo agregando el calificador «para diferencias de 5,8 puntos porcentuales o mas».
 
-> aporta un operador morfologico de una sola escala interpretable y de bajo costo
+**El escéptico:** Intente refutar el hallazgo por tres vias y las tres lo confirman.
 
-**El dato:** No existe ningun CSV con el costo computacional de la fusion por metodo. Busque: los 50 CSV de metrics_reports (ninguno tiene columna de tiempo de fusion; la columna 'segundos' aparece solo en pso_grid_search*.csv, que mide corridas de PSO, y en detection_llvip_semillas.csv, que mide entrenamiento de YOLO), las subcarpetas fused_images / pso / metrics_reports_libre, y un grep de 'perf_counter', 'tiempo_ms', 'latencia' y 'ms/imagen' sobre experiments/*.py, sin resultados. 'De bajo costo' es una comparacion implicita contra los multiescala que ningun dato medido respalda.
+1) LEI LA FRASE COMPLETA EN CONTEXTO (parrafo 419, cierre de 5.8.5). El recorte no distorsiona nada; si acaso el contexto agrava. Los dos puntos hacen que «y con muestra suficiente» sea el fundamento explicito de «queda rechazada, no simplemente sin confirmar», es decir, es precisamente la afirmacion de potencia estadistica. Todo lo que la precede en el parrafo son dos contrastes que NO rechazan: Spearman rho = -0,357 con p = 0,432 (correlacion_calidad_deteccion.csv, fila conjunto=nueve / dataset=LLVIP_5sem / medida=mAP50: spearman_rho = -0,3571, spearman_p = 0,4316, significativo_05 = False) y McNemar exacto p = 0,2100. La frase convierte dos p no significativos en un rechazo, que es la falacia de tomar ausencia de evidencia como evidencia de ausencia, y eso solo se autoriza acreditando potencia.
 
-*(bloque: Parrafos 82-167: RESUMEN (p. 83) y SUMMARY (p. 86). Los parrafos 88-167 son el indice de CONTENIDO (titulos y numeros de pagina), sin afirmaciones empiricas.)*
+2) REHICE EL CALCULO YO MISMO, no me limite a leer el CSV. Con b = 8 y c = 15 de complementariedad_resumen.csv (fila entrada = Propuesta_Novedosa, columnas gana_vs_VIS = 8, pierde_vs_VIS = 15) sale n = 23 discordantes, y con scipy.stats.binomtest reproduje exactamente: McNemar exacto p = 0,2100; region de rechazo b <= 6 o b >= 17; nivel real 0,03469; potencia 0,257769 en delta = 3,0 pp; 0,799118 en 5,7 pp; 0,816201 en 5,8 pp; primer delta con potencia >= 0,80 = 5,8 pp. Coincide digito por digito con experiments/results/metrics_reports/potencia_mcnemar.csv. La diferencia observada es -3,0 pp (116 frente a 123 escenas de 232), o sea la propuesta es PEOR que el visible solo, no mejor.
 
-### Parrafo 83 (RESUMEN); identico en el 86 ('evidencing that the enhancement rewarded by activity metrics does not transfer to detection') — SIN FUENTE
+3) BUSQUE UNA FUENTE ALTERNATIVA Y NO EXISTE. Recorri el XML completo del docx (cuerpo, tablas, notas y cuadros de texto, no solo d.paragraphs) buscando «potencia», «discordant», «5,8 punt», «0,816», «0,258» y «puntos porcentuales»: cero coincidencias. La unica aparicion de «muestra suficiente» en todo el libro es esta frase. Ninguna de las 38 tablas menciona potencia ni discordantes. Y grep sobre experiments/*.py y experiments/results/metrics_reports/*.csv confirma que potencia_mcnemar.py / .csv es el unico calculo de potencia del repositorio: no hay otra fuente posible que la respalde.
 
-> lo que evidencia que el realce que premian las metricas de actividad no se traslada a la deteccion
+Tambien verifique el docstring: la cita es textual. experiments/potencia_mcnemar.py, lineas 4-6: «El informe afirmaba que la hipotesis de traslacion "se rechaza, con muestra suficiente". Esa frase no tenia ningun calculo detras, y ademas es delicada». El propio script fue escrito para auditar esta frase.
 
-**El dato:** El unico CSV que prueba esa relacion es correlacion_calidad_deteccion.csv, y no alcanza para 'evidencia': fila conjunto_metricas=nueve / dataset=LLVIP_5sem / medida=mAP50 da spearman_rho = -0,3571 con spearman_p = 0,4316, significativo_05 = False y sobrevive_multiplicidad = False. De las 18 filas del archivo solo una es significativa antes de corregir (diecisiete / M3FD / mAP50_95, rho = -0,8929, p = 0,0068) y ninguna sobrevive Bonferroni. La observacion descriptiva (la propuesta lidera actividad y es 3.a en deteccion) es cierta; el verbo 'evidencia' sobrepasa lo que el test sostiene con n = 7 fusiones.
+DOS PRECISIONES QUE AGREGO AL HALLAZGO, no lo debilitan:
 
-*(bloque: Parrafos 82-167: RESUMEN (p. 83) y SUMMARY (p. 86). Los parrafos 88-167 son el indice de CONTENIDO (titulos y numeros de pagina), sin afirmaciones empiricas.)*
+a) La etiqueta mas exacta seria CONTRADICE antes que SIN FUENTE. Si existe un CSV que habla directamente de esto, y en el tamano de efecto realmente observado dice 0,258 de potencia, es decir lo contrario de «suficiente». Que el libro no cite ninguna cifra hace defendible «SIN FUENTE», pero el dato no esta ausente: esta y apunta en contra. El arreglo es el mismo, la gravedad es mayor.
 
-### Parrafo 83 (RESUMEN) — INCOHERENCIA
+b) El sobrealcance se propaga a las conclusiones. El parrafo 423 (conclusion 1) repite «la hipotesis de traslacion queda rechazada, no simplemente sin confirmar». El autor tiene que corregir dos lugares, no uno.
 
-> El infrarrojo solo [...] supera a 6 de las siete fusiones, aunque de la septima, la piramide de laplace, no se distingue [...] indistinguible de 4 de sus seis rivales
+Verifique ademas el resto del parrafo 419 y esta todo RESPALDADO, asi que el defecto esta acotado a esas cuatro palabras: 50,0 % y 53,0 % (pct_ambas de Propuesta_Novedosa y VIS), 8 ganadas y 15 perdidas, 232 escenas, 2 de 90 criticas (resuelve_criticas = 2, criticas = 90), 57,8 % de la piramide de Laplace (fila PiramideLaplace, pct_ambas = 57,8) y el rho = +0,214 de una sola semilla (fila LLVIP / mAP50, spearman_rho = 0,2143).
 
-**El dato:** Los conteos son correctos, pero el criterio no es estadistico y el resumen no lo dice. En semillas_llvip_pareadas.csv las 36 comparaciones tienen p_holm = 1,0 y sig_holm = False sin excepcion (con 5 bloques el p minimo alcanzable del Wilcoxon pareado es 0,0625, de modo que NADA puede resultar significativo). Lo que sostiene 'supera' y 'no se distingue' es la columna mayor_que_el_ruido, definida en experiments/run_analisis_semillas_llvip.py linea 149 como |dif_media| > mediana de los desvios intra-entrada (0,0128). Verificado: IR gana con mayor_que_el_ruido=True contra Curvelet, DTCWT, DWT, Propuesta, RatioPiramide y TopHat_Clasico (6), y False contra PiramideLaplace (dif 0,0094); la Propuesta es False contra Curvelet, DTCWT, DWT y TopHat_Clasico (4 de 6). Como el mismo parrafo usa antes 'ventaja estadisticamente significativa' para el bloque TNO, el lector importa esa lectura a un conteo que no la tiene.
+No hay falso positivo. El revisor tenia razon en el fondo y en cada cifra.
 
-*(bloque: Parrafos 82-167: RESUMEN (p. 83) y SUMMARY (p. 86). Los parrafos 88-167 son el indice de CONTENIDO (titulos y numeros de pagina), sin afirmaciones empiricas.)*
+*(bloque: cap5-deteccion)*
 
-### Parrafo 83 (RESUMEN) y parrafo 86 (SUMMARY) — INCOHERENCIA
+### parrafos 515 y 516 (apendice D, cierre del pseudocodigo y nota) — CONTRADICE
 
-> En el ranking agregado de las nueve metricas [...] ocupa el primer lugar (3,39), por delante de la piramide de Laplace (3,91)
+**Dice el libro:**
 
-**El dato:** Correcto dentro de su alcance (ranking_methods.csv, columna avg_rank: 3,394 contra 3,911), pero el primer puesto no sobrevive a la unica metrica de la bateria en la que menor es mejor. ranking_mas_nabf.csv: al agregar Nabf, la Propuesta pasa de rango_9 = 3,394 (puesto 1) a rango_9_mas_Nabf = 3,655 (puesto 2) y PiramideLaplace pasa de 3,911 (puesto 2) a 3,620 (puesto 1); el Nabf_medio de la Propuesta es 0,3742 frente a 0,1138 de la Laplace. Tampoco se menciona que el 4.o puesto (RatioPiramide, 3,983) esta a 0,04 del 2.o. En un resumen, 'primer lugar' sin acotar el alcance sobrevende un orden fragil.
+> (r, m) se optimizan por PSO (barrido de 25 configuraciones) -> r = 25, m = 0,30 ... optimiza (r, m) por PSO mediante un barrido de 25 configuraciones de enjambre, con optimo r = 25, m = 0,30
 
-*(bloque: Parrafos 82-167: RESUMEN (p. 83) y SUMMARY (p. 86). Los parrafos 88-167 son el indice de CONTENIDO (titulos y numeros de pagina), sin afirmaciones empiricas.)*
+**Dice el dato:** pso_grid_search_fo_propuesta.csv: máximo Fo_opt = 1,7350 con r_opt = 1 en 16 de las 25 filas (m_opt = 0,30 en las 25); las 8 filas con r_opt = 25 dan Fo_opt = 1,7057. optimo_exacto_fo.csv: argmax con m ≥ 0,30 en r = 1, m = 0,30, Fo = 1,734991; r = 25, m = 0,30 → 1,705696; argmax global r = 25, m = 0,07 → 1,771465. pso_grid_fo_propuesta_state.json: mejor config n2_T20 con gbest r = 1,0, m = 0,3, gbest_fit = 1,734991. Es decir: el PSO fija m = 0,30 (piso del rango) pero NO r = 25; r = 25 es decisión de diseño sobre la batería de nueve métricas, como dicen los párrafos 418, 386, 179, 305, 423 y 428 y el comentario de run_all_fusions.py líneas 38-44.
 
-### parrafo 396, pie de la Tabla 11 — INCOHERENCIA
+**El escéptico:** Intenté refutarlo y no pude: el dato es exactamente el que describe el revisor, y además leí los párrafos completos en su contexto (no es un recorte que engañe).
 
-> las diferencias reflejan el radio hallado (r = 1 donde la aptitud llega a 1,7350 y r = 25 donde llega a 1,7057)
+TEXTO COMPLETO EN CONTEXTO. Párrafo 515 (cierre del pseudocódigo del apéndice D): «(r, m) se optimizan por PSO (barrido de 25 configuraciones) -> r = 25, m = 0,30». Párrafo 516 (nota): «...y optimiza (r, m) por PSO mediante un barrido de 25 configuraciones de enjambre, con óptimo r = 25, m = 0,30». El contexto no salva la frase: ambos párrafos atribuyen al PSO la elección de r = 25 y el segundo usa literalmente la palabra «óptimo». No hay ninguna salvedad cercana; el apéndice D no menciona en ningún lugar que r = 25 sea decisión de diseño.
 
-**El dato:** La Tabla 11 del docx contiene tres valores distintos, no dos: la celda n = 2 / T = 10 vale 1,6990. En pso_grid_search_fo_propuesta.csv esa fila (n = 2, Tmax = 10) tiene r_opt = 14, no 1 ni 25. Las otras 24 celdas si se reparten entre r = 1 (1,7350) y r = 25 (1,7057) exactamente como dice el pie. El pie explica «las diferencias» con dos radios cuando el barrido encontro tres.
+EL CSV QUE EL PROPIO APÉNDICE DESIGNA (párrafo 490) — experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv, 25 filas × 7 columnas (n, Tmax, evaluaciones, r_opt, m_opt, Fo_opt, segundos):
+- máximo de Fo_opt = 1,7350, alcanzado en 16 filas, todas con r_opt = 1 (la primera es fila índice 1: n=2, Tmax=20, evaluaciones=40, r_opt=1, m_opt=0,3, Fo_opt=1,7350);
+- las 8 filas con r_opt = 25 tienen todas Fo_opt = 1,7057 (p. ej. índice 2: n=2, T=30) — es decir, la configuración adoptada es peor en aptitud;
+- conteo exacto de r_opt: 1 → 16 filas, 25 → 8 filas, 14 → 1 fila (índice 0, Fo_opt = 1,6990);
+- m_opt = 0,30 en las 25 filas, sin excepción. Esta mitad de la afirmación sí está respaldada.
 
-*(bloque: Parrafos 386 a 419 (§5.6 Propuesta Novedosa, §5.7 Discusion integrada, §5.8 Auditoria del protocolo: 5.8.1 a 5.8.5) mas las Tablas 10, 11, 12, 13 y 14 del docx (indices python-docx 33, 34, 35, 36 y 37))*
+CORROBORACIÓN INDEPENDIENTE 1 — experiments/results/pso/pso_grid_fo_propuesta_state.json: la config n2_T20 tiene gbest = [1.0, 0.3] con gbest_fit = 1,7349912867836395; su historial muestra la convergencia a r = 1,0 desde la iteración 4.
 
-### parrafo 412, §5.8.3 — INCOHERENCIA
+CORROBORACIÓN INDEPENDIENTE 2 — experiments/results/metrics_reports/optimo_exacto_fo.csv (5.000 filas, columnas r, m, Fo; 25 radios × 200 pesos, verificado con nunique): dentro del rango publicado (m ≥ 0,30) el argmax es r = 1, m = 0,30, Fo = 1,7349912867836397; en r = 25, m = 0,30 el valor es 1,7056961012523402. El argmax global es r = 25, m = 0,07 con Fo = 1,771464788891316 — que tampoco es la configuración adoptada (m = 0,30).
 
-> la suma desciende al cuarto lugar (3,500), por detras del maximo y del disco (3,444 cada uno)
+CÓDIGO — experiments/run_all_fusions.py, líneas 38-44, justo antes de `PROP_R, PROP_M = 25, 0.30`: «...1.7057 en r = 25). r = 25 es una DECISION DE DISENO tomada sobre las metricas de evaluacion, de las cuales cinco lo favorecen (EN, SD, FE, MG, SF) y cuatro favorecen r = 1 (SSIM, PSNR, MI_vis, MI_ir)».
 
-**El dato:** ablacion_banco_resumen.csv, columna rango_9_sin_FE ordenada: disco 3,444, maximo 3,444, promedio 3,475, suma 3,500, base 3,506, lineas 3,631. El cuarto lugar es correcto, pero el brazo del promedio (3,475) tambien va delante de la suma y el parrafo no lo nombra: se declaran dos brazos por delante para un cuarto puesto que exige tres.
+CONTRADICCIÓN INTERNA DEL LIBRO (verificada leyendo los párrafos, no por grep): el párrafo 418 (5.8.5) dice lo contrario del apéndice y lo dice bien: «La optimización no determina la configuración evaluada. El argmax de la aptitud dentro del rango publicado es r = 1 (Fo = 1,7350) y no r = 25 (1,7057)... El radio adoptado proviene, pues, de la batería de evaluación». Concuerdan el 386 («el radio se fija en r = 25 porque maximiza el bloque de actividad de las nueve métricas»), el 179 («r = 25 por diseño; m = 0,30, piso del rango»), el 305 («se adopta r = 25»), el 423 («r=25 adoptado como decisión de diseño») y el 428 («la aptitud del trabajo de referencia favorece r = 1 y la batería de evaluación r = 25»). El apéndice D es el único lugar que dice «óptimo».
 
-*(bloque: Parrafos 386 a 419 (§5.6 Propuesta Novedosa, §5.7 Discusion integrada, §5.8 Auditoria del protocolo: 5.8.1 a 5.8.5) mas las Tablas 10, 11, 12, 13 y 14 del docx (indices python-docx 33, 34, 35, 36 y 37))*
+Detalle menor que sí verifiqué y está bien: la suma de la columna evaluaciones da 4.500, igual que el párrafo 490.
 
-### parrafo 399, primera observacion de la Discusion integrada — INCOHERENCIA
+Nada que refutar. El único matiz de alcance: el error es de redacción y está confinado a dos párrafos del apéndice D; ningún número del libro está mal calculado y m = 0,30 sí es el óptimo del PSO. Pero no rebajaría la gravedad, porque la palabra «óptimo» aplicada a r = 25 afirma exactamente lo que la tesis presenta como hallazgo propio de auditoría (H5, sección 5.8.5) al negarlo, y un jurado que lea el apéndice antes del capítulo 5 concluirá que el autor no controló su propia optimización.
 
-> es segunda en contraste, gradiente medio y frecuencia espacial
+*(bloque: apendice)*
 
-**El dato:** Es cierto en medias (descriptive_means.csv: SD Propuesta 0,1439 frente a 0,1550 de la piramide de Laplace) pero falso en rango medio: ranking_methods.csv, columna SD, da Propuesta 1,65 y PiramideLaplace 2,00, o sea la propuesta PRIMERA en el rango medio del contraste. La conclusion 3 (parrafo 425) usa el otro criterio y escribe «su liderazgo en el rango medio de entropia, contraste y eficiencia de fusion». Las dos frases son correctas cada una en su metrica pero se leen como contradictorias; conviene decir en cada caso si se habla de la media o del rango medio.
+### parrafo 518 (apendice E, Refinamiento metodologico de la regla de fusion) — CONTRADICE
 
-*(bloque: Parrafos 386 a 419 (§5.6 Propuesta Novedosa, §5.7 Discusion integrada, §5.8 Auditoria del protocolo: 5.8.1 a 5.8.5) mas las Tablas 10, 11, 12, 13 y 14 del docx (indices python-docx 33, 34, 35, 36 y 37))*
+**Dice el libro:**
 
-### parrafo 418, §5.8.5, y pie de la Tabla 11 — INCOHERENCIA
+> La distincion correcta separa las dos clases de capas: las de detalle se fusionan por maxima actividad local y la base por promedio simple. ... Esto concierne a los metodos comparativos multiescala
 
-> el maximo dentro del rango publicado esta en r = 1 con Fo = 1,7350 ... con el peso libre esta en r = 25 ... con m = 0,070 y Fo = 1,7715
+**Dice el dato:** experiments/results/metrics_reports/descriptive_means.csv y all_metrics.csv, fila PiramideLaplace: MI_vis = 1,9242 y MI_ir = 0,9178 (medias de 20 pares; verificado también pair a pair). Mi reimplementación con la base por promedio simple da MI_vis = 1,1171 y MI_ir = 0,6885, SD = 0,1189 (publicado 0,1550), EN = 6,6958 (publicado 6,8400), FE = 1,0590 (publicado 1,0806), PSNR = 17,5776 (publicado 14,9401), SSIM = 0,7224 (publicado 0,7059). Diferencia de imagen 0,10761 de media absoluta sobre [0,1], 0,23632 como máximo de las medias por imagen y 0,46304 como máximo pixel a pixel. ranking_methods.csv confirma MI_vis = 1,85 y MI_ir = 2,20 para PiramideLaplace (los rangos medios más bajos = mejores) y avg_rank = 3,911 (segundo); con la base promediada esos valores pasan a 1,75, 2,55 y 4,028 (cuarto). Código: src/fusion/comparatives.py líneas 52 y 78-82.
 
-**El dato:** Las cifras salen bien de optimo_exacto_fo.csv (r=1, m=0,30 -> 1,734991; r=25, m=0,07 -> 1,771465; r=25, m=0,30 -> 1,705696) y coinciden con curva_aptitud_vs_m.csv y pso_grid_search_fo_propuesta.csv. Pero en el mismo directorio hay otros dos CSV que calculan la MISMA aptitud sobre las MISMAS tres escenas con otra implementacion del SSIM y dan valores distintos: superficie_aptitud_fo.csv da Fo(r=1, m=0,30) = 1,7191 y Fo(r=25, m=0,30) = 1,6870, y barrido_metricas_vs_m.csv (operador propuesta, r=25, m=0,3000, columna F_o) da 1,687010. Los dos grupos coinciden en la conclusion cualitativa (el argmax dentro del rango publicado esta en r = 1) pero no en los numeros. Si alguna figura o apendice se dibuja desde superficie_aptitud_fo.csv, los valores no cerraran con la prosa: hay que fijar una sola fuente para 1,7350 / 1,7057 / 1,7715.
+**El escéptico:** Intenté refutarlo por tres vías y las tres lo confirman.
 
-*(bloque: Parrafos 386 a 419 (§5.6 Propuesta Novedosa, §5.7 Discusion integrada, §5.8 Auditoria del protocolo: 5.8.1 a 5.8.5) mas las Tablas 10, 11, 12, 13 y 14 del docx (indices python-docx 33, 34, 35, 36 y 37))*
+1) LEÍ EL PÁRRAFO COMPLETO (518). No es una frase recortada que diga menos de lo que parece: el párrafo afirma tres cosas encadenadas —«Durante el desarrollo iterativo de la implementación se identificó un punto sutil...», «Una primera versión aplicaba selección por máxima actividad local de manera uniforme a todas las capas, incluyendo la base», «Conviene precisar el alcance: esto concierne a los métodos comparativos multiescala» y cierra con «El refinamiento eliminó discontinuidades de iluminación y sesgos artificiales en la información mutua»—. Es decir, declara que el refinamiento SE APLICÓ a los comparativos multiescala y que tuvo efecto. La única salvedad de alcance que hace es para el operador propuesto (una sola escala), no para la LP. No hay lectura del párrafo que exima a la pirámide de Laplace.
 
-### parrafo 418, §5.8.5 (segunda mencion del factor; la primera, «su disco, que extrae 4,21 veces menos energia de detalle», si es correcta) — INCOHERENCIA
+2) LEÍ EL CÓDIGO. C:/Users/Usuario/Documents/unv/mastertesis/tesis_mciencias_datos/src/fusion/comparatives.py, línea 52: laplacian.append(gaussian[-1])  # capa base; líneas 78-82: for lv_layer, li_layer in zip(lv, li) con mask = (act_v >= act_i) sobre TODAS las capas, base incluida. Ninguna rama separa la última capa. Los otros tres sí promedian: ratio_pyramid_fusion línea 152 img = 0.5*(gv[levels]+gi[levels]) «base promediada»; dwt_fusion línea 176 y curvelet_fusion línea 113 promedian la aproximación 0.5*cv+0.5*ci; dtcwt_fusion línea 199 lowpass = 0.5*(pv.lowpass+pi.lowpass). Verifiqué además que no exista una segunda implementación de LP en el repo (grep de laplacian/pyrDown/PiramideLaplace sobre src/: solo comparatives.py, reexportada tal cual por src/fusion/__init__.py). Y experiments/run_all_fusions.py llama a esa misma función con levels=4.
 
-> el banco extrae 4,21 veces la energia de detalle del disco
+3) REHÍCE EL CÁLCULO YO MISMO sobre los 20 pares (list_pairs + load_pair + src.metrics.evaluate_all, intérprete .venv). Mi recálculo de MI sobre la LP tal como está en el repo reproduce all_metrics.csv con diferencia 0,000000, o sea que el benchmark publicado se calculó efectivamente con la regla sin refinar. Todas las cifras del revisor son exactas, incluido el 0,23632, que es el máximo de las medias por imagen (Athena_soldier_behind_smoke_2_meting012-1500); el máximo pixel a pixel global es 0,46304, todavía mayor.
 
-**El dato:** aptitud_operador_energia.csv, columna ganancia_vs_clasico: el 4,205110 de la propuesta esta medido contra «Top-Hat clasico . disco B_5», es decir el disco de radio 5 de la referencia. Contra el disco de radio 25 («Disco B_25 (una rama)», 2,630494) el factor es 4,205/2,630 = 1,60. Como la frase dice «del disco» sin el radio, y el parrafo acaba de hablar del disco de la referencia, se lee bien; pero un lector que entienda «el disco» como el disco a r = 25 —el mismo radio del banco— leera un factor 2,6 veces mayor del real. Conviene escribir «del disco B_5 de la referencia».
+DONDE EL REVISOR SE QUEDÓ CORTO, NO LARGO. Dijo «tiene consecuencia sobre resultados» citando solo la MI. Medí las nueve métricas con la base promediada y el impacto es mayor:
+- La MI en realidad SOBREVIVE como liderazgo: con la base promediada la LP sigue primera en rango medio de MI_vis (1,75, mejora desde 1,85) y en MI_ir (2,55, sigue el más bajo = mejor) y sigue con la media más alta de MI_vis (1,1171 frente a 1,0961 del Curvelet). Cambian los números de las tablas, no ese ranking.
+- Lo que SÍ se rompe es la otra mitad de la afirmación del párrafo 399: el SD de la LP cae de 0,1550 a 0,1189, con lo cual la LP deja de liderar el contraste y pasa a ser cuarta detrás de Propuesta (0,1439), TopHat_Clasico (0,1352) y RatioPiramide (0,1271). La frase «la pirámide de Laplace lidera el contraste (SD) y la información mutua» quedaría falsa en su primera mitad.
+- Y el ranking agregado cambia de puesto: la LP cae del segundo lugar (3,911) al cuarto (4,028), superada por RatioPiramide (3,861) y TopHat_Clasico (3,900). Eso toca el párrafo 399, que dice que la Propuesta va «por delante de la pirámide de Laplace con 3,91 y del Top-Hat clásico con 3,94». La Propuesta sigue primera (3,406), así que la tesis central no se cae, pero el orden del pelotón sí.
 
-*(bloque: Parrafos 386 a 419 (§5.6 Propuesta Novedosa, §5.7 Discusion integrada, §5.8 Auditoria del protocolo: 5.8.1 a 5.8.5) mas las Tablas 10, 11, 12, 13 y 14 del docx (indices python-docx 33, 34, 35, 36 y 37))*
+MATIZ HONESTO. Podría defenderse que la LP se dejó a propósito con máxima actividad local en todas las capas por fidelidad a Burt y Adelson (1983), y de hecho la Tabla 13 (índice 13 del .docx, fila «Pirámide de Laplace (LP)») la describe como «Descomposición Gaussiana–Laplaciana de 4 niveles; fusión por máxima actividad local y reconstrucción inversa», sin mencionar promedio en la base: coincide con el código. Pero entonces el problema no desaparece, solo se muda: el Apéndice E y la Tabla 13 se contradicen entre sí dentro del mismo libro, y el Apéndice E necesita una excepción explícita para la LP. No hay ningún comentario en el código que declare la decisión como intencional. Hay que corregir el código o corregir el Apéndice E; el estado actual no es sostenible en ninguna de las dos lecturas.
 
-### parrafo 389, §5.6 — SIN FUENTE
-
-> mientras r = 1 preserva mejor la fidelidad a las fuentes
-
-**El dato:** La comparacion a peso igualado se puede hacer con fo_ablacion_per_image.csv (brazo Propuesta_Fo(r=1,m=0.30), 20 imagenes) frente a descriptive_means.csv (Propuesta_Novedosa, r=25, m=0,30), y sale bien en tres de las cuatro metricas de fidelidad: MI_vis 1,3681 frente a 0,8970; MI_ir 0,9316 frente a 0,6003; SSIM 0,7607 frente a 0,6584. La cuarta, PSNR, no se puede comprobar: fo_ablacion_per_image.csv no tiene columna PSNR y ningun otro CSV da PSNR para el brazo r = 1, m = 0,30. El bloque de actividad de la misma frase (EN 6,9855>6,5981, SD 0,1439>0,1129, FE 1,1047>1,0423, MG 0,0355>0,0232, SF 17,4425>12,4030) si esta completo y respaldado.
-
-*(bloque: Parrafos 386 a 419 (§5.6 Propuesta Novedosa, §5.7 Discusion integrada, §5.8 Auditoria del protocolo: 5.8.1 a 5.8.5) mas las Tablas 10, 11, 12, 13 y 14 del docx (indices python-docx 33, 34, 35, 36 y 37))*
+*(bloque: apendice)*
 
 ### parrafo 519 (apendice F) — CONTRADICE
 
-> la piramide de Laplace y el curvelet se situan en ordenes de magnitud comparables
+**Dice el libro:**
 
-**El dato:** Comparables entre si y con el Top-Hat clasico, pero no con el metodo propuesto, que es el sujeto de la frase anterior. Medicion directa sobre el mismo par (mediana de 5): PiramideLaplace 6,6 ms, Curvelet 8,3 ms, TopHat_Clasico (r=5) 11,6 ms, Propuesta_Novedosa (r=25, m=0,30) 168,1 ms. La propuesta esta mas de un orden de magnitud por encima de LP y CVT, no en el mismo orden.
+> Cada fusion Top-Hat consume entre 20 y 80 milisegundos segun la configuracion
 
-*(bloque: Parrafos 482-521 - Capitulo 8 APENDICE (A. Repositorio del codigo; B. Configuraciones del barrido PSO; C. Tablas estadisticas extendidas; D. Pseudocodigos; E. Refinamiento de la regla de fusion; F. Hardware y tiempos))*
+**Dice el dato:** Medición directa propia (mismo intérprete .venv, warmup + 1 corrida por par, las 20 escenas de list_pairs()) de las DOS configuraciones Top-Hat del benchmark (CONFIG de C:/Users/Usuario/Documents/unv/mastertesis/tesis_mciencias_datos/experiments/run_all_fusions.py):
 
-### parrafo 519 (apendice F) — SIN FUENTE
+- Propuesta_Novedosa (r=25, m=0,30, mode='sum') — la adoptada: mediana 240,6 ms; min 64,5 ms (Athena_helicopter_helib_011, 247x359, la imagen más chica del corpus); max 277,2 ms (Athena_APC_4_fennek01_005, 576x768). Solo 1 de 20 pares cae dentro de [20, 80] ms.
+- TopHat_Clasico (r=5): mediana 18,1 ms; min 2,6 ms; max 21,3 ms. Solo 4 de 20 pares caen dentro de [20, 80] ms, y apenas (20,3-21,4 ms).
 
-> La ejecucion completa del benchmark (140 fusiones: 7 metodos x 20 pares) toma aproximadamente 90 segundos.
+Sobre el par exacto que usó el otro revisor (APC_1_view_1_fk_06_005, 439x609), mediana de 5 corridas: propuesta r=25 → 168,3 ms (él reportó 168,1); clásico r=5 → 11,1 ms (él reportó 11,6). Reproducción independiente.
 
-**El dato:** El conteo si esta respaldado: all_metrics.csv tiene 140 filas, 7 metodos (Curvelet, DTCWT, DWT, PiramideLaplace, Propuesta_Novedosa, RatioPiramide, TopHat_Clasico) x 20 imagenes. Los 90 segundos no los registra ningun CSV y run_all_fusions.py no cronometra nada. Los reproduje en orden de magnitud instrumentando el bucle real del script sobre 4 pares x 7 metodos: 16,1 s, que extrapolados a 20 pares dan 81 s. Pero el desglose desmiente la atribucion implicita: de esos 16,1 s, 1,6 s son las 28 fusiones y 14,5 s son las llamadas a evaluate_all. El coste del benchmark es de las 17 metricas, no de las fusiones; la frase da a entender lo contrario.
+El intervalo [20, 80] ms del libro corresponde en realidad al operador propuesto con r entre 1 y 13, no a r=25: sobre Triclobs_Bosnia_R (480x640) da r=1:33 ms, r=5:41 ms, r=9:60 ms, r=13:81 ms, r=17:118 ms, r=21:149 ms, r=25:197 ms; sobre un par 576x768, r=1:41 ms … r=25:278 ms. El techo declarado se cruza alrededor de r=13.
 
-*(bloque: Parrafos 482-521 - Capitulo 8 APENDICE (A. Repositorio del codigo; B. Configuraciones del barrido PSO; C. Tablas estadisticas extendidas; D. Pseudocodigos; E. Refinamiento de la regla de fusion; F. Hardware y tiempos))*
+**El escéptico:** El hallazgo se sostiene. Leí la frase completa en su contexto (párrafo 520, bajo el título «F. Hardware y tiempos de ejecución» del párrafo 519) y no hay lectura que la salve: dice «Cada fusión Top-Hat consume entre 20 y 80 milisegundos según la configuración», y «según la configuración» remite a las configuraciones Top-Hat del trabajo, que son exactamente dos en el benchmark (TopHat_Clasico r=5 y Propuesta_Novedosa r=25, m=0,30). Ninguna de las dos entra en el intervalo: la adoptada lo excede por un factor ~3 (mediana 240,6 ms contra techo 80 ms) y la clásica queda por debajo del piso (mediana 18,1 ms). El intervalo describe un operador que el libro no usa (r entre 1 y 13).
 
-### parrafo 484 (apendice A, ultima frase) — INCOHERENCIA
+El mecanismo que invoca el revisor también es correcto: con r=25, disk_se(25) devuelve un elipse de 51x51 y linear_se(25, θ) una máscara 51x51 con línea de longitud 51 (src/fusion/optimal_top_hat.py); combined_top_hat hace 10 operaciones morfológicas por fuente (apertura+cierre del disco y de las 4 líneas), o sea 20 con núcleos de 51x51 por fusión. Eso explica el costo.
 
-> El archivo requirements.txt consigna las dependencias exactas.
+DOS PRECISIONES que le restan fuerza a su argumentación sin cambiar el veredicto:
 
-**El dato:** requirements.txt no fija ninguna version exacta: sus 20 lineas usan todas el operador >= (numpy>=1.26, opencv-python>=4.9, torch>=2.0, ultralytics>=8.2, ...) y no contiene ni un solo ==. Son versiones minimas, no exactas, y para dos paquetes eso no es inocuo en reproducibilidad: detector_perfil.json registra que los entrenamientos corrieron con ultralytics 8.4.68 y torch 2.5.1+cu121, muy por encima de los minimos declarados. O se cambia «exactas» por «minimas», o se congela un requirements con pines (pip freeze).
+1. Su derivación desde el CSV está bien calculada pero es un techo, no un tiempo de fusión. Verifiqué los cocientes en experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv (25 filas, columnas n, Tmax, evaluaciones, r_opt, m_opt, Fo_opt, segundos): segundos/evaluaciones da media 0,799 s en las 8 filas con r_opt=25 (min 0,750 en n=10/Tmax=10; max 0,833 en n=2/Tmax=30) contra 0,203 s en las 16 filas con r_opt=1 — exactamente sus cifras. Pero en experiments/pso_grid_search_fo.py cada evaluación de aptitud no solo fusiona las 3 escenas del caché: por escena calcula además dos SSIM (_ssim_fast, tres GaussianBlur cada uno), la entropía de 256 bins y el PSNR. Así que sus «266 ms por fusión» son fusión + métricas, un límite superior. Además r_opt es el gbest FINAL, no el radio de todas las evaluaciones de esa fila, así que el cociente promedia la trayectoria del enjambre. La cifra confiable es la medición directa (240,6 ms de mediana), no la del CSV. Da igual para el veredicto: 266 y 240 ambos pulverizan los 80 ms.
 
-*(bloque: Parrafos 482-521 - Capitulo 8 APENDICE (A. Repositorio del codigo; B. Configuraciones del barrido PSO; C. Tablas estadisticas extendidas; D. Pseudocodigos; E. Refinamiento de la regla de fusion; F. Hardware y tiempos))*
+2. No existe ningún CSV que mida latencia de fusión. Recorrí las columnas de todos los CSV de experiments/results/** buscando seg/time/tiempo/ms/fps/elapsed/dur: solo aparece «segundos» en pso_grid_search.csv, pso_grid_search_fo_clasico.csv, pso_grid_search_fo_propuesta.csv, las dos de pso_repeticiones y detection_llvip_semillas.csv (entrenamiento YOLO), y ninguna cronometra una fusión aislada. Es decir, la cifra del libro nunca tuvo respaldo instrumental: en origen es SIN FUENTE, y CONTRADICE una vez que se cronometra.
 
-### parrafo 490 (apendice B) — INCOHERENCIA
+Por qué la gravedad es alta y no media: el número está en un apéndice y ningún resultado, ranking ni hipótesis depende de él, lo que por sí solo sería media. Pero es el único soporte cuantitativo de la frase que cierra el párrafo — «Esta liviandad computacional confirma la viabilidad del método para aplicaciones en tiempo real» — y con 240 ms por fusión eso son ~4 cuadros por segundo a 576x768, sin contar captura, registro ni métricas. Corregir el techo obliga a reescribir también la conclusión de tiempo real o a acotarla a la resolución y el radio medidos. Nota adicional: en el mismo párrafo, «la pirámide de Laplace y el curvelet se sitúan en órdenes de magnitud comparables» queda floja medida contra la adoptada (Laplace 11,0 ms y Curvelet 14,3 ms de mediana contra 240,6 ms de la propuesta: más de un orden de magnitud de diferencia), y el «aproximadamente 90 segundos» del benchmark no lo puedo refutar ni confirmar — mi cronometraje de las 140 fusiones puras da 11,2 s, y el resto del script (métricas y E/S de imágenes) no lo medí, así que los 90 s son plausibles pero tampoco tienen CSV. De paso: DTCWT (mediana 277,7 ms) es el método más caro del benchmark, por encima de la propuesta.
 
-> Cada combinacion del barrido ejecuta una corrida PSO independiente con semilla propia (25 corridas, 4.500 evaluaciones de fusion en total).
+*(bloque: apendice)*
 
-**El dato:** Las 25 corridas con semilla propia estan bien (pso_grid_search_fo.py: init_swarm(n, seed=1000*n+T)), y la suma de la columna «evaluaciones» de pso_grid_search_fo_propuesta.csv es exactamente 4.500, que coincide con la suma de n x Tmax sobre las 25 filas y con la suma de «evals» de las 25 configuraciones del state.json. Pero esas 4.500 son evaluaciones de la APTITUD, no fusiones: cada llamada a fitness recorre las 3 escenas del cache (allp[::7], y el state.json las nombra: APC_1_view_1_fk_06_005, Athena_APC_4_fennek01_005, Athena_soldier_behind_smoke_3_meting012-1700), de modo que el barrido ejecuta 13.500 fusiones. Conviene decir «4.500 evaluaciones de la aptitud (13.500 fusiones, tres escenas por evaluacion)».
+### parrafo 518 (apendice E, ultima frase) — SIN FUENTE
 
-*(bloque: Parrafos 482-521 - Capitulo 8 APENDICE (A. Repositorio del codigo; B. Configuraciones del barrido PSO; C. Tablas estadisticas extendidas; D. Pseudocodigos; E. Refinamiento de la regla de fusion; F. Hardware y tiempos))*
+**Dice el libro:**
 
-### Epígrafe de la Tabla 11 «Barrido de configuraciones del PSO» (d.tables[34]) — INCOHERENCIA
+> El refinamiento elimino discontinuidades de iluminacion y sesgos artificiales en la informacion mutua.
 
-> Las 25 configuraciones convergen al mismo peso óptimo (m* = 0,30); las diferencias reflejan el radio hallado (r = 1 donde la aptitud llega a 1,7350 y r = 25 donde llega a 1,7057)
+**Dice el dato:** Ningún CSV documenta el antes/después del refinamiento, y el refinamiento NO está aplicado a la pirámide de Laplace en el código que produjo los resultados publicados. src/fusion/comparatives.py líneas 78-82: el bucle de máxima actividad recorre todas las capas de la pirámide, incluida la base que se agrega en la línea 52. Publicado (descriptive_means.csv, fila 3 «PiramideLaplace»; medias de all_metrics.csv): MI_vis = 1,9242 (el más alto de los 7; 2.º es Curvelet 1,0961), MI_ir = 0,9178 (el más alto), PSNR = 14,9401 (el más bajo de los 7; Curvelet 17,6523). Recalculado por mí con la base promediada sobre los mismos 20 pares: MI_vis = 1,1171, MI_ir = 0,6885, PSNR = 17,5776, SSIM = 0,7224, SD = 0,1189. Impacto en ranking_methods.csv: LP baja del 2.º puesto (avg_rank 3,911) al 4.º (4,028), RatioPiramide sube al 2.º (3,861), la propuesta sigue 1.ª (3,394 pasa a 3,406) y pierde su victoria en PSNR frente a la LP (16,8409 contra 17,5776). Los 14 respaldos .bak de metrics_reports no contienen el antes/después: los dos de all_metrics traen la LP con MI_vis = 2,1183 / MI_ir = 1,0717, aún más alto. Corrección declarada como PENDIENTE en docs/historial/Secuencia_Ajuste.md (Fase 1, tarea 1.2) y en docs/ESTADO_Y_PENDIENTES.md línea 877.
 
-**El dato:** pso_grid_search_fo_propuesta.csv tiene tres valores distintos de Fo_opt, no dos: 1,7350 (r=1, 16 filas), 1,7057 (r=25, 8 filas) y 1,6990 (r=14, 1 fila: n=2, T=10). La celda n=2/T=10 de la propia tabla imprime 1,6990, así que el paréntesis del epígrafe no explica una de las 25 celdas que el lector tiene delante. La afirmación sobre m* = 0,30 sí está respaldada: m_opt = 0,30 en las 25 filas.
+**El escéptico:** El hallazgo se confirma, y si algo el revisor lo SUBESTIMÓ: no es solo que falte una fuente, es que el dato publicado contradice la frase.
 
-*(bloque: Las 38 tablas de docs/Tesis_Borrador_V3.docx (d.tables), verificadas celda por celda contra los CSV de experiments/results/metrics_reports/ y, donde fue posible, recomputadas desde los datos por imagen.)*
+1) LEÍ LA FRASE COMPLETA EN CONTEXTO (párrafo 518, apéndice E). El párrafo no se salva por su propia salvedad de alcance. Dice literalmente «Conviene precisar el alcance: esto concierne a los métodos comparativos multiescala, no al operador propuesto». La pirámide de Laplace ES un método comparativo multiescala, o sea que está de lleno DENTRO del alcance que el propio párrafo declara. La salvedad excluye a la propuesta, no a la LP.
 
-### Tabla 7 (d.tables[30]), epígrafe y columna «Global» — INCOHERENCIA
+2) EL CÓDIGO QUE PRODUJO all_metrics.csv NO APLICA EL REFINAMIENTO A LA LP. En C:/Users/Usuario/Documents/unv/mastertesis/tesis_mciencias_datos/src/fusion/comparatives.py, `_build_laplacian_pyramid` agrega la base como último elemento de la lista (línea 52: `laplacian.append(gaussian[-1])  # capa base`), y el bucle de fusión de `laplacian_pyramid_fusion` (líneas 78-82) recorre `zip(lv, li)` COMPLETO y aplica la máscara de máxima actividad a TODAS las capas, base incluida. No hay excepción para la última. Los otros cuatro multiescala sí promedian su base o aproximación (RP línea 152 «base promediada»; CVT línea 113; DWT línea 176; DTCWT línea 199): la LP es la única excepción, y es justamente la que tiene una capa base literal.
 
-> Tabla 7. Ranking promedio por método y métrica (1 = mejor) — con columnas SD, MG, SF, SSIM, PSNR, MI_ir y Global
+3) REPRODUJE LAS DOS CIFRAS DEL REVISOR, EXACTAS. Corrí las 20 imágenes del corpus con `list_pairs()`/`evaluate_all` sobre la función tal como está y sobre una copia con la base promediada. Tal como está: MI_vis = 1,9242, MI_ir = 0,9178, PSNR = 14,9401 — coincide dígito por dígito con la fila `PiramideLaplace` de experiments/results/metrics_reports/descriptive_means.csv (fila 3) y con la media de all_metrics.csv, así que los números publicados salen de ese código, sin duda. Con la base promediada: MI_vis = 1,1171, MI_ir = 0,6885, PSNR = 17,5776 (SSIM 0,7224, SD 0,1189). Las dos cifras que citó el revisor son correctas.
 
-**El dato:** La columna Global es el promedio sobre las NUEVE métricas (avg_rank de ranking_methods.csv), no sobre las seis mostradas, y el epígrafe no lo aclara. Para la Propuesta Novedosa las seis columnas visibles promedian 3,692 (1,65+2,00+2,00+5,90+5,35+5,25)/6, pero la celda Global dice 3,39, porque incluye EN = 1,50, FE = 1,50 y MI_vis = 5,40, que la tabla no muestra. El número es correcto —lo recompute desde all_metrics.csv y da 3,394— pero es irreproducible a partir de la tabla impresa. El epígrafe de la Figura 8 sí lo declara; el de la Tabla 7 no.
+4) EL SESGO Y LA DISCONTINUIDAD SIGUEN EN EL DATO PUBLICADO. En descriptive_means.csv la LP tiene el MI_vis más alto de los siete (1,9242, casi el doble del segundo, Curvelet con 1,0961) y el PSNR más bajo de los siete (14,9401 frente a 17,6523 de Curvelet). Al promediar la base, MI_vis cae a 1,1171 —en línea con los demás— y el PSNR sube 2,64 dB hasta 17,5776, que es prácticamente empate con DWT (17,5886) y DTCWT (17,5974). Es exactamente el par de síntomas que el propio libro describe en el párrafo 431: «aplicar selección por actividad a la capa base introduce discontinuidades de iluminación y sesga las métricas de información mutua». El defecto que el libro dice haber eliminado es el que sigue teniendo su propio comparativo.
 
-*(bloque: Las 38 tablas de docs/Tesis_Borrador_V3.docx (d.tables), verificadas celda por celda contra los CSV de experiments/results/metrics_reports/ y, donde fue posible, recomputadas desde los datos por imagen.)*
+5) EL REPOSITORIO YA LO SABE Y LO TIENE PENDIENTE. docs/ESTADO_Y_PENDIENTES.md (línea 877): «Banda base de la pirámide de Laplace: el comparativo fusiona su banda base por máxima actividad en lugar de promediarla... corregirlo cambiaría los resultados de LP». Y docs/historial/Secuencia_Ajuste.md (fila 1.2 de la Fase 1) lo lista como corrección PENDIENTE, con la predicción «la propuesta pierde su única victoria en PSNR y el 2.º puesto pasa a la Ratio Pyramid». Recalculé el ranking y la predicción se cumple: la LP pasa de 2.º (3,911) a 4.º (4,028) y RatioPiramide sube al 2.º (3,861); en PSNR la LP pasa de rango 6,95 a 3,60 y le gana a la propuesta (17,5776 frente a 16,8409).
 
-### Epígrafe de la Tabla 12 «Control negativo» (d.tables[35]) — INCOHERENCIA
+BUSQUÉ EL ANTES/DESPUÉS Y NO EXISTE EN NINGÚN CSV. Revisé los 14 respaldos .bak de metrics_reports y todos los CSV de experiments/results/** buscando columnas o valores con «refin/antes/despues/previo/version/regla/promedio»: cero coincidencias. Los dos respaldos de all_metrics traen la LP con MI_vis = 2,1183 y MI_ir = 1,0717 —MÁS alto todavía que el actual, no más bajo—, así que ninguno es una instantánea «post-refinamiento»: la diferencia con el actual es el par corrupto del corpus, no la regla de fusión.
 
-> rango medio de los siete métodos y de siete entradas degradadas
+DOS ERRORES MENORES DEL REVISOR, que no tocan el fondo: (a) dice que los únicos respaldos con nombre de copia en metrics_reports son los dos de all_metrics, y en realidad hay 14 (.bak_corpus19, .bak_test68, .bak_split_viejo, .bak_best, etc.); ninguno documenta el cambio de regla, así que la conclusión aguanta. (b) La frase que el revisor no menciona y conviene agregar: el párrafo 229 (Limitaciones) NO declara este defecto, aunque ESTADO_Y_PENDIENTES.md afirma que está «declarado en las limitaciones». En la V3 del libro la única mención a la capa base es el párrafo 431, que presenta el mecanismo como aprendizaje ya resuelto.
 
-**El dato:** De las siete filas que no son métodos, seis son degradaciones (ruido gaussiano σ = 0,02; 0,05; 0,10; 0,20 y desenfoque 5×5 y 11×11) y la séptima es «Imagen base (VIS+IR)/2», que run_control_negativo.py define como «base (VIS+IR)/2, sin operador», es decir el control sin procesar, no una entrada degradada. Los 14 brazos de control_negativo.csv se reparten en 7 métodos + 6 degradaciones + 1 base.
+GRAVEDAD: la mantengo ALTA, no exagerada, pero con una atenuación que el autor debe conocer. A favor de la gravedad: la frase afirma un resultado falso sobre un método que está dentro del alcance que ella misma declara; el artefacto alimenta una afirmación de resultados del cuerpo (párrafo 399: «la pirámide de Laplace lidera el contraste (SD) y la información mutua» — ese liderazgo en MI es el artefacto); y es la contradicción código-documento que el propio autor calificó de «citable» en su plan. La atenuación: corregirlo NO tumba la conclusión central — la propuesta sigue primera en el ranking agregado (3,394 pasa a 3,406). Lo que cambia es el 2.º puesto y la única victoria de la propuesta en PSNR.
 
-*(bloque: Las 38 tablas de docs/Tesis_Borrador_V3.docx (d.tables), verificadas celda por celda contra los CSV de experiments/results/metrics_reports/ y, donde fue posible, recomputadas desde los datos por imagen.)*
+*(bloque: apendice)*
 
-### parrafo 344, §4.6 Implementacion — INCOHERENCIA
+### Tabla 2 (d.tables[11], fila «Escala (radio)») y tabla de operacionalización de las variables de §4.4 (d.tables[26], fila «Radio del SE (r)») — CONTRADICE
 
-> Toda la implementacion se realizo en Python 3.11 con las bibliotecas NumPy, OpenCV, scikit-image, SciPy, PyWavelets, Pandas, Matplotlib y Seaborn
+**Dice el libro:**
 
-**El dato:** Python 3.11 es correcto (.venv/Scripts/python.exe -V -> 3.11.14) y las ocho bibliotecas estan en requirements.txt, igual que la organizacion modular (src/datasets.py, src/fusion, src/metrics, src/utils) y el control de versiones (.git presente). Pero la lista omite dependencias sin las cuales dos experimentos del libro no corren: dtcwt>=0.12, que src/fusion/comparatives.py importa para el comparativo DTCWT del benchmark, y torch/torchvision/ultralytics>=8.2, que experiments/detection_llvip/train_eval_llvip.py necesita para el YOLOv8n de §5.5. Las tres estan declaradas en requirements.txt
+> Escala (radio) | Única, de radio r (ajustado por PSO)  —y— Radio del SE (r) | ... | 1–25 (ajustado por PSO)
 
-*(bloque: Parrafos 299-346 (cap. 3 MARCO CONCEPTUAL y cap. 4 MARCO METODOLOGICO), mas la Tabla 26 de operacionalizacion que cuelga del parrafo 339)*
+**Dice el dato:** pso_grid_search_fo_propuesta.csv: r_opt = 1 en 16/25 configuraciones (Fo_opt = 1,7350), r_opt = 25 en 8/25 (Fo_opt = 1,7057), r_opt = 14 en 1/25 (1,6990); m_opt = 0,30 en las 25. El argmax de la aptitud es r = 1 con Fo = 1,7350, no r = 25. optimo_exacto_fo.csv: dentro del rango publicado (m >= 0,30) el máximo es r = 1, m = 0,30, Fo = 1,734991, frente a Fo = 1,705696 en (r = 25, m = 0,30); con el peso libre el máximo es r = 25, m = 0,07, Fo = 1,771465. ajuste_comparativos_mejores.csv fila 39: Propuesta_Novedosa, valor = 25, rango_interno_9 = 4,867 (mínimo de las once configuraciones), elegida = True, criterio = promedio de rangos intra-bloque sobre las nueve métricas segun run_ajuste_comparativos.py (best = rk.idxmin()). Es decir: r = 25 proviene de la batería de nueve métricas, no del PSO; m = 0,30 sí proviene del PSO (piso del rango, alcanzado en las 25 configuraciones). El propio libro lo afirma en ¶389, ¶392, ¶418, ¶428 y en el epígrafe de la Tabla 11 (¶396).
 
-### parrafo 338, §4.3; y bloque de variables dependientes de la Tabla 26 (§4.4) — INCOHERENCIA
+**El escéptico:** Intenté refutarlo y no pude: reproduje cada cifra del revisor y además el cuerpo del propio libro le da la razón.
 
-> totalizando 140 fusiones evaluadas con las nueve metricas sin referencia, base del analisis estadistico inter-metodo
+VERIFICACIÓN DIRECTA DE LOS CSV
+1) experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv (25 filas, columnas n, Tmax, evaluaciones, r_opt, m_opt, Fo_opt, segundos). value_counts de r_opt: 1 -> 16 filas, 25 -> 8 filas, 14 -> 1 fila. Exactamente lo que dijo el revisor. m_opt = 0,30 en las 25 filas. El argmax de Fo_opt es la fila n=2, Tmax=20 con r_opt = 1 y Fo_opt = 1,7350; las 8 filas con r_opt = 25 dan Fo_opt = 1,7057, es decir PEOR aptitud. Si el PSO hubiera fijado r, el resultado sería r = 1, tanto por argmax (1,7350 > 1,7057) como por moda de las corridas (16 de 25).
+2) ajuste_comparativos_mejores.csv, fila 39: metodo=Propuesta_Novedosa, valor=25, rango_interno_9=4,867, elegida=True. Es el mínimo de las once configuraciones de la propuesta (le siguen 23 -> 5,133 y 21 -> 5,517), y en rango medio menor es mejor.
+3) experiments/run_ajuste_comparativos.py confirma el criterio en su propio docstring: «El radio de la propuesta (r = 25) se eligio mirando las nueve metricas de evaluacion» y selecciona con «EL MISMO CRITERIO con que se eligio r = 25: el promedio de rangos intra-bloque sobre las nueve metricas». El código hace best = rk.idxmin() sobre NUEVE = [EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PSNR]. La dirección del rango es la correcta.
+4) optimo_exacto_fo.csv (5.000 filas, r 1–25 x m 0,01–2,00): dentro del rango publicado (m >= 0,30) el argmax es r = 1, m = 0,30, Fo = 1,734991; en (r = 25, m = 0,30) Fo = 1,705696. A m = 0,30, r = 25 no es ni el tercero mejor (r=1 1,7350; r=2 1,7192; r=3 1,7078; r=25 1,7057).
 
-**El dato:** Las 140 fusiones y las nueve metricas del analisis son correctas (all_metrics.csv, 140 filas; METRICS = EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PSNR en experiments/run_stats_analysis.py, que descarta expresamente Qabf, Nabf, SCD, VIF, FMI, Q0, QW y QE; friedman_results.csv tiene esas nueve filas y la Tabla 26 declara exactamente esas nueve dependientes). La incoherencia es con el capitulo de resultados: all_metrics.csv calcula 17 columnas de metricas y §5.3 reporta las de afuera de la bateria (parrafo 359: FMI 0,2362, QW 0,8470, QE 0,3856, Q0 0,7411) igual que §5.8.1 con Nabf (parrafos 403 y 430). Quien lea solo §4.3 y §4.4 no espera esas tablas; conviene decir en el metodo que se computan trece-diecisiete metricas y que nueve son la bateria del analisis estadistico
+EL LIBRO SE CONTRADICE A SÍ MISMO
+Leí las tablas completas y su contexto. Tabla 2 (d.tables[11]) declara «Función de aptitud | Fo = SSIMavg + En + PSNRn» y «Rangos de búsqueda | r ∈ [1, 25]; m ∈ [0,30; 2,00] (rango publicado)», y luego «Óptimo hallado | r = 25; m = 0,30 ... Fo = 1,7057». Bajo esa misma aptitud y ese mismo rango el óptimo es r = 1 con Fo = 1,7350, y la propia Tabla 11 del libro lo dice en su epígrafe (¶396: «r = 1 donde la aptitud llega a 1,7350 y r = 25 donde llega a 1,7057»). El cuerpo lo afirma sin ambigüedad: ¶389 «La elección del radio se apoya, por tanto, en el criterio de evaluación y no en la optimización»; ¶418 «La optimización no determina la configuración evaluada. El argmax de la aptitud dentro del rango publicado es r = 1 (Fo = 1,7350) y no r = 25 (1,7057)»; ¶428 «la aptitud del trabajo de referencia favorece r = 1 y la batería de evaluación r = 25»; ¶305 «se busca en r ∈ [1, 25] y se adopta r = 25»; ¶392 «r = 25 por diseño».
 
-*(bloque: Parrafos 299-346 (cap. 3 MARCO CONCEPTUAL y cap. 4 MARCO METODOLOGICO), mas la Tabla 26 de operacionalizacion que cuelga del parrafo 339)*
+LA ÚNICA DEFENSA POSIBLE, Y POR QUÉ NO ALCANZA
+Probé el escape: con el peso libre el máximo de Fo sí está en r = 25 (m = 0,07, Fo = 1,771465 en optimo_exacto_fo.csv, que coincide con el 1,7715 de ¶418), y pso_grid_search.csv con la aptitud paralela F_apt también converge a r_opt = 25. Pero eso no rescata las dos tablas: Tabla 2 declara explícitamente la aptitud Fo y el rango m ∈ [0,30; 2,00], y en esa configuración el óptimo es r = 1. Además el par adoptado (r = 25, m = 0,30) no es el argmax por ninguna vía: con m libre el óptimo es (25; 0,07) y con m acotado es (1; 0,30). Es un híbrido —r de la batería de nueve métricas, m del piso del rango—, lo que refuerza el hallazgo en vez de debilitarlo. En cambio la fila vecina de la Tabla 26, «Peso de contraste (m) | 0,30–2,00 (ajustado por PSO)», sí es correcta (m_opt = 0,30 en las 25 configuraciones); es justamente el paralelismo de redacción lo que hace leer la fila de r como la misma afirmación, y ahí es falsa.
+
+SITIOS ADICIONALES QUE EL REVISOR NO MARCÓ
+La misma atribución sobrevive en ¶515 («(r, m) se optimizan por PSO (barrido de 25 configuraciones) -> r = 25, m = 0,30») y ¶516 («optimiza (r, m) por PSO ... con óptimo r = 25, m = 0,30»), y en la fila «Óptimo hallado» de la Tabla 2, no solo en la fila «Escala (radio)». La corrección tiene más sitios que los dos señalados.
+
+SOBRE LA GRAVEDAD
+La mantengo alta, pero con una precisión honesta: no hay ninguna cifra inventada ni ningún resultado que haya que recalcular —r = 25 y Fo = 1,7057 son valores reales de los CSV— y la reparación es editorial, un paréntesis en cada sitio. Lo grave es de coherencia y de defensa: el objetivo específico ¶213 y la pregunta de investigación ¶222 son literalmente «delimitar el alcance real de la optimización por PSO: establecer cuál de los hiperparámetros determina efectivamente la aptitud declarada y cuál constituye una decisión de diseño», §5.8 la responde bien, y estas dos tablas afirman lo contrario de la respuesta. El propio script llama a esa asimetría «la objecion mas dificil de responder en la defensa». Un jurado que lea la Tabla 2 antes del ¶418 encuentra la contradicción en el mismo documento.
+
+*(bloque: tablas)*
+
+
+## Confirmadas — gravedad media (28)
+
+### Parrafo 83 (RESUMEN); identico en el parrafo 86 del SUMMARY ('tuned automatically by PSO' + 'r=25 by design') — INCOHERENCIA
+
+**Dice el libro:**
+
+> el radio r del banco de elementos estructurantes y el peso de contraste m se ajustan automaticamente por Optimizacion por Enjambre de Particulas (PSO) [...] En su configuracion optima (r=25 por diseno; m=0,30, el piso del rango de busqueda)
+
+**Dice el dato:** pso_grid_search_fo_propuesta.csv (25 filas): r_opt=1 -> Fo_opt=1,7350 en 16 filas; r_opt=25 -> Fo_opt=1,7057 en 8 filas; r_opt=14 -> Fo_opt=1,6990 en 1 fila (n=2, Tmax=10). m_opt=0,30 en las 25 (unico valor). Direccion: se maximiza Fo (make_avances_excel.py:208, idxmax). optimo_exacto_fo.csv (5000 filas, r=1..25 x m=0,01..2,00): con m>=0,30 argmax en (r=1; m=0,30; Fo=1,734991) y (r=25; m=0,30)=1,705696; con m libre argmax GLOBAL en (r=25; m=0,07; Fo=1,771465) y r=1 es el peor radio (mejor Fo 1,760748 en m=0,06). Rango de busqueda: r en [1,25], m en [0,30;2,00] (make_avances_excel.py:204) — m adoptado = piso, r adoptado = techo. Conteos del revisor (15 y 9): INCORRECTOS, son 16 y 8.
+
+**El escéptico:** La incoherencia interna es REAL y la lei completa en el parrafo 83 (identica en el 86). En una misma oracion el RESUMEN dice «el radio r del banco de elementos estructurantes y el peso de contraste m se ajustan automaticamente por Optimizacion por Enjambre de Particulas (PSO)» y dos oraciones despues «En su configuracion optima (r=25 por diseno; m=0,30, el piso del rango de busqueda)». Si r es «por diseno» no se ajusta automaticamente por PSO: las dos clausulas se contradicen sin que el resumen resuelva la tension. El CSV lo respalda: en experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv (25 filas; columnas r_opt, m_opt, Fo_opt) la aptitud es MAYOR con r=1 (Fo_opt = 1,7350) que con r=25 (Fo_opt = 1,7057), y la direccion es de maximizacion (experiments/make_avances_excel.py linea 208 usa grid.F_opt.idxmax(), «el maximo de Fo dentro del rango publicado»). El barrido determinista lo confirma exactamente: en optimo_exacto_fo.csv (5000 filas = 25 radios x 200 pesos), con m>=0,30 el argmax es r=1, m=0,30, Fo=1,734991, frente a r=25, m=0,30, Fo=1,705696. Tambien verifique las dos atribuciones del revisor y son correctas: make_avances_excel.py linea 151 dice literalmente «El radio NO lo fija el PSO: dentro de ese rango Fo prefiere r = 1 ... de modo que r = 25 es una decision de diseno tomada sobre las metricas de evaluacion», y la linea 204 fija «Rango de busqueda: r en [1, 25] · m en [0,30; 2,00]», con lo cual los dos valores adoptados caen en bordes opuestos (m en el piso, r en el techo) y el resumen solo lo aclara para m.
+
+AHORA LO QUE NO LE DOY POR BUENO AL REVISOR — dos errores en su propio informe:
+
+(1) Los conteos estan mal. Dice «Fo_opt = 1,7350 en 15 de las 25 configuraciones ... r=25 en 9». El CSV dice 16 filas con r_opt=1 / Fo_opt=1,7350, 8 filas con r_opt=25 / Fo_opt=1,7057 y 1 fila con r_opt=14 / Fo_opt=1,6990 (fila 0: n=2, Tmax=10). Total 16+8+1=25. Si el autor copia 15/9 al libro introduce un error nuevo. El propio libro tiene el numero bien: el parrafo 396 (Tabla 11) no da conteos, y el 418 tampoco los usa.
+
+(2) «r=25 es peor para el criterio que supuestamente lo eligio» esta SOBREAFIRMADO. Eso solo vale con el peso atado al piso heredado. Con m libre, el argmax de la MISMA aptitud Fo es r=25 (m=0,07, Fo=1,771465, optimo_exacto_fo.csv fila 4806) y r=1 pasa a ser el PEOR radio (max 1,760748). O sea: no es que el criterio prefiera r=1, es que el intervalo m en [0,30;2,00] —calibrado para el disco unico de la referencia— invierte el orden de los radios. El cuerpo de la tesis ya lo dice con precision y con los numeros exactos: parrafo 418, «el maximo dentro del rango publicado esta en r = 1 con Fo = 1,7350, pero con el peso libre esta en r = 25 ... con m = 0,070 y Fo = 1,7715; el rango heredado cuesta 0,0365 de aptitud ... r = 1 pasa a ser el peor (1,7607)». Los cuatro valores coinciden con el CSV al ultimo decimal.
+
+Conclusion: el defecto NO es un dato inventado ni un numero contradicho por el CSV; es una incoherencia de redaccion confinada al RESUMEN y al SUMMARY, donde se comprime a una linea lo que el capitulo 5 desarrolla correctamente. Se arregla cambiando «el radio r ... y el peso de contraste m se ajustan automaticamente por PSO» por algo como «el peso de contraste m se ajusta por PSO, mientras el radio r se adopta como decision de diseno sobre la bateria de evaluacion», y «configuracion optima» por «configuracion adoptada». HALLAZGO ADICIONAL que el revisor no marco y es peor que el que marco: el parrafo 338 (capitulo de metodologia) dice «Los dos hiperparametros de la propuesta (el radio r ... y el peso de contraste m) se ajustan mediante PSO ... la configuracion optima resultante (r = 25, m = 0,30)» SIN ninguna aclaracion de «por diseno». Ahi la contradiccion es total y sin atenuante. Conviene corregir los tres lugares (83, 86, 338) en la misma pasada.
+
+*(bloque: resumen)*
+
+### Parrafo 83 (RESUMEN) y parrafo 86 (SUMMARY), tres pasajes cada uno — INCOHERENCIA
+
+**Dice el libro:**
+
+> lidera la entropia y la eficiencia de fusion del estudio (EN=6,9855; FE=1,1047) [...] con ventaja estadisticamente significativa sobre los cinco metodos del estado del arte en EN, FE, MG y SF [...] superando de forma significativa al estado del arte en cuatro de las nueve metricas
+
+**Dice el dato:** all_metrics.csv: rangos intra-par EN = rangos intra-par FE en 20/20 pares; cociente EN/FE constante por par (spread máx 6,5e-06) y variable entre pares (5,3818 en APC_1_view_1_fk_06_005 a 7,1752 en Athena_heather_hei_vis). friedman_results.csv filas 0 (EN) y 2 (FE): chi2 = 88,285714 y p = 6,876412e-17 en ambas. ranking_methods.csv columnas EN y FE idénticas: Propuesta 1,50 / PiramideLaplace 3,25 / TopHat_Clasico 2,45 / RatioPiramide 3,55 / DTCWT 4,90 / DWT 5,50 / Curvelet 6,85; avg_rank = 3,394 y avg_rank_sin_FE = 3,631 para la propuesta (sigue 1.ª; LP 3,994). wilcoxon_results.csv, ganes significativos con Holm de la propuesta sobre los 5 SOTA: EN 5/5, FE 5/5, MG 5/5, SF 5/5, SD 4/5, MI_vis 0/5, MI_ir 0/5, SSIM 0/5, PSNR 1/5 — las «cuatro de las nueve métricas» son tres dimensiones independientes (EN=FE, MG, SF). Frente al Top-Hat clásico: seis significativas a favor (EN, SD, FE, MI_vis, MI_ir, SSIM) = cinco sin FE. src/metrics/evaluators.py líneas 60-72 documenta la redundancia y prohíbe expresamente contar FE en recuentos y rankings. Cifras del resumen todas correctas contra descriptive_means.csv: EN 6,9855; FE 1,1047; SD 0,1439 (2.ª, LP 0,1550); MG 0,0355 (2.ª, clásico 0,0478); SF 17,4425 (2.ª, clásico 23,1000); SSIM 0,6584; PSNR 16,8409.
+
+**El escéptico:** Verifiqué los cuatro CSV yo mismo y el revisor tiene razón en todo. En all_metrics.csv el cociente EN/FE es constante dentro de cada par (spread máximo 6,5e-06, ruido de float) y varía entre pares (5,3818 a 7,1752): FE es EN dividida por una constante por escena. Los rangos intra-par de EN y FE coinciden en 20/20 pares. En friedman_results.csv filas 0 y 2, EN y FE comparten chi2 = 88,285714 y p = 6,876412e-17. En ranking_methods.csv las columnas EN y FE son idénticas fila por fila (1,50 / 3,25 / 2,45 / 3,55 / 4,90 / 5,50 / 6,85). En wilcoxon_results.csv las cinco filas de Propuesta vs SOTA en EN y en FE son el mismo test repetido (W = 0/0/0/39/3, p_holm = 2,1e-05 x3 / 0,024158 / 4,8e-05 en ambas). El propio código lo dice en src/metrics/evaluators.py líneas 60-72: FE «NO es evidencia independiente de EN y no debe contarse como una metrica adicional en recuentos ni en rankings agregados» — exactamente lo que hacen los párrafos 83 y 86. Gravedad media, no alta: ninguna cifra del resumen es falsa (las siete coinciden con descriptive_means.csv), el cuerpo del libro sí declara la redundancia en el párrafo 287 y en el 404 de §5.8.1 («el número efectivo de dimensiones evaluadas es ocho y no nueve, lo que sostiene H4»), y la conclusión sobrevive porque sin FE la propuesta sigue primera (avg_rank_sin_FE = 3,631 frente a 3,994 de LP). Es una incoherencia entre el resumen y §5.8.1, no un dato inventado; la corrección es de redacción. Dos matices: (a) EN y FE no son bit-idénticas en TODAS las filas de Wilcoxon — en TopHat_Clasico vs PiramideLaplace difieren (EN W=69 p=0,189348; FE W=67 p=0,164957), diferencia de signo en un par con delta casi nulo, que no toca ninguna fila de la propuesta; (b) el mismo párrafo tiene una tercera instancia que el revisor no marcó: «a la metodología clásica en seis» también cuenta FE — los seis son EN, SD, FE, MI_vis, MI_ir, SSIM, y sin FE son cinco.
+
+*(bloque: resumen)*
+
+### Parrafo 83 (RESUMEN); 'low cost' implicito en el parrafo 86 ('interpretable single-scale morphological operator') — SIN FUENTE
+
+**Dice el libro:**
+
+> aporta un operador morfologico de una sola escala interpretable y de bajo costo
+
+**Dice el dato:** No existe valor medido. all_metrics.csv (7 metodos x 20 imagenes) no tiene columna de tiempo; la unica columna 'segundos' de todo el arbol de resultados mide corridas de PSO (p. ej. pso_grid_search.csv fila 1: n=2, Tmax=10, segundos=9; suma total pso_grid_search_fo_propuesta.csv=1971 s vs pso_grid_search_fo_clasico.csv=2960 s) y entrenamiento de YOLO (detection_llvip_semillas.csv fila 2: Curvelet, semilla 1, 856.0 s). Las cifras del parrafo 520 (20-80 ms por fusion; ~90 s las 140 fusiones) no tienen ningun archivo de respaldo y src/ no cronometra la fusion.
+
+**El escéptico:** El hallazgo se confirma: no existe ningun dato medido de costo de fusion. Verifique yo mismo los 70 archivos de experiments/results/metrics_reports/ (all_metrics.csv no tiene columna de tiempo: method, image, EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PSNR, Qabf, Nabf, SCD, VIF, FMI, Q0, QW, QE), metrics_reports_libre/, fused_images/ y pso/*.json. La columna 'segundos' aparece en SEIS CSV, no en dos: pso_grid_search.csv, pso_grid_search_fo_clasico.csv, pso_grid_search_fo_propuesta.csv (tiempo de corridas PSO), pso_repeticiones_propuesta.csv y pso_repeticiones_propuesta_libre.csv (que el revisor omitio, misma conclusion) y detection_llvip_semillas.csv (entrenamiento YOLO). Ademas, mas fuerte que lo que dijo el revisor: src/ no tiene NINGUNA instrumentacion de tiempo (grep de perf_counter|time.time|elapsed|milisegund|\bms\b sobre src/*.py no devuelve nada), y en experiments/*.py todo time.time() es progreso por consola o contabilidad de PSO/YOLO; la fusion nunca se cronometra. Ninguna de las 38 tablas del libro tiene encabezado de tiempo o costo. MATIZ SOBRE LA GRAVEDAD, en dos direcciones. (a) Para el parrafo 83 la gravedad esta algo exagerada: leida completa, la frase es la segunda de tres clausulas de cierre ('Se concluye que la propuesta destaca..., aporta un operador morfologico de una sola escala interpretable y de bajo costo optimizado con una metodologia publicada...'), y el libro mismo atribuye el bajo costo de los metodos morfologicos a la literatura en los parrafos 199, 207 y 235 ('Bai (2013) ... con bajo costo computacional'). Es un atributo estructural heredado (una sola pasada morfologica frente a una descomposicion multiescala), no una cifra que pueda estar equivocada: se arregla redactando ('de bajo costo por construccion' o citando a Bai 2013). (b) En cambio el revisor apunto a la instancia mas leve del mismo hueco: el caso grave es el parrafo 520, que si presenta mediciones concretas sin ninguna fuente: 'Cada fusion Top-Hat consume entre 20 y 80 milisegundos... La ejecucion completa del benchmark (140 fusiones: 7 metodos x 20 pares) toma aproximadamente 90 segundos. Esta liviandad computacional confirma la viabilidad del metodo para aplicaciones en tiempo real.' Esas cifras no salen de ningun CSV ni script y son las que el autor debe medir o retirar.
+
+*(bloque: resumen)*
+
+### Tabla 2 «Configuracion de la Propuesta Novedosa y del PSO», ultima fila (tabla que sigue al parrafo 277, seccion 2.2.5) — CONTRADICE
+
+**Dice el libro:**
+
+> Optimo hallado: r = 25; m = 0,30 (m* del barrido en las 25 configuraciones; Fo = 1,7057)
+
+**Dice el dato:** Optimo real dentro del rango publicado: r = 1, m = 0,30, Fo = 1,7350 (optimo_exacto_fo.csv fila 29: Fo = 1,734991; pso_grid_search_fo_propuesta.csv: max(Fo_opt) = 1,7350 en las filas con r_opt = 1). La configuracion adoptada r = 25, m = 0,30 da Fo = 1,705696 ≈ 1,7057, cifra que la celda reporta correctamente pero rotula mal como «optimo hallado». Reparto real de r_opt en las 25 configuraciones: 16 con r = 1, 8 con r = 25, 1 con r = 14 (Fo = 1,6990). Solo m* = 0,30 es resultado del barrido (m_opt = 0,30 en las 25 filas).
+
+**El escéptico:** Abri la Tabla 2 (tras el parrafo 277) y lei la celda completa con su fila anterior: «Rangos de busqueda || r ∈ [1, 25]; m ∈ [0,30; 2,00] (rango publicado)» seguida de «Optimo hallado || r = 25; m = 0,30 (m* del barrido en las 25 configuraciones; Fo = 1,7057)». El parentesis califica solo a m; el rotulo «Optimo hallado» recae sobre r = 25 sin matiz, y la fila anterior ancla el marco al rango publicado, asi que no hay lectura por via del rango libre que rescate la frase. El dato contradice el rotulo: en experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv el maximo de la columna Fo_opt es 1,7350 y esta en las filas con r_opt = 1; 1,7057 son las filas con r_opt = 25, que son peores. En experiments/results/metrics_reports/optimo_exacto_fo.csv (5000 filas = 25 radios x 200 pesos) el argmax con m >= 0,30 es la fila 29: r = 1, m = 0,30, Fo = 1,734991; r = 25 con m = 0,30 da 1,705696. Y el mejor Fo por radio dentro del rango publicado decrece monotonamente desde r = 1 (1,734991 / 1,719168 / 1,707809 ... r=25: 1,705696), de modo que r = 25 no es optimo ni localmente. La contradiccion es tambien interna: el parrafo 418 del propio libro dice «El argmax de la aptitud dentro del rango publicado es r = 1 (Fo = 1,7350) y no r = 25 (1,7057)». CORRECCION AL REVISOR: sus conteos estan mal. No es «15 con r_opt = 1 y las 10 restantes r_opt = 25»; el reparto real es 16 filas con r_opt = 1 (Fo 1,7350), 8 con r_opt = 25 (Fo 1,7057) y 1 con r_opt = 14 (n=2, Tmax=10, Fo = 1,6990) — omitio la tercera clase. Eso no altera el veredicto, pero conviene no propagar el «15/10» al arreglo. La leyenda de la Tabla 11 (parrafos 192 y 396) si es consistente con el CSV porque no da conteos.
+
+*(bloque: cap1-2)*
+
+### Parrafo 229, limitacion novena — CONTRADICE
+
+**Dice el libro:**
+
+> Fo favorece r = 1 y las nueve metricas r = 25
+
+**Dice el dato:** A m = 0,30, propuesta r=25 frente a r=1 (medias sobre 20 pares): EN 6,9855 vs 6,5981 (r=25); SD 0,1439 vs 0,1129 (r=25); FE 1,1047 vs 1,0423 (r=25); MG 0,0355 vs 0,0232 (r=25); SF 17,4425 vs 12,4030 (r=25); MI_vis 0,8970 vs 1,3681 (r=1); MI_ir 0,6003 vs 0,9316 (r=1); SSIM 0,6584 vs 0,7607 (r=1); PSNR 16,7806 vs 17,6943 (r=1, 19/19 imagenes pareadas). Marcador 5-4, no 9-0. Agregado F_nueve: 3,2042 (r=25) vs 3,1740 (r=1); F_clasicas 2,003 vs 1,661; F_fidelidad 1,201 vs 1,513. Fo a m=0,30: 1,7350 (r=1) vs 1,7057 (r=25) en optimo_exacto_fo.csv; argmax global con peso libre r=25, m=0,070, Fo=1,7715.
+
+**El escéptico:** Abri los CSV y el conteo del revisor es correcto: a igual peso m = 0,30, solo 5 de las 9 metricas favorecen r = 25 (EN, SD, FE, MG, SF); MI_vis, MI_ir, SSIM y PSNR favorecen r = 1, y de forma unanime por imagen (SSIM 19/20, PSNR 19/19, MI_vis y MI_ir 17/20). La frase «las nueve metricas r = 25», leida literalmente, es falsa. Fuentes: all_metrics.csv (method = Propuesta_Novedosa, r=25 m=0,30 segun all_metrics.config.json) contra fo_ablacion_per_image.csv (method = Propuesta_Fo(r=1,m=0.30)), mas PSNR pareado de pso_por_imagen.csv con m=0,30. La primera mitad si esta respaldada: optimo_exacto_fo.csv da argmax en r = 1, m = 0,30, Fo = 1,7350 y r = 1 gana en los 171 pesos del rango publicado [0,30; 2,00]. La gravedad, sin embargo, esta exagerada respecto de un CONTRADICE tipico: no hay cifra equivocada sino un cuantificador excesivo, el sujeto elidido es «la bateria de evaluacion» y como criterio agregado si favorece r = 25 (F_nueve, con la normalizacion de barrido_metricas_vs_m.py, 3,2042 en r=25 contra 3,1740 en r=1), y el propio libro da la version precisa en los parrafos 386, 389 y 428 («maximiza el bloque de actividad de las nueve metricas […] mientras r = 1 preserva mejor la fidelidad»). La conclusion que carga el parrafo —el radio viene del criterio de evaluacion, no de la optimizacion— se sostiene. La raiz a corregir es el parrafo 276, que lo afirma sin matiz alguno («Las nueve metricas de evaluacion de esta tesis, todas de tipo mayor es mejor, favorecen en cambio r = 25»); el 229 es su eco. El arreglo en ambos es insertar «el bloque de actividad de». Advertencia adicional: F_nueve para r = 1 no esta tabulado en ningun CSV (barrido_metricas_vs_m.csv solo trae (propuesta,25), (clasico,25) y (clasico,5)), tuve que calcularlo; y «Fo favorece r = 1» solo vale con el peso atado al piso del rango heredado, porque con peso libre el argmax global de optimo_exacto_fo.csv es r = 25, m = 0,070, Fo = 1,7715 y r = 1 pasa a ser el peor (1,7607), salvedad que el parrafo 418 declara pero la limitacion novena no.
+
+*(bloque: cap1-2)*
+
+### Parrafo 229, limitacion novena, frente a H5 en el parrafo 227 y a la seccion 5.8.5 (parrafo 418) — INCOHERENCIA
+
+**Dice el libro:**
+
+> la configuracion adoptada se apoya en el criterio de evaluacion y no en la optimizacion, que si determina el peso m
+
+**Dice el dato:** Fo_propuesta en curva_aptitud_vs_m.csv: 1,7715 (m=0,0703) > 1,7057 (m=0,30) > 1,2067 (m=2,00), monotona decreciente en todo el rango publicado [0,30; 2,00] con el maximo global fuera de el. pso_grid_search_fo_propuesta.csv: m_opt = 0,30 en 25/25 configuraciones (= piso de la caja de busqueda, LO[1] = 0.30 en experiments/pso_grid_search_fo.py); r_opt = 1 con Fo_opt = 1,7350 frente a r_opt = 25 con Fo_opt = 1,7057. pso_grid_search.csv con piso liberado: F_opt maximo = 1,9843 en r_opt = 25, m_opt = 0,0703. El dato respalda "piso del rango heredado", no "la optimizacion determina el peso".
+
+**El escéptico:** Lei la frase completa del parrafo 229 y no se salva con el contexto: "...por lo que la configuracion adoptada se apoya en el criterio de evaluacion y no en la optimizacion, que si determina el peso m". Es una atribucion positiva del peso a la optimizacion, y contradice de frente las otras dos formulaciones del libro. H5 (parrafo 227) niega el determinismo para AMBOS hiperparametros: "la optimizacion no determina la configuracion adoptada, dado que ambos hiperparametros resultan de decisiones apoyadas en parte del mismo criterio con el que despues se evalua". Y 5.8.5 (parrafo 418) atribuye m explicitamente a la cota, no a la busqueda: "el peso queda en m = 0,30 en las veinticinco configuraciones porque es el piso del rango" y "uno de los dos hiperparametros lo fija una decision de acotacion y no la busqueda". Verifique los datos yo mismo y el revisor no se equivoco en ninguna cifra. En experiments/results/metrics_reports/curva_aptitud_vs_m.csv, columna Fo_propuesta, la aptitud decrece estrictamente en todo el rango publicado: 1,7057 en m = 0,30 (fila m=0.3000) y 1,2067 en m = 2,00 (ultima fila); el maximo de la curva esta en m = 0,0703 con 1,7715, es decir POR DEBAJO del piso. En experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv las 25 filas devuelven m_opt = 0,3 sin excepcion (columna m_opt), y r_opt alterna entre 1 con Fo_opt = 1,7350 y 25 con Fo_opt = 1,7057, de modo que Fo si favorece r = 1. En experiments/results/metrics_reports/pso_grid_search.csv, con el piso liberado, el maximo de F_opt es 1,9843 en r = 25 con m_opt = 0,0703 (filas n=10/Tmax=30, 40 y 50, entre otras). Y el piso es literalmente el borde de la caja de busqueda: experiments/pso_grid_search_fo.py declara LO = np.array([1.0, 0.30]); HI = np.array([25.0, 2.00]), y experiments/pso_por_imagen.py declara M_LO, M_HI = 0.30, 2.00. Conclusion: que el optimizador devuelva 0,30 en 25 de 25 corridas es un artefacto de frontera, no una determinacion de la busqueda; con el piso liberado se va a m ~ 0,07. La lectura de frontera es la correcta y la del parrafo 229 es la equivocada.
+
+*(bloque: cap1-2)*
 
 ### Parrafo 227 (1.5 Hipotesis), hoja de ruta final — INCOHERENCIA
 
+**Dice el libro:**
+
 > H1 se contrasta en las secciones 5.4 y 5.6; H6 en la seccion 5.5; y H2, H3, H4, H5 y H7 en la seccion 5.8
 
-**El dato:** El titulo de 5.8.5 es «Alcance de la optimizacion y contraste con la tarea (H5, H6)» y el parrafo 401 dice que los cinco experimentos de 5.8 «contrastan las hipotesis H2, H3, H4, H5, H6 y H7». La hoja de ruta deja H6 solo en 5.5 y omite 5.8.5, donde efectivamente se cierra (correlacion de Spearman y conteo por escena, parrafo 419).
+**Dice el dato:** Textos exactos verificados con python-docx sobre C:/Users/Usuario/Documents/unv/mastertesis/tesis_mciencias_datos/docs/Tesis_Borrador_V3.docx:
+- Párrafo 227 (1.5 Hipótesis): «H1 se contrasta en las secciones 5.4 y 5.6; H6 en la sección 5.5; y H2, H3, H4, H5 y H7 en la sección 5.8».
+- Párrafo 401 (apertura de 5.8): «contrastan las hipótesis H2, H3, H4, H5, H6 y H7» (seis hipótesis, incluye H6).
+- Párrafo 417 (título): «5.8.5 Alcance de la optimización y contraste con la tarea (H5, H6)».
+- Párrafo 419: única aparición de «Se sostiene H6» en el libro. Barrido de etiquetas H1–H7 en los 521 párrafos: 0 menciones a hipótesis en toda la sección 5.5 (párrafos 374–384).
 
-*(bloque: Parrafos 202-298: capitulo 1 PROBLEMA DE INVESTIGACION y capitulo 2 MARCO TEORICO (incluye la Tabla 2 «Configuracion de la Propuesta Novedosa y del PSO» y la Tabla 3 «Metodos comparativos»))*
+Datos del párrafo 419 verificados contra los CSV (todos coinciden, ninguna contradicción):
+- experiments/results/metrics_reports/correlacion_calidad_deteccion.csv, fila 4 (conjunto_metricas=nueve, dataset=LLVIP_5sem, medida_deteccion=mAP50): spearman_rho = -0,3571 y spearman_p = 0,4316 → libro «ρ = −0,357 con p = 0,432». Fila 0 (dataset=LLVIP, una semilla): spearman_rho = +0,2143 → libro «ρ = +0,214».
+- experiments/results/metrics_reports/complementariedad_por_escena.csv (2088 filas, 9 columnas), recalculado con pandas filtrando gt_People>0 y gt_Lamp>0: 232 escenas únicas con ambas clases; recupera_ambas medio = 50,00 % Propuesta_Novedosa y 53,02 % VIS; tabla de contingencia propuesta vs VIS = 8 ganadas y 15 perdidas, McNemar exacto (binomtest) p = 0,2100; escenas críticas con VIS=0 e IR=0 = 90, de las que la propuesta resuelve 2; mejor entrada PiramideLaplace 57,76 % → libro «57,8 %».
 
-### Parrafo 229, limitacion tercera — INCOHERENCIA
+**El escéptico:** Intenté refutarlo por tres vías y ninguna resiste.
 
-> pero con una sola en M3FD sobre un subconjunto de LLVIP (2.000 imagenes de entrenamiento y 500 de validacion, 40 epocas)
+(1) Contradicción literal dentro del libro. Leí la frase completa del párrafo 227 en su contexto: la hoja de ruta cierra la sección 1.5 así — «H1 se contrasta en las secciones 5.4 y 5.6; H6 en la sección 5.5; y H2, H3, H4, H5 y H7 en la sección 5.8, dedicada a la auditoría del protocolo de evaluación». El párrafo 401, que abre esa misma sección 5.8, dice — «Los cinco experimentos que siguen están versionados en el repositorio y contrastan las hipótesis H2, H3, H4, H5, H6 y H7». Son dos enumeraciones del contenido de la MISMA sección que difieren exactamente en H6. No es una omisión ambigua: es una contradicción entre dos frases del mismo documento.
 
-**El dato:** El 2.000/500 es de LLVIP, no de M3FD. detector_perfil.json, clave «datos»: llvip_Propuesta_Novedosa train 2000 / val 500; m3fd_mixto train 4000 / val 1002; m3fd_test_Propuesta_Novedosa val 499; m3fd_comp_Propuesta_Novedosa val 232 (40 epocas en ambos, clave «hiperparametros»). Coincide con 4.5 (parrafo 342) y con 5.5 (parrafo 380: «2.000 pares de entrenamiento, 500 de validacion y 500 de prueba, de los cuales 499 resultan utilizables» y «4.000 imagenes» mezclando modalidades). Tal como esta redactada, la frase atribuye a M3FD un subconjunto de LLVIP.
+(2) La defensa «la hoja de ruta señala solo la sección principal» no se sostiene. El propio párrafo 227 asigna H1 a dos secciones («5.4 y 5.6»), de modo que el formato admite múltiples destinos; si quisiera incluir 5.8.5 podía. Además busqué las etiquetas H1–H7 en los 521 párrafos: en toda la sección 5.5 (párrafos 374 a 384) no aparece ni una sola mención a H6 ni a ninguna hipótesis. El único lugar del libro donde se escribe «Se sostiene H6» es el párrafo 419, dentro de 5.8.5, cuyo título es «5.8.5 Alcance de la optimización y contraste con la tarea (H5, H6)» (párrafo 417, y repetido en el índice, párrafo 156). Los cuatro títulos etiquetados de 5.8 cubren H2/H4, H3, H7 y H5/H6 — es decir, exactamente el conjunto que declara el párrafo 401, no el del párrafo 227.
 
-*(bloque: Parrafos 202-298: capitulo 1 PROBLEMA DE INVESTIGACION y capitulo 2 MARCO TEORICO (incluye la Tabla 2 «Configuracion de la Propuesta Novedosa y del PSO» y la Tabla 3 «Metodos comparativos»))*
+(3) 5.8.5 no es un eco de 5.5: cierra H6 con datos propios que 5.5 no contiene, y esos datos son correctos. Verifiqué los números del párrafo 419 contra los CSV y coinciden todos, así que la sección que la hoja de ruta omite es justamente donde se produce la prueba. Lo que 5.5 aporta es la segunda cláusula de H6 (ninguna fusión supera al IR); la primera cláusula —que el orden de mérito de las métricas no predice la utilidad en tarea— se contrasta únicamente con la correlación de Spearman del párrafo 419. La hoja de ruta deja esa mitad de H6 sin sección asignada.
+
+Sobre la gravedad: el hallazgo es real pero es un defecto de coherencia editorial en una frase de hoja de ruta, no un error de dato. Ninguna cifra está mal, ningún resultado ni conclusión cambia, y la corrección es de una o dos palabras («H6 en las secciones 5.5 y 5.8.5», o agregar H6 a la lista de 5.8). La ubicaría en media y no en alta porque está en la sección de hipótesis —que un tribunal lee con lupa y donde chocaría de frente con el párrafo 401— pero no compromete nada empírico. Conviene no marcarla como incoherencia de resultados.
+
+*(bloque: cap1-2)*
 
 ### Parrafo 284 (2.2.7 Metricas de evaluacion), ultima frase — INCOHERENCIA
 
+**Dice el libro:**
+
 > la evaluacion empirica de esta tesis reporta el subconjunto de nueve metricas descrito
 
-**El dato:** all_metrics.csv trae las 17 columnas (EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PSNR, Qabf, Nabf, SCD, VIF, FMI, Q0, QW, QE) y la seccion 5.8.1 las reporta y las usa: recalculando desde all_metrics.csv con Nabf invertida obtengo los mismos rangos medios que el parrafo 403 (PiramideLaplace 3,147; DTCWT 3,259; Propuesta 3,459; TopHat_Clasico 5,000) y el 9+Nabf (LP 3,620; Propuesta 3,655). La frase deberia decir que el benchmark principal usa las nueve y que la auditoria del protocolo usa las diecisiete.
+**Dice el dato:** Archivos y valores exactos que abrí:
 
-*(bloque: Parrafos 202-298: capitulo 1 PROBLEMA DE INVESTIGACION y capitulo 2 MARCO TEORICO (incluye la Tabla 2 «Configuracion de la Propuesta Novedosa y del PSO» y la Tabla 3 «Metodos comparativos»))*
+C:/Users/Usuario/Documents/unv/mastertesis/tesis_mciencias_datos/experiments/results/metrics_reports/all_metrics.csv
+  Forma 140 x 19 = 7 métodos x 20 pares. Columnas: method, image, EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PSNR, Qabf, Nabf, SCD, VIF, FMI, Q0, QW, QE. Las diecisiete métricas están calculadas para todos los métodos y todos los pares; ninguna columna extra está vacía.
 
-### Parrafo 227, enunciado de H6 — INCOHERENCIA
+Recálculo propio desde all_metrics.csv (rango de Friedman por bloque = imagen, promediado sobre métricas; Nabf invertida):
+  9 métricas ....... Propuesta 3,394 | LP 3,911 | TopHat 3,944 | RP 3,983 | DTCWT 4,111 | DWT 4,211 | CVT 4,444
+  9 + Nabf ......... LP 3,620 | Propuesta 3,655 | DTCWT 3,905 | RP 3,965 | TopHat 4,250 | DWT 4,265 | CVT 4,340
+  17 métricas ...... LP 3,147 | DTCWT 3,259 | Propuesta 3,459 | RP 3,918 | DWT 4,556 | CVT 4,662 | TopHat 5,000
+  Los tres coinciden con el párrafo 403 en todos los dígitos citados.
 
-> H6: el orden de merito de las metricas de imagen no predice el orden de utilidad en una tarea posterior de deteccion
+.../metrics_reports/ranking_17_metricas.csv — columna rango_17: PiramideLaplace 3,458824 no; los valores son PiramideLaplace 3,147059 (puesto 1), DTCWT 3,258824 (2), Propuesta_Novedosa 3,458824 (3), RatioPiramide 3,917647 (4), DWT 4,555882 (5), Curvelet 4,661765 (6), TopHat_Clasico 5,000000 (7).
 
-**El dato:** Se cumple con la bateria de nueve (correlacion_calidad_deteccion.csv, fila conjunto=nueve / LLVIP_5sem / mAP50: rho = -0,3571, p = 0,4316; fila nueve / LLVIP / mAP50: rho = +0,2143), que es lo que contrasta 5.8.5. Pero el mismo CSV tiene un caso con asociacion en el sentido esperado: conjunto=diecisiete / M3FD / mAP50_95, rho = -0,8929, p = 0,0068 (no sobrevive Bonferroni, p = 0,1224). El enunciado conviene acotarlo a «las nueve metricas de la bateria empleada» para que diga exactamente lo que el capitulo 5 contrasta.
+.../metrics_reports/ranking_mas_nabf.csv — columnas rango_9 y rango_9_mas_Nabf: Propuesta_Novedosa 3,394 -> 3,655 (puesto 1 -> 2), PiramideLaplace 3,911 -> 3,620 (2 -> 1), Nabf_medio 0,3742 y 0,1138.
 
-*(bloque: Parrafos 202-298: capitulo 1 PROBLEMA DE INVESTIGACION y capitulo 2 MARCO TEORICO (incluye la Tabla 2 «Configuracion de la Propuesta Novedosa y del PSO» y la Tabla 3 «Metodos comparativos»))*
+Medias verificadas de las ocho métricas extra (groupby method sobre all_metrics.csv), que la §5.3 párrafo 359 reporta: FMI PiramideLaplace 0,2362 (líder); QW PiramideLaplace 0,8470 (líder); QE PiramideLaplace 0,3856 (líder); Q0 DTCWT 0,7411 (líder); SCD Propuesta 1,5427 (líder); VIF Propuesta 0,3805 (líder); Nabf Propuesta 0,3742 y DTCWT 0,1593, con TopHat_Clasico el peor en 0,5857.
 
+Tablas del libro que reportan las métricas «no usadas» (leídas del .docx):
+  Tabla 12 (tabla 35 del XML), encabezado «Entrada evaluada | Rango con 9 ↓ | Con 9 + Nabf ↓ | Con 17 ↓», 14 filas.
+  Tabla 13 (tabla 36), «Brazo (r = 25; m = 0,30 fijos) | Rango con 9 ↓ | Con 9 sin FE ↓ | Con 17 ↓», 6 filas.
+  Tabla 14 (tabla 37), «Método | A: todos por defecto ↓ | B: comparativos ajustados ↓ | C: con 17 métricas ↓», 7 filas.
+
+Redacción correcta, en la línea de lo que propuso el revisor: el benchmark principal aplica las nueve métricas del trabajo de referencia como criterio de orden de mérito, mientras la §5.3 informa además las ocho complementarias y la auditoría del protocolo (§5.8) las emplea como criterio alternativo sobre las diecisiete.
+
+**El escéptico:** Intenté refutarlo por tres vías y las tres fallaron.
+
+(1) Lectura completa del párrafo 284. La frase final no está recortada ni matizada: «La literatura de fusión define además una familia de índices de calidad orientados a la preservación de bordes y a la reducción de artefactos (Qabf, Nabf, SCD, VIF, FMI y los índices de Piella y Heijmans, 2003), cuyas definiciones se recogen en la sección siguiente por completitud; la evaluación empírica de esta tesis reporta el subconjunto de nueve métricas descrito.» El «por completitud» y el sujeto «la evaluación empírica de esta tesis» construyen exactamente la afirmación de que esas métricas se definen pero no se usan. No hay ningún párrafo posterior en 2.2.7 (285–298, que solo formalizan definiciones) que acote el alcance.
+
+(2) La defensa caritativa —«se refiere solo al benchmark principal, la auditoría es otra cosa»— tampoco sostiene, y acá el revisor se quedó corto. El párrafo 359, dentro de la §5.3 «Resultados cuantitativos: promedio por método» (encabezado en el párrafo 355), que ES el benchmark principal, reporta con cifras seis de las ocho métricas supuestamente no usadas: FMI 0,2362 / QW 0,8470 / QE 0,3856 (Pirámide de Laplace), Q0 0,7411 (DTCWT), SCD 1,5427 y VIF 0,3805 (Propuesta), Nabf 0,3742 frente a 0,1593 de DTCWT. Recalculé las medias por método desde all_metrics.csv y coinciden al cuarto decimal, con los mismos líderes. Así que la contradicción no está solo entre el capítulo 2 y la auditoría: está dentro del propio capítulo de resultados centrales.
+
+(3) Los datos del revisor son correctos. Verifiqué los rangos yo mismo, sin usar sus archivos derivados: pivoteando all_metrics.csv por imagen y método, rankeando cada métrica y promediando, con Nabf en dirección inversa (ascending=True, porque menor es mejor), reproduzco exactamente los tres cálculos del párrafo 403.
+
+Agravante adicional: la frase contradice el segundo aporte declarado de la tesis. El párrafo 401 presenta la §5.8 como «usar el propio desarrollo como caso de estudio» para auditar el criterio, y esa auditoría entera está construida sobre las métricas que el párrafo 284 declara no utilizadas. Un lector que llegue a la §5.8 desde el capítulo 2 encuentra que el criterio central del aporte fue anunciado como ausente.
+
+Por qué gravedad media y no alta: ninguna cifra del libro está mal, ningún ranking cambia, ninguna conclusión se cae. Es un error de alcance en una sola oración de la sección de métodos, y se corrige con la redacción que propone el revisor (el benchmark usa las nueve del trabajo de referencia; la auditoría del protocolo y la Tabla 6 de la §5.3 incorporan las diecisiete). No es cosmético —contradice el aporte propio— pero es una oración, no un problema de datos.
+
+Observación colateral que noté al inventariar las tablas y que no forma parte del hallazgo: el párrafo 359 abre con «Estas métricas, ponderadas por bordes y estructura local, complementan a las anteriores», redacción que presupone una tabla inmediatamente anterior, pero ninguna de las 38 tablas del .docx tiene encabezados Qabf/Nabf/SCD/VIF/FMI/Q0/QW/QE (revisé la fila de encabezado de las 38: las de la §5.3 son la 27 «Método; EN; SD; FE; MG; MI_vis; MI_ir» = Tabla 4 y la 28 «Método; SF; SSIM; PSNR» = Tabla 5, y el siguiente rótulo es «Tabla 6. Prueba de Friedman por métrica»). Parece faltar la tabla de las ocho métricas complementarias, o sobrar la frase de enlace. Vale mirarlo aparte.
+
+*(bloque: cap1-2)*
+
+### parrafo 341, §4.5 — INCOHERENCIA
+
+**Dice el libro:**
+
+> Las imagenes se reorganizaron en dos directorios paralelos (data/raw/VIS y data/raw/IR) con nombres de archivo coincidentes para emparejado automatico [y] el corpus experimental son veinte pares
+
+**Dice el dato:** data/raw/VIS = 21 archivos; data/raw/IR = 21 archivos; 21 stems coincidentes entre ambos. src/datasets.py:24 -> PARES_EXCLUIDOS = {"Athena_heather_IR_hei_vis_g"}. md5 VIS/Athena_heather_IR_hei_vis_g.bmp = md5 IR/Athena_heather_IR_hei_vis_g.bmp = md5 IR/Athena_heather_hei_vis.bmp = 056b42a579c2ddbc28d325f5ca909bb0. list_pairs() = 20; list_pairs(incluir_excluidos=True) = 21. experiments/results/fused_images/{Propuesta_Novedosa, TopHat_Clasico, DWT, Curvelet, DTCWT, PiramideLaplace, RatioPiramide} = 21 archivos cada uno, sobrante Athena_heather_IR_hei_vis_g.png en los 7. experiments/results/metrics_reports/all_metrics.csv = (140, 19), 20 imagenes unicas x 7 metodos (20 filas por metodo), sin heather_IR. Ninguno de los 52 CSV vivos de metrics_reports contiene heather_IR ni 21 imagenes. El libro (521 parrafos) no declara la exclusion en ningun parrafo.
+
+**El escéptico:** Verifique cada elemento por mi cuenta y todos coinciden con lo que dijo el revisor, sin excepcion. `ls data/raw/VIS` y `ls data/raw/IR` dan 21 archivos cada uno y los 21 stems son identicos entre ambos directorios, de modo que la regla textual del parrafo 341 -«nombres de archivo coincidentes para emparejado automatico»- aplicada al repositorio devuelve 21 pares, no veinte. La reduccion a veinte no esta en los datos sino en el codigo: `src/datasets.py` linea 24 declara `PARES_EXCLUIDOS = {"Athena_heather_IR_hei_vis_g"}`, y el motivo del comentario es exacto: calcule el md5 de los tres archivos y `VIS/Athena_heather_IR_hei_vis_g.bmp` e `IR/Athena_heather_IR_hei_vis_g.bmp` dan ambos 056b42a579c2ddbc28d325f5ca909bb0, que ademas coincide con `IR/Athena_heather_hei_vis.bmp`; no es un par VIS/IR sino la misma imagen dos veces. Ejecutado con el interprete del proyecto, `list_pairs()` devuelve 20 y `list_pairs(incluir_excluidos=True)` devuelve 21. Los residuos en disco tambien estan como los describio: los siete directorios de `experiments/results/fused_images/` tienen 21 archivos cada uno y el sobrante es exactamente `Athena_heather_IR_hei_vis_g.png` en los siete. Y `all_metrics.csv` esta limpio: shape (140, 19), 7 metodos x 20 imagenes, 20 imagenes unicas, y el unico «heather» presente es `Athena_heather_hei_vis`. Confirme ademas que la omision es real en el libro y no esta salvada en otro lugar: busque en los 521 parrafos por `exclu(i|y|sion|id)`, `heather`, `corrupt`, `duplicad`, `byte`, `copia`, `veintiun` y `21 `, y los unicos «excluyendo» son los de retirar FE del ranking (parrafos 229, 370 y 404); en ningun punto se declara la exclusion del par ni su motivo. GRAVEDAD EXAGERADA por la etiqueta, no por el hecho. «INCOHERENCIA» sugiere dos cifras del libro en conflicto, y no las hay: el parrafo nunca afirma que data/raw contenga veinte archivos, el veinte es la cifra correcta del corpus efectivo y ninguna tabla, figura ni estadistico esta mal. Barri los 52 CSV de metrics_reports buscando agregados con 21 imagenes o con `heather_IR` y ninguno de los CSV vivos esta contaminado: los unicos archivos con ese nombre son backups (all_metrics.csv.bak_n20, pso_por_imagen.csv.bak_n20, all_metrics.csv.bak_m0703) y los scripts que gestionan la exclusion. Los residuos de fused_images son inertes, no alimentan ningun resultado. Es por tanto una omision de documentacion y reproducibilidad -que si merece arreglarse, con una clausula en el parrafo 341 declarando la exclusion y su motivo- y no un error numerico que obligue a recalcular nada. Se clasifica mejor como OMISION/REPRODUCIBILIDAD, gravedad media.
+
+*(bloque: cap3-4)*
+
+### parrafo 370 (§5.4.3 Ranking promedio) — CONTRADICE
+
+**Dice el libro:**
+
+> la piramide de Laplace alcanza un SD promedio mayor (0,1550 frente a 0,1439), pero la propuesta la supera en mas pares de los que pierde, y el rango medio recoge esa consistencia por escena que el promedio aritmetico oculta
+
+**Dice el dato:** Conteo pareado de SD (all_metrics.csv, 20 pares): la propuesta supera a la pirámide de Laplace en 9 pares y pierde en 11, sin empates — al revés de lo escrito. Wilcoxon (wilcoxon_results.csv, índice 14): diff=-0,0111, W=72, p=0,2305, effect_r=-0,314, sig_holm_05=False. Medias SD: 0,1439 propuesta contra 0,1550 Laplace (correctas en el libro). Rango medio SD (ranking_methods.csv): 1,65 contra 2,00, primer puesto real, pero por consistencia posicional (la propuesta nunca baja del 2.º; la Laplace cae al 3.º, 4.º o 6.º en 5 pares), no por mayoría de duelos.
+
+**El escéptico:** Intenté refutarlo y no pude: la cláusula del libro está invertida. Leí el párrafo 370 completo (§5.4.3): «Conviene notar que su primer puesto en contraste es de rango y no de media: la pirámide de Laplace alcanza un SD promedio mayor (0,1550 frente a 0,1439), PERO LA PROPUESTA LA SUPERA EN MÁS PARES DE LOS QUE PIERDE, y el rango medio recoge esa consistencia por escena que el promedio aritmético oculta». No hay lectura del contexto que salve la frase: «pares» significa pares VIS/IR en todo el capítulo, y el conteo pareado que hice yo mismo sobre experiments/results/metrics_reports/all_metrics.csv (columna SD, 20 filas method=Propuesta_Novedosa contra 20 de method=PiramideLaplace, cruzadas por la columna image) da 9 pares a favor de la propuesta y 11 a favor de la Laplace, sin empates. Probé dos vías de rescate y ambas fallan: (a) comparar puestos en vez de valores da idéntico 9-11, porque en un duelo entre dos métodos el orden de rango coincide con el orden de SD; (b) descartar cuasi-empates tampoco alcanza — con tolerancia 0,002 queda 9-9 (empate, no «supera en más»), y con tolerancias mayores la Laplace gana más holgado (7-9 a 0,005; 5-8 a 0,010). Confirmo también la fila citada de experiments/results/metrics_reports/wilcoxon_results.csv (índice 14: metric=SD, tophat=Propuesta_Novedosa, baseline=PiramideLaplace): mean_tophat=0,1439, mean_baseline=0,1550, diff=-0,0111, wilcoxon_W=72, p_value=0,230513, effect_r=-0,314, sig_holm_05=False; el rank-biserial negativo apunta al lado de la Laplace, no al de la propuesta. Y confirmo el mecanismo alternativo que propone el revisor: en el ranking por escena de SD la propuesta nunca baja del 2.º puesto (7 primeros y 13 segundos), mientras la Laplace cae al 3.º en Athena_APC_4_fennek01_005, al 4.º en APC_1_view_1_fk_06_005, APC_3_view_1_fk_bar_06_005 y Triclobs_jeep_in_smoke_R, y al 6.º en Athena_heather_hei_vis: cinco pares malos. El primer puesto en rango medio es real —experiments/results/metrics_reports/ranking_methods.csv, columna SD: 1,65 para Propuesta_Novedosa contra 2,00 para PiramideLaplace, que reproduje yo con rank descendente sobre all_metrics.csv— pero se explica por ausencia de malos casos, no por ganar más duelos. Lo demás de la frase sí está respaldado: los promedios 0,1550 y 0,1439 son correctos, y la idea de que el rango medio «recoge la consistencia por escena» es acertada en espíritu; lo falso es el conteo pareado que se ofrece como prueba.
+
+*(bloque: cap5-calidad)*
+
+### parrafo 377 (§5.5, primera lectura de la Tabla 8); la misma cifra se repite en el parrafo 399 — CONTRADICE
+
+**Dice el libro:**
+
+> toda fusion mejora con claridad sobre el visible solo (0,795 de media frente a una banda de 0,904-0,952, en las 5 semillas, es decir entre +0,09 y +0,14 puntos)
+
+**Dice el dato:** Intervalo real de mejora de las fusiones sobre el visible solo, con las medias de 5 semillas: +0,1092 (RatioPiramide) a +0,1566 (PiramideLaplace), o sea entre +0,11 y +0,16 puntos de mAP@0,5. Fuente directa: semillas_llvip_pareadas.csv, columna dif_media, filas de cada fusión contra VIS; equivalentemente semillas_llvip_resumen.csv, columna mAP50_media (VIS 0,7951; RatioPiramide 0,9043; PiramideLaplace 0,9517). El +0,09/+0,14 del libro resulta de restar contra VIS=0,8133, valor de una sola semilla (detection_llvip_map.csv, fila VIS). Hallazgo adicional en el mismo ¶377: IR debería ser mAP@0,5=0,961 y mAP@0,5:0,95=0,592 (5 semillas, igual que la Tabla 8), no 0,971 y 0,621, que son también de la corrida de una semilla.
+
+**El escéptico:** Intenté refutar el hallazgo por tres vías independientes y las tres lo confirman; no existe lectura defendible que produzca +0,09/+0,14.
+
+(1) Aritmética interna del propio párrafo. El ¶377 enuncia «0,795 de media frente a una banda de 0,904–0,952 … es decir entre +0,09 y +0,14 puntos». El «es decir» declara que la cifra es la resta de las dos anteriores, y no lo es: 0,9043−0,7951=0,1092 (+0,11) y 0,9517−0,7951=0,1566 (+0,16). Los tres valores 0,795 / 0,904 / 0,952 son correctos y coinciden exactamente con semillas_llvip_resumen.csv (filas VIS, RatioPiramide, PiramideLaplace; columna mAP50_media = 0,7951 / 0,9043 / 0,9517) y con la Tabla 8 del propio libro, que ya está migrada a las 5 semillas. Es decir: la frase se contradice con su propia tabla.
+
+(2) El CSV pareado, que es el cálculo que hace el script y no una resta mía. semillas_llvip_pareadas.csv, filas contra VIS, columna dif_media: RatioPiramide +0,1092, DWT +0,1232, TopHat_Clasico +0,1283, Curvelet +0,1308, Propuesta_Novedosa +0,1332, DTCWT +0,1414, PiramideLaplace +0,1566. Ninguna de las siete fusiones cae en +0,09, y dos superan +0,14. El intervalo real es +0,11 a +0,16.
+
+(3) Lectura por semilla, la única alternativa que podría haber salvado la cifra (por el «en las 5 semillas»). También falla: en detection_llvip_semillas.csv los deltas fusión−VIS de la misma semilla van de +0,0814 (DWT, semilla 1) a +0,1738 (PiramideLaplace, semilla 4), o sea +0,08 a +0,17, tampoco +0,09/+0,14.
+
+El diagnóstico del revisor sobre el origen también se sostiene, y encontré una corroboración que él no menciona: el +0,09/+0,14 sale de restar contra VIS=0,8133, que es la semilla 0 / corrida única (detection_llvip_map.csv fila VIS, mAP50=0,8133; es también el mAP50_max de VIS). Da 0,0910 y 0,1384. Y en la MISMA frase del ¶377 sobrevive un segundo resto del cálculo viejo: «el infrarrojo solo … (mAP@0,5 = 0,971; mAP@0,5:0,95 = 0,621)» son los valores de una semilla (detection_llvip_map.csv fila IR: 0,9708 y 0,6211), mientras la Tabla 8 y semillas_llvip_resumen.csv dicen 0,961 y 0,592. Verifiqué que toda la fila de detection_llvip_map.csv es idéntica a la semilla 0 de detection_llvip_semillas.csv, lo que confirma que ese archivo es la corrida única previa. El ¶377 quedó mezclando cifras de 5 semillas (tabla, banda de fusiones) con cifras de una semilla (delta, IR).
+
+La cifra errónea se repite en el ¶399 («+0,09 a +0,14 en mAP@0,5»), donde en cambio el IR sí está actualizado (0,961).
+
+Sobre la gravedad: el hallazgo es correcto pero no cambia ninguna conclusión ni ningún ranking, y el error va en dirección conservadora —subestima la ventaja de la fusión, no la infla—, así que no hay problema de integridad. Lo pongo en media y no en alta por eso. Lo que sí lo hace ineludible es que es una resta que cualquier lector del tribunal puede hacer sobre la página, en la primera lectura de una tabla central, y que contradice a la tabla que está justo arriba. La corrección es de dos números en el ¶377 (delta a +0,11/+0,16 e IR a 0,961/0,592) y uno en el ¶399.
+
+*(bloque: cap5-calidad)*
+
+### parrafo 368 (§5.4.2 Comparaciones pareadas Wilcoxon) — CONTRADICE
+
+**Dice el libro:**
+
+> cede de manera sistematica en las metricas de fidelidad a las fuentes (SSIM, PSNR) y en la informacion mutua, donde lideran los metodos multiescala
+
+**Dice el dato:** wilcoxon_results.csv, fila 91: PSNR, Propuesta_Novedosa vs PiramideLaplace, mean_tophat=16,8409 / mean_baseline=14,9401, diff=+1,9009, effect_r=+0,990, p_holm=0,000021, sig_holm_05=True. La propuesta GANA el PSNR contra la pirámide de Laplace en 19 de 20 pares (conteo directo sobre all_metrics.csv). En PSNR son 4 derrotas significativas de 5, no cinco. descriptive_means.csv: PSNR de PiramideLaplace=14,9401, el mínimo de los siete métodos; ranking_methods.csv: rango medio de PSNR de PiramideLaplace=6,95, el peor. En cambio SSIM sí es sistemático (filas 77-81, cinco derrotas significativas, effect_r=-1,000 en cuatro; 0/20 pares ganados contra cuatro comparativos y 2/20 contra RatioPiramide) y la información mutua también cede de forma sistemática en dirección (5 de 5 comparativos con media superior a la propuesta en MI_vis y MI_ir; rangos medios 5,40 y 5,25 sobre siete; 13/20 y 14/20 pares perdidos aun contra RatioPiramide), aunque dos contrastes contra RatioPiramide no alcancen significación (filas 48 y 59, p_holm=0,216167 y 0,123093).
+
+**El escéptico:** El núcleo del hallazgo se sostiene, pero su alcance está exagerado: el error real es UNO de los cuatro casos citados (PSNR), no tres.
+
+LO QUE SE CONFIRMA, y es un error de verdad. Abrí wilcoxon_results.csv fila 91 y los números del revisor son exactos, dígito por dígito: metric=PSNR, tophat=Propuesta_Novedosa, baseline=PiramideLaplace, mean_tophat=16,8409, mean_baseline=14,9401, diff=+1,9009, wilcoxon_W=1,0, p_value=0,000004, effect_r=+0,990, p_holm=0,000021, sig_holm_05=True. No es un empate ni un caso limítrofe: conté los 20 pares en all_metrics.csv y la propuesta gana el PSNR en 19 de 20 pares contra la pirámide de Laplace. El párrafo 368 dice que la propuesta «cede de manera sistemática» en PSNR, y en el contraste contra la Laplace ocurre exactamente lo contrario, con corrección de Holm y efecto casi máximo. Son 4 de 5 derrotas en PSNR, no cinco.
+
+Y la cláusula final del período —«donde lideran los métodos multiescala»— es la que se rompe más claramente, por la propia taxonomía del libro: el párrafo 311 dice que la descomposición multiescala «es el principio de los cinco métodos comparativos —pirámides y wavelets—» y el 280 los presenta como «cinco representativos del estado del arte en fusión multiescala». Bajo esa definición la pirámide de Laplace ES multiescala, y en PSNR es la PEOR de las siete: 14,9401 en descriptive_means.csv (mínimo de la columna; las demás van de 16,8409 a 17,6523) y rango medio 6,95 en ranking_methods.csv, el más alto o sea el peor. En §6 el libro lo dice bien: el párrafo 424 acota «el PSNR más alto corresponde a los métodos multiescala (CVT y DTCWT)», nombrando a los dos que sí lideran. El 368 generaliza a la familia lo que vale para tres de sus cinco miembros.
+
+LO QUE NO SE SOSTIENE: la parte de información mutua, que es un falso positivo. Los p_holm que cita son correctos (fila 48, MI_vis vs RatioPiramide, p_holm=0,216167, sig=False; fila 59, MI_ir vs RatioPiramide, p_holm=0,123093, sig=False), pero la inferencia es inválida: no significativo no es lo mismo que no ceder. En las dos MI la propuesta pierde en dirección contra los cinco comparativos sin excepción —MI_vis 0,8970 contra 0,9485 / 1,0764 / 1,0781 / 1,0961 / 1,9242; MI_ir 0,6003 contra 0,6504 / 0,6658 / 0,6695 / 0,6728 / 0,9178—, y conté los pares: aun contra la RatioPiramide pierde 13 de 20 en MI_vis y 14 de 20 en MI_ir. Sus rangos medios de MI (5,40 y 5,25 sobre siete) son los segundos peores del banco, solo por detrás del Top-Hat clásico (6,70 y 6,70). «Cede sistemáticamente en la información mutua» es una descripción fiel del dato.
+
+En SSIM el revisor tiene razón y además se queda corto: filas 77-81 dan sig_holm_05=True en los cinco contrastes, con effect_r=-1,000 en cuatro de ellos, y por pares la propuesta gana 0 de 20 contra Curvelet, DTCWT, DWT y Laplace, y 2 de 20 contra la RatioPiramide.
+
+Por eso la gravedad es media y no alta. Hay que corregir el párrafo 368, pero el arreglo es acotado —excluir el PSNR de la Laplace del «sistemática» y precisar qué multiescala lideran, como ya hace el párrafo 424—; no hay cifra inventada, y el error va en contra del propio autor: el libro se atribuye una derrota que el dato no muestra. Conviene revisar de paso el párrafo 356 (§5.3), que arrastra la misma imprecisión: «los métodos multiescala lideran la similitud estructural y el PSNR».
+
+*(bloque: cap5-calidad)*
+
+### parrafo 359 (§5.3), en relacion con las Tablas 4 y 5 (parrafos 357 y 358) — INCOHERENCIA
+
+**Dice el libro:**
+
+> Estas metricas, ponderadas por bordes y estructura local, complementan a las anteriores: la piramide de Laplace lidera FMI (0,2362), QW (0,8470) y QE (0,3856), y DTCWT lidera Q0 (0,7411) [...] La Propuesta Novedosa lidera en cambio SCD (1,5427) y VIF (0,3805)
+
+**Dice el dato:** Medias por metodo en experiments/results/metrics_reports/all_metrics.csv (140 filas = 7 metodos x 20 pares), agrupando por la columna 'method': FMI PiramideLaplace 0.236233 (maximo); QW PiramideLaplace 0.847040 (maximo); QE PiramideLaplace 0.385641 (maximo); Q0 DTCWT 0.741130 (maximo); SCD Propuesta_Novedosa 1.542685 (maximo); VIF Propuesta_Novedosa 0.380531 (maximo, apenas por encima de PiramideLaplace 0.378855); Nabf Propuesta_Novedosa 0.374225 y DTCWT 0.159337, con TopHat_Clasico 0.585713 como peor y PiramideLaplace 0.113810 como mejor. Propuesta en las cuatro primeras: FMI 0.168623, QW 0.808663, QE 0.364792, Q0 0.707163. Las seis cifras del parrafo 359 son correctas; lo que no existe es la tabla que las presente. Tabla 4 = tabla indice 27 (EN, SD, FE, MG, MI_vis, MI_ir); Tabla 5 = indice 28 (SF, SSIM, PSNR); ultima tabla del documento = indice 37 (§5.8.4).
+
+**El escéptico:** Abri all_metrics.csv y verifique yo mismo las siete cifras: todas exactas a cuatro decimales (FMI PiramideLaplace 0.236233; QW PiramideLaplace 0.847040; QE PiramideLaplace 0.385641; Q0 DTCWT 0.741130; SCD Propuesta 1.542685; VIF Propuesta 0.380531; Nabf Propuesta 0.374225 y DTCWT 0.159337). Tambien es correcto que la propuesta no encabeza ninguna de las cuatro primeras (FMI 0.1686, QW 0.8087, QE 0.3648, Q0 0.7072) y que es la segunda peor en Nabf detras de TopHat_Clasico 0.585713. Nada que corregir en los numeros.
+
+El hallazgo de trazabilidad SI se sostiene. Recorriendo el cuerpo del docx en orden de elemento: la Tabla 4 es la tabla indice 27 con encabezado «Metodo | EN | SD | FE | MG | MI_vis | MI_ir», la Tabla 5 es la indice 28 con «Metodo | SF | SSIM | PSNR», y el parrafo 359 va inmediatamente despues de esa segunda tabla. El «Estas metricas, ponderadas por bordes y estructura local» no tiene antecedente: SF/SSIM/PSNR no son esas metricas, y el parrafo 356 anuncia solo dos tablas. Ninguna tabla de resultados del documento reporta las medias por metodo de FMI, Q0, QW, QE, SCD ni VIF; la ultima tabla es la indice 37 (§5.8.4), asi que tampoco hay tablas de apendice donde el lector pueda ir a verificar.
+
+Dos precisiones que corrigen el detalle de apoyo del revisor sin tocar el fondo. Primero, las tablas indice 0 (LISTA DE SIGLAS) e indice 25 (§2.2.7, «Metrica | Definicion operativa | Interpretacion | Direccion») tambien mencionan Nabf, SCD, VIF y Qabf: el revisor afirmo que la unica que menciona Nabf es la indice 35. Son tablas de glosario y de definicion, no de valores, de modo que el punto central sobrevive, pero la afirmacion tal como esta escrita es inexacta. Segundo, la tabla indice 35 es la Tabla 12 («Control negativo: rango medio de los siete metodos...», §5.8.2), no la Tabla 14; la Tabla 14 es la indice 37 (§5.8.4, «Rango medio por escenario de ajuste»). Conviene ademas aclarar que las ocho metricas adicionales SI estan definidas en §2.2.7 (parrafos 292 a 298, incluido Q_0/Piella con sus variantes Q_W y Q_E en el parrafo 298): el defecto es una tabla de resultados ausente, no una metrica sin definir.
+
+Gravedad exagerada por la etiqueta. «INCOHERENCIA» sugiere que algo se contradice, y no es el caso: no hay error de dato ni conflicto entre pasajes, y §5.8 usa las mismas ocho metricas de forma consistente (parrafo 403: 3,459 de rango medio con las 17). Es un defecto editorial de trazabilidad: un deictico huerfano mas una tabla que falta. Se arregla insertando una tabla con las ocho metricas adicionales por metodo, o reescribiendo «Estas metricas» como «Las ocho metricas adicionales que calcula el mismo evaluador (§2.2.7)». No afecta ninguna conclusion.
+
+Aparte, fuera del encargo pero en la misma zona: el parrafo 348 dice que el capitulo cierra con «la discusion integrada (seccion 5.7)», pero existen §5.8.2, §5.8.3 y §5.8.4 (tablas indice 35 a 37). Vale revisarlo.
+
+*(bloque: cap5-calidad)*
+
+### parrafo 352 (§5.2 Analisis cualitativo) — INCOHERENCIA
+
+**Dice el libro:**
+
+> el Top-Hat clasico produce la imagen de mayor contraste aparente, pero con halos visibles alrededor de los objetivos termicos
+
+**Dice el dato:** descriptive_means.csv, columna SD: TopHat_Clasico 0,1352 (tercero de siete), detras de PiramideLaplace 0,1550 y Propuesta_Novedosa 0,1439. ranking_methods.csv, columna SD: TopHat_Clasico 2,85 contra Propuesta 1,65 y Laplace 2,00. Lo que el TopHat lidera es SF 23,1000 y MG 0,0478 (maximos), y tambien Nabf 0,3742 (peor tasa de artefactos). Por imagen (all_metrics.csv) tiene el SD maximo en 1 de 20 pares; en los tres pares de la figura 6 es tercero en los tres.
+
+**El escéptico:** Intente refutar el hallazgo por tres vias y las tres fallaron.
+
+(1) Verifique las cifras del revisor una por una y son EXACTAS. En C:/Users/Usuario/Documents/unv/mastertesis/tesis_mciencias_datos/experiments/results/metrics_reports/descriptive_means.csv, columna SD: PiramideLaplace 0,1550 (fila 3), Propuesta_Novedosa 0,1439 (fila 4), TopHat_Clasico 0,1352 (fila 6). El Top-Hat clasico es TERCERO de siete en desviacion estandar, no primero. En ranking_methods.csv, columna SD: Propuesta_Novedosa 1,65, PiramideLaplace 2,00, TopHat_Clasico 2,85 — mismo orden, tercero. Y lo que el Top-Hat si lidera es actividad: SF 23,1000 y MG 0,0478, ambos maximos de descriptive_means.csv. Tambien recalcule las medias desde all_metrics.csv y reproducen descriptive_means.csv al cuarto decimal, asi que el agregado no esta mal calculado.
+
+(2) Probe la defensa mas fuerte posible: «es un juicio sobre TRES pares concretos de la figura 6, no sobre el promedio de veinte». No se sostiene. Extraje la figura embebida (word/media/image7.png del parrafo 353) y sus columnas son VIS, IR, LP, DTCWT, Top-Hat clasico y Propuesta; los tres pares son el hombre en el umbral, los dos hombres frente a la casa y el soldado en trinchera. En all_metrics.csv el Top-Hat clasico es TERCERO en SD en TODOS ellos, detras de LP y de la Propuesta: Athena_man_in_doorway_maninhuis 0,1575 contra LP 0,1795 y Propuesta 0,1717; Athena_2_men_in_front_of_house_meting003 0,1315 contra LP 0,1815 y Propuesta 0,1437; Athena_soldier_in_trench_1_meting016 0,1286 contra LP 0,1732 y Propuesta 0,1321 (y trench_2: 0,1178 contra 0,1228 y 0,1211). En el corpus completo el Top-Hat tiene el SD maximo en 1 de 20 imagenes (solo Athena_APC_4_fennek01_005, 0,0803 contra 0,0799 de la Propuesta, por 4 diezmilesimas); LP gana 11, la Propuesta 7, RP 1.
+
+(3) Probe la defensa «se comparan dos Top-Hat distintos». Tampoco. El panel de la figura es «Top-Hat clasico (r=5, m=1)» y el benchmark usa lo mismo: all_metrics.config.json declara TopHat_Clasico {"r": 5} y en C:/Users/Usuario/Documents/unv/mastertesis/tesis_mciencias_datos/src/fusion/comparatives.py:212-213 la firma es tophat_classic_fusion(vis, ir, r=5, m=1.0). Es la misma parametrizacion, comparacion valida.
+
+La incoherencia interna es real y es del propio libro, no una imposicion externa: el parrafo 356 usa «contraste» como sinonimo explicito de SD («se ubica segunda en desviacion estandar (SD = 0,1439) ... por detras unicamente de la piramide de Laplace en contraste»). Con esa definicion fijada por el autor cuatro parrafos mas abajo, el 352 le adjudica al Top-Hat «la imagen de mayor contraste aparente», titulo que segun el dato es de la piramide de Laplace. La correccion propuesta por el revisor —«mayor realce de bordes» o «mayor frecuencia espacial»— es la que el dato respalda.
+
+Dos precisiones a favor del libro. La segunda mitad de la frase SI esta respaldada: los «halos visibles» concuerdan con Nabf, que en los tres pares de la figura es maximo para el Top-Hat (0,5077, 0,5247 y 0,5744, contra 0,3268/0,3337/0,3080 de la Propuesta y 0,1020/0,1098/0,0821 de LP; en Nabf menor es mejor), coherente con el parrafo 359. Y el adjetivo «aparente» es un atenuante: perceptualmente un SF de 23,1000 contra 13,2205 de LP si produce una imagen mas dura. No hay ninguna cifra inventada; el defecto es de una palabra.
+
+COLATERAL, en el mismo parrafo 352 y a mi juicio mas grave que lo marcado: el parrafo describe la RP («acentua el contraste local a costa de cierta sobreamplificacion») y la DWT («presenta el granulado caracteristico»), y luego dice que la Propuesta queda «sin el granulado de la DWT», pero la figura 6 embebida no tiene columnas de RP, DWT ni CVT — solo LP, DTCWT, Top-Hat y Propuesta. El lector no puede ver lo que el texto le pide comparar, y la frase inicial «junto con los resultados de los metodos del benchmark» promete siete metodos y muestra cuatro. De paso: docs/figures/fig_qualitative_comparison.png es una figura vieja y distinta (columnas VIS, IR, Promedio, Piramide Laplace, Torre Top-Hat, Propuesta Novedosa) que no corresponde a la imagen embebida en el docx; conviene no regenerar la figura 6 desde ese archivo. Ademas «la RP acentua el contraste local» choca con su SD de 0,1271, quinto de siete en descriptive_means.csv.
+
+*(bloque: cap5-calidad)*
+
+### parrafo 399, quinta observacion de la Discusion integrada (la frase abre con «la evaluacion orientada a tarea (deteccion sobre LLVIP, repetida con 5 semillas de entrenamiento por entrada)») — CONTRADICE
+
+**Dice el libro:**
+
+> toda fusion supera netamente al visible solo (+0,09 a +0,14 en mAP@0,5)
+
+**Dice el dato:** Con 5 semillas: VIS = 0,7951 de media; fusiones de 0,9043 (RatioPiramide) a 0,9517 (PiramideLaplace); ventaja de +0,109 a +0,157, es decir «+0,11 a +0,16» (fuente: experiments/results/metrics_reports/semillas_llvip_resumen.csv, columna mAP50_media, filas VIS/RatioPiramide/PiramideLaplace; confirmado en semillas_llvip_pareadas.csv, columna dif_media, filas contra VIS: 0,1093 a 0,1567). El «+0,09 a +0,14» del libro es la corrida de una sola semilla: detection_llvip_map.csv da VIS = 0,8133 y fusiones de 0,9056 a 0,9515, o sea +0,092 a +0,138.
+
+**El escéptico:** Verifiqué los CSV directamente y el revisor tiene razón. Con las cinco semillas (experiments/results/metrics_reports/semillas_llvip_resumen.csv, columna mAP50_media) VIS = 0,7951 y las siete fusiones van de 0,9043 (RatioPiramide) a 0,9517 (PiramideLaplace), es decir +0,1092 a +0,1566, que se escribe «+0,11 a +0,16», no «+0,09 a +0,14». El cálculo pareado independiente lo confirma: semillas_llvip_pareadas.csv, columna dif_media en las filas contra VIS, da mínimo 0,1093 (RatioPiramide) y máximo 0,1567 (PiramideLaplace). Descarté además la lectura más caritativa: los deltas fusión-VIS calculados semilla por semilla desde detection_llvip_semillas.csv van de 0,0814 (DWT, semilla 1) a 0,1738 (PiramideLaplace, semilla 4), o sea «+0,08 a +0,17», tampoco el rango del libro. El único archivo que reproduce «+0,09 a +0,14» es detection_llvip_map.csv (VIS = 0,8133; fusiones 0,9056 a 0,9515, o sea +0,0923 a +0,1382), que es la corrida de la semilla 0: la cifra quedó sin actualizar, exactamente como dice el revisor. AGRAVANTE que refuerza el hallazgo: dentro de la MISMA frase del párrafo 399 las demás cifras sí son de cinco semillas —«el infrarrojo solo (0,961)» coincide con 0,9611 del resumen, y «la propuesta queda 3.ª de las siete (0,9283)» es la media de cinco semillas (con la semilla 0 aislada la propuesta valdría 0,9057 y quedaría 6.ª de siete, no 3.ª)—, y la frase se anuncia explícitamente como «repetida con 5 semillas de entrenamiento por entrada». Es decir, la frase migró a cinco semillas en todo menos en ese rango. Confirmo también la autocontradicción: el párrafo 423 (§6.1, conclusión 1) reporta bien «0,795 de media frente a 0,904-0,952, en las 5 semillas», que coincide con el resumen.
+
+*(bloque: cap5-deteccion)*
+
+### parrafo 412, §5.8.3 (lectura de la Tabla 13) — CONTRADICE
+
+**Dice el libro:**
+
+> lo que si queda firme en todas las composiciones es que el merito no proviene de la imagen base
+
+**Dice el dato:** ablacion_banco_resumen.csv, columna rango_9_sin_FE: base = 3,506 (5.a de 6), por delante de lineas = 3,631 y a 0,006 de suma = 3,500. Orden completo: disco 3,4438 = maximo 3,4438 < promedio 3,4750 < suma 3,500 < base 3,5062 < lineas 3,6312. Columna rango_9: base 3,783 empatada ultima con lineas. Columna rango_17: base 4,359, ultima. Recalculado desde ablacion_banco.csv (20 imagenes) con resultado identico. Desglose por metrica de la base en las 8 sin FE: rango 1,0 en MI_ir, SSIM, PSNR y 1,05 en MI_vis; rango 6,0 en EN, SD, MG, SF.
+
+**El escéptico:** El hallazgo se confirma en los numeros —los verifique en el CSV y los recalcule desde los datos por imagen— pero su gravedad esta exagerada: no es un numero contradicho, es un cuantificador universal excesivo.
+
+QUE ES CORRECTO. En experiments/results/metrics_reports/ablacion_banco_resumen.csv, columna rango_9_sin_FE, los seis brazos son: disco 3,4438; maximo 3,4438; promedio 3,4750; suma 3,500; base 3,5062; lineas 3,6312. Recalculado desde ablacion_banco.csv (20 imagenes x 6 brazos, rangos intra-imagen sobre las 8 metricas) da exactamente lo mismo. La base queda 5.a de seis, le gana a lineas (3,631) y esta a 0,006 de la suma que adopta la propuesta. La Tabla 13 del libro (tabla idx 36 del docx) imprime esos mismos valores. En rango_9 la base es 3,783 empatada ultima con lineas; en rango_17 es 4,359, ultima. Las tres cifras del revisor son exactas.
+
+POR QUE LA GRAVEDAD ES MENOR QUE «CONTRADICE». (1) Ninguna cifra del libro esta mal ni invertida: la frase es interpretativa, no numerica. Bajo su lectura literal —«el merito no proviene de la imagen base»— la base NUNCA es el mejor brazo en ninguna de las tres composiciones (5.a, empatada ultima, ultima), asi que el CSV no dice lo contrario de lo que dice el libro; dice menos de lo que la frase necesita. (2) El 3,506 de la base es un artefacto mecanico de la bateria reducida: en las 8 metricas la base (la identidad, sin detalle inyectado) tiene rango 1,0 en las cuatro de fidelidad (MI_vis, MI_ir, SSIM, PSNR) y rango 6,0 en las cuatro de actividad (EN, SD, MG, SF); (1x4 + 6x4)/8 = 3,5 exacto. O sea que «la base le gana a lineas» no evidencia que la base sea competitiva, evidencia que el promedio de 8 metricas balanceadas 4/4 es no informativo sobre la base. (3) El parrafo no oculta nada: ya declara la banda «3,444 a 3,631», cuyo extremo superior es lineas y que contiene a la base, y la Tabla 13 imprime el 3,506 a la vista.
+
+LO QUE SI HAY QUE ARREGLAR. El «en todas las composiciones» falla en la lectura que importa —que el operador gana merito sobre no aplicar operador— justamente en la columna que el propio parrafo designa como la lectura prudente: 3,500 contra 3,506 es margen nulo. En un capitulo cuya tesis es que toda afirmacion agregada debe reportarse junto a la composicion del criterio, ese cuantificador universal es inconsistente con el estandar del capitulo mismo, y un lector que reste las dos celdas de la tabla impresa lo ve. Arreglo minimo: reemplazar «queda firme en todas las composiciones» por «la imagen base no encabeza ninguna de las tres composiciones», o apoyar la frase en ablacion_banco_contrastes.csv, donde la suma le gana a la base con significancia Holm en 11 de las 17 metricas (EN, SD, FE, MG, SF, Qabf, SCD, VIF, Q0, QW, QE) y le pierde en 5 (MI_vis, MI_ir, SSIM, PSNR, Nabf; FMI no significativa) —que es la evidencia pareada que la frase deberia citar, y que ademas describe un desplazamiento de perfil y no una ganancia de merito.
+
+*(bloque: cap5-deteccion)*
+
+### parrafo 418, §5.8.5 (segunda mencion del factor; la primera, «su disco, que extrae 4,21 veces menos energia de detalle», si es correcta) — INCOHERENCIA
+
+**Dice el libro:**
+
+> el banco extrae 4,21 veces la energia de detalle del disco
+
+**Dice el dato:** aptitud_operador_energia.csv: la propuesta (banco, r=25) tiene detalle_medio 0,13540653 y ganancia_vs_clasico 4,205110, medida contra «Top-Hat clásico · disco B_5» (0,03220047). Contra «Disco B_25 (una rama)» (0,08470314, ganancia 2,630494) el factor real es 1,5986. El salto de radio 5→25 aporta 2,6305 de los 4,2051; las ramas lineales, 1,5986. Contexto verificado en referencia_pso_ortega_espinoza.csv: 125 corridas, r = 25 en 104, mediana m = 0,695, recorrido [0,300; 2,000], Reek anclada en el piso en 17 de 25.
+
+**El escéptico:** El hallazgo se sostiene, y el revisor tenía razón en los tres puntos verificables.
+
+1) El número no está inventado ni contradicho: C:/Users/Usuario/Documents/unv/mastertesis/tesis_mciencias_datos/experiments/results/metrics_reports/aptitud_operador_energia.csv tiene tres filas. Fila 1 «Top-Hat clásico · disco B_5»: detalle_medio 0,03220047, ganancia_vs_clasico 1,0. Fila 2 «Disco B_25 (una rama)»: 0,08470314 y 2,6304938. Fila 3 «Propuesta · W_opt = líneas + disco (r=25)»: 0,13540653 y 4,2051102. El script C:/Users/Usuario/Documents/unv/mastertesis/tesis_mciencias_datos/experiments/analisis_aptitud_operador.py confirma el denominador: línea 143 `d5, l5, w5 = energia_detalle(5)  # configuracion del Top-Hat clasico` y línea 150 `energia["ganancia_vs_clasico"] = energia["detalle_medio"] / d5`. Es decir, el 4,21 está medido contra el disco de radio 5, no contra el de radio 25. Contra B_25 el factor es 0,13540653 / 0,08470314 = 1,5986 (o 4,205110 / 2,630494 = 1,5986, la aritmética del revisor es exacta).
+
+2) La primera mención del párrafo 418 es correcta, como dice el revisor: «ese óptimo libre equivale a m = 0,294 sobre un disco único, esencialmente el piso 0,30 que la referencia publicó para su disco, que extrae 4,21 veces menos energía de detalle». Ahí «su disco» es el de la referencia y el m equivalente está calculado contra el mismo B_5 (línea 183: `m_equiv = realce_prop / d5`); con m = 0,070 da 0,0700 × 4,20511 = 0,2944, que es el 0,294 impreso. Coherente.
+
+3) La segunda mención sí queda sin radio: «El anclaje que aquí se observa es entonces una propiedad del operador —el banco extrae 4,21 veces la energía de detalle del disco— y no de la función de aptitud ni del intervalo». Y aquí agrego algo que refuerza el hallazgo más allá de la ambigüedad de redacción: el contexto inmediato NO está hablando del disco B_5, está hablando del disco cuyo barrido produjo las 125 corridas de la referencia, y ese disco está en r = 25. Lo verifiqué en experiments/results/metrics_reports/referencia_pso_ortega_espinoza.csv (125 filas): r = 25 en 104 de las 125 corridas, mediana de m = 0,695, recorrido [0,300; 2,000], y Reek es la única escena anclada en el piso, en 17 de sus 25 (las tres cifras del párrafo son RESPALDADAS). La frase siguiente del propio párrafo lo dice explícitamente: «r = 25, el límite superior del intervalo, aparece en 104 de sus 125 corridas». O sea que el lector que entiende «el disco» como el disco a r = 25 no está haciendo una lectura forzada: está siguiendo el hilo del párrafo.
+
+Eso convierte el problema en algo un poco más que un rótulo faltante. La frase atribuye el anclaje a «una propiedad del operador», y el contraste que esa atribución necesita es a radio igualado —banco r=25 contra disco r=25—, que vale 1,60, no 4,21. El 4,21 mezcla dos efectos: el cambio de radio 5→25 aporta 2,63 de esos 4,21 (d25/d5 = 2,6305) y las ramas lineales solo el 1,60 restante. Como el disco que no se ancló estaba en r = 25, el 4,21 no es el factor operador-contra-operador de esa comparación.
+
+Corrección a la gravedad, en el otro sentido del que se suele pedir: el revisor la subestima un poco al decir «se lee bien». Su enmienda propuesta («del disco B_5 de la referencia») desambigua y es correcta, pero deja el hueco explicativo: conviene además decir que a radio igualado el factor es 1,60, porque es ese el número que sostiene —o debilita— el «propiedad del operador». Aun así no es gravedad alta: no hay cifra inventada ni contradicha por el CSV, las dos menciones son consistentes entre sí y con el dato, y el error posible es de lectura del denominador, no de resultado.
+
+*(bloque: cap5-deteccion)*
+
+### párrafo 423 (conclusión específica 1) — CONTRADICE
+
+**Dice el libro:**
+
+> En el experimento de clases complementarias (M3FD), la fusión muestra su valor distintivo —detecta simultáneamente los objetos térmicos (personas) y los exclusivamente visibles (luces) que cada modalidad pierde por separado—
+
+**Dice el dato:** experiments/results/metrics_reports/detection_m3fd_map.csv, promedio del par (AP50_People+AP50_Lamp)/2: RatioPiramide 0,62215 > VIS 0,61840 > PiramideLaplace 0,61415 > DTCWT 0,60565 > DWT 0,59580 > Curvelet 0,56585 > Propuesta_Novedosa 0,56435 > IR 0,56345 > TopHat_Clasico 0,50645 (propuesta 7.ª de 9; única fusión sobre el VIS: RatioPiramide). Ninguna fusión supera People del IR (0,7787; máx. fusión 0,6938) ni Lamp del VIS (0,6161; máx. fusión 0,5505). experiments/results/metrics_reports/complementariedad_resumen.csv: VIS recupera_ambas 123/232 = 53,0 %; IR 114 = 49,1 %; PiramideLaplace 134 = 57,8 %; RatioPiramide 129 = 55,6 %; DTCWT 126 = 54,3 %; DWT 121 = 52,2 %; Curvelet 117 = 50,4 %; Propuesta_Novedosa 116 = 50,0 % con gana_vs_VIS 8, pierde_vs_VIS 15, resuelve_criticas 2 de 90; TopHat_Clasico 109 = 47,0 %. experiments/results/metrics_reports/complementariedad_criticas.csv, suma por columna sobre las 90 escenas: PiramideLaplace 7, DTCWT 6, Curvelet 5, DWT 5, RatioPiramide 5, TopHat_Clasico 3, Propuesta_Novedosa 2, VIS 0, IR 0.
+
+**El escéptico:** El hallazgo se confirma en lo esencial pero con gravedad exagerada y un conteo mal hecho por el revisor. Leída completa, la frase del párrafo 423 SÍ concede lo que el revisor dice que oculta: «aunque el mejor promedio del par corresponde a la Ratio Pyramid (0,622) y la propuesta alcanza 0,564, al nivel del infrarrojo solo», y ambas cifras coinciden exactamente con detection_m3fd_map.csv. Lo insostenible es la cláusula entre guiones —«detecta simultáneamente los objetos térmicos y los exclusivamente visibles que cada modalidad pierde por separado»—: ninguna fusión supera al IR en AP50_People (máx. RatioPiramide 0,6938 vs 0,7787) ni al VIS en AP50_Lamp (máx. 0,5505 vs 0,6161), y en las 90 escenas críticas (aquellas donde VIS e IR suman 0 en complementariedad_criticas.csv) la mejor fusión resuelve 7 y la propuesta solo 2. Atenuantes: el sujeto es «la fusión» como familia, y en el conteo por escena la afirmación de familia no es falsa (PiramideLaplace 57,8 %, RatioPiramide 55,6 % y DTCWT 54,3 % superan al VIS 53,0 %; las siete superan al IR 49,1 %); el problema es que en una conclusión dedicada a la propuesta el lector lo atribuye a la propuesta, que no lo cumple (50,0 % vs 53,0 % del VIS, gana 8 / pierde 15). Tampoco es una contradicción numérica con el §5.8.5 (párrafo 419), que está íntegramente respaldado: la conclusión nunca afirma que la propuesta supere al VIS, omite la dirección y la adorna. El arreglo es reescribir la cláusula retórica, no corregir cifras. Error del revisor: la propuesta no es «8.ª de 9, solo delante del Top-Hat clásico», es 7.ª de 9 (0,56435), por delante también del IR solo (0,56345); su otro conteo sí es exacto (el VIS 0,6184 supera a seis de las siete fusiones, solo RatioPiramide lo pasa).
+
+*(bloque: cap6)*
+
+### párrafo 439 (recomendación 5) — CONTRADICE
+
+**Dice el libro:**
+
+> Evaluar híbridos Top-Hat ↔ pirámide de Laplace que combinen la fidelidad a fuentes del primero con la riqueza global del segundo.
+
+**Dice el dato:** descriptive_means.csv — TopHat_Clasico: MI_vis 0,7867 / MI_ir 0,4928 / SSIM 0,5640 (último de los siete en las tres). PiramideLaplace: MI_vis 1,9242 / MI_ir 0,9178 (primero en ambas) y SD 0,1550 (primero). ranking_methods.csv — TopHat_Clasico: MI_vis 6,70, MI_ir 6,70, SSIM 7,00 (último en 20/20 imágenes). ranking_17_metricas.csv — PiramideLaplace puesto 1 (3,147), TopHat_Clasico puesto 7 (5,000). all_metrics.csv (medias): la pirámide supera al clásico en 10 de 12 métricas de fidelidad (Qabf 0,4565 vs 0,2973; Nabf 0,1138 vs 0,5857; VIF 0,3789 vs 0,3066; FMI 0,2362 vs 0,1478; Q0 0,7276 vs 0,6034; QW 0,8470 vs 0,7366; QE 0,3856 vs 0,2886); el clásico solo gana PSNR (16,8728 vs 14,9401) y SCD (1,4163 vs 1,4036). Propuesta_Novedosa: MI_vis 0,8970 / MI_ir 0,6003 / SSIM 0,6584, sexta de siete. La frase debe invertirse: la fidelidad a fuentes la aporta la pirámide de Laplace; el Top-Hat aporta la actividad y el detalle.
+
+**El escéptico:** Leí la frase completa del párrafo 439 en su contexto (recomendación 5 de la sección 6.2) y no hay nada que la rescate: «el primero» es Top-Hat y «el segundo» la pirámide de Laplace, sin ambigüedad, de modo que el libro atribuye la fidelidad a fuentes al Top-Hat. Los CSV dicen lo contrario de forma inequívoca. En experiments/results/metrics_reports/descriptive_means.csv, fila TopHat_Clasico: MI_vis 0,7867, MI_ir 0,4928, SSIM 0,5640 — los tres son el mínimo de las siete filas, es decir el último puesto. Fila PiramideLaplace: MI_vis 1,9242 y MI_ir 0,9178, ambos el máximo de la columna, más SD 0,1550 (máximo). En ranking_methods.csv, fila TopHat_Clasico: MI_vis 6,70, MI_ir 6,70, SSIM 7,00 (el 7,00 exacto sobre siete métodos significa último en las veinte imágenes). Extendí la verificación a las diecisiete métricas de all_metrics.csv promediando por método: la pirámide supera al clásico en 10 de las 12 métricas de la familia fidelidad/calidad estructural (Qabf 0,4565 vs 0,2973; Nabf 0,1138 vs 0,5857 con menor mejor; VIF 0,3789 vs 0,3066; FMI 0,2362 vs 0,1478; Q0 0,7276 vs 0,6034; QW 0,8470 vs 0,7366; QE 0,3856 vs 0,2886); el clásico solo gana PSNR (16,8728 vs 14,9401) y SCD por margen mínimo (1,4163 vs 1,4036), y en PSNR tampoco lidera el benchmark (Curvelet 17,6523). Conté por imagen sobre las 20 del corpus: el clásico es el último de los siete en SSIM y en Qabf en 20/20 imágenes, en Q0 y QW en 19/20, en MI_vis en 15/20 y en MI_ir en 14/20. En ranking_17_metricas.csv el clásico es el puesto 7 de 7 (rango 5,000) y la pirámide el puesto 1 (3,147). Si «Top-Hat» se leyera como la propuesta, tampoco se sostiene: MI_vis 0,8970, MI_ir 0,6003, SSIM 0,6584, sexta de siete en las tres. El revisor citó además correctamente el párrafo 425, que declara la propuesta «penalizada por las métricas de fidelidad a las fuentes» y sostiene a la pirámide «por su ventaja en información mutua con las fuentes»; y el párrafo 441 recomienda los multiescala (DTCWT, CVT) «para aplicaciones donde prima la fidelidad a las fuentes», dejando al clásico solo como referencia interpretable y de bajo costo. La frase del 439 contradice entonces el dato y también dos pasajes del propio capítulo 6. La segunda mitad también cojea, aunque menos: la «riqueza» que el 439 asigna a la pirámide es la que el 441 asigna a la propuesta, y en EN la pirámide es tercera (6,8400) detrás de la propuesta (6,9855) y del clásico (6,9220); solo el liderazgo en SD (0,1550) hace defendible esa mitad. Sobre la gravedad: el hallazgo es correcto pero su gravedad conviene matizarse a media, no alta. Ninguna cifra del libro está mal y ningún resultado queda afectado: es una cláusula cualitativa dentro de una recomendación de trabajo futuro, y la corrección consiste en dar vuelta las dos atribuciones. Dicho eso, hay que corregirla, porque choca con los párrafos 425 y 441 de las páginas vecinas y un tribunal lo detecta de inmediato.
+
+*(bloque: cap6)*
+
+### párrafo 441 (recomendación 7) — SIN FUENTE
+
+**Dice el libro:**
+
+> la metodología clásica Top-Hat conserva su valor como referencia interpretable y de muy bajo costo computacional
+
+**Dice el dato:** No hay CSV: ninguna de las 61 planillas de experiments/results cronometra una fusión. Medición directa que hice con el intérprete del repo (.venv), mediana de 5 corridas por escena con warm-up previo, sobre 3 pares del corpus de 20 (APC_1_view_1_fk_06_005 439x609, Athena_lake_lake 576x768, Triclobs_jeep_in_smoke_R 480x640) y con el CONFIG textual de experiments/run_all_fusions.py: PiramideLaplace 7,5 / 11,1 / 6,8 ms; RatioPiramide 6,7 / 10,9 / 7,8; DWT 6,4 / 12,2 / 8,7; Curvelet 9,6 / 16,7 / 10,7; TopHat_Clasico (r=5) 11,7 / 20,4 / 16,9; Propuesta_Novedosa (r=25, m=0,30) 172,6 / 273,0 / 197,2; DTCWT 181,9 / 342,4 / 208,0. Ordenados por mediana global: Laplace 7,5 ms < Ratio 7,8 < DWT 8,7 < Curvelet 10,7 < TopHat_Clasico 16,9 < Propuesta 197,2 < DTCWT 208,0. Es decir: el Top-Hat clásico es el 5º de 7 en costo, entre 1,6 y 2,3 veces MÁS CARO que la pirámide de Laplace, la pirámide de razón, el DWT y el «curvelet», y solo más barato que el DTCWT y que la propia propuesta. «Muy bajo costo» es cierto en términos absolutos (decenas de milisegundos) pero falso como ventaja frente a los multiescala, que es como lo usa el párrafo 441. Como referencia CSV-derivada del efecto del radio, en experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv el cociente segundos/evaluaciones vale 0,2032 s de media en las 16 filas con r_opt=1 (min 0,18, máx 0,2333) contra 0,7989 s en las 8 con r_opt=25 (min 0,75, máx 0,8333); mi medición coincide con esa señal: la propuesta con r=1 baja a 22,8 / 38,0 / 25,9 ms.
+
+**El escéptico:** Leí el párrafo 441 completo (recomendación 7): «Seleccionar el método de fusión según el criterio operativo prioritario: […] para aplicaciones donde prima la fidelidad a las fuentes, los métodos multiescala (DTCWT, CVT) siguen siendo preferibles, y la metodología clásica Top-Hat conserva su valor como referencia interpretable y de muy bajo costo computacional». El contexto no salva la frase: al contrario, la pone en contraste explícito con los multiescala, de modo que «muy bajo costo» se lee como ventaja diferencial frente a ellos. Verifiqué la búsqueda del revisor y la amplié, y su conclusión se sostiene. (1) Barrido de nombres de columna con el patrón time|tiempo|seg|sec|ms|dur|cost|latenc|fps|elapsed|runtime sobre los 61 CSV de experiments/results (52 de ellos en metrics_reports, no 50 como dijo el revisor: diferencia inmaterial): la única columna de tiempo es «segundos», y aparece solo en detection_llvip_semillas.csv —donde vale 856,0 / 926,1 / 1504,0 s, o sea entrenamiento de YOLO, con 19,3 s en las filas de semilla 0 que reusan checkpoint (entrenada_aqui=False)— y en pso_grid_search.csv, pso_grid_search_fo_clasico.csv, pso_grid_search_fo_propuesta.csv, pso_repeticiones_propuesta.csv, pso_repeticiones_propuesta_libre.csv y metrics_reports_libre/pso_grid_search_fo_propuesta.csv, que cronometran corridas de enjambre completas (columna «evaluaciones» al lado), no fusiones aisladas ni métodos comparativos. (2) Grep del CONTENIDO de los 61 CSV y de los 7 JSON de results con el patrón costo|tiempo|latenc|milisegund|ms|fps|cuadros por: cero coincidencias. (3) run_all_fusions.py, que produce el benchmark de 140 fusiones, no importa time ni mide nada. No existe, entonces, ningún CSV que respalde el costo de la fusión clásica ni la comparación implícita con los multiescala: SIN FUENTE es correcto. Y no solo está sin fuente: al medirlo yo mismo el sentido de la comparación se cae, porque los cuatro multiescala más baratos son más rápidos que la clásica. Así que el hallazgo, si algo, está subestimado, no exagerado; bordea un CONTRADICE (contra medición directa, no contra CSV). Lo que sí es NO APLICA es «referencia interpretable», que es un juicio metodológico, no una cifra. Nota de contexto: el Apéndice F (párrafo 520) es más honesto que la recomendación al decir «órdenes de magnitud comparables», pero su intervalo «entre 20 y 80 ms» tampoco cuadra con la medición (la clásica queda por debajo del piso y la propuesta, muy por encima del techo) — eso es materia de otro hallazgo, sobre el párrafo 520.
+
+*(bloque: cap6)*
+
+### párrafo 437 (recomendación 3) — INCOHERENCIA
+
+**Dice el libro:**
+
+> Replicar la evaluación sobre datasets adicionales (RoadScene, M3FD, MS-COCO multiespectral) para verificar la transferibilidad de las conclusiones.
+
+**Dice el dato:** M3FD está evaluado, no pendiente: detection_m3fd_map.csv (9 filas: VIS, IR y 7 fusiones; mAP50, mAP50_95, precision, recall y AP50 de 6 clases), complementariedad_resumen.csv (9 filas, escenas = 232), complementariedad_por_escena.csv (2.088 filas = 232 × 9), complementariedad_criticas.csv (90 escenas críticas) y correlacion_calidad_deteccion.csv (6 filas con dataset = M3FD), producidos por experiments/detection_m3fd/train_eval_m3fd.py y prepare_m3fd.py. Lo que nunca se corrió sobre M3FD es el benchmark de nueve métricas de calidad: all_metrics.csv tiene 140 filas = 7 métodos × 20 pares y las 20 escenas son todas del TNO. RoadScene y MS-COCO multiespectral no aparecen en ningún CSV ni script del repositorio.
+
+**El escéptico:** Intenté refutarlo por dos vías y ninguna sostiene la frase tal como está escrita.
+
+(1) Los datos que el revisor cita existen y los abrí uno por uno. `experiments/results/metrics_reports/detection_m3fd_map.csv` tiene exactamente 9 filas de datos (VIS, IR y las siete fusiones) con 11 columnas: mAP50, mAP50_95, precision, recall y AP50 para People/Car/Bus/Motorcycle/Lamp/Truck — p. ej. Propuesta_Novedosa mAP50 = 0,6509, AP50_People = 0,6406, AP50_Lamp = 0,4881. `complementariedad_resumen.csv` tiene 9 filas con `escenas` = 232 en todas; `complementariedad_por_escena.csv` tiene 2.088 filas = 232 escenas × 9 entradas; `complementariedad_criticas.csv` tiene 90 filas. `correlacion_calidad_deteccion.csv` tiene 6 filas con `dataset` = M3FD (tres conjuntos de métricas × dos medidas de mAP). Y los scripts están en `experiments/detection_m3fd/prepare_m3fd.py` y `experiments/detection_m3fd/train_eval_m3fd.py`. M3FD no es un dataset pendiente: es un dataset ejecutado, con partición propia y detector entrenado.
+
+(2) La defensa más fuerte que se le puede dar a la frase —que «la evaluación» signifique el benchmark de calidad de imagen por métricas, que efectivamente nunca se corrió sobre M3FD— la comprobé y es cierta a medias: `all_metrics.csv` tiene 140 filas = 7 métodos × 20 pares, y las 20 escenas son todas del TNO (APC_*, Athena_*, Triclobs_*); el grep de «m3fd|roadscene|coco» sobre los 50 CSV solo pega en `correlacion_calidad_deteccion.csv`. Pero esa lectura no salva la frase, porque el problema no es qué se replicaría sino la palabra «adicionales»: M3FD no es adicional al trabajo, ya está dentro. Y la frase tampoco dice «la evaluación por métricas de imagen», dice «la evaluación … para verificar la transferibilidad de las conclusiones», y parte de esas conclusiones son justamente las de detección que salieron de M3FD.
+
+Lo que cierra el caso es la incoherencia interna dentro de la misma lista de recomendaciones: la recomendación 1 (párrafo 435) dice «empezando por M3FD, que conserva un único entrenamiento por entrada», o sea trata a M3FD como experimento ya hecho al que le falta repetir semillas; dos ítems después la recomendación 3 lo lista como dataset por hacer. Un lector que recorra la sección 6.2 de corrido lo ve.
+
+El revisor además se quedó corto en la evidencia, a favor del autor: M3FD no aparece «dos veces» en el capítulo 6 sino que atraviesa todo el libro —título de la sección 5.5 («detección con YOLO (LLVIP y M3FD)»), Tabla 9, Figura 9, el resumen del párrafo 83, las limitaciones tercera y décima del párrafo 229, la síntesis del párrafo 419 y la conclusión 1 del párrafo 423—.
+
+RoadScene y MS-COCO multiespectral sí quedan legítimamente pendientes: no hay ningún CSV ni script que los mencione.
+
+*(bloque: cap6)*
+
+### párrafo 428 (conclusión específica 6) — INCOHERENCIA
+
+**Dice el libro:**
+
+> la aptitud del trabajo de referencia favorece r = 1
+
+**Dice el dato:** C:\Users\Usuario\Documents\unv\mastertesis\tesis_mciencias_datos\experiments\results\metrics_reports\optimo_exacto_fo.csv (5000 filas = 25 radios enteros × 200 pesos m ∈ [0,01; 2,00]; columnas r, m, Fo). Con m >= 0,30: argmax en r = 1, m = 0,30, Fo = 1,734991 (fila 29); mejor de r = 25 bajo esa restricción, 1,705696. Con el peso libre: argmax global en r = 25, m = 0,070, Fo = 1,771465 (fila 4806); mejor de r = 1, m = 0,06, Fo = 1,760748, el peor de los 25 radios, con crecimiento estrictamente monótono en r de 1,760748 a 1,771465. Costo del rango heredado 1,771465 − 1,734991 = 0,036474 (el «0,0365» del párrafo 418). Cifras de recorte del mismo párrafo 428, en saturacion_vs_m.csv: pct_saturado_medio = 0,7271 en m = 0,30 y 6,4996 en m = 1,00, ambas correctas.
+
+**El escéptico:** El hallazgo se confirma: abrí optimo_exacto_fo.csv y los tres números del revisor se reproducen sin excepción. Con el peso atado al piso heredado (m >= 0,30) el máximo de la aptitud está en r = 1 con Fo = 1,734991, y el mejor de r = 25 es 1,705696 (las cifras 1,7350 y 1,7057 del párrafo 418). Con el peso libre el máximo global está en r = 25, m = 0,070, Fo = 1,771465, y el mejor de r = 1 baja a 1,760748, que es el MÍNIMO de los 25 mejores-por-radio: la serie crece estrictamente en r de 1,760748 a 1,771465, o sea que r = 1 pasa a ser el peor radio, tal como afirma el párrafo 418. La conclusión 6 (párrafo 428) enuncia «la aptitud del trabajo de referencia favorece r = 1» sin la salvedad, y la presenta además como uno de dos efectos «opuestos y bien delimitados», mientras §5.8.5 cierra con la frase textual contraria: «La discrepancia no está, por tanto, en el radio sino en el peso: el r = 25 adoptado es el óptimo de la aptitud del trabajo de referencia una vez que el peso no está atado al piso de un intervalo calibrado para otro operador». La conclusión conserva la lectura previa a la auditoría y contradice la conclusión de la propia sección que la sostiene. PERO la gravedad del revisor está algo exagerada al decir «queda al revés»: la frase no contiene ninguna cifra falsa y es defendible en su lectura literal, porque el rango m ∈ [0,30; 2,00] también es del trabajo de referencia, y bajo ese rango la aptitud sí favorece r = 1 (1,734991 gana a los otros 24 radios). Lo que falta es una cláusula subordinada («dentro del rango de peso heredado»), no un número. Por eso gravedad media y no alta: es un defecto real de coherencia y está en la parte más leída de la tesis —un tribunal puede confrontar la conclusión 6 con §5.8.5—, pero se arregla insertando la salvedad y no cambia ninguna cifra. Verifiqué además las otras dos cifras del mismo párrafo 428 contra saturacion_vs_m.csv: 0,7271 % en m = 0,30 y 6,4996 % en m = 1, que redondean a los «0,73 %» y «6,50 %» del texto, correctas. El error no se propagó: el párrafo 389 y el pie de la Tabla 11 (párrafos 192 y 396) sí incluyen la salvedad «rango publicado».
+
+*(bloque: cap6)*
+
+### párrafo 427 (conclusión específica 5) — INCOHERENCIA
+
+**Dice el libro:**
+
+> Dentro de la familia Top-Hat, la forma de combinar las respuestas del banco introduce diferencias modestas.
+
+**Dice el dato:** ablacion_banco_resumen.csv, columna rango_9: suma 3,222 / maximo 3,311 / disco 3,367 / promedio 3,533 / lineas 3,783 / base 3,783 — las seis cifras del párrafo 427 coinciden exactamente. Columna rango_17 del mismo archivo: maximo 2,932 / disco 3,153 / promedio 3,179 / suma 3,621 / lineas 3,756 / base 4,359 (spread 1,427), que el párrafo 427 no menciona. ablacion_banco_contrastes.csv: EN vs disco = 0,193851 con p_holm = 9,5367e-06; Nabf vs disco = 0,189137; SF vs disco = 4,487005; SSIM vs disco = -0,076600; 85 filas totales, 76 con sig=True, 66 con p_holm = 0,000010, y las 45 filas de la batería de nueve métricas todas significativas. wilcoxon_results.csv fila 10: EN, Propuesta_Novedosa vs TopHat_Clasico, mean 6,9855 vs 6,9220, diff = 0,0636, p_holm = 0,000191, sig_holm_05 = True. ranking_methods.csv, avg_rank: 3,394 (Propuesta) a 4,444 (Curvelet), spread 1,050. ranking_17_metricas.csv, rango_17: 3,1471 (PiramideLaplace) a 5,0000 (TopHat_Clasico), spread 1,853. descriptive_means.csv, EN: 6,9855 (Propuesta) a 6,6445 (Curvelet), spread 0,3410, menor que el spread de EN entre los seis brazos de la ablación (6,9855 a 6,4898 = 0,4957).
+
+**El escéptico:** El hallazgo se sostiene como incoherencia de criterio, no como error de cifra: todos los números del párrafo 427 son correctos, pero el adjetivo «modestas» aplica un estándar opuesto al que el propio libro usa dos páginas antes. En EN, la diferencia suma-menos-disco de la ablación es 0,193851 con p_holm = 9,54e-06 (ablacion_banco_contrastes.csv, fila metrica=EN/brazo=disco) y el párrafo 427 la llama «modesta»; la diferencia propuesta-menos-Top-Hat-clásico es 0,0636 con p_holm = 0,000191 (wilcoxon_results.csv, fila 10) y el párrafo 423 la presenta como superioridad «estadísticamente significativa». Misma métrica, mismo corpus, misma familia de test, retórica invertida, y la que se minimiza es 3,05 veces mayor. Agrava el punto que el párrafo 427 conserva solo la composición de nueve métricas —la única en que la ablación se comprime— y omite lo que el párrafo 412 sí reporta: en rango_17 el orden se invierte y el spread sube a 1,427 (2,932 maximo a 4,359 base), el 77 % del spread del benchmark (3,147 a 5,000 = 1,853 en ranking_17_metricas.csv), de modo que ahí las diferencias del banco no son menores que las que separan a los siete métodos. En métricas crudas tampoco son modestas: Nabf 0,3742 la suma contra 0,1851 el disco (duplica los artefactos), SF 17,4425 contra 12,9555 (+34,6 %), SSIM 0,6584 contra 0,7350, y el spread de EN entre los seis brazos (0,4957) supera el de los siete métodos del benchmark completo (0,3410 en descriptive_means.csv). La recomendación del revisor —decir en qué escala es modesto— es correcta. Dos correcciones a su nota: (1) el conteo «40 contrastes» no existe en el CSV, que tiene 85 filas (17 métricas × 5 brazos), 76 significativas, 66 con p_holm = 0,000010, y 45 de 45 significativas si se restringe a la batería de nueve; (2) el párrafo no oculta la escala, porque la frase siguiente dice explícitamente «ordena así el rango medio de las nueve métricas» y lista los seis valores, así que el lector no queda engañado sobre a qué se refiere «modestas». Por eso la gravedad es media y no alta: es una palabra que hay que calificar y una omisión del rango de 17 métricas, no una cifra falsa ni una afirmación sin fuente.
+
+*(bloque: cap6)*
+
+### parrafo 519 (apendice F, Hardware y tiempos de ejecucion) — CONTRADICE
+
+**Dice el libro:**
+
+> La totalidad de los experimentos se ejecuto en una notebook estandar (Intel i7, 16 GB de RAM, sin GPU dedicada) bajo Windows 11 con Python 3.11.
+
+**Dice el dato:** El libro dice «sin GPU dedicada» y «16 GB de RAM». Los datos dicen: experiments/results/metrics_reports/detector_perfil.json, bloque «entorno» → "cuda": true, "gpu": "NVIDIA GeForce RTX 4050 Laptop GPU", "torch": "2.5.1+cu121", "ultralytics": "8.4.68". runs/detect/runs/llvip/Propuesta_Novedosa/args.yaml → device: '0' (CUDA 0), amp: True, epochs: 40, batch: 16, imgsz: 640. runs/detect/runs/llvip/Propuesta_Novedosa/results.csv → 787,68 s las 40 épocas (19,7 s/época). experiments/results/metrics_reports/detection_llvip_semillas.csv → 45 corridas (9 entradas × 5 semillas), columna «segundos» entre 18,2 y 2.285,0, media por método 615,3 (VIS) a 982,2 (DTCWT), total 10,44 h. Hardware real de la máquina: CPU «13th Gen Intel(R) Core(TM) i7-13620H» (coincide con «Intel i7»), memoria física 31,7 GB (el libro dice 16 GB), GPU «NVIDIA GeForce RTX 4050 Laptop GPU». Correctos en la frase: Python 3.11 (3.11.14) y Windows 11 (build 26200). Ningún CSV ni JSON de metrics_reports registra CPU ni RAM.
+
+**El escéptico:** Intenté refutarlo por las dos vías posibles y ninguna resistió.
+
+1) Vía del contexto (¿la frase, completa, se limita a la fusión?). Leí el párrafo 520 entero, bajo el encabezado 519 «F. Hardware y tiempos de ejecución»: «La totalidad de los experimentos se ejecutó en una notebook estándar (Intel i7, 16 GB de RAM, sin GPU dedicada) bajo Windows 11 con Python 3.11. Cada fusión Top-Hat consume entre 20 y 80 milisegundos… La ejecución completa del benchmark (140 fusiones: 7 métodos × 20 pares) toma aproximadamente 90 segundos.» Las oraciones siguientes hablan solo de fusión, pero la primera cuantifica universalmente («la totalidad de los experimentos») y no hay ninguna otra mención de hardware en todo el libro: busqué GPU|RTX|CUDA|i7|RAM|precisión mixta|torch|ultralytics|notebook|hardware en los 521 párrafos y en las 38 tablas, y el párrafo 520 es el único. Así que no existe un pasaje que acote la afirmación ni que declare la GPU para la sección 5.5; el entrenamiento del detector queda cubierto por ese «totalidad», y el libro lo presenta como experimento propio (párrafos 374-376: «se reentrenó el mismo detector (YOLOv8n) por separado sobre cada modalidad, 5 veces por entrada cambiando únicamente la semilla», 40 épocas, y párrafo 380 con M3FD).
+
+2) Vía del dato (¿el JSON prueba solo que la máquina tiene GPU, no que se usó?). Aquí el hallazgo se refuerza más de lo que dice el revisor. Además de detector_perfil.json («cuda»: true, «gpu»: «NVIDIA GeForce RTX 4050 Laptop GPU», torch 2.5.1+cu121, ultralytics 8.4.68), encontré dos evidencias que el revisor no citó y que cierran el caso:
+   • runs/detect/runs/llvip/Propuesta_Novedosa/args.yaml registra device: '0', es decir el dispositivo CUDA 0 explícito. No es una inferencia a partir de amp: true (que en Ultralytics es el valor por defecto y no probaría nada por sí solo).
+   • runs/detect/runs/llvip/Propuesta_Novedosa/results.csv da 787,7 s para las 40 épocas (19,7 s por época, 2.000 imágenes a 640 px). Y experiments/results/metrics_reports/detection_llvip_semillas.csv (45 filas = 9 entradas × 5 semillas, columna «segundos») promedia 615-982 s por entrenamiento y suma 10,4 horas. Esos tiempos son de GPU; en CPU un YOLOv8n de 40 épocas sobre 2.000 imágenes no baja de decenas de horas por corrida.
+   Verifiqué también que es la misma máquina: el intérprete del repo devuelve hoy torch 2.5.1+cu121, cuda_avail True y «NVIDIA GeForce RTX 4050 Laptop GPU», idénticos al JSON.
+
+3) Un error adicional que el revisor no marcó. Dijo que «Intel i7, 16 GB de RAM» no lo registra ningún CSV ni JSON —lo confirmo, revisé las columnas y claves con time/tiempo/cpu/ram/hardware de los CSV y los cuatro JSON de metrics_reports; ninguno guarda CPU ni RAM—, pero la máquina sí es consultable: Win32_Processor devuelve «13th Gen Intel(R) Core(TM) i7-13620H» (el «Intel i7» es correcto) y Win32_ComputerSystem devuelve 31,7 GB de memoria física, no 16 GB. Con la salvedad de que la RAM pudo ampliarse después de escribir el apéndice, «16 GB» también parece incorrecto.
+
+Lo que sí queda en pie del párrafo: Python 3.11 (el intérprete del repo es 3.11.14), Windows 11 (Windows-10-10.0.26200-SP0 = Windows 11 build 26200), «Intel i7», y las cifras de tiempos de fusión, que son de CPU y no se ven afectadas —de modo que la conclusión final del párrafo («esta liviandad computacional confirma la viabilidad… en tiempo real») no se cae.
+
+Sobre la gravedad: el hallazgo es correcto y su descripción no está exagerada, pero su alcance sí es acotado. Es una única oración de un apéndice, no propaga a ninguna métrica, tabla ni prueba estadística del libro, y se arregla reescribiendo esa oración (distinguir el hardware de la fusión, en CPU, del de la sección 5.5, en la RTX 4050, y corregir la RAM). Por eso la califico media y no alta: es una falsedad verificable sobre las condiciones experimentales —fácil de detectar para un jurado que vea 45 entrenamientos de YOLOv8n «sin GPU dedicada»— pero de radio de impacto mínimo.
+
+*(bloque: apendice)*
+
+### parrafo 492 (apendice C, ultima frase) — SIN FUENTE
+
+**Dice el libro:**
+
+> Los 54 contrastes de la propuesta frente a sus seis rivales (9 metricas x 6 rivales: los cinco del estado del arte y el Top-Hat clasico, Wilcoxon con Holm y tamano de efecto rank-biserial) se consignan en wilcoxon_propuesta_vs_metodos.csv.
+
+**Dice el dato:** experiments/results/metrics_reports/wilcoxon_propuesta_vs_metodos.csv NO EXISTE. Los 54 contrastes existen y son correctos, pero viven en experiments/results/metrics_reports/wilcoxon_results.csv: 99 filas totales, de las cuales 54 tienen tophat=Propuesta_Novedosa (9 filas por cada uno de Curvelet, DTCWT, DWT, PiramideLaplace, RatioPiramide y TopHat_Clasico) y 45 tienen tophat=TopHat_Clasico. Columnas: metric, tophat, baseline, mean_tophat, mean_baseline, diff, wilcoxon_W, p_value, effect_r, p_holm, sig_holm_05. Es el mismo archivo que la primera oracion del parrafo 492 ya cita. Correccion: borrar la ultima frase o reemplazar el nombre por wilcoxon_results.csv.
+
+**El escéptico:** Verifiqué los tres puntos por separado y el revisor tiene razon en todos. (a) El archivo no existe: `ls experiments/results/metrics_reports/wilcoxon_propuesta_vs_metodos.csv` devuelve "No such file or directory", y en todo el arbol (sin .venv) los unicos CSV con "wilcoxon" son metrics_reports/wilcoxon_results.csv, metrics_reports_libre/wilcoxon_results.csv y metrics_reports/comparacion_aptitudes_wilcoxon.csv. (b) Ningun script lo produce: run_stats_analysis.py tiene exactamente cuatro to_csv (lineas 42, 77, 86, 148 -> descriptive_means.csv, ranking_methods.csv, friedman_results.csv, wilcoxon_results.csv) y la cadena "propuesta_vs_metodos" no aparece en ningun .py; sus unicos aciertos en el repo estan en docs/AUDITORIA_LIBRO.md y docs/fuentes/*.json, o sea en los informes de auditoria, no en codigo. (c) Lei el parrafo 492 completo y el contexto no rescata la frase, la agrava: la primera oracion del mismo parrafo ya dice que "las tablas completas con los 99 contrastes Wilcoxon (la propuesta frente a los 5 metodos del estado del arte y frente al Top-Hat clasico, y el Top-Hat clasico frente a los mismos 5, en las 9 metricas) se almacenan en experiments/results/metrics_reports/wilcoxon_results.csv", de modo que los 54 son un subconjunto de los 99 recien citados y la ultima frase es redundante ademas de apuntar a un archivo inexistente. MATIZ SOBRE LA ETIQUETA: "SIN FUENTE" no es del todo preciso. El contenido empirico de la frase esta integramente respaldado -wilcoxon_results.csv tiene 99 filas x 11 columnas, con 54 filas de tophat=Propuesta_Novedosa (9 metricas EN, FE, MG, MI_ir, MI_vis, PSNR, SD, SF, SSIM x 6 rivales: Curvelet, DTCWT, DWT, PiramideLaplace, RatioPiramide, TopHat_Clasico) y 45 de tophat=TopHat_Clasico, y existen las columnas p_holm, sig_holm_05 y effect_r-. Lo unico que falla es el puntero al archivo: es una referencia cruzada rota y redundante, no una cifra inventada. Confirmo tambien el origen que propone el revisor: docs/fuentes/reverificacion_hallazgos.json linea 131 conserva la version vieja ("Los 48 contrastes ... 9 metricas x 4 rivales") con el mismo nombre de archivo; se corrigieron los numeros y se dejo el nombre.
+
+*(bloque: apendice)*
+
+### parrafo 484 (apendice A, inventario de modulos) — CONTRADICE
+
+**Dice el libro:**
+
+> src/metrics/evaluators.py (las nueve metricas)
+
+**Dice el dato:** evaluate_all (C:/Users/Usuario/Documents/unv/mastertesis/tesis_mciencias_datos/src/metrics/evaluators.py, lineas 298-321) devuelve 17 claves, no 9: EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PSNR, Qabf, Nabf, SCD, VIF, FMI, Q0, QW, QE. METRIC_DIRECTION (lineas 31-36) declara direccion para esas mismas 17 (Nabf en "min", las otras 16 en "max"). experiments/results/metrics_reports/all_metrics.csv tiene forma (140, 19): method, image y las 17 metricas. Las nueve son un subconjunto definido en otro archivo: experiments/run_stats_analysis.py, linea 31, METRICS = ["EN","SD","FE","MG","MI_vis","MI_ir","SF","SSIM","PSNR"], con el comentario de las lineas 28-30 "Se descartan Qabf, Nabf, SCD, VIF y las del review (FMI, Q0, QW, QE)". El propio repo nombra el otro conjunto: experiments/results/metrics_reports/ranking_17_metricas.csv (7 filas, columna rango_17: PiramideLaplace 3,147; DTCWT 3,259; Propuesta_Novedosa 3,459; RatioPiramide 3,918; DWT 4,556; Curvelet 4,662; TopHat_Clasico 5,000).
+
+**El escéptico:** Intente refutarlo por dos vias y ninguna funciona. (1) Que "las nueve metricas" fuera anafora legitima del conjunto que el parrafo 284 declara como bateria de evaluacion: no se sostiene, porque el parrafo 484 no habla de la evaluacion sino del contenido de cada archivo, y sus otros parentesis enumeran lo que el modulo contiene ("src/datasets.py (carga y emparejado VIS/IR)", "comparatives.py para los seis metodos comparativos: LP, RP, DWT, DTCWT, CVT y la fusion Top-Hat clasica" — seis y son seis). Bajo ese mismo patron, evaluators.py contiene 17 y el libro dice nueve. (2) Que la tesis nunca atribuya las otras ocho al evaluador: al contrario, el parrafo 403 dice literalmente "Incorporando las ocho metricas adicionales que el mismo evaluador calcula —Qabf, Nabf, SCD, VIF, FMI, Q0, QW y QE, con Nabf en su direccion inversa—". Ese 8 + 9 = 17 es exactamente lo que devuelve evaluate_all, de modo que el parrafo 484 contradice al 403 dentro del mismo libro. El agravante practico que senala el revisor es real: el apendice A no atribuye a ningun modulo las metricas que sostienen la seccion 5.8 y la hipotesis H2, ni Nabf, cuyo efecto esta cuantificado en ranking_mas_nabf.csv (la propuesta pasa de rango_9 3,394 puesto 1 a rango_9_mas_Nabf 3,655 puesto 2, con PiramideLaplace 3,620 puesto 1); ambos archivos citados por el revisor existen y tienen forma (7, 7) y (20, 4). Matiz de gravedad: el hallazgo es correcto pero conviene no leerlo como cifra inventada. El nueve no es un numero fabricado, es el conjunto real del analisis principal (parrafos 284, 338, 365, 370); el defecto es de atribucion e integridad documental —el nueve pertenece a run_stats_analysis.py:31, no a evaluators.py— y no toca ninguna tabla, figura, prueba estadistica ni conclusion empirica. Se corrige con un parentesis: "(las diecisiete metricas: las nueve del analisis principal y las ocho complementarias)", idealmente aclarando que la seleccion de las nueve ocurre en run_stats_analysis.py.
+
+*(bloque: apendice)*
+
+### parrafo 519 (apendice F, ultima frase) — SIN FUENTE
+
+**Dice el libro:**
+
+> Esta liviandad computacional confirma la viabilidad del metodo para aplicaciones en tiempo real.
+
+**Dice el dato:** Ningun CSV ni JSON del repositorio mide latencia ni fps del operador (unicas columnas «segundos»: 6 archivos, y miden corridas de PSO de 1,5-845 s y entrenamiento YOLO de 18,2-2285,0 s). Medicion propia de fuse_optimal con r=25, m=0,30 sobre los 20 pares: mediana 247,5 ms por par (~4,0 fps), rango 64,6 ms (247x359) a 299,1 ms (576x768); en 439x609, 175,0-189,5 ms frente a los 168,1 ms del revisor. El rango «20-80 ms» del libro solo se cumple con r<=10 en 439x609 (28,1 / 27,5 / 39,1 / 67,6 ms para r=1/3/5/10), no con el r=25 adoptado (189,5 ms).
+
+**El escéptico:** Intente refutarlo por tres vias y las tres respaldan al revisor.
+
+(1) Barrido de columnas de tiempo. Recorri las cabeceras de los 61 CSV de experiments/results (los 50 de metrics_reports mas los de subcarpetas) buscando seg|time|tiempo|latenc|fps|cuadro|dur|elaps. Aparecen en exactamente los seis archivos que el revisor lista y en ninguno mas: pso_grid_search.csv, pso_grid_search_fo_propuesta.csv, pso_grid_search_fo_clasico.csv, pso_repeticiones_propuesta.csv, pso_repeticiones_propuesta_libre.csv y detection_llvip_semillas.csv, todos con la unica columna «segundos». Mire su contenido: en los pso mide la corrida completa de enjambre (pso_grid_search.csv, 25 filas, de 9 a 845 s; pso_repeticiones_propuesta.csv, 500 filas, de 1,5 a 77,9 s) y en detection_llvip_semillas.csv mide el entrenamiento/evaluacion YOLO por semilla (45 filas, de 18,2 a 2285,0 s). Ninguna cronometra una fusion aislada. Confirmo tambien que experiments/run_all_fusions.py no contiene la cadena «time» en ninguna linea. Revise ademas los tres JSON de metrics_reports (detector_perfil.json, arquitectura_yolo.json, all_metrics.config.json): traen parametros, GFLOPs e hiperparametros, ninguna latencia ni cuadros por segundo del operador. No existe fuente para «20 a 80 ms», ni para «90 segundos», ni para la conclusion de tiempo real.
+
+(2) Medicion propia del operador. Cronometre fuse_optimal (src/fusion/optimal_top_hat.py, mode='sum') con la configuracion adoptada r=25, m=0,30 sobre los 20 pares reales del corpus, con calentamiento y mediana de 3 repeticiones. Mediana del corpus 247,5 ms por par (~4,0 fps); minimo 64,6 ms en el par mas chico (247x359) y maximo 299,1 ms en los 576x768. En el par 439x609 que cita el revisor obtengo 175,0-189,5 ms, del mismo orden que sus 168,1 ms —si algo, su cifra es la mas benevola—. La medicion va en contra de «tiempo real», tal como dice.
+
+(3) La cifra que sostiene la frase tampoco resiste. «Entre 20 y 80 milisegundos segun la configuracion» solo vale para radios chicos: en 439x609 obtuve r=1 → 28,1 ms, r=3 → 27,5 ms, r=5 → 39,1 ms, r=10 → 67,6 ms, r=15 → 89,6 ms, r=25 → 189,5 ms; en 576x768 hasta r=1 ya cuesta 64,2 ms y r=25 llega a 281,3 ms. Es decir, el rango describe al TopHat_Clasico (r=5) y a los radios que el trabajo descarto, no a la configuracion que el libro adopta. La premisa de la frase marcada no solo carece de CSV: la medicion directa la contradice para r=25.
+
+Sobre la gravedad: no la exagero, pero la ubico en media y no en alta. Es una sola frase inferencial al final del apendice F, ninguna hipotesis, tabla ni conclusion del cuerpo depende de ella, y se arregla retirandola o acotandola («168-300 ms por par de 439x609 a 576x768 en CPU, ~4-6 cuadros por segundo, sin captura ni registro»). Lo que si conviene separar es que la frase vecina de las «20 a 80 ms» es un CONTRADICE aparte y mas duro que este SIN FUENTE, y que en el mismo parrafo el hardware declarado —«notebook estandar (Intel i7, 16 GB de RAM, sin GPU dedicada)»— choca con experiments/results/metrics_reports/detector_perfil.json, que registra {"cuda": true, "gpu": "NVIDIA GeForce RTX 4050 Laptop GPU"}. El parrafo 520 necesita revision completa, no solo el corte de la ultima oracion.
+
+*(bloque: apendice)*
+
+### parrafo 519 (apendice F) — CONTRADICE
+
+**Dice el libro:**
+
+> la piramide de Laplace y el curvelet se situan en ordenes de magnitud comparables
+
+**Dice el dato:** Medición propia (mediana por par sobre los 20 pares del corpus, mediana de 5 repeticiones cada uno, configuración de experiments/run_all_fusions.py): PiramideLaplace 9,6 ms | RatioPiramide 10,8 ms | DWT 11,6 ms | Curvelet 13,5 ms | TopHat_Clasico (r=5) 16,3 ms | Propuesta_Novedosa (r=25, m=0,30) 232,0 ms | DTCWT 280,0 ms. Sobre el primer par (APC_1_view_1_fk_06_005, 439x609) la propuesta a r=25 da 171,3 ms, contra los 168,1 ms que reportó el revisor. Barrido de r en la propuesta sobre ese par: r=1 → 22,2 ms; r=3 → 22,9; r=5 → 27,3; r=10 → 50,7; r=15 → 77,9; r=25 → 171,3; r=40 → 385,9 ms. La banda declarada de «20 a 80 ms» sólo cubre hasta r≈15, no la configuración adoptada r=25. Corroboración en disco: experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv, columnas segundos/evaluaciones, corridas con r_opt=25 ≈ 806 ms por evaluación (3 fusiones) frente a ≈ 200 ms en las de r_opt=1. Ningún CSV de los 61 de experiments/results/ contiene tiempos por fusión; la única columna temporal del árbol es «segundos» en los 6 CSV de PSO y en detection_llvip_semillas.csv.
+
+**El escéptico:** Intenté refutarlo y no pude: medí los siete métodos yo mismo con la configuración exacta del benchmark (experiments/run_all_fusions.py, dict CONFIG) sobre los 20 pares de src.datasets.list_pairs(), 5 repeticiones por par tras warm-up, y reproduje la ordenación del revisor. Sus cifras absolutas difieren de las mías (él midió un solo par; yo la mediana del corpus), pero sobre ESE primer par mi medición dio 171,3 ms para r=25 contra sus 168,1 ms: coincide. La brecha existe y es de más de un orden de magnitud.
+
+PRECISIÓN DE ALCANCE (el hallazgo es correcto pero está colgado de la cláusula equivocada). La frase completa del párrafo 520 es: «Cada fusión Top-Hat consume entre 20 y 80 milisegundos según la configuración; la pirámide de Laplace y el curvelet se sitúan en órdenes de magnitud comparables.» Contra la banda declarada de 20-80 ms, la cláusula que el revisor marcó es aproximadamente VERDADERA: LP 9,6 ms y Curvelet 13,5 ms sí están en el mismo orden que 20-80 ms. Lo falso es el ancla: «entre 20 y 80 ms» NO contiene la configuración adoptada. Mi barrido de r sobre un par da r=1 → 22,2 ms; r=15 → 77,9 ms (borde superior); r=25 → 171,3 ms. La banda 20-80 ms sólo vale hasta r≈15. Lo que hay que corregir es el rango, no la frase «órdenes de magnitud comparables».
+
+CORROBORACIÓN EN CSV (indirecta, y es el dato más fuerte porque está en disco). No existe ningún CSV de tiempos por fusión: recorrí los 61 CSV de experiments/results/ y la única columna temporal en todo el árbol es «segundos» (PSO y entrenamiento YOLO). Pero experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv permite el cruce: cada evaluación de aptitud hace 3 fusiones con el operador propuesto (experiments/pso_grid_search_fo.py, cache() usa allp[::7] = 3 escenas). Dividiendo segundos/evaluaciones, las 8 corridas que convergieron a r_opt=25 cuestan ~806 ms por evaluación (mediana; filas n=2/Tmax=30 → 50 s/60 = 833 ms, n=10/Tmax=50 → 409 s/500 = 818 ms) frente a ~200 ms en las 16 corridas con r_opt=1. Como el costo de SSIM/entropía/PSNR no depende de r, ese diferencial de ~600 ms sobre 3 fusiones son ~200 ms extra por fusión atribuibles a la morfología con r=25. El CSV que ya está en el repositorio contradice la banda de 20-80 ms.
+
+DATO ATENUANTE QUE EL REVISOR OMITIÓ y que el autor debería conocer antes de reescribir: DTCWT mide 280,0 ms de mediana, es decir MÁS LENTO que la propuesta (232,0 ms). La propuesta no es el método más costoso del benchmark, es el segundo. La corrección honesta no es «la propuesta es excepcionalmente lenta» sino «la propuesta cuesta ~230 ms, del orden del DTCWT y alrededor de un orden de magnitud por encima de LP, Curvelet, DWT y Top-Hat clásico».
+
+Además, sin ser lo marcado: la última oración del párrafo, «Esta liviandad computacional confirma la viabilidad del método para aplicaciones en tiempo real», es la que queda peor parada. A 232 ms por fusión son ~4,3 fps. Y los «aproximadamente 90 segundos» del benchmark completo no los pude refutar: mi total sólo-fusión es 11,5 s para 140 fusiones, y con las 18 métricas por fusión más el guardado de PNG los 90 s son plausibles. Todo el párrafo F es SIN FUENTE en sentido estricto: ningún CSV lo respalda, ni a favor ni en contra.
+
+*(bloque: apendice)*
+
+
+## Confirmadas — gravedad baja (15)
+
+### parrafo 342, §4.5 Dataset y preprocesamiento — INCOHERENCIA
+
+**Dice el libro:**
+
+> reentrenando el detector YOLOv8n durante 40 epocas con configuracion identica en todas las modalidades
+
+**Dice el dato:** Configuracion RESPALDADA: los 12 runs/detect/runs/llvip/*/args.yaml traen model yolov8n.pt, epochs 40, seed 0, imgsz 640, batch 16, deterministic true, patience 100 (sin early stopping, 40 epocas completas). Checkpoint evaluado = last en 9/9 filas de experiments/results/metrics_reports/detection_llvip_map.csv y 45/45 de detection_llvip_semillas.csv (columna checkpoint), nunca declarado en los 521 parrafos ni en las 38 tablas del libro. Materialidad medida contra detection_llvip_map.csv.bak_best (semilla 0): desplazamiento maximo last->best de +0,0861 en mAP@0,5:0,95 (PiramideLaplace 0,5648 -> 0,6509), frente a un recorrido de 0,109 entre las siete fusiones; el orden de fusiones pasa de [TopHat_Clasico 0,6093 / Curvelet 0,6077 / DTCWT 0,6033 / DWT 0,6018 / Propuesta 0,5813 / LP 0,5648 / RP 0,5003] con last a [LP 0,6509 / Curvelet 0,6388 / DTCWT 0,6329 / Propuesta 0,6165 / DWT 0,6141 / TopHat_Clasico 0,6093 / RP 0,5381] con best. Sin test disjunto: datasets/llvip_*/data.yaml declara solo train y val. La Tabla 8 del libro (tabla 31 del docx) coincide exactamente con la agregacion de 5 semillas bajo last en sus 9 filas y 4 columnas, de modo que no hay ninguna cifra erronea.
+
+**El escéptico:** El hallazgo se sostiene en su sustancia —el protocolo de checkpoint nunca se declara— pero la etiqueta INCOHERENCIA es incorrecta y la gravedad esta exagerada: es una OMISION, no una incoherencia.
+
+1) Lo que ¶342 afirma es CIERTO, no contradicho. Verifique los 12 runs/detect/runs/llvip/*/args.yaml uno por uno: los 12 traen model: yolov8n.pt, epochs: 40, seed: 0, imgsz: 640, batch: 16, deterministic: true. Ademas patience: 100 > 40 epocas, de modo que el early stopping nunca disparo y las 12 corridas completaron las 40 epocas. «40 epocas con configuracion identica en todas las modalidades» esta RESPALDADA.
+
+2) La omision es real. detection_llvip_map.csv trae checkpoint = last en 9/9 filas y detection_llvip_semillas.csv en 45/45 (valor unico ['last']). Corri mi propia busqueda sobre los 559 bloques del libro (521 parrafos + 38 tablas) con el regex best\.pt|last\.pt|checkpoint|punto de control|pesos (final|guardad|evaluad|de la)|ultima epoca|epoca final|early stop|patience|test disjunt: 3 impactos, los tres falsos positivos —P78 («paciencia» en el agradecimiento al director), P331 («sin pesos» de la funcion de aptitud) y P416 (escenarios de ranking)—. El grep del revisor se sostiene.
+
+3) La decision si importa, y lo prueba el propio repo. Comparando detection_llvip_map.csv.bak_best (semilla 0, best.pt) contra detection_llvip_map.csv (semilla 0, last.pt): el desplazamiento maximo en mAP@0,5:0,95 es +0,0861 (PiramideLaplace 0,5648 -> 0,6509), contra un recorrido total de solo 0,109 entre las siete fusiones. El orden de las fusiones se invierte en los dos extremos: con last es TopHat_Clasico, Curvelet, DTCWT, DWT, Propuesta, LP, RP; con best es LP, Curvelet, DTCWT, Propuesta, DWT, TopHat_Clasico, RP. Y datasets/llvip_*/data.yaml declara solo train y val (sin test), con val: true y split: val en args.yaml: el val cumple efectivamente los dos roles, tal como advierte el comentario del script.
+
+4) POR QUE LA GRAVEDAD ESTA EXAGERADA. Ninguna cifra del libro esta mal. La Tabla 8 (tabla 31 del docx) reproduce EXACTAMENTE la agregacion de las 5 semillas con last, las 9 filas y las 4 columnas: VIS 0,795 ± 0,0123 / 0,429 ± 0,0120 / 0,831 / 0,714 contra mi calculo 0,7951 / 0,0123 / 0,4295 / 0,0120 / 0,8312 / 0,7137; IR 0,961 ± 0,0139 / 0,592 ± 0,0259 contra 0,9611 / 0,0139 / 0,5919 / 0,0259; y asi las nueve. La lectura verbal de ¶377 («la piramide de Laplace encabeza (0,952), seguida por DTCWT (0,936), mientras que la Propuesta queda 3.a con 0,9283») coincide con el orden de mAP@0,5 bajo last. Texto y dato concuerdan: no hay incoherencia que resolver, hay una clausula que agregar. Ademas la decision no declarada es la MAS ESTRICTA y juega EN CONTRA del metodo de la tesis: con best la Propuesta subiria del 5.o al 4.o lugar entre las siete fusiones en mAP@0,5:0,95 (0,5813 -> 0,6165). La omision no encubre ninguna eleccion interesada; si algo, el autor resigno un numero mas favorable. El arreglo es una clausula en ¶342 («evaluando el checkpoint de la ultima epoca, last.pt, porque LLVIP no aporta una particion de test disjunta») y a lo sumo una frase en las limitaciones (¶229, que ya discute el protocolo LLVIP). Nada se recalcula.
+
+Recomendacion: reclasificar de INCOHERENCIA a omision de declaracion metodologica, gravedad baja. No mandar al autor a buscar un error de calculo, porque no existe.
+
+Observacion lateral, fuera de este hallazgo: ¶377 cita el IR como «mAP@0,5 = 0,971; mAP@0,5:0,95 = 0,621», que son los valores de la semilla 0 (0,9708 / 0,6211 en detection_llvip_map.csv), mientras la Tabla 8 dos lineas antes reporta la media de 5 semillas 0,961 ± 0,0139 / 0,592 ± 0,0259. Mezcla de fuente monosemilla y multisemilla dentro de la misma seccion.
+
+*(bloque: cap3-4)*
+
+### parrafo 344, §4.6 Implementacion — INCOHERENCIA
+
+**Dice el libro:**
+
+> Toda la implementacion se realizo en Python 3.11 con las bibliotecas NumPy, OpenCV, scikit-image, SciPy, PyWavelets, Pandas, Matplotlib y Seaborn
+
+**Dice el dato:** requirements.txt declara 20 dependencias, no 8. Instaladas en el venv: dtcwt 0.14.0, torch 2.5.1+cu121, torchvision 0.20.1+cu121, ultralytics 8.4.68 (mas numpy 1.26.4, opencv, scikit-image 0.26.0, scipy 1.17.1, PyWavelets 1.9.0, pandas 3.0.3, matplotlib 3.11.0, seaborn 0.13.2). Evidencia de que las omitidas son load-bearing: experiments/results/metrics_reports/descriptive_means.csv fila 1 = DTCWT (EN 6,6877 / SD 0,1172 / FE 1,0577), producida por src/fusion/comparatives.py que importa dtcwt sin fallback (linea 195: raise ImportError); experiments/results/metrics_reports/detection_llvip_map.csv, 9 filas (IR mAP50 0,9708 ... VIS 0,8133; DTCWT 0,9485), producida por experiments/detection_llvip/train_eval_llvip.py linea 39 'from ultralytics import YOLO'.
+
+**El escéptico:** El hallazgo se confirma en todos sus puntos, verificados directamente. Python 3.11 es correcto (.venv/Scripts/python.exe -V devuelve 3.11.14), las ocho bibliotecas listadas estan en requirements.txt, y la organizacion modular (src/datasets.py, src/fusion/, src/metrics/, src/utils/) y el .git existen. Y la omision denunciada es real y portadora de resultados: requirements.txt declara ademas dtcwt>=0.12, torch>=2.0, torchvision>=0.15 y ultralytics>=8.2; src/fusion/comparatives.py:29 hace 'import dtcwt as _dtcwt' y la linea 195 aborta con 'raise ImportError("dtcwt no esta instalado...")' SIN fallback, de modo que sin esa biblioteca la columna DTCWT del benchmark no existe (descriptive_means.csv, fila 1: DTCWT, EN 6,6877; SD 0,1172; FE 1,0577; DTCWT aparece en 28 CSV de experiments/results); y experiments/detection_llvip/train_eval_llvip.py:39 hace 'from ultralytics import YOLO', sin lo cual no existe ninguna fila de detection_llvip_map.csv (fila 3: DTCWT mAP50 0,9485 / mAP50-95 0,6033; 9 filas en total). Esto choca con la promesa de la misma frase, que cualquier figura, tabla o estadistico puede regenerarse ejecutando los scripts de experiments/. GRAVEDAD EXAGERADA por la etiqueta INCOHERENCIA: no hay contradiccion ni cifra falsa, es una enumeracion incompleta que se corrige agregando dos nombres. La lista es visiblemente un resumen del stack cientifico y no un volcado de requirements.txt (omite tambien openpyxl, PyMuPDF, python-docx, python-pptx, Pillow, PyYAML, jupyter); lo que salva al hallazgo es que dtcwt y torch/ultralytics son las unicas omisiones que generan cifras reportadas. Ademas el lector no queda desinformado sobre el detector: el parrafo 342 describe el reentrenamiento de YOLOv8n y el 456 cita a Jocher et al. (2023), Ultralytics YOLOv8. Aparte, sin valor de hallazgo: el parrafo 456 cita version 8.0.0 mientras requirements.txt pide >=8.2 e instalado hay 8.4.68, pero es la cita canonica del software y no lo tratria como error.
+
+*(bloque: cap3-4)*
+
+### parrafo 350 (§5.1 Caracterizacion del dataset) — CONTRADICE
+
+**Dice el libro:**
+
+> resoluciones del orden de 360x270 a 768x576 pixeles
+
+**Dice el dato:** Rango real de los 20 pares del corpus efectivo (medido con PIL sobre data/raw/VIS y data/raw/IR, ambas modalidades identicas en cada par): minimo 359x247 px (Athena_helicopter_helib_011.bmp), maximo 768x576 px (9 pares: Athena_2_men_in_front_of_house_meting003, Athena_heather_hei_vis, Athena_lake_lake, Athena_man_in_doorway_maninhuis, soldier_behind_smoke_1/2/3, soldier_in_trench_1/2). Los once restantes: 599x446, 604x439, 607x456, 609x439, 611x458, 616x445, 620x450, 640x480 (x2), 749x551. El libro dice «del orden de 360x270 a 768x576»: el limite superior es exacto, el ancho inferior falla en 1 px y la altura inferior en 23 px (247 real vs 270 escrito, 9,3 % de diferencia). No existe CSV de resoluciones; la verificacion es directa sobre los .bmp.
+
+**El escéptico:** Lei la frase completa en el parrafo 350: «Las veinte (20) imagenes pareadas del TNO Image Fusion Dataset cubren escenarios variados: [...] Los pares poseen registro espacial previo y resoluciones del orden de 360x270 a 768x576 pixeles.» El sujeto es explicitamente el corpus de veinte pares que se usa en el trabajo, no el TNO completo, asi que el rango debe salir de esos veinte archivos. Medi yo mismo los 20 pares del corpus efectivo (los que aparecen en experiments/results/metrics_reports/all_metrics.csv, columna «image», 20 valores unicos) contra C:/Users/Usuario/Documents/unv/mastertesis/tesis_mciencias_datos/data/raw/VIS y .../data/raw/IR con PIL: el minimo es 359x247 (Athena_helicopter_helib_011.bmp, identico en VIS y en IR, modo L) y el maximo 768x576. El 270 no aparece en ningun archivo del corpus ni en ningun CSV: busque «360» y «270» en experiments/, src/ y docs/*.md y el unico eco es el propio informe del revisor (docs/AUDITORIA_LIBRO.md linea 400). Tampoco hay CSV de resoluciones en metrics_reports (52 archivos revisados) ni resize en el cargador —el unico cv2.resize esta en src/fusion/optimal_top_hat.py:87 y solo actua si VIS e IR difieren, que no es el caso—, asi que no hay un tamano «procesado» distinto que justifique el 270. El hallazgo del revisor es correcto. Dos precisiones donde el revisor se equivoco en detalles secundarios: (a) dice «768x576, correcto, 11 pares» y en el corpus efectivo son 9 pares —10 archivos en disco, uno de ellos el Athena_heather_IR_hei_vis_g excluido por el par corrupto—; (b) dice «el resto del corpus va de 599x446 a 749x551» y el mas chico del resto por area es en realidad 604x439 (APC_1_view_2_fk_ref_01_005). Ninguna de las dos toca el nucleo del hallazgo. Sobre la gravedad: la marco baja y creo que el revisor la sobredimensiona al llamarla CONTRADICE sin matiz. El ancho 360 acierta a 1 pixel del real (359), la altura falla en 23 px, la frase lleva el amortiguador «del orden de», y es una oracion puramente descriptiva del corpus: ninguna metrica, tabla, prueba estadistica ni conclusion depende de ese rango. Es una errata de redaccion que se arregla escribiendo «359x247 a 768x576», no una cifra empirica inventada ni un resultado mal reportado. Vale corregirla, pero no exige revisar ningun calculo.
+
+*(bloque: cap5-calidad)*
+
+### parrafo 396, pie de la Tabla 11 — INCOHERENCIA
+
+**Dice el libro:**
+
+> las diferencias reflejan el radio hallado (r = 1 donde la aptitud llega a 1,7350 y r = 25 donde llega a 1,7057)
+
+**Dice el dato:** pso_grid_search_fo_propuesta.csv (25 filas): r_opt = 1 en 16 filas → Fo_opt = 1,7350; r_opt = 25 en 8 filas → Fo_opt = 1,7057; r_opt = 14 en 1 fila (n = 2, Tmax = 10, evaluaciones = 20, segundos = 8) → Fo_opt = 1,6990. m_opt = 0,30 en las 25. Tabla 11 del docx (tabla 34), fila n = 2: 1,6990 | 1,7350 | 1,7057 | 1,7350 | 1,7350 — coincide celda por celda con el CSV. El pie del párrafo 396 nombra dos radios (1 y 25) de los tres que aparecen; el tercero, r = 14, no se menciona en ninguna parte del documento.
+
+**El escéptico:** Abrí la Tabla 11 (tabla índice 34 del docx, malla 5 × 5 de n × T) y el CSV, y el revisor tiene razón en los hechos: la tabla contiene TRES valores distintos, no dos, y el pie del párrafo 396 solo nombra dos radios. Reproduje celda por celda la correspondencia tabla↔CSV y coincide en las 25: la celda n = 2 / T = 10 vale 1,6990 y en experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv esa fila (n=2, Tmax=10, evaluaciones=20) tiene r_opt = 14, m_opt = 0,30, Fo_opt = 1,6990. El reparto de las otras 24 celdas es también exactamente el que dice el revisor: r_opt = 1 en 16 filas, todas con Fo_opt = 1,7350, y r_opt = 25 en 8 filas, todas con Fo_opt = 1,7057 (crosstab r_opt × Fo_opt perfectamente diagonal, sin una sola celda cruzada). Verifiqué además que «1,6990» y «r = 14» no aparecen en ningún otro lugar del libro: el único hit en los 521 párrafos y 38 tablas es la propia celda de la Tabla 11, así que el tercer radio no se explica en otro pie ni en el cuerpo (párrafos 386, 389 y 393 tampoco lo mencionan).
+
+Ahora la parte que matiza al revisor, y por eso bajo la gravedad. Primero, ninguna cifra del pie está mal: los dos emparejamientos que afirma —r = 1 ↔ 1,7350 y r = 25 ↔ 1,7057— son exactos en el CSV, y la otra afirmación del pie, «las 25 configuraciones convergen al mismo peso óptimo (m* = 0,30)», se sostiene (m_opt.unique() = [0.3], las 25 filas). Segundo, la proposición sustantiva del pie —«las diferencias reflejan el radio hallado»— es VERDADERA también para la celda omitida: 1,6990 se explica precisamente porque ahí el radio hallado fue otro (14). Lo que está incompleto es el paréntesis, que enumera dos de los tres radios; no hay una contradicción entre el libro y el dato, hay una enumeración que se queda corta en una celda de 25. Tercero, la celda omitida es justo la corrida más pobre del barrido: n = 2 / T = 10 es la única con 20 evaluaciones (el mínimo de la tabla, 8 s), es decir un PSO que no llegó a converger; su Fo = 1,6990 es además el peor valor de la malla. Y nada de esto toca ninguna conclusión: la configuración adoptada (r = 25, m = 0,30, Fo = 1,7057) y el argumento de que el radio se fija por criterio de evaluación y no por la optimización quedan intactos.
+
+En suma: hallazgo real y vale corregirlo, pero la etiqueta «INCOHERENCIA» exagera. Es una omisión de un caso atípico en un pie de tabla, subsanable agregando «y r = 14 con 1,6990 en la configuración más pequeña (n = 2, T = 10, 20 evaluaciones)» o cambiando «reflejan» por «reflejan principalmente». Sería un error mayor si el pie afirmara «solo dos radios» o «el barrido halló únicamente r = 1 y r = 25», y no lo hace.
+
+*(bloque: cap5-deteccion)*
+
+### parrafo 412, §5.8.3 — INCOHERENCIA
+
+**Dice el libro:**
+
+> la suma desciende al cuarto lugar (3,500), por detras del maximo y del disco (3,444 cada uno)
+
+**Dice el dato:** experiments/results/metrics_reports/ablacion_banco_resumen.csv, columna rango_9_sin_FE: disco 3,444 (fila brazo=disco), maximo 3,444 (fila brazo=maximo), promedio 3,475 (fila brazo=promedio), suma 3,500 (fila brazo=suma), base 3,506 (fila brazo=base), lineas 3,631 (fila brazo=lineas). La suma es cuarta, con TRES brazos por delante (disco, maximo y promedio), no dos. Contraste: columna rango_17 de la misma tabla: maximo 2,932, disco 3,153, promedio 3,179, suma 3,621, lineas 3,756, base 4,359 -alli el parrafo si nombra los tres.
+
+**El escéptico:** Abri ablacion_banco_resumen.csv y la columna rango_9_sin_FE ordenada de menor a mayor es exactamente: disco 3,444, maximo 3,444, promedio 3,475, suma 3,500, base 3,506, lineas 3,631. Todas las cifras que imprime el parrafo 412 son correctas: la banda 3,444-3,631, el valor 3,500 de la suma, el empate de maximo y disco en 3,444 "cada uno", y el cuarto lugar de la suma (disco y maximo empatados primeros, promedio tercero, suma cuarta). El unico defecto es la enumeracion: el promedio (3,475) tambien va por delante de la suma y el parrafo no lo nombra, de modo que se declaran dos brazos por delante para un cuarto puesto que exige tres. El revisor tiene razon en los hechos. Sin embargo la GRAVEDAD ESTA EXAGERADA: no hay ninguna cifra equivocada ni ningun ranking invertido, y el argumento del parrafo -que la ventaja de la suma se apoya en el doble conteo de la entropia- solo se refuerza si se nombra al promedio. Ademas dos oraciones mas abajo, en el mismo parrafo, el autor SI enumera los tres brazos por delante para el caso de diecisiete metricas -"encabeza el maximo (2,932), siguen el disco (3,153) y el promedio (3,179), y la suma desciende al cuarto lugar (3,621)"-, que coincide exacto con la columna rango_17 (maximo 2,932, disco 3,153, promedio 3,179, suma 3,621, base 4,359). Eso confirma que se trata de una omision de redaccion y no de una mala lectura del dato. La correccion es insertar cinco palabras: "por detras del maximo y del disco (3,444 cada uno) y del promedio (3,475)".
+
+*(bloque: cap5-deteccion)*
+
+### párrafo 435 (recomendación 1) — INCOHERENCIA
+
+**Dice el libro:**
+
+> el desvío de una misma entrada (0,0128 de mAP@0,5)
+
+**Dice el dato:** experiments/results/metrics_reports/semillas_llvip_resumen.csv, columna mAP50_desv: los nueve desvíos son 0,0063 (RatioPiramide), 0,0064 (PiramideLaplace), 0,0095 (DTCWT), 0,0123 (VIS), 0,0128 (Curvelet), 0,0130 (Propuesta_Novedosa), 0,0131 (TopHat_Clasico), 0,0139 (IR), 0,0288 (DWT). Mediana = 0,0128; media = 0,0129; máximo = 0,0288; SD combinado = 0,0143. Corroborado en detection_llvip_semillas.csv (45 filas = 9 entradas × 5 semillas). El texto correcto sería «el desvío mediano de una misma entrada (0,0128 de mAP@0,5)», como ya figura en el párrafo 379.
+
+**El escéptico:** El revisor acierta en todos los números: en semillas_llvip_resumen.csv (columna mAP50_desv, 9 filas) los desvíos son 0,0063 · 0,0064 · 0,0095 · 0,0123 · 0,0128 · 0,0130 · 0,0131 · 0,0139 · 0,0288, con mediana exactamente 0,0128 (que por coincidencia es el desvío de Curvelet), media 0,0129 y máximo 0,0288 (DWT). Reproducido desde el crudo detection_llvip_semillas.csv (45 filas, 5 semillas por entrada, mediana de los std por grupo 0,01279). Ninguna lectura alternativa rescata la frase: el SD combinado sería 0,0143 y el de la propia Propuesta es 0,0130. Por tanto el párrafo 435 llama «el desvío de una misma entrada» a lo que es la MEDIANA de nueve desvíos que varían por un factor 4,6. PERO la gravedad está exagerada al etiquetarlo INCOHERENCIA: (1) la cifra no es inventada ni errónea, está en el CSV y es el estadístico que el libro nombra correctamente en el párrafo 379 («el desvío mediano de una misma entrada es 0,0128 y su recorrido mediano 0,0308» — mediana de mAP50_recorrido = 0,0308, verificada); (2) no hay contradicción entre párrafos, 379 y 435 dan el mismo número y 435 solo omite el calificativo, es imprecisión de redacción de una palabra; (3) la conclusión sustantiva se sostiene: las brechas consecutivas entre las siete medias de fusión son 0,0152 / 0,0082 / 0,0024 / 0,0025 / 0,0051 / 0,0140 (rango 0,0024–0,0152) y la mediana del desvío 0,0128 cae dentro de ese rango, así que «un único entrenamiento por entrada no autoriza a ordenarlas» queda respaldado. Dato adicional que el revisor no señaló: la misma omisión aparece en el párrafo 377 («las diferencias entre ellas caen por debajo del desvío de una misma entrada (0,0128)»), de modo que la inserción de «mediano» corresponde en 377 y en 435. En 377 la afirmación aguanta incluso en lectura estricta, porque el desvío de la propia Propuesta es 0,0130 y las brechas que la rodean son 0,0082 y 0,0024.
+
+*(bloque: cap6)*
+
+### parrafo 484 (apendice A) — INCOHERENCIA
+
+**Dice el libro:**
+
+> La totalidad del codigo de esta tesis esta disponible en el repositorio del proyecto, organizado en modulos: [lista de nueve modulos y carpetas]
+
+**Dice el dato:** experiments/ contiene 46 scripts .py en el nivel superior (51 con los 5 de subdirectorios); el parrafo 484 nombra 3 scripts de experiments/ (run_all_fusions.py, run_stats_analysis.py, pso_grid_search_fo.py) mas la carpeta detection_llvip/. Los 10 items nombrados existen todos. Faltan, existentes y con CSV: detection_m3fd/ (prepare_m3fd.py, train_eval_m3fd.py -> detection_m3fd_map.csv), run_ablacion_banco.py (-> ablacion_banco.csv, _resumen, _contrastes), optimo_exacto_fo.py (-> optimo_exacto_fo.csv), pso_repeticiones.py (-> 4 CSV pso_repeticiones_propuesta*), run_control_negativo.py (-> control_negativo.csv), run_ajuste_comparativos.py (-> ajuste_comparativos.csv). Salvedad: figura_detecciones_m3fd.json y arquitectura_yolo.json los generan make_figura_detecciones_m3fd.py / make_figura_detecciones_metodos.py y make_figura_arquitectura_yolo.py, no detection_m3fd/.
+
+**El escéptico:** El conteo del revisor es exacto y las omisiones existen, pero la etiqueta INCOHERENCIA no corresponde: ninguna afirmacion del parrafo 484 es falsa. Verifique con ls: experiments/ tiene 46 archivos .py en el nivel superior (51 contando los 5 de detection_llvip/ y detection_m3fd/), y el apendice nombra 3 scripts mas la carpeta detection_llvip/. Los diez items nombrados existen todos y detection_llvip/ contiene exactamente prepare_llvip.py, train_eval_llvip.py y run_semillas_llvip.py, tal como dice el texto. Las omisiones que senala el revisor son reales y todas con CSV publicado: detection_m3fd/train_eval_m3fd.py:18 escribe detection_m3fd_map.csv (base del parrafo 380-382 y la Tabla 9), run_ablacion_banco.py:94 escribe ablacion_banco.csv mas _resumen y _contrastes, optimo_exacto_fo.py:32 escribe optimo_exacto_fo.csv, pso_repeticiones.py produce las cuatro tablas pso_repeticiones_propuesta*.csv, run_control_negativo.py:77 escribe control_negativo.csv y run_ajuste_comparativos.py:100 escribe ajuste_comparativos.csv. La asimetria mas visible es que el apendice nombra detection_llvip/ y no su gemelo de M3FD, cuando la Tabla 9 depende de este ultimo. Dos correcciones al revisor: figura_detecciones_m3fd.json y arquitectura_yolo.json NO los produce detection_m3fd/ sino make_figura_detecciones_m3fd.py / make_figura_detecciones_metodos.py:50 y make_figura_arquitectura_yolo.py:34, asi que esa atribucion esta de mas; y el parrafo 344 ya remite al directorio experiments/ completo ("cualquier figura, tabla o estadistico de esta tesis puede regenerarse ejecutando los scripts del directorio experiments/"), lo que debilita la lectura de que la lista del apendice pretenda ser un inventario cerrado. La frase "la totalidad del codigo esta disponible" es literalmente verdadera; lo incompleto es la enumeracion que sigue a "organizado en modulos:", que opera como mapa ilustrativo sin atenuante ("entre otros", "los principales"). Ningun numero, tabla ni resultado del libro queda afectado: es un defecto editorial de una linea.
+
+*(bloque: apendice)*
+
+### parrafo 519 (apendice F) — SIN FUENTE
+
+**Dice el libro:**
+
+> La ejecucion completa del benchmark (140 fusiones: 7 metodos x 20 pares) toma aproximadamente 90 segundos.
+
+**Dice el dato:** Los 90 s no figuran en ningún CSV ni los cronometra run_all_fusions.py (sin import time), pero se reproducen: 5 pares x 7 métodos = 35 fusiones en 21,85 s -> 87,4 s extrapolados a 20 pares (3% de diferencia). Desglose: fusiones 2,20 s (10,1%) / evaluate_all 19,64 s (89,9%). Conteo respaldado en experiments/results/metrics_reports/all_metrics.csv: shape (140, 19), 7 métodos x 20 imágenes. Dato adicional del mismo párrafo: la configuración adoptada r=25, m=0,30 tarda ~171,7 ms por fusión, fuera de la banda «20 a 80 ms» que el libro declara (esa banda corresponde a r de 1 a 15: 27,4 a 79,9 ms).
+
+**El escéptico:** CONFIRMADO en la letra, pero con gravedad muy exagerada. Verifiqué lo que el revisor afirma y es cierto: ningún CSV registra el tiempo del benchmark. Recorrí las 61 planillas de experiments/results/** buscando columnas de tiempo y sólo hay 'segundos' en pso_grid_search.csv, pso_grid_search_fo_clasico.csv, pso_grid_search_fo_propuesta.csv, pso_repeticiones_propuesta.csv, pso_repeticiones_propuesta_libre.csv y detection_llvip_semillas.csv —todas del PSO o del detector, ninguna del benchmark inter-método—. Leí experiments/run_all_fusions.py completo: no importa 'time' ni cronometra nada, y su sidecar all_metrics.config.json sólo guarda la huella de configuración. El conteo sí está respaldado: all_metrics.csv es (140, 19), method.nunique()=7 (Curvelet, DTCWT, DWT, PiramideLaplace, Propuesta_Novedosa, RatioPiramide, TopHat_Clasico), image.nunique()=20.
+
+Por qué la gravedad está exagerada, y es lo que el autor necesita oír:
+1) La cifra es correcta, no inventada. Instrumenté el bucle real (METHODS importado del propio run_all_fusions.py + evaluate_all real) sobre 5 pares x 7 metodos = 35 fusiones: 21,85 s, que extrapolados a 20 pares dan 87,4 s frente a los «aproximadamente 90 segundos» del libro. Es un 3% de diferencia, con «aproximadamente» ya cubriéndolo. Etiquetar esto SIN FUENTE —categoría que el encargo declara «importantísima»— manda al autor a buscar una fabricación que no existe.
+2) Es una nota de hardware de apéndice, no un resultado. Está en la misma frase que «Intel i7, 16 GB de RAM, Windows 11, Python 3.11», nada de lo cual vive en un CSV ni nadie exigiría que viviera. Un reloj de pared es una propiedad del entorno de corrida, no una métrica que all_metrics.csv pueda almacenar. No sostiene ninguna hipótesis, ranking ni tabla: nada depende de ella aguas abajo.
+
+Sobre el punto secundario del revisor (que la frase atribuye implícitamente el costo a las fusiones): lo respaldo con mi propio desglose —fusiones 2,20 s (10,1%), evaluate_all 19,64 s (89,9%); extrapolado, 8,8 s de fusiones contra 78,6 s de métricas—, y agrego un dato que refuerza su lectura: docs/fuentes/reverificacion_hallazgos.json entrada [89] muestra que una pasada de auditoría anterior ya había propuesto redactarlo como «(140 fusiones: siete métodos sobre veinte pares, evaluadas con las diecisiete métricas del evaluador)» y esa cláusula aclaratoria se perdió al adoptar la corrección. Aun así es un asunto de redacción, no una falsedad: el docstring de run_all_fusions.py define el benchmark como fusionar Y consolidar métricas, así que «ejecución completa del benchmark» describe bien los 87-90 s. Corresponde reponer la cláusula de las 17 métricas, no corregir el número.
+
+Dato de ubicación: la frase está en el párrafo 520, no en el 519 (519 es el título «F. Hardware y tiempos de ejecución»).
+
+LO QUE EL REVISOR NO MIRÓ, en el mismo párrafo, y que vale más que su hallazgo: «Cada fusión Top-Hat consume entre 20 y 80 milisegundos según la configuración». Medí el barrido de radios sobre el par 0 (439x609): r=1 27,4 ms; r=5 34,5 ms; r=10 52,5 ms; r=15 79,9 ms; r=20 125,6 ms; r=25 171,7 ms; r=30 233,2 ms. La banda 20-80 ms describe bien r de 1 a 15, pero la configuración ADOPTADA (r=25, m=0,30) tarda ~170 ms, más del doble del techo declarado, y es estable (163-185 ms en repeticiones, no es warm-up). Sobre eso descansa la frase siguiente, «Esta liviandad computacional confirma la viabilidad del método para aplicaciones en tiempo real»: el número pertinente para tiempo real es la latencia por fusión de la configuración adoptada (~170 ms, ~6 fps), no los 90 s del benchmark ni la banda 20-80 ms. Ahí conviene que el autor mire.
+
+*(bloque: apendice)*
+
+### parrafo 484 (apendice A, ultima frase) — INCOHERENCIA
+
+**Dice el libro:**
+
+> El archivo requirements.txt consigna las dependencias exactas.
+
+**Dice el dato:** requirements.txt: 20 lineas de paquete, 20 con >=, 0 con ==, 0 con ~=, 0 sin operador (25 lineas totales, 5 de comentario/blanco). Pisos declarados: torch>=2.0, ultralytics>=8.2. experiments/results/metrics_reports/detector_perfil.json, clave /entorno: ultralytics = 8.4.68, torch = 2.5.1+cu121 (coincide con pip list del .venv). Unico archivo de entorno del repo: requirements.txt (sin lockfile). experiments/verificar_entregables.py bloque 19, lineas 1043-1067: compara solo nombres de paquete contra requirements.txt, no versiones. Libro parrafo 344: menciona Python 3.11 y ocho bibliotecas sin ninguna version.
+
+**El escéptico:** Verifique cada cifra del revisor y todas son exactas: requirements.txt tiene 20 lineas de paquete, las 20 con >=, cero con == o ~=, ninguna sin operador (el archivo tiene 25 lineas en total; 5 son comentario o blanco, asi que "20 lineas" describe los paquetes, no el archivo). Los pisos son torch>=2.0 y ultralytics>=8.2, y experiments/results/metrics_reports/detector_perfil.json clave /entorno registra ultralytics 8.4.68 y torch 2.5.1+cu121, muy por encima; el .venv vivo coincide (pip list). No hay lockfile: requirements.txt es el unico archivo de entorno del repo (no hay pyproject.toml, environment.yml, poetry.lock ni constraints.txt). Confirmo entonces el hecho, pero BAJO la gravedad y corrijo la etiqueta: no es una INCOHERENCIA. Primero, por gramatica "exactas" concuerda con "dependencias", no con "versiones": la lectura literal —el archivo consigna exactamente cuales dependencias hacen falta— es VERDADERA, y es justo lo que el propio verificador del proyecto exige. El bloque 19 de experiments/verificar_entregables.py (lineas 1043-1067) cruza cada import de src/ y experiments/ contra requirements.txt y compara SOLO nombres de paquete, nunca versiones; su comentario (lineas 1043-1046) dice que el defecto que lo motivo fue que faltaban cinco paquetes, no que faltaran pines. El revisor reescribio "dependencias exactas" como "versiones exactas" y refuto la reescritura. Segundo, ningun CSV contradice el parrafo 484 y el libro no afirma pines en ninguna parte: el parrafo 344 enumera "Python 3.11 con NumPy, OpenCV, scikit-image, SciPy, PyWavelets, Pandas, Matplotlib y Seaborn" sin una sola version. No hay, por tanto, contradiccion interna que buscar. Queda un reparo de redaccion legitimo: en un apendice de reproducibilidad "dependencias exactas" invita a leer versiones fijadas, y hoy un pip install -r requirements.txt no reproduce ultralytics 8.4.68 ni torch 2.5.1+cu121. Es un cambio de una palabra ("minimas"), o un pip freeze si se quiere reproducibilidad estricta. Ningun resultado, tabla, hipotesis ni conclusion depende de esta frase.
+
+*(bloque: apendice)*
+
+### parrafo 490 (apendice B) — INCOHERENCIA
+
+**Dice el libro:**
+
+> Cada combinacion del barrido ejecuta una corrida PSO independiente con semilla propia (25 corridas, 4.500 evaluaciones de fusion en total).
+
+**Dice el dato:** Suma de «evaluaciones» en pso_grid_search_fo_propuesta.csv = 4.500 (25 filas, = suma de n x Tmax, = suma de «evals» de las 25 configuraciones de pso_grid_fo_propuesta_state.json). Cada evaluacion de aptitud ejecuta 3 fusiones (cache = list_pairs()[::7] = 3 escenas de los 20 pares), asi que el barrido ejecuto 13.500 fusiones. Redaccion precisa: «25 corridas, 4.500 evaluaciones de la aptitud (13.500 fusiones, tres escenas por evaluacion)».
+
+**El escéptico:** La observacion aritmetica del revisor es correcta y la verifique de primera mano, pero su etiqueta (INCOHERENCIA) exagera la gravedad: no hay contradiccion con el dato ni cifra equivocada, solo una imprecision de vocabulario. Lo comprobado: (a) las 25 corridas con semilla propia son ciertas — experiments/pso_grid_search_fo.py usa init_swarm(n, seed=1000*n+T), unico para las 25 combinaciones n en {2,4,6,8,10} x T en {10,20,30,40,50}; (b) la cifra 4.500 esta respaldada exactamente — la columna «evaluaciones» de experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv suma 4.500 en sus 25 filas, coincide fila a fila con n x Tmax (verificado: ((df.n*df.Tmax)==df.evaluaciones).all() es True) y con la suma de «evals» de las 25 entradas de experiments/results/pso/pso_grid_fo_propuesta_state.json (4.500); (c) esas 4.500 cuentan llamadas a fitness, no fusiones — en el script cfg["evals"] += 1 se incrementa una vez por llamada a fitness, y fitness recorre cache() = list_pairs()[::7]; ejecute list_pairs(): 20 pares, [::7] da 3 escenas, las mismas que registra condiciones.escenas del state.json (APC_1_view_1_fk_06_005, Athena_APC_4_fennek01_005, Athena_soldier_behind_smoke_3_meting012-1700, huella 372480ed88168d7c), con una llamada a fuse_optimal por escena. Luego 4.500 x 3 = 13.500 fusiones. Atenuante importante: el libro ya declara en otras partes que la aptitud se computa sobre tres escenas (parrafo 386, parrafo 393 y pie de la Figura 11 en los parrafos 180 y 395: «sobre tres escenas representativas»), de modo que el lector no queda enganado sobre el alcance del barrido; y la frase del parrafo 490, «4.500 evaluaciones de fusion», admite leerse como «evaluaciones de la aptitud de una fusion candidata», que es la lectura coherente con el resto del texto. La correccion propuesta mejora la precision y conviene aplicarla, pero es cosmetica: no manda a corregir ningun numero.
+
+*(bloque: apendice)*
+
+### Tabla 2 «Configuración de la Propuesta Novedosa y del PSO» (d.tables[11]), última fila — CONTRADICE
+
+**Dice el libro:**
+
+> Óptimo hallado | r = 25; m = 0,30 (m* del barrido en las 25 configuraciones; Fo = 1,7057)
+
+**Dice el dato:** Correccion de una palabra, sin cambio de cifras. Tabla 2, ultima fila: reemplazar el rotulo «Optimo hallado» por «Configuracion adoptada», dejando el contenido tal cual: «r = 25; m = 0,30 (m* del barrido en las 25 configuraciones; Fo = 1,7057)», y opcionalmente agregar «r por diseño sobre la bateria de evaluacion; el argmax de Fo en el rango publicado es r = 1 con Fo = 1,7350 (vease 5.6)». Datos verificados: experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv — m_opt = 0,30 en 25/25 filas; Fo_opt = 1,7350 con r_opt = 1 en 16 filas, 1,7057 con r_opt = 25 en 8 filas, 1,6990 con r_opt = 14 en la fila n=2/T=10. experiments/results/metrics_reports/optimo_exacto_fo.csv — fila r=25, m=0,30: Fo = 1,705696 (= 1,7057 de la celda, correcto); fila r=1, m=0,30: Fo = 1,734991 (maximo con m >= 0,30); maximo global sin restringir m: r=25, m=0,07, Fo = 1,771465. Los tres archivos consultados y las lineas del libro: docs/Tesis_Borrador_V3.docx par. 179, 285, 305, 389, 392, 396, 418, 423, 515, 516 y d.tables[11].
+
+**El escéptico:** El hallazgo se sostiene en su nucleo, pero es un defecto de ROTULO, no una cifra inventada, y el revisor exagero su alcance en dos puntos.
+
+LO QUE SE CONFIRMA. Verifique yo mismo pso_grid_search_fo_propuesta.csv (25 filas): m_opt = 0,30 en 25/25 filas; Fo_opt maximo = 1,7350 con r_opt = 1 en 16 filas; 1,7057 con r_opt = 25 en 8 filas; y la fila n=2/T=10 da 1,6990 con r_opt = 14. En optimo_exacto_fo.csv (5.000 puntos = 25 r x 200 m), restringido a m >= 0,30 el maximo es r=1, m=0,30, Fo=1,734991, mientras (r=25, m=0,30) vale 1,705696. Los cinco numeros del revisor son exactos. Por lo tanto el rotulo de la fila, «Optimo hallado», aplicado a r = 25 es incorrecto: dentro del rango publicado el argmax de Fo es r = 1. Un lector que solo mire la Tabla 2 concluye que r=25 salio del barrido, y no salio de ahi.
+
+DONDE LA GRAVEDAD ESTA EXAGERADA. (1) Ninguna cifra de la celda es falsa. «m = 0,30» esta respaldada (m_opt = 0,30 en 25/25 filas) y el parentesis atribuye correctamente solo el peso al barrido: «m* del barrido en las 25 configuraciones». «Fo = 1,7057» es el valor exacto de Fo en (r=25, m=0,30): optimo_exacto_fo.csv fila r=25/m=0,30 da 1,705696. No hay error numerico que corregir ni que se haya propagado; hay una palabra que corregir («Optimo hallado» -> «Configuracion adoptada»). (2) El libro NO afirma en ningun otro lugar que r=25 sea el optimo del barrido; afirma lo contrario, con las dos cifras a la vista. Parrafo 418: «La optimizacion no determina la configuracion evaluada. El argmax de la aptitud dentro del rango publicado es r = 1 (Fo = 1,7350) y no r = 25 (1,7057) ... El radio adoptado proviene, pues, de la bateria de evaluacion». El epigrafe de la Tabla 11 (par. 396) dice «r = 1 donde la aptitud llega a 1,7350 y r = 25 donde llega a 1,7057»; el par. 389 justifica r=25 por el bloque de actividad de las nueve metricas; los par. 179, 392 y 423 dicen «r = 25 por diseño» y «adoptado como decision de diseño sobre la bateria de evaluacion»; el par. 305 dice «se busca en r en [1,25] y se adopta r = 25». Es decir: incoherencia interna de una celda contra un capitulo que ya dice la verdad, no una afirmacion inventada.
+
+UN ERROR DEL PROPIO REVISOR. Su frase «no es ni el mejor del barrido ni el optimo exacto» es incorrecta en la segunda mitad. El maximo global de optimo_exacto_fo.csv, sin la restriccion m >= 0,30, es r = 25, m = 0,07, Fo = 1,771465; y ordenando el mejor m de cada radio, r=25 queda primero (1,771465), luego 24 (1,771173), 23 (1,770935)... r=1 no aparece arriba. Es decir, r = 25 SI es el radio del optimo exacto de Fo; solo deja de serlo cuando m se clava en el piso 0,30 del rango heredado. Esto concuerda con el par. 285 del libro («el gbest ... corresponde al optimo de la aptitud paralela F_apt (r = 25; m = 0,0703)»). Presentar r=25 como un radio que el dato no favorece es ir mas lejos de lo que el CSV permite.
+
+SEGUNDO LUGAR DE APARICION. Los par. 515 y 516 del apendice repiten el mismo rotulo («-> r = 25, m = 0,30» tras «se optimizan por PSO», y «con optimo r = 25, m = 0,30»); si se corrige la Tabla 2 conviene corregir esos dos con la misma redaccion. Tambien conviene revisar «el segundo valor mas frecuente del barrido» como argumento: contar modas (16 vs 8 filas) no es lo que la celda afirma y no deberia entrar en la correccion.
+
+*(bloque: tablas)*
+
+### Tabla de métricas al cierre de §2.2.7, la que sigue a la ecuación (26) (d.tables[25]) — INCOHERENCIA
+
+**Dice el libro:**
+
+> Métrica | Definición operativa | Interpretación | Dirección — con doce filas: EN, SD, FE, MG, MI_vis, MI_ir, SF, Qabf, Nabf, SSIM, SCD, VIF
+
+**Dice el dato:** Tabla del libro (d.tables[25], filas 1-13): 12 métricas = EN, SD, FE, MG, MI_vis, MI_ir, SF, Qabf, Nabf, SSIM, SCD, VIF.
+all_metrics.csv columnas = method, image, EN, SD, FE, MG, MI_vis, MI_ir, SF, SSIM, PSNR, Qabf, Nabf, SCD, VIF, FMI, Q0, QW, QE (17 métricas).
+src/metrics/evaluators.py METRIC_DIRECTION = 17 entradas (Nabf = "min", el resto "max").
+ranking_methods.csv: columna PSNR presente (Curvelet 1,00; DTCWT 2,25; DWT 2,75; RatioPiramide 4,35; Propuesta_Novedosa 5,35; TopHat_Clasico 5,35; PiramideLaplace 6,95).
+friedman_results.csv fila 8: PSNR, chi2 = 111,835714, p = 8,409774e-22, significant_05 = True.
+control_negativo_ranking.csv columnas: brazo, rango_9, rango_9_mas_Nabf, rango_17.
+ablacion_banco_resumen.csv columnas: brazo, 17 métricas, rango_17, rango_9, rango_9_sin_FE.
+ajuste_comparativos_ranking.csv columnas: clave, A_todos_por_defecto, B_comparativos_ajustados, C_todos_ajustados, D_comparativos_ajustados_17.
+Definiciones presentes en el marco que el revisor da por ausentes: ecuación (25) FMI en d.tables[24] con párrafo 297; ecuación (26) Q0 de Piella en la fila 0 de d.tables[25] con párrafo 298.
+Sin ecuación formal en §2.2.7: PSNR (solo glosa verbal en párrafo 284 y PSNRn = PSNR/100 en párrafo 276) y QW, QE (solo glosa verbal en párrafo 298).
+
+**El escéptico:** El conteo del revisor es correcto, pero su justificación es falsa en la mitad más importante y la gravedad está exagerada.
+
+CONFIRMADO (verificado en el docx): la tabla resumen dentro de d.tables[25] lista 12 filas —EN, SD, FE, MG, MI_vis, MI_ir, SF, Qabf, Nabf, SSIM, SCD, VIF— y por lo tanto no coincide con ninguno de los dos conjuntos operativos: le falta PSNR respecto de las nueve del criterio principal, y le faltan PSNR, FMI, Q0, QW y QE respecto de las diecisiete. Los dos conjuntos existen tal como dice el revisor: all_metrics.csv tiene exactamente 17 columnas de métrica y METRIC_DIRECTION en src/metrics/evaluators.py tiene 17 entradas; PSNR se rankea de hecho (columna PSNR en ranking_methods.csv, fila PSNR en friedman_results.csv) y el conjunto de 17 se usa de hecho (rango_17 en control_negativo_ranking.csv y ablacion_banco_resumen.csv, D_comparativos_ajustados_17 en ajuste_comparativos_ranking.csv, que son las columnas «Con 17» de d.tables[35], [36] y [37]).
+
+REFUTADO (la consecuencia que enuncia): «El lector no encuentra en el marco la definición de PSNR ni de los cuatro índices de Piella y Haghighat» es incorrecto para FMI y Q0. FMI tiene ecuación numerada (25) en d.tables[24], precedida por el párrafo 297 («FMI. Información mutua de los mapas de características (gradiente), normalizada por las entropías (Haghighat et al., 2011)»). Q0 de Piella tiene ecuación numerada (26) precedida por el párrafo 298, y esa ecuación está dentro del MISMO objeto d.tables[25] que la tabla señalada (fila 0 = ecuación (26), filas 1-13 = el resumen; 6 gridCols, sin tabla anidada). Es decir, la definición que el revisor declara ausente está pegada a la tabla que denuncia. Solo quedan sin ecuación PSNR (glosa verbal en el párrafo 284 y PSNRn = PSNR/100 en el 276) y las variantes QW/QE (glosa verbal en el 298: «la ponderan por la saliencia y los bordes locales»).
+
+Además, el párrafo 284 anticipa explícitamente el desfase: dice que Qabf, Nabf, SCD, VIF, FMI y los índices de Piella «se recogen en la sección siguiente por completitud» y que «la evaluación empírica de esta tesis reporta el subconjunto de nueve métricas descrito». El defecto real que queda es editorial y acotado: (a) la tabla omite PSNR, que sí es una de las nueve y sí aparece en las Tablas 5, 6 y 7; (b) incluye cuatro de los ocho extras y deja fuera los otros cuatro sin criterio visible; (c) la tabla no tiene epígrafe «Tabla N» ni frase de entrada —está fusionada al final de la tabla de la ecuación (26) y el párrafo siguiente ya es «3. MARCO CONCEPTUAL». Ninguna cifra de resultados se ve afectada.
+
+*(bloque: tablas)*
+
+### Tabla 8 «Detección de peatones en LLVIP» (d.tables[31]), fila de encabezado y las nueve filas de datos — INCOHERENCIA
+
+**Dice el libro:**
+
+> Encabezados «mAP@0,5 ↑ (media ± desv.)» y «mAP@0,5:0,95 ↑ (media ± desv.)» frente a «Precisión ↑» y «Recall ↑» sin rótulo
+
+**Dice el dato:** Recomputado de experiments/results/metrics_reports/detection_llvip_semillas.csv (5 filas por metodo, columnas precision y recall): Propuesta_Novedosa precision media 0,9438 y recall medio 0,8285, que son exactamente los 0,944 y 0,828 impresos en la Tabla 8. En detection_llvip_map.csv (corrida unica, identica a semilla 0) Propuesta_Novedosa da precision 0,8756 y recall 0,7613; brecha de +0,0682 y +0,0672. Las 18 celdas de precision y recall de las nueve filas coinciden con las medias de 5 semillas: VIS 0,8312/0,7137 (libro 0,831/0,714), IR 0,9691/0,8844 (0,969/0,884), PiramideLaplace 0,9663/0,8892 (0,966/0,889), RatioPiramide 0,9252/0,8349 (0,925/0,835), DWT 0,9072/0,8205 (0,907/0,821), DTCWT 0,9396/0,8193 (0,940/0,819), Curvelet 0,9460/0,8073 (0,946/0,807), TopHat_Clasico 0,9498/0,8303 (0,950/0,830), Propuesta_Novedosa 0,9438/0,8285 (0,944/0,828). Brechas contra semilla 0 del resto de los metodos: entre 0,0009 y 0,0525, todas menores que la de la propuesta.
+
+**El escéptico:** El hallazgo es correcto en los hechos, pero su gravedad esta exagerada: no es una incoherencia de dato sino una omision de rotulo. Verifique las 36 celdas numericas de la Tabla 8 (d.tables[31]) contra detection_llvip_semillas.csv y las 18 celdas de precision y recall coinciden EXACTAMENTE con las medias de las cinco semillas en las nueve filas, sin una sola excepcion; por tanto las cuatro columnas son medias de 5 semillas y solo dos llevan el rotulo «(media ± desv.)». Confirme ademas que detection_llvip_map.csv es la corrida de semilla 0 (sus nueve filas son identicas a las filas semilla == 0 del CSV de semillas), asi que la trampa de verificacion que describe el revisor es real. Mas aun: Propuesta_Novedosa es el peor caso de las nueve filas (brecha +0,0682 en precision y +0,0672 en recall, frente a 0,0009-0,0525 del resto), es decir la fila del metodo central de la tesis es la que mas se aparta del archivo de una sola corrida, lo que refuerza el hallazgo. Intente refutarlo leyendo el contexto completo y tampoco se salva: el parrafo 375 si aclara que se reentreno «5 veces por entrada cambiando unicamente la semilla» y la Figura 12 discute las cinco semillas, pero el epigrafe (parrafo 376) habla solo de «mAP por modalidad» y no menciona precision ni recall, y el encabezado agrava el asunto porque al rotular dos columnas con «(media ± desv.)» y dejar las otras dos desnudas sugiere por oposicion que precision y recall NO son medias. Rebajo la gravedad porque ninguna cifra impresa esta mal: las cuatro columnas son medias correctas y coherentes, no hay contradiccion interna en el libro, y etiquetarlo «INCOHERENCIA» manda al autor a buscar un numero equivocado que no existe cuando la correccion es cosmetica de una linea (extender «(media)» a las cuatro columnas). Las columnas de mAP estan bien rotuladas: medias y desvios muestrales con ddof = 1 verificados en las nueve filas. Hallazgo colateral menor y ajeno a este control: dos celdas de mAP parecen truncadas en vez de redondeadas, VIS mAP@0,5:0,95 media 0,42952 impresa como 0,429 (el redondeo daria 0,430) y DTCWT mAP@0,5 media 0,93652 impresa como 0,936 (daria 0,937).
+
+*(bloque: tablas)*
+
+### Epígrafe de la Tabla 11 «Barrido de configuraciones del PSO» (d.tables[34]) — INCOHERENCIA
+
+**Dice el libro:**
+
+> Las 25 configuraciones convergen al mismo peso óptimo (m* = 0,30); las diferencias reflejan el radio hallado (r = 1 donde la aptitud llega a 1,7350 y r = 25 donde llega a 1,7057)
+
+**Dice el dato:** pso_grid_search_fo_propuesta.csv: tres valores de Fo_opt, no dos — 1,7350 (16 filas, r_opt=1), 1,7057 (8 filas, r_opt=25), 1,6990 (1 fila, r_opt=14, en n=2/Tmax=10/20 evaluaciones). m_opt = 0,30 en 25/25 filas. Confirmación independiente en optimo_exacto_fo.csv a m=0,30: r=1 → 1,734991; r=14 → 1,699016; r=25 → 1,705696, de modo que el tercer valor también lo explica el radio. La tabla d.tables[34] coincide con el CSV en las 25 celdas.
+
+**El escéptico:** El hallazgo se confirma en todos sus componentes fácticos, pero su etiqueta de «INCOHERENCIA» está un grado por encima de lo que corresponde: es una enumeración incompleta en el epígrafe, no una contradicción con el dato.
+
+QUÉ VERIFIQUÉ YO MISMO
+
+1) El CSV. En experiments/results/metrics_reports/pso_grid_search_fo_propuesta.csv (25 filas, columnas n, Tmax, evaluaciones, r_opt, m_opt, Fo_opt, segundos) hay exactamente TRES valores distintos de Fo_opt, no dos: 1,7350 en 16 filas (r_opt = 1), 1,7057 en 8 filas (r_opt = 25) y 1,6990 en 1 fila (r_opt = 14). La fila es n = 2, Tmax = 10, evaluaciones = 20, r_opt = 14, m_opt = 0,30, Fo_opt = 1,6990. El mapeo r_opt→Fo_opt es biyectivo y limpio: cada radio produce un único valor de aptitud.
+
+2) La tabla del libro. d.tables[34] reproduce el CSV celda por celda, las 25, sin un solo error de transcripción: n=2 → 1,6990 | 1,7350 | 1,7057 | 1,7350 | 1,7350; n=4 → 1,7350 | 1,7057 | 1,7350 | 1,7350 | 1,7350; n=6 → cinco veces 1,7350; n=8 → 1,7057 | 1,7350 | 1,7057 | 1,7057 | 1,7350; n=10 → 1,7057 | 1,7350 | 1,7350 | 1,7057 | 1,7057. La celda 1,6990 sí está impresa y el lector la tiene delante.
+
+3) El epígrafe completo en contexto. Lo leí íntegro en los párrafos 192 y 396 (aparece duplicado, idéntico). No dice en ningún momento «solo hay dos valores» ni «uno de dos resultados»; dice «las diferencias reflejan el radio hallado» y abre un paréntesis con dos ejemplos. Leí también el párrafo 393 («todas convergen al mismo peso, m* = 0,30») y el 418 («el argmax de la aptitud dentro del rango publicado es r = 1 (Fo = 1,7350) y no r = 25 (1,7057), y el peso queda en m = 0,30 en las veinticinco configuraciones»): ninguna de esas afirmaciones queda falsificada por el tercer valor. Busqué en los 521 párrafos «1,699», «r = 14», «prematur» y «estanc»: cero coincidencias. Es cierto, entonces, que 1,6990 no se explica en ninguna parte del libro.
+
+4) m* = 0,30. Respaldado sin fisuras: m_opt = 0,30 en 25 de 25 filas, valor único de la columna.
+
+EVIDENCIA ADICIONAL QUE EL REVISOR NO USÓ Y QUE ATENÚA EL CARGO
+
+Abrí experiments/results/metrics_reports/optimo_exacto_fo.csv (el barrido determinista de 25 radios × 200 pesos, 5000 filas, que el párrafo 418 invoca). Fijando m = 0,30: r = 1 → Fo = 1,734991 (redondea a 1,7350), r = 14 → Fo = 1,699016 (redondea a 1,6990), r = 25 → Fo = 1,705696 (redondea a 1,7057). Es decir: el tercer valor TAMBIÉN queda explicado por el radio hallado. El principio que enuncia el epígrafe —«las diferencias reflejan el radio hallado»— es literalmente verdadero para las tres cifras, incluida la huérfana. Lo que falla es solo el paréntesis ilustrativo, que enumera dos de los tres radios que la propia tabla exhibe.
+
+Confirmo además que el caso r = 14 es un estancamiento genuino del enjambre y no un error de dato: ocurre en la configuración más pobre del barrido (n = 2, T = 10, 20 evaluaciones, la mínima de las 25) y 1,6990 no es siquiera el peor valor posible del rango (en el barrido exacto el mínimo sobre radios a m = 0,30 está en r = 8, con 1,696666), o sea que el PSO aterrizó en un punto intermedio de la superficie.
+
+POR QUÉ BAJO LA GRAVEDAD
+
+No hay ninguna cifra que corregir: ni en la tabla, ni en el epígrafe, ni en la prosa. Las dos aptitudes que cita el paréntesis son exactas, la afirmación sobre m* = 0,30 es exacta, la tabla es fiel al CSV en sus 25 celdas y el principio explicativo cubre el caso omitido. El defecto es una omisión editorial de una cláusula, no una incoherencia entre texto y dato, y se repara agregando el tercer radio al paréntesis —algo como «y r = 14 donde llega a 1,6990, único caso en que el enjambre no alcanza ninguno de los dos extremos, con solo 20 evaluaciones»—. Vale la pena arreglarlo, porque un lector atento se detiene en esa celda sin explicación y porque es la única señal en toda la tabla de que el PSO puede estancarse, pero no manda al autor a revisar ningún número ni ninguna conclusión.
+
+*(bloque: tablas)*
+
+### Epígrafe de la Tabla 12 «Control negativo» (d.tables[35]) — INCOHERENCIA
+
+**Dice el libro:**
+
+> rango medio de los siete métodos y de siete entradas degradadas
+
+**Dice el dato:** experiments/results/metrics_reports/control_negativo.csv: 14 brazos = 7 métodos + 6 degradaciones (4 ruidos σ=0,02/0,05/0,10/0,20 y 2 desenfoques 5×5 y 11×11) + 1 «base» sin operador, definida en experiments/run_control_negativo.py:15 como «base (VIS+IR)/2, sin operador». Todas las cifras del epígrafe y de la tabla son correctas; lo incorrecto es llamar «degradadas» a las siete entradas de control.
+
+**El escéptico:** El epígrafe de la Tabla 12 (d.paragraphs[407], repetido igual en el índice de tablas, d.paragraphs[193]) dice «rango medio de los siete métodos y de siete entradas degradadas», pero solo seis de esas siete entradas son degradaciones. Verifiqué control_negativo.csv: 280 filas = 14 brazos × 20 imágenes, y los brazos son 7 métodos (PiramideLaplace, RatioPiramide, DWT, DTCWT, Curvelet, TopHat_Clasico, Propuesta_Novedosa) + 6 degradaciones (ruido_0.02, ruido_0.05, ruido_0.10, ruido_0.20, desenfoque_5, desenfoque_11) + «base». experiments/run_control_negativo.py línea 15 define ese brazo como «base (VIS+IR)/2, sin operador», listado aparte de desenfoque_k y ruido_sigma, o sea el control sin procesar. Intenté refutar el hallazgo buscando si el texto trata la base como degradación y encontré lo contrario: el párrafo 406, inmediatamente anterior al epígrafe, lo dice con precisión —«siete entradas de control junto a los siete métodos: la imagen base sin operador, cuatro fusiones artificiales... y dos desenfoques gaussianos»— y el párrafo 408 usa la base como piso de referencia («queda por delante de cinco de los seis métodos comparativos y por delante de la imagen base»); §5.8.3 (párrafo 412) también la trata como brazo de control. El fallo es del epígrafe, que comprime «siete entradas de control» en «siete entradas degradadas». Gravedad baja porque es imprecisión de una palabra, no error de dato: el conteo de siete y el total de catorce filas son correctos, y recalculé los tres rangos medios desde el CSV crudo (rangos intra-imagen, Nabf en dirección inversa) reproduciendo las 14 filas de d.tables[35] al tercer decimal, idénticas a control_negativo_ranking.csv (Propuesta 6,383/6,760/5,344; ruido σ=0,20 6,767/7,490/10,138; base 7,322/6,690/6,521; desenfoque 11×11 9,822/9,130/10,053). La corrección es cambiar «degradadas» por «de control» en los párrafos 407 y 193.
+
+*(bloque: tablas)*
+
+
+## Refutadas — no las busques (23)
+
+El escéptico abrió el dato y el hallazgo no se sostuvo. Quedan anotadas para que nadie las
+vuelva a levantar. Cuatro de éstas son del SUMMARY y no eran falsos positivos sino
+**hallazgos ya corregidos**: la auditoría les sacó la foto antes del arreglo del 14 de
+agosto.
+
+- **Parrafo 86 (SUMMARY), parrafo de la evaluacion orientada a tarea** (CONTRADICE, alta): the proposal falls at the lower end of the fusion band (0.906)
+- **Parrafo 86 (SUMMARY)** (CONTRADICE, alta): the infrared alone remains the strongest modality (0.971)
+- **Parrafo 86 (SUMMARY)** (CONTRADICE, alta): every fusion clearly outperforms the visible modality alone (mAP@0.5 from 0.81 to 0.91-0.95)
+- **Parrafos 83 y 86, comparados entre si** (INCOHERENCIA, alta): El SUMMARY invoca el protocolo de 5 semillas ('repeated with 5 training seeds per input, 45 runs in total') y a continuacion reporta las cuatro cifras de una sola semilla
+- **párrafo 428 (conclusión específica 6)** (SIN FUENTE, media): el radio gobierna la escala de las estructuras que el operador extrae —la aptitud del trabajo de referencia favorece r = 1 y la batería de evaluación r = 25—
+- **párrafo 431 (conclusión específica 9)** (SIN FUENTE, media): aplicar selección por actividad a la capa base introduce discontinuidades de iluminación y sesga las métricas de información mutua. Este aprendizaje es transferible a cua
+- **párrafo 441 (recomendación 7)** (INCOHERENCIA, media): para aplicaciones donde prima la fidelidad a las fuentes, los métodos multiescala (DTCWT, CVT) siguen siendo preferibles
+- **parrafo 338, §4.3 Diseno** (SIN FUENTE, media): seleccionando la configuracion del enjambre con un barrido de 25 combinaciones (particulas 2-10 x iteraciones 10-50 ...) sobre un subconjunto de tres escenas representati
+- **parrafo 342, §4.5** (INCOHERENCIA, media): Se utilizo un subconjunto de 2.000 imagenes de entrenamiento y 500 de validacion por modalidad (VIS, IR y cada fusion), reentrenando el detector YOLOv8n
+- **parrafo 359 (§5.3)** (INCOHERENCIA, baja): presenta la mayor tasa de artefactos del benchmark despues del Top-Hat clasico (Nabf 0,3742, frente a 0,1593 de DTCWT)
+- **párrafo 441 (recomendación 7)** (INCOHERENCIA, baja): emplear la Propuesta Novedosa (r = 25, m = 0,30), que lidera la entropía y la eficiencia de fusión del benchmark con un realce controlado
+- **párrafo 423, contra el párrafo 425 («sostenido por su liderazgo en el rango medio de entropía, contraste y eficiencia de fusión»)** (INCOHERENCIA, baja): quedando segunda en contraste, gradiente medio y frecuencia espacial
+- **párrafo 423 (conclusión específica 1)** (INCOHERENCIA, baja): el infrarrojo solo (0,961) supera a 6 de las siete, sin distinguirse de la séptima
+- **Parrafo 83 (RESUMEN); identico en el 86 ('evidencing that the enhancement rewarded by activity metrics does not transfer to detection')** (SIN FUENTE, baja): lo que evidencia que el realce que premian las metricas de actividad no se traslada a la deteccion
+- **Parrafo 83 (RESUMEN)** (INCOHERENCIA, baja): El infrarrojo solo [...] supera a 6 de las siete fusiones, aunque de la septima, la piramide de laplace, no se distingue [...] indistinguible de 4 de sus seis rivales
+- **Parrafo 83 (RESUMEN) y parrafo 86 (SUMMARY)** (INCOHERENCIA, baja): En el ranking agregado de las nueve metricas [...] ocupa el primer lugar (3,39), por delante de la piramide de Laplace (3,91)
+- **parrafo 399, primera observacion de la Discusion integrada** (INCOHERENCIA, baja): es segunda en contraste, gradiente medio y frecuencia espacial
+- **parrafo 418, §5.8.5, y pie de la Tabla 11** (INCOHERENCIA, baja): el maximo dentro del rango publicado esta en r = 1 con Fo = 1,7350 ... con el peso libre esta en r = 25 ... con m = 0,070 y Fo = 1,7715
+- **parrafo 389, §5.6** (SIN FUENTE, baja): mientras r = 1 preserva mejor la fidelidad a las fuentes
+- **Tabla 7 (d.tables[30]), epígrafe y columna «Global»** (INCOHERENCIA, baja): Tabla 7. Ranking promedio por método y métrica (1 = mejor) — con columnas SD, MG, SF, SSIM, PSNR, MI_ir y Global
+- **parrafo 338, §4.3; y bloque de variables dependientes de la Tabla 26 (§4.4)** (INCOHERENCIA, baja): totalizando 140 fusiones evaluadas con las nueve metricas sin referencia, base del analisis estadistico inter-metodo
+- **Parrafo 229, limitacion tercera** (INCOHERENCIA, baja): pero con una sola en M3FD sobre un subconjunto de LLVIP (2.000 imagenes de entrenamiento y 500 de validacion, 40 epocas)
+- **Parrafo 227, enunciado de H6** (INCOHERENCIA, baja): H6: el orden de merito de las metricas de imagen no predice el orden de utilidad en una tarea posterior de deteccion
 
 ## Lo que esta auditoría no cubre
 
 - Las **citas bibliográficas** no se verificaron contra las fuentes originales.
 - Los cálculos no se volvieron a ejecutar: se compararon contra los CSV ya producidos.
-- La revisión adversarial quedó a medias, así que puede haber falsos positivos en la lista.
-- Las **cifras** ya están cubiertas por otro lado: `experiments/trazar_libro.py` traza las
-  502 del libro y hoy da **cero sin fuente**. Lo que esta auditoría agrega son las
-  afirmaciones **verbales** —«supera a», «lidera», «sistemáticamente»— que un rastreo de
-  números no puede juzgar.
+- Un solo escéptico por hallazgo. Donde la lectura es fina —un «sistemáticamente», un
+  «modestas»— conviene mirar el dato antes de reescribir.
+
+
+---
+
+# Hoja de verificación
+
+# Hoja de verificación — Tesis_Borrador_V3.docx
+
+Control previo a la reescritura a mano. Ocho bloques auditados contra los CSV de `experiments/results/`, con una segunda pasada adversarial que intentó refutar cada hallazgo antes de confirmarlo.
+
+---
+
+## 1. Veredicto
+
+Se revisaron **987 afirmaciones sustantivas** en los ocho bloques del libro (resumen, cap. 1-2, cap. 3-4, cap. 5 calidad, cap. 5 detección, cap. 6, apéndices y las 38 tablas); **910 quedaron respaldadas** contra un CSV concreto, **54 son hallazgos confirmados** y **23 alarmas se descartaron** en la revisión adversarial. **No hay ninguna cifra inventada en las tablas de resultados**: las once tablas numéricas (Tablas 4 a 14) se verificaron celda por celda y además se recomputaron desde el dato por imagen —medias, χ² de Friedman, los 99 contrastes de Wilcoxon con Holm, los tres rankings, las medias de cinco semillas de LLVIP— y coinciden al último decimal impreso.
+
+Lo que sí hay son incoherencias, y una domina el cuadro: **r = 25 se presenta como resultado del PSO en nueve lugares del libro, cuando el propio §5.8.5 demuestra que no lo es** (el PSO fija m = 0,30, que es el piso del rango heredado; el radio lo fija la batería de evaluación). Junto a eso: tres cifras de LLVIP quedaron en la versión de una sola semilla dentro de párrafos que declaran el protocolo de cinco; el Apéndice E afirma un refinamiento que la pirámide de Laplace no implementa; y el Apéndice F declara un rango de tiempos y un hardware que la máquina y el código desmienten. Ninguno de esos defectos obliga a recalcular una tabla: la conclusión central —la propuesta encabeza el ranking de las nueve métricas y su realce no se traslada a la detección— queda en pie en todos los casos.
+
+---
+
+## 2. Lo que hay que corregir
+
+54 hallazgos confirmados, agrupados en 43 filas cuando el mismo defecto se repite en varios lugares. Ordenados por gravedad.
+
+### Gravedad alta
+
+| Dónde | Qué dice el libro | Qué dice el dato | Fuente |
+|---|---|---|---|
+| ¶329 (§3.15), ¶338 (§4.3), ¶515 y ¶516 (ap. D), ¶422; Tabla 2 filas «Escala (radio)» y «Óptimo hallado»; Tabla 26 fila «Radio del SE (r)»; ecos en ¶83 (RESUMEN) y ¶86 (SUMMARY) | «(r, m) se ajustan automáticamente por PSO»; «la configuración óptima resultante (r = 25, m = 0,30)»; «Óptimo hallado: r = 25»; «1-25 (ajustado por PSO)» | El PSO fija **m** (m_opt = 0,30 en 25/25) pero **no r**: r_opt = 1 en **16** filas con Fo = 1,7350; r_opt = 25 en **8** con 1,7057; r_opt = 14 en **1** con 1,6990. Rejilla exacta: argmax con m ≥ 0,30 en **r = 1** (1,734991) contra r = 25 (1,705696). r = 25 es decisión de diseño sobre la batería de nueve métricas, como ya dicen ¶179, ¶386, ¶389, ¶418, ¶423, ¶428 y la limitación novena | `pso_grid_search_fo_propuesta.csv` (25 filas, r_opt/m_opt/Fo_opt); `optimo_exacto_fo.csv` (5.000 filas; filas 29, 4829, 4806); `results/pso/pso_grid_fo_propuesta_state.json` (n2_T20: gbest [1,0; 0,3] = 1,734991); comentario de `experiments/run_all_fusions.py` líneas 38-44 |
+| ¶276 (§2.2.5), con eco en ¶229 limitación novena | «Las nueve métricas de evaluación de esta tesis, todas de tipo mayor es mejor, favorecen en cambio r = 25» | **5 de 9.** A igual m = 0,30, r = 25 gana EN (6,5981→6,9855), SD (0,1129→0,1439), FE (1,0423→1,1047), MG (0,0232→0,0355) y SF (12,4030→17,4425); **r = 1 gana** MI_vis (1,3681), MI_ir (0,9316), SSIM (0,7607) y PSNR (17,7407), y lo hace en 20/20 pares en PSNR y 19/20 en SSIM | `all_metrics.csv` (Propuesta_Novedosa = r 25/m 0,30 según `all_metrics.config.json`) contra `fo_ablacion_per_image.csv` (`Propuesta_Fo(r=1,m=0.30)`); PSNR de r = 1 en `pso_por_imagen.csv` (r = 1, m = 0,30). Redacción correcta ya disponible en ¶386 y ¶389 |
+| ¶377 (§5.5, **segunda** lectura de la Tabla 8) | «el infrarrojo solo es la modalidad más fuerte (mAP@0,5 = 0,971; mAP@0,5:0,95 = 0,621) y ninguna fusión lo supera» | Son los valores de la **semilla 0**. Medias de 5 semillas: **0,9611 ± 0,0139** y **0,5919 ± 0,0259**, que es lo que ya publica la Tabla 8 dos líneas antes. Con medias, la ventaja sobre la mejor fusión es 0,0094 en mAP@0,5 (no pasa el filtro de ruido del propio proyecto) y 0,0025 en mAP@0,5:0,95: hay que matizar «ninguna fusión lo supera», no solo cambiar dos dígitos | `semillas_llvip_resumen.csv` fila IR; `detection_llvip_map.csv` fila IR (= semilla 0 de `detection_llvip_semillas.csv`); `semillas_llvip_pareadas.csv` fila 21 (IR vs PiramideLaplace: dif 0,0094, `mayor_que_el_ruido` = False, p = 0,3125) |
+| ¶419 (cierre de §5.8.5), con eco en ¶423 | «Se sostiene H6, **y con muestra suficiente**: la hipótesis de que la mejora … se traslade a la detección queda rechazada, no simplemente sin confirmar» | Con n = 23 discordantes, la potencia en la diferencia realmente observada (−3,0 pp) es **0,258**; llega a 0,80 solo desde 5,8 pp. Los dos contrastes que preceden la frase no rechazan: Spearman p = 0,4316 y McNemar exacto p = 0,2100. Además la diferencia observada es negativa (116 contra 123 escenas de 232) | `potencia_mcnemar.csv` (delta_pp 3,0 → 0,257769; 5,8 → 0,816201); `complementariedad_resumen.csv` (gana 8 / pierde 15); `correlacion_calidad_deteccion.csv` fila LLVIP_5sem/mAP50. El docstring de `experiments/potencia_mcnemar.py` líneas 4-6 audita textualmente esta frase |
+| ¶518 (ap. E), dos frases | «las de detalle se fusionan por máxima actividad local y la base por promedio simple … esto concierne a los métodos comparativos multiescala» y «El refinamiento eliminó discontinuidades de iluminación y sesgos artificiales en la información mutua» | La **pirámide de Laplace no lo aplica**: `comparatives.py` línea 52 agrega la base a la lista de capas y las líneas 78-82 la enmascaran por actividad como cualquier otra. Con la base promediada, MI_vis 1,9242 → 1,1171, MI_ir 0,9178 → 0,6885, PSNR 14,9401 → 17,5776, SD 0,1550 → 0,1189, y LP cae del 2.º al 4.º puesto del ranking agregado (3,911 → 4,028); la propuesta pierde su victoria en PSNR. Ningún CSV documenta el antes/después | `src/fusion/comparatives.py` (52, 78-82) contra `ratio_pyramid_fusion` 152, `dwt_fusion` 176, `curvelet_fusion` 113, `dtcwt_fusion` 199; `descriptive_means.csv` y `all_metrics.csv` fila PiramideLaplace; `ranking_methods.csv`. Declarado **pendiente** en `docs/ESTADO_Y_PENDIENTES.md` línea 877 y `docs/historial/Secuencia_Ajuste.md` tarea 1.2 |
+| ¶520 (ap. F) | «Cada fusión Top-Hat consume entre 20 y 80 milisegundos según la configuración» + «Esta liviandad computacional confirma la viabilidad del método para aplicaciones en tiempo real» | Ninguno de los 61 CSV de `experiments/results` cronometra una fusión, y la medición directa contradice la banda: la configuración adoptada (r = 25, m = 0,30) mide **230-247 ms de mediana por par** (~4 fps), y el Top-Hat clásico (r = 5) **16-18 ms**, por debajo del piso. La banda 20-80 ms corresponde a r entre 1 y 13-15 | Sin CSV. Medición reproducida por dos revisores con el `CONFIG` de `run_all_fusions.py` sobre los 20 pares de `list_pairs()`; señal indirecta en `pso_grid_search_fo_propuesta.csv` (segundos/evaluaciones: ~0,80 s con r_opt = 25 contra ~0,20 s con r_opt = 1) |
+
+### Gravedad media
+
+| Dónde | Qué dice el libro | Qué dice el dato | Fuente |
+|---|---|---|---|
+| ¶377 (primera lectura de la Tabla 8) y ¶399 (quinta observación) | «entre +0,09 y +0,14 puntos» de mejora de las fusiones sobre el visible solo | **+0,109 a +0,157**, es decir «+0,11 a +0,16». El rango del libro sale de restar contra VIS = 0,8133, valor de la semilla 0; las otras cifras de la misma frase (0,795 / 0,904-0,952) ya son de cinco semillas | `semillas_llvip_resumen.csv` (VIS 0,7951; RatioPiramide 0,9043; PiramideLaplace 0,9517); `semillas_llvip_pareadas.csv` columna `dif_media` (0,1092 a 0,1566) |
+| ¶520 (ap. F, primera frase) | «La totalidad de los experimentos se ejecutó en una notebook estándar (Intel i7, 16 GB de RAM, **sin GPU dedicada**)» | `detector_perfil.json` registra `cuda: true`, `gpu: NVIDIA GeForce RTX 4050 Laptop GPU`, torch 2.5.1+cu121; los args.yaml de LLVIP traen `device: '0'`; hay 45 entrenamientos de YOLOv8n por 10,4 h. La RAM real de la máquina es 31,7 GB. Sí correctos: i7-13620H, Windows 11, Python 3.11 | `experiments/results/metrics_reports/detector_perfil.json`; `runs/detect/runs/llvip/*/args.yaml` y `results.csv`; `detection_llvip_semillas.csv` columna `segundos` |
+| ¶520 (ap. F) | «la pirámide de Laplace y el curvelet se sitúan en órdenes de magnitud comparables» | Contra la configuración adoptada no: LP ~10 ms y Curvelet ~14 ms frente a ~232 ms. Dato que conviene incluir al reescribir: **DTCWT (~280 ms) es el método más caro del banco**, por encima de la propuesta | Medición directa (mediana por par, 20 pares, configuración de `run_all_fusions.py`) |
+| ¶370 (§5.4.3) | «la pirámide de Laplace alcanza un SD promedio mayor (0,1550 frente a 0,1439), **pero la propuesta la supera en más pares de los que pierde**» | Al revés: **9 pares a favor, 11 en contra**, sin empates. Wilcoxon: diff −0,0111, W = 72, p = 0,2305, effect_r = −0,314, no significativo. El primer puesto en rango medio (1,65 vs 2,00) es real, pero por consistencia posicional (la propuesta nunca baja del 2.º; LP cae al 3.º, 4.º o 6.º en cinco pares), no por mayoría de duelos | `all_metrics.csv` columna SD (conteo pareado por `image`); `wilcoxon_results.csv` fila 14; `ranking_methods.csv` columna SD |
+| ¶368 (§5.4.2) | «cede de manera sistemática en las métricas de fidelidad (SSIM, PSNR) … donde lideran los métodos multiescala» | En PSNR **gana** a la pirámide de Laplace: +1,9009, 19/20 pares, p_holm = 0,000021. LP es la peor del banco en PSNR (14,9401; rango medio 6,95). Son 4 derrotas de 5, no 5. SSIM (5/5) e información mutua sí ceden de forma sistemática. ¶424 ya lo dice bien: «CVT y DTCWT» | `wilcoxon_results.csv` fila 91; `descriptive_means.csv` columna PSNR; `ranking_methods.csv` columna PSNR |
+| ¶352 (§5.2) | «el Top-Hat clásico produce la imagen de mayor contraste aparente» | SD 0,1352, **tercero de siete** (LP 0,1550; propuesta 0,1439). Tiene el SD máximo en 1 de 20 pares y es tercero en los tres pares de la Figura 6. Lo que lidera es SF (23,1000) y MG (0,0478). Los «halos» sí están respaldados (Nabf máximo en los tres pares). ¶356 usa «contraste» como sinónimo de SD | `descriptive_means.csv` y `ranking_methods.csv` columna SD; `all_metrics.csv` por imagen; `all_metrics.config.json` (TopHat_Clasico r = 5) |
+| ¶83 (RESUMEN) y ¶86 (SUMMARY), tres pasajes cada uno | «cuatro de las nueve métricas»; «ventaja significativa … en EN, FE, MG y SF»; «a la metodología clásica en seis» | FE = EN / promedio de EN de las fuentes: divisor constante por escena. Rangos intra-par idénticos a EN en 20/20 pares, mismo χ² (88,285714), mismas columnas de ranking. Las «cuatro» son **tres** dimensiones independientes; los «seis» son **cinco**. La conclusión sobrevive: sin FE la propuesta sigue primera (3,631 vs 3,994) | `friedman_results.csv` filas EN y FE; `ranking_methods.csv` columnas EN, FE y `avg_rank_sin_FE`; `wilcoxon_results.csv`; `src/metrics/evaluators.py` líneas 60-72, que prohíbe expresamente contar FE |
+| ¶83 (y «low cost» implícito en ¶86) | «aporta un operador morfológico … de bajo costo» | No existe valor medido. La única columna `segundos` del árbol mide corridas de PSO y entrenamiento de YOLO; `src/` no tiene ninguna instrumentación de tiempo. Es un atributo heredado de la literatura (Bai 2013, citado en ¶199, ¶207 y ¶235): conviene atribuirlo o escribir «de bajo costo por construcción» | Ausencia verificada en los 61 CSV de `experiments/results` y en `src/*.py` |
+| ¶284 (§2.2.7, última frase) | «la evaluación empírica de esta tesis reporta el subconjunto de nueve métricas descrito» | `all_metrics.csv` calcula **17** y ¶359 —dentro del benchmark principal, §5.3— reporta con cifras seis de las ocho supuestamente no usadas (FMI, QW, QE, Q0, SCD, VIF, más Nabf). Toda la §5.8 está construida sobre las 17 | `all_metrics.csv` (19 columnas); `src/metrics/evaluators.py` (`METRIC_DIRECTION`, 17 entradas); `ranking_17_metricas.csv`; `ranking_mas_nabf.csv` |
+| ¶227 (§1.5, hoja de ruta) | «H6 en la sección 5.5; y H2, H3, H4, H5 y H7 en la sección 5.8» | ¶401, que abre §5.8, lista «H2, H3, H4, H5, **H6** y H7»; el título de §5.8.5 (¶417) es «(H5, H6)»; el único «Se sostiene H6» del libro está en ¶419. En toda la §5.5 (¶374-384) no hay ni una etiqueta de hipótesis | Barrido de H1-H7 sobre los 521 párrafos; `correlacion_calidad_deteccion.csv` y `complementariedad_*.csv`, que son los datos con que ¶419 cierra H6 |
+| ¶423 (conclusión específica 1) | «En M3FD la fusión muestra su valor distintivo —detecta simultáneamente los objetos térmicos y los exclusivamente visibles que cada modalidad pierde por separado—» | Ninguna fusión supera al IR en AP50_People (máx. 0,6938 contra 0,7787) ni al VIS en AP50_Lamp (0,5505 contra 0,6161). En las 90 escenas críticas la mejor fusión resuelve 7 y la propuesta 2. La propuesta recupera ambas clases en 50,0 % contra 53,0 % del VIS (gana 8 / pierde 15) y queda **7.ª de 9** en el promedio del par (0,5643) | `detection_m3fd_map.csv`; `complementariedad_resumen.csv`; `complementariedad_criticas.csv` |
+| ¶439 (recomendación 5) | «híbridos Top-Hat ↔ pirámide de Laplace que combinen **la fidelidad a fuentes del primero** con la riqueza global del segundo» | Invertido. El Top-Hat clásico es **último de siete** en MI_vis (0,7867), MI_ir (0,4928) y SSIM (0,5640), y último en el ranking de 17 (5,000). LP lidera MI_vis (1,9242), MI_ir (0,9178) y SD, y es primera con 17 (3,147). Choca con ¶425 y ¶441, en páginas vecinas | `descriptive_means.csv`; `ranking_methods.csv` (TopHat: MI_vis 6,70, MI_ir 6,70, SSIM 7,00); `ranking_17_metricas.csv` |
+| ¶441 (recomendación 7) | «la metodología clásica Top-Hat conserva su valor como referencia interpretable y **de muy bajo costo computacional**» | Sin CSV, y medido cae la comparación implícita: es **5.ª de 7** en costo (~16-18 ms), entre 1,6 y 2,3 veces más caro que LP, RP, DWT y Curvelet. Cierto en absoluto, falso como ventaja frente a los multiescala, que es como lo usa el párrafo. «Interpretable» es NO APLICA | Ausencia verificada en los 61 CSV; medición directa |
+| ¶437 (recomendación 3) | «Replicar la evaluación sobre datasets adicionales (RoadScene, **M3FD**, MS-COCO multiespectral)» | M3FD ya está evaluado, con partición propia y detector entrenado; la recomendación 1 (¶435) lo trata como experimento hecho al que le faltan semillas. Lo que nunca corrió sobre M3FD es el benchmark de nueve métricas. RoadScene y MS-COCO sí quedan legítimamente pendientes | `detection_m3fd_map.csv`; `complementariedad_resumen.csv` / `_por_escena` / `_criticas`; `correlacion_calidad_deteccion.csv` (dataset = M3FD); `experiments/detection_m3fd/` |
+| ¶428 (conclusión específica 6) | «la aptitud del trabajo de referencia favorece r = 1» (sin salvedad) | Solo con el peso atado al piso heredado. Con m libre el argmax de la **misma** Fo es r = 25 (m = 0,070; Fo = 1,771465) y r = 1 pasa a ser el **peor** radio (1,760748), con crecimiento monótono en r. §5.8.5 (¶418) cierra diciendo exactamente lo contrario de esta conclusión | `optimo_exacto_fo.csv`. Las otras dos cifras del mismo párrafo (0,73 % y 6,50 % de saturación) son correctas: `saturacion_vs_m.csv` |
+| ¶427 (conclusión específica 5) | «la forma de combinar las respuestas del banco introduce diferencias **modestas**» | Los seis rangos citados son exactos, pero el estándar es el opuesto al del ¶423: en EN la diferencia suma−disco es 0,193851 con p_holm = 9,54e-06, **tres veces** la diferencia propuesta−clásico (0,0636) que ¶423 presenta como ventaja significativa. Con 17 métricas el spread del banco es 1,427, el 77 % del spread del benchmark entero (1,853), y ese criterio el párrafo lo omite | `ablacion_banco_resumen.csv` (rango_9 y rango_17); `ablacion_banco_contrastes.csv` (**85 filas**, 76 significativas; 45/45 en la batería de nueve); `wilcoxon_results.csv` fila 10; `ranking_17_metricas.csv` |
+| ¶412 (§5.8.3) | «lo que sí queda firme **en todas las composiciones** es que el mérito no proviene de la imagen base» | En `rango_9_sin_FE` la base queda 5.ª de 6 con **3,506**, a 0,006 de la suma (3,500) y por delante de líneas (3,631). Nunca encabeza, pero el cuantificador universal falla justo en la lectura que el propio párrafo designa como prudente. La evidencia que la frase debería citar está en los contrastes pareados (la suma le gana a la base en 11 de 17 métricas y le pierde en 5) | `ablacion_banco_resumen.csv`; `ablacion_banco.csv`; `ablacion_banco_contrastes.csv` |
+| ¶418 (§5.8.5, **segunda** mención; la primera es correcta) | «el banco extrae 4,21 veces la energía de detalle del disco» | El 4,21 está medido contra el disco **B_5** del clásico. Contra el disco **B_25** —el radio del que habla el párrafo, y el de las 125 corridas de la referencia— el factor es **1,60**: del 4,21 total, 2,63 los aporta el salto de radio 5→25 y solo 1,60 las ramas lineales. La frase atribuye a «una propiedad del operador» un número que mezcla los dos efectos | `aptitud_operador_energia.csv`, tres filas (0,03220047 / 0,08470314 / 0,13540653; `ganancia_vs_clasico` 1,0 / 2,6305 / 4,2051); `experiments/analisis_aptitud_operador.py` líneas 143 y 150 |
+| ¶229, limitación novena | «la configuración adoptada se apoya en el criterio de evaluación y no en la optimización, **que sí determina el peso m**» | Artefacto de frontera, no determinación: m = 0,30 es el **piso** de la caja de búsqueda (`LO = [1.0, 0.30]`), Fo decrece estrictamente en todo el rango publicado y con el piso liberado el óptimo se va a m ≈ 0,07. Contradice H5 (¶227) y ¶418, que atribuyen m a la acotación y no a la búsqueda | `curva_aptitud_vs_m.csv` (1,7715 en m = 0,0703 → 1,7057 en 0,30 → 1,2067 en 2,00); `pso_grid_search_fo_propuesta.csv`; `pso_grid_search.csv` (F_opt 1,9843 en m = 0,0703); `experiments/pso_grid_search_fo.py` |
+| ¶341 (§4.5) | «dos directorios paralelos … con nombres de archivo coincidentes para emparejado automático [y] el corpus experimental son veinte pares» | En disco hay **21** stems coincidentes; el corpus queda en 20 por `PARES_EXCLUIDOS` (el VIS de `Athena_heather_IR_hei_vis_g` es copia byte a byte del IR, mismo md5). La exclusión y su motivo no se declaran en ninguno de los 521 párrafos. Los CSV vivos están limpios; los residuos en `fused_images/` (21 archivos por método) son inertes | `src/datasets.py` línea 24; md5 de los tres .bmp; `all_metrics.csv` (140 filas, 20 imágenes únicas) |
+| ¶359 (§5.3) | «**Estas métricas**, ponderadas por bordes y estructura local, complementan a las anteriores: …» + seis cifras de FMI/QW/QE/Q0/SCD/VIF | Las seis cifras son exactas al cuarto decimal, pero **ninguna de las 38 tablas publica esas medias**: el párrafo va después de la Tabla 5 (SF/SSIM/PSNR) y el deíctico queda huérfano. Falta la tabla de las ocho complementarias, o hay que reescribir el enlace | `all_metrics.csv` (medias por método de FMI 0,2362 · QW 0,8470 · QE 0,3856 · Q0 0,7411 · SCD 1,5427 · VIF 0,3805 · Nabf 0,3742). Encabezados de las 38 tablas revisados uno por uno |
+| ¶492 (ap. C, última frase) | «se consignan en `wilcoxon_propuesta_vs_metodos.csv`» | Ese archivo **no existe** y ningún script lo genera (`run_stats_analysis.py` tiene cuatro `to_csv`). Los 54 contrastes existen: son las filas con `tophat = Propuesta_Novedosa` de `wilcoxon_results.csv`, archivo que la primera oración del mismo párrafo ya cita | `wilcoxon_results.csv` (99 filas: 54 + 45); `experiments/run_stats_analysis.py` líneas 42, 77, 86, 148 |
+| ¶484 (ap. A) | «`src/metrics/evaluators.py` (las nueve métricas)» | `evaluate_all` devuelve **17** claves y `METRIC_DIRECTION` declara 17. El subconjunto de nueve se define en otro archivo: `run_stats_analysis.py` línea 31. Contradice ¶403 («las ocho métricas adicionales que el mismo evaluador calcula») | `src/metrics/evaluators.py` líneas 31-36 y 298-321; `experiments/run_stats_analysis.py` línea 31 |
+| ¶344 (§4.6) | «Toda la implementación … con NumPy, OpenCV, scikit-image, SciPy, PyWavelets, Pandas, Matplotlib y Seaborn» | `requirements.txt` declara 20 dependencias. Faltan **dtcwt** (sin fallback: `comparatives.py` línea 195 aborta con ImportError, y sin ella no existe la columna DTCWT del benchmark) y **torch/torchvision/ultralytics** (sin ellas no existe ninguna fila de detección). Choca con la promesa de la misma frase, que todo se regenera corriendo los scripts | `requirements.txt`; `src/fusion/comparatives.py` 29 y 195; `experiments/detection_llvip/train_eval_llvip.py` 39; `descriptive_means.csv` fila DTCWT; `detection_llvip_map.csv` |
+
+### Gravedad baja
+
+| Dónde | Qué dice el libro | Qué dice el dato | Fuente |
+|---|---|---|---|
+| ¶342 (§4.5) | «reentrenando … durante 40 épocas con configuración idéntica en todas las modalidades» | Lo afirmado es cierto (los 12 args.yaml: yolov8n.pt, 40 épocas, seed 0, imgsz 640, batch 16, patience 100). Lo que **no se declara** es que se evalúa `last.pt` ni que LLVIP no aporta test disjunto. Importa: con `best` el orden de las fusiones en mAP@0,5:0,95 se reordena (desplazamiento máximo +0,0861). Es omisión, no error: ninguna cifra cambia, y la elección no declarada juega en contra del método | `runs/detect/runs/llvip/*/args.yaml`; `detection_llvip_map.csv` y `detection_llvip_semillas.csv` columna `checkpoint` (last en 9/9 y 45/45); `detection_llvip_map.csv.bak_best`; `datasets/llvip_*/data.yaml` |
+| ¶350 (§5.1) | «resoluciones del orden de 360x270 a 768x576 píxeles» | Mínimo real del corpus: **359x247** (`Athena_helicopter_helib_011`). El techo 768x576 es exacto (9 pares del corpus efectivo). El ancho falla en 1 px, la altura en 23 px (9,3 %). No hay CSV de resoluciones; medido sobre los .bmp | `data/raw/VIS` y `data/raw/IR` medidos con PIL; sin resize en el cargador |
+| ¶435 (recomendación 1) y ¶377 | «el desvío de una misma entrada (0,0128 de mAP@0,5)» | Es la **mediana** de nueve desvíos que van de 0,0063 a 0,0288 (factor 4,6). ¶379 lo escribe bien: «el desvío mediano». Falta una palabra en dos lugares; la conclusión sustantiva se sostiene | `semillas_llvip_resumen.csv` columna `mAP50_desv`; `detection_llvip_semillas.csv` |
+| ¶396 (pie de la Tabla 11) | «las diferencias reflejan el radio hallado (r = 1 donde la aptitud llega a 1,7350 y r = 25 donde llega a 1,7057)» | La tabla imprime **tres** valores: la celda n = 2 / T = 10 vale **1,6990** con r_opt = 14 (20 evaluaciones, la corrida más pobre del barrido). Ni 1,6990 ni r = 14 se explican en ningún lugar del libro. El principio enunciado sigue siendo cierto para el tercer caso | `pso_grid_search_fo_propuesta.csv` (crosstab r_opt × Fo_opt diagonal); `optimo_exacto_fo.csv` a m = 0,30: r = 14 → 1,699016 |
+| ¶412 (§5.8.3) | «la suma desciende al cuarto lugar (3,500), por detrás del máximo y del disco (3,444 cada uno)» | También el **promedio** (3,475) va por delante: son tres brazos, no dos. Todas las cifras son correctas. Dos oraciones más abajo, para el caso de 17 métricas, el mismo párrafo sí enumera los tres | `ablacion_banco_resumen.csv` columna `rango_9_sin_FE` (disco 3,444 · máximo 3,444 · promedio 3,475 · suma 3,500 · base 3,506 · líneas 3,631) |
+| ¶484 (ap. A, inventario) | «organizado en módulos: [tres scripts de `experiments/` y `detection_llvip/`]» | `experiments/` tiene 46 scripts en el nivel superior. Faltan, todos con CSV publicado: **`detection_m3fd/`** (produce la Tabla 9), `run_ablacion_banco.py`, `optimo_exacto_fo.py`, `pso_repeticiones.py`, `run_control_negativo.py` y `run_ajuste_comparativos.py`. La asimetría más visible es nombrar `detection_llvip/` y no su gemelo de M3FD | Listado de `experiments/`; `to_csv` de cada script |
+| ¶484 (última frase) | «El archivo `requirements.txt` consigna las dependencias exactas» | 20 líneas de paquete, **las 20 con `>=`**, ninguna con `==`, sin lockfile. `torch>=2.0` y `ultralytics>=8.2` contra 2.5.1+cu121 y 8.4.68 instalados. Un `pip install -r` no reproduce el entorno. Cambio de una palabra («mínimas») o `pip freeze` | `requirements.txt`; `detector_perfil.json` bloque `entorno`; `experiments/verificar_entregables.py` bloque 19 (compara solo nombres) |
+| ¶490 (ap. B) | «25 corridas, **4.500 evaluaciones de fusión** en total» | 4.500 son evaluaciones de la **aptitud**; cada una fusiona las 3 escenas del caché, de modo que el barrido ejecutó **13.500 fusiones**. El 4.500 está exacto (= suma de n × Tmax) | `pso_grid_search_fo_propuesta.csv` columna `evaluaciones`; `pso_grid_fo_propuesta_state.json` (`evals`); `experiments/pso_grid_search_fo.py` (`cache()` = `list_pairs()[::7]`) |
+| ¶520 (ap. F) | «La ejecución completa del benchmark (140 fusiones) toma aproximadamente 90 segundos» | Sin CSV, pero la cifra se reproduce (87,4 s extrapolados de 35 fusiones en 21,85 s). Lo impreciso es la atribución: el 90 % de ese tiempo son las métricas (19,64 s de 21,85 s), no las fusiones. Conviene reponer la cláusula «evaluadas con las diecisiete métricas» | Instrumentación ad hoc del bucle real; `all_metrics.csv` (140, 19); `run_all_fusions.py` no importa `time` |
+| Tabla 8 (`d.tables[31]`), encabezado | «mAP@0,5 ↑ (media ± desv.)» y «mAP@0,5:0,95 ↑ (media ± desv.)» frente a «Precisión ↑» y «Recall ↑» sin rótulo | Las **cuatro** columnas son medias de 5 semillas: las 18 celdas de precisión y recall coinciden exactamente con el `groupby` de las 45 filas. El rótulo asimétrico sugiere lo contrario, y la fila de la propuesta es la que más se aparta de la corrida de semilla 0 (+0,068 en ambas). Colateral: VIS mAP@0,5:0,95 0,42952 impreso 0,429 y DTCWT mAP@0,5 0,93652 impreso 0,936, truncados en vez de redondeados | `detection_llvip_semillas.csv` (45 filas); `semillas_llvip_resumen.csv` |
+| Tabla de métricas al cierre de §2.2.7 (`d.tables[25]`) | Doce filas: EN, SD, FE, MG, MI_vis, MI_ir, SF, Qabf, Nabf, SSIM, SCD, VIF | No coincide con ninguno de los dos conjuntos operativos: **falta PSNR**, que sí es una de las nueve y aparece en las Tablas 5, 6 y 7; e incluye cuatro de los ocho índices extra sin criterio visible. Tampoco lleva epígrafe «Tabla N». (FMI y Q0 **sí** están definidos: ecuaciones 25 y 26) | `all_metrics.csv` (17 métricas); `src/metrics/evaluators.py` (`METRIC_DIRECTION`); `ranking_methods.csv` y `friedman_results.csv` con PSNR |
+| Epígrafe de la Tabla 12 (¶407, repetido en el índice ¶193) | «rango medio de los siete métodos y de **siete entradas degradadas**» | Son seis degradaciones (cuatro ruidos y dos desenfoques) más el brazo **base (VIS+IR)/2, sin operador**, que es control y no degradación. ¶406 lo dice bien: «siete entradas de control». Los conteos y los 42 rangos son correctos | `control_negativo.csv` (280 filas = 14 brazos × 20 imágenes); `experiments/run_control_negativo.py` línea 15; `control_negativo_ranking.csv` |
+
+### Arreglos de una línea para los seis hallazgos altos
+
+1. **PSO / r = 25** — en ¶329, ¶338, ¶515, ¶516, ¶422 y las tres filas de tabla: «el peso de contraste m se ajusta por PSO, mientras el radio r se adopta como decisión de diseño sobre la batería de evaluación», y «configuración **adoptada**» en lugar de «óptima». En la Tabla 2, cambiar el rótulo «Óptimo hallado» por «Configuración adoptada» dejando las cifras como están (Fo = 1,7057 es correcto para r = 25, m = 0,30).
+2. **¶276** — insertar «el bloque de actividad de»: «las cinco métricas de actividad favorecen r = 25, mientras las cuatro de fidelidad favorecen r = 1». Redacción ya disponible en ¶389. Mismo arreglo en ¶229, limitación novena.
+3. **¶377** — 0,971 → 0,961 y 0,621 → 0,592, y matizar «ninguna fusión lo supera» (la ventaja sobre LP no pasa el propio filtro de ruido). Corregir en la misma pasada el delta +0,09/+0,14 → +0,11/+0,16, acá y en ¶399.
+4. **¶419 y ¶423** — o se agrega el calificador «para diferencias de 5,8 puntos porcentuales o más», o se retira «con muestra suficiente» y se dice «sin confirmar».
+5. **¶518** — decidir: o se corrige `laplacian_pyramid_fusion` (y se recalcula LP, que baja al 4.º puesto), o se declara la excepción explícita para la pirámide de Laplace en el Apéndice E. El estado actual no es sostenible en ninguna de las dos lecturas, y la Tabla 3 describe LP como el código, no como el Apéndice E.
+6. **¶520** — reescribir el párrafo entero: banda de tiempos por configuración y resolución, hardware separado (fusión en CPU, §5.5 en la RTX 4050), RAM real, y retirar o acotar la conclusión de tiempo real (~4 fps con r = 25).
+
+---
+
+## 3. Lo que se revisó y está bien
+
+Por bloque, con las cifras clave y su CSV. Esto es lo que **no** hace falta volver a verificar a mano.
+
+**Resumen y Summary — 38 revisadas, 28 respaldadas.** Las siete medias del RESUMEN coinciden dígito por dígito con `descriptive_means.csv`, reproducidas desde el crudo `all_metrics.csv` con `groupby('method').mean()`: EN 6,9855 · FE 1,1047 (ambas lideradas) · SD 0,1439 · MG 0,0355 · SF 17,4425 (segundas) · SSIM 0,6584 · PSNR 16,8409. Ranking 3,394 / 3,911 / 3,944 (`ranking_methods.csv`). Los conteos de significación son exactos: 5/5 contra el estado del arte en EN, FE, MG y SF, y 6 métricas contra el Top-Hat clásico (`wilcoxon_results.csv`). Todo el bloque LLVIP del resumen usa las medias de cinco semillas (0,795 / 0,904-0,952 / 0,961 / 0,9283) y los conteos verbales «6 de siete» y «4 de 6» salen exactos bajo dos criterios independientes (`semillas_llvip_pareadas.csv`). **El SUMMARY está alineado con el RESUMEN, cifra por cifra.**
+
+**Capítulos 1-2 — 52 revisadas, 43 respaldadas.** Corpus de 20 pares = 13 escenas con agrupamientos 3/3/3/2 (`escenas_distintas.csv`); redundancia EN=FE demostrada en tres artefactos; ranking sin FE 3,631 vs 3,994; M3FD 232 escenas, 50,0 % vs 53,0 %, 8 ganadas / 15 perdidas, McNemar p = 0,2100, 2 de 90 críticas; protocolo del detector (5 semillas LLVIP, una M3FD, splits 2000/500 y 4000/1002); banco de cinco EE y regla de reconstrucción verificados línea por línea contra `optimal_top_hat.py`; barrido PSO (25 configuraciones, c1 = c2 = 1,5, inercia 0,9→0,4, tres escenas); m* = 0,30 en 25/25 con su explicación de monotonía. **Toda la literatura de referencia se verificó contra los PDF de `docs/fuentes`** y coincide: Ortega y Espinoza (94-99 dB, SSIMavg mediano 0,4481, errata de la ec. 29 con desplazamiento de 60,8 dB, rangos r∈[1,25] y m∈[0,30;2,00], Cuadro 1 de 25 configuraciones) y Bala et al. (ecs. 2, 4, 7, 8 y 9).
+
+**Capítulos 3-4 — 58 revisadas, 50 respaldadas.** El protocolo resiste completo: 140 fusiones, 7 métodos, las nueve métricas del análisis, los 99 contrastes con Holm dentro de cada métrica y efecto rank-biserial, Friedman por métrica con imágenes como bloques, carga en gris normalizado float32, emparejado por nombre, banco de cinco EE sin cuadrados ni cruz, combinación por suma, Top-Hat clásico r = 5 / m = 1, regla de actividad local con kernel gaussiano, función Fo sin término de bordes, y todo el protocolo LLVIP (2.000/500 por modalidad, YOLOv8n, 40 épocas, configuración idéntica) contra `all_metrics.config.json` y los `args.yaml`.
+
+**Capítulo 5, calidad — 96 revisadas, 88 respaldadas.** Recalculado desde cero: medias por método, los 63 rangos medios de la Tabla 7, los nueve χ² de Friedman (coinciden al cuarto decimal con `scipy.stats.friedmanchisquare`), Holm verificado a mano en SD, la dirección de Nabf correctamente invertida, el ranking con Nabf (3,655 vs 3,620) y sin FE (3,631; se conservan 4 de 7 posiciones; TopHat cae del 3.º al 6.º). Las cuentas verbales de LLVIP («indistinguible de 4 de 6», mediana 0,0128, recorrido 0,0308, DWT 0,0710) y de M3FD (RP mejor promedio del par 0,622, única sobre VIS 0,6184) salen exactas.
+
+**Capítulo 5, detección — 214 revisadas, 207 respaldadas.** El bloque más sólido: las 131 celdas de las cinco tablas coinciden con `control_negativo_ranking.csv`, `ablacion_banco_resumen.csv`, `ajuste_comparativos_ranking.csv`, `descriptive_means.csv` y `pso_grid_search_fo_propuesta.csv`; recalculados los tres rankings de §5.8.1 (3,394 / 3,655 / 3,459), el ranking a peso igualado (3,528 vs 3,694) y el McNemar exacto (0,2100). Verificados además el control negativo (σ = 0,20 tercero de catorce con 6,767, mejora monótona, desenfoque 11×11 último), la ablación de seis brazos, los cuatro escenarios de ajuste, la rejilla de 5.000 puntos de Fo, las 125 corridas de la referencia (mediana m = 0,695, r = 25 en 104), la energía de detalle y la saturación (0,73 % / 6,50 %).
+
+**Capítulo 6 — 65 revisadas, 52 respaldadas.** Núcleo numérico intacto: ranking agregado, liderazgo en EN y FE, las seis de nueve contra el clásico con p_holm ≤ 0,001, el rango de p de Friedman (8,4e-22 a 1,1e-10), los seis rangos de la ablación, la saturación, los Nabf (0,374 / 0,586 / 0,114), las tres cifras de LLVIP y las de M3FD, y el desvío mediano de 0,0128.
+
+**Apéndices — 53 revisadas, 38 respaldadas.** Los dos pseudocódigos (¶494 y ¶495-513) reproducen fielmente `comparatives.py` y `optimal_top_hat.py`; el barrido de 25 configuraciones coincide con el script (partículas 2-10, iteraciones 10-50, semilla 1000n+T, 4.500 evaluaciones, estado reanudable con huella); los 99 contrastes cuadran fila por fila con la descripción de las columnas.
+
+**Tablas — 411 celdas y descripciones revisadas, 404 respaldadas.** De las 38, 26 son de notación, ecuaciones o definiciones (NO APLICA). Las **once tablas de resultados numéricos, Tablas 4 a 14, salieron limpias**: 360 celdas verificadas contra su CSV y recomputadas desde el dato por imagen. La Tabla 3 (métodos comparativos) coincide con `comparatives.py`, con una omisión menor: la fila de DTCWT no menciona que la aproximación se promedia.
+
+---
+
+## 4. Trazabilidad
+
+Mapa para chequear a mano. Todas las rutas cuelgan de `experiments/results/metrics_reports/` salvo indicación contraria.
+
+| Afirmación clave | CSV / artefacto | Script que lo genera |
+|---|---|---|
+| 20 pares × 7 métodos = 140 fusiones; 17 métricas por fusión | `all_metrics.csv` (140, 19) | `experiments/run_all_fusions.py` |
+| Configuración evaluada de la propuesta (r 25, m 0,30, sum) y de los comparativos | `all_metrics.config.json` (huella 7a7ca81dd578c591) | `experiments/run_all_fusions.py` |
+| Medias por método (Tablas 4, 5, 10) | `descriptive_means.csv` | `experiments/run_stats_analysis.py` |
+| Friedman por métrica (Tabla 6) | `friedman_results.csv` (9 filas) | `experiments/run_stats_analysis.py` |
+| 99 contrastes Wilcoxon + Holm + rank-biserial | `wilcoxon_results.csv` (54 + 45 filas) | `experiments/run_stats_analysis.py` |
+| Ranking de 9 y sin FE (Tabla 7) | `ranking_methods.csv` (`avg_rank`, `avg_rank_sin_FE`) | `experiments/run_stats_analysis.py` |
+| Ranking 9 + Nabf y Nabf medio | `ranking_mas_nabf.csv` | `experiments/run_ranking_mas_nabf.py` |
+| Ranking de 17 métricas | `ranking_17_metricas.csv` | script no consignado en la auditoría — verificar |
+| 13 escenas distintas y sus agrupamientos | `escenas_distintas.csv` | `experiments/run_escenas_distintas.py` |
+| Barrido de 25 configuraciones de enjambre (Tabla 11) | `pso_grid_search_fo_propuesta.csv` + `results/pso/pso_grid_fo_propuesta_state.json` | `experiments/pso_grid_search_fo.py` |
+| Rejilla exacta de Fo (25 radios × 200 pesos) | `optimo_exacto_fo.csv` (5.000 filas) | `experiments/optimo_exacto_fo.py` |
+| Curva Fo y F_apt vs m (Figura 11) | `curva_aptitud_vs_m.csv` | `experiments/curva_aptitud_vs_m.py` |
+| Aptitud paralela F_apt (gbest r 25, m 0,0703) | `pso_grid_search.csv` | `experiments/pso_grid_search.py` |
+| 500 repeticiones del PSO (r moda) | `pso_repeticiones_propuesta.csv`, `_resumen_` | `experiments/pso_repeticiones.py` |
+| Brazo r = 1 a igual peso (las cuatro de fidelidad) | `fo_ablacion_per_image.csv` | `experiments/eval_fo_optima.py` |
+| PSNR de r = 1 y barrido por imagen | `pso_por_imagen.csv` | `experiments/pso_por_imagen.py` |
+| Reconstrucción de las 125 corridas de la referencia | `referencia_pso_ortega_espinoza.csv` | `experiments/referencia_pso_ortega_espinoza.py` |
+| Energía de detalle y ganancia 4,21 / m equivalente | `aptitud_operador_energia.csv`, `aptitud_operador_terminos.csv` | `experiments/analisis_aptitud_operador.py` |
+| Saturación por recorte vs m (0,73 % / 6,50 %) | `saturacion_vs_m.csv` | `experiments/run_saturacion_vs_m.py` |
+| Control negativo, 14 brazos (Tabla 12) | `control_negativo.csv` (280 filas), `control_negativo_ranking.csv` | `experiments/run_control_negativo.py` |
+| Ablación del banco, 6 brazos (Tabla 13) | `ablacion_banco.csv` (120 filas), `_resumen.csv`, `_contrastes.csv` (85 filas) | `experiments/run_ablacion_banco.py` |
+| Ajuste de comparativos, 4 escenarios (Tabla 14) | `ajuste_comparativos.csv` (1.000 filas), `_ranking.csv`, `_mejores.csv` | `experiments/run_ajuste_comparativos.py` |
+| Top-Hat a peso igualado (3,528 vs 3,694) | `control_tophat_igual_peso.csv` (20 filas) | script no consignado — verificar |
+| LLVIP, 45 corridas y sus agregados (Tabla 8) | `detection_llvip_semillas.csv`, `semillas_llvip_resumen.csv`, `semillas_llvip_pareadas.csv` | `experiments/detection_llvip/run_semillas_llvip.py` → `experiments/run_analisis_semillas_llvip.py` |
+| Perfil del detector (splits, épocas, entorno, GPU) | `detector_perfil.json` | `experiments/perfil_detector.py` |
+| M3FD, mAP y AP por clase (Tabla 9) | `detection_m3fd_map.csv` | `experiments/detection_m3fd/prepare_m3fd.py` → `train_eval_m3fd.py` |
+| Complementariedad por escena y escenas críticas | `complementariedad_resumen.csv`, `_por_escena.csv` (2.088 filas), `_criticas.csv` | `experiments/run_complementariedad_escenas.py` |
+| Potencia del McNemar (0,258 en 3,0 pp; 0,80 desde 5,8 pp) | `potencia_mcnemar.csv` | `experiments/potencia_mcnemar.py` |
+| Correlación calidad ↔ detección (ρ = −0,357; p = 0,432) | `correlacion_calidad_deteccion.csv` (18 filas) | script no consignado — verificar |
+| Definición y dirección de las 17 métricas; redundancia FE | `src/metrics/evaluators.py` (`METRIC_DIRECTION`, `fusion_efficiency` líneas 60-72) | — |
+| Banco de cinco EE, combinación y reconstrucción | `src/fusion/optimal_top_hat.py` (`_ANGLES`, `linear_se`, `combined_top_hat`, `fuse_optimal`) | — |
+| Los seis comparativos y sus reglas (Tabla 3) | `src/fusion/comparatives.py` | — |
+| Corpus efectivo de 20 pares y par excluido | `src/datasets.py` (`PARES_EXCLUIDOS`, `list_pairs`) | — |
+
+---
+
+## 5. Lo que esta hoja no cubre
+
+- **Citas bibliográficas.** Solo se verificaron contra su fuente original las de Ortega y Espinoza (`docs/fuentes/Libro___Fusion_de_Imagenes___FPUNA__PSO_2.pdf`, pp. 32, 33 y 37) y las ecuaciones de Bala et al. Las demás atribuciones —Bai (2013), Burt y Adelson (1983), Kennedy y Eberhart (1995), Piella y Heijmans (2003), Haghighat et al. (2011), Jocher et al. (2023), Flores et al., Bajac Figueredo et al.— se clasificaron NO APLICA y **no se abrieron**. La cita de Ultralytics declara versión 8.0.0 mientras el entorno tiene 8.4.68, dato menor que no se marcó como hallazgo.
+- **Nada se re-ejecutó.** No se corrió `run_all_fusions.py`, ni el PSO, ni un solo entrenamiento de YOLO. Los CSV se tomaron como el registro de lo que se corrió; la coherencia entre CSV y código se verificó por lectura del código y por recálculo desde los crudos, no por re-corrida.
+- **Los tiempos de fusión son mediciones ad hoc**, hechas en la máquina actual con el intérprete del repo, no un artefacto versionado. Reproducidas de forma independiente por dos revisores con resultados coincidentes (~230-250 ms para r = 25), pero si se van a citar en la tesis hay que instrumentarlas y guardar el CSV.
+- **Figuras.** Solo se inspeccionó la Figura 6 embebida (`word/media/image7.png`) y se identificó la procedencia de las Figuras 5 y 11. Las demás no se compararon con su CSV de origen. Dos avisos: `docs/figures/fig_qualitative_comparison.png` es una figura vieja y distinta de la embebida como Figura 6 (no regenerar desde ahí); y `make_figuras_metodo.py` rotula valores de Fo calculados con otra implementación de SSIM (1,7191 / 1,6870), de modo que si alguna vez se inserta esa figura chocaría con la prosa. Hoy no está en el libro.
+- **El corpus TNO no se validó contra el dataset original**, solo contra los archivos en `data/raw`.
+- **Las 26 tablas de notación, definiciones y ecuaciones** se clasificaron NO APLICA sin verificación término por término, con la excepción de `d.tables[25]`, que sí se auditó y aparece en la tabla de hallazgos.
+
+### Falsos positivos ya descartados — no los busques
+
+La revisión adversarial refutó 23 alarmas. Están todas cerradas:
+
+- **Párrafo 86 (SUMMARY), cuatro alarmas.** Se denunciaron las frases «falls at the lower end of the fusion band (0.906)», «the infrared alone remains the strongest modality (0.971)», «mAP@0.5 from 0.81 to 0.91-0.95» y una supuesta omisión de tres resultados. **Ninguna de esas frases existe en la V3**: buscadas en los 521 párrafos y en el XML crudo, cero coincidencias. El SUMMARY dice 0.961, 0.9283, «3rd of seven», «indistinguishable from 4 of its 6 rivals», la banda 0.904-0.952 y el ruido de 0.0128; es idéntico al RESUMEN salvo dos artefactos de tokenización. El 0,971 problemático está en ¶377, y ya figura en la tabla de hallazgos.
+- **¶83, tres alarmas más.** El ranking «primer lugar (3,39)» está respaldado y ya acotado en la propia frase, con la reversión desarrollada en ¶403. «El realce no se traslada a la detección» tiene tres fuentes concordantes más la correlación nula, que el libro reporta con el signo correcto. Los conteos «6 de siete» y «4 de 6» son exactos, y el criterio (0,0128 de desvío) está nombrado en la oración inmediatamente anterior.
+- **¶229, limitación tercera.** «2.000 de entrenamiento y 500 de validación» es correcto **también** para M3FD: `prepare_m3fd.py` líneas 237-241 fijan `--train-n 2000 --val-n 500`. Solo hay un modificador mal ubicado, sin cifra equivocada.
+- **¶227, enunciado de H6.** El CSV lo respalda: `sobrevive_multiplicidad` = False en las 18 filas, y el supuesto contraejemplo de las 17 métricas se refuta a sí mismo (ρ = −0,893 en M3FD y +0,643 en LLVIP).
+- **¶338 y ¶342, tres alarmas de protocolo.** El barrido de 25 combinaciones sobre tres escenas, los 2.000/500 por modalidad, las 40 épocas y la configuración idéntica están todos respaldados (`pso_grid_search_fo_propuesta.csv`, las 12 carpetas `datasets/llvip_*` con 2000/500 archivos, los 51 `args.yaml`). Lo único vivo de ¶338 es la palabra «óptima», ya en la tabla.
+- **¶359, Nabf «después del Top-Hat clásico».** Correcto: el orden de peor a mejor es TopHat 0,5857, propuesta 0,3742, DWT 0,2407, RP 0,2242, CVT 0,2013, DTCWT 0,1593, LP 0,1138.
+- **¶399 y ¶423 vs ¶425, media contra rango medio.** No hay incoherencia: ¶399 y ¶423 hablan de medias y citan medias; ¶425 dice explícitamente «rango medio» y en la misma frase atribuye a LP «el mayor contraste promedio del estudio».
+- **¶418 y pie de la Tabla 11.** Las cinco cifras de Fo son exactas y trazables a una sola familia de fuentes. Existe una segunda implementación de SSIM en el repo que da otros valores, pero ninguno llega al libro.
+- **¶389 «r = 1 preserva mejor la fidelidad» y ¶428 «la batería favorece r = 25».** Ambas respaldadas; el dato de PSNR para r = 1 está en `pso_por_imagen.csv`, archivo que la primera pasada no había abierto.
+- **¶431, conclusión 9 sobre la capa base.** Respaldada por la fila PiramideLaplace de `all_metrics.csv`, que es precisamente el caso «actividad aplicada también a la base». Solo faltaría la referencia y moderar el «cualquier». (Distinto del hallazgo de ¶518, que sí es real.)
+- **¶441, dos alarmas.** «Los multiescala (DTCWT, CVT) preferibles en fidelidad» es correcto por bloque: rango medio de las cuatro métricas de fidelidad, CVT 2,34 y DTCWT 2,53 contra LP 3,70. Y «realce controlado» está anclado en ¶352 al operador clásico, no a la tasa de artefactos, que ¶436 declara con su cifra.
+- **¶423, «el IR supera a 6 de las siete».** Respaldada, con el criterio de ruido declarado en ¶377, ¶379, ¶229 y ¶435.
+- **Tabla 7, epígrafe.** La aclaración que se denunciaba ausente está en ¶370, el párrafo que introduce la tabla: «en seis de las nueve métricas … y el ranking global obtenido al promediar las nueve».
+
+### Números del informe de auditoría que NO hay que copiar al libro
+
+La revisión adversarial corrigió cifras de los propios revisores. Si el arreglo se escribe a partir de sus notas, estos son los valores buenos:
+
+- Reparto de `r_opt` en el barrido: **16 / 8 / 1** (r = 1 / r = 25 / r = 14). No 15/9 ni 15/10.
+- Fo(r = 25, m = 2,00) = **1,206687**, no 1,206633.
+- La propuesta en M3FD es **7.ª de 9** en el promedio del par, por delante del IR solo. No 8.ª.
+- 768x576 son **9 pares** del corpus efectivo (10 archivos, uno excluido). El segundo más chico por área es 604x439, no 599x446.
+- `ablacion_banco_contrastes.csv` tiene **85 filas** (17 métricas × 5 brazos), 76 significativas; 45/45 en la batería de nueve. No «40 contrastes».
+- `metrics_reports/` tiene **52 CSV**; `experiments/results/` completo, 61. No 50.
+- `d.tables[35]` es la **Tabla 12** (control negativo); la Tabla 14 es `d.tables[37]`.
+- FMI y Q0 **sí** están definidos con ecuación numerada (25 y 26). Sin ecuación quedan solo PSNR, QW y QE.
+- ¶377 es la **segunda** lectura de la Tabla 8, no la tercera; y la frase de los 90 segundos está en **¶520**, no en ¶519 (que es el título del apéndice F).
+- `figura_detecciones_m3fd.json` y `arquitectura_yolo.json` los generan los scripts `make_figura_*`, no `detection_m3fd/`.
+- Al reescribir el Apéndice F: **DTCWT (~280 ms) es más lento que la propuesta (~232 ms)**. La propuesta es el segundo método más caro del banco, no el primero.
