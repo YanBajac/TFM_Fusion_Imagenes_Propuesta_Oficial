@@ -2094,8 +2094,10 @@ H.append(f"""
     <li>Robustez: ajuste simétrico de los comparativos y ablación del operador (sección 10).</li>
     <li>Resultados cualitativos de los {N_ESC} pares (sección 11).</li>
     <li>El detector: arquitectura, ejecución y los dos diseños experimentales (sección 12).</li>
-    <li>Evaluación orientada a tarea: detección en LLVIP (sección 13) y clases complementarias en
-        M3FD (sección 14).</li>
+    <li>Detección en LLVIP con reentrenamiento por entrada, que mide la entrada como material de
+        entrenamiento (sección 13); y el objetivo aplicativo —un único detector entrenado sobre ambas
+        modalidades y evaluado por inferencia— sobre las clases complementarias de M3FD
+        (sección 14).</li>
     <li>Cuadro comparativo de las metodologías en la prueba de detección y comparativa cualitativa
         sobre una escena (sección 15), y conclusiones (sección 16).</li>
     <li>Anexos 1-{N_ESC}: las 25 configuraciones del PSO en cada uno de los {N_ESC} pares, y anexo A21: el desarrollo técnico de la optimización.</li>
@@ -2848,12 +2850,49 @@ H.append(f"""
 
 H.append(f"""
 <div class="page">
-  <h2>13. Evaluación orientada a tarea: detección en LLVIP</h2>
-  <p>Para medir el efecto práctico de la fusión se reentrenó el mismo detector <b>YOLOv8n</b> (40 épocas,
-  idéntica configuración y {SEM_N} semillas de entrenamiento por entrada) sobre cada versión fusionada del dataset etiquetado <b>LLVIP</b>
-  (peatones nocturnos; subconjunto de 2.000 imágenes de entrenamiento y 500 de validación). Los
-  pares VIS/IR están registrados, así que las anotaciones valen para toda versión fusionada. Por eso
-  la diferencia de mAP aísla el efecto del método de fusión.</p>
+  <h2>13. Detección en LLVIP: qué mide este experimento y qué no</h2>
+  <p><b>El protocolo.</b> Se <b>reentrenó</b> el mismo detector YOLOv8n —40 épocas, idéntica
+  configuración, {SEM_N} semillas por entrada— sobre cada versión fusionada del dataset etiquetado
+  <b>LLVIP</b> (peatones nocturnos; subconjunto de 2.000 imágenes de entrenamiento y 500 de validación),
+  y también sobre el visible y el infrarrojo por separado. Son {SEM_CORRIDAS} entrenamientos. Los pares
+  VIS/IR están registrados, así que las anotaciones valen para toda versión fusionada y la diferencia de
+  mAP aísla el efecto del método.</p>
+  <p><b>Qué mide, entonces.</b> Como cada entrada entrena <b>su propio</b> detector, lo que se compara es
+  la calidad de cada entrada <b>como material de entrenamiento</b>: con qué imágenes se aprende mejor a
+  detectar peatones. Es una pregunta legítima y el experimento la contesta con {SEM_N} semillas, que es
+  lo que permite separar la diferencia real del ruido de inicialización.</p>
+  <p><b>Y qué no mide.</b> No mide el objetivo aplicativo de este trabajo. Ese objetivo pide que la
+  imagen fusionada permita detectar los objetos que <b>sólo</b> se ven en una de las dos modalidades, y
+  su protocolo es distinto: <b>un único</b> detector entrenado con las dos modalidades y sus etiquetas, y
+  después <b>sólo inferencia</b> sobre las fusionadas, sin reentrenar. Ese es el experimento de la
+  <b>sección 14</b>, sobre M3FD.</p>
+  <p>Hay además una razón estructural, y no de protocolo. LLVIP tiene <b>una sola clase anotada</b>,
+  <span class="mono">person</span>, y es esencialmente térmica: no hay objetos exclusivos del canal
+  visible. En este conjunto <b>no hay complementariedad que medir</b>, con ningún protocolo. De modo que
+  el resultado más citado de esta sección —que el infrarrojo solo encabeza— es un resultado sobre
+  <b>la tarea</b>, el peatón nocturno como objetivo térmico, y no sobre el operador ni sobre la fusión
+  como técnica. Leerlo como evidencia contra el objetivo sería atribuirle al método una limitación del
+  conjunto de datos.</p>
+  <p>La sección se conserva completa por dos motivos. Primero, porque la pregunta que sí contesta importa
+  para el encuadre: dice que toda fusión mejora sobre el visible solo por entre {DET_GAP_VIS} y
+  {DET_GAP_VIS_MAX} puntos de mAP, en las {SEM_N} semillas y con margen. Y segundo, porque es el
+  experimento que midió <b>la resolución de este tipo de medida</b>: sólo por cambiar la semilla, una
+  misma entrada se mueve un desvío mediano de {SEM_DESV} de mAP, y ese número es el que obliga a leer con
+  cuidado cualquier diferencia de milésimas entre métodos, acá y en el resto del trabajo.</p>
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>13. Detección en LLVIP (continuación): mAP por entrada del detector</h2>
+  <p><b>Qué mide este experimento, y qué no.</b> Se <b>reentrenó</b> el mismo detector
+  <b>YOLOv8n</b> (40 épocas, idéntica configuración y {SEM_N} semillas por entrada) sobre cada versión
+  fusionada del dataset etiquetado <b>LLVIP</b> (peatones nocturnos; subconjunto de 2.000 imágenes de
+  entrenamiento y 500 de validación). Los pares VIS/IR están registrados, así que las anotaciones valen
+  para toda versión fusionada y la diferencia de mAP aísla el efecto del método. Como cada entrada
+  entrena su propio detector, lo que se compara es <b>la calidad de la entrada como material de
+  entrenamiento</b>.</p>
   <p><b>Tabla 10.</b> Detección de peatones en LLVIP — mAP por entrada del detector.
   <span style="font-weight:normal">Media y desvío sobre {SEM_N} semillas de entrenamiento: cada
   entrada se entrenó {SEM_N} veces cambiando únicamente la inicialización, {SEM_CORRIDAS} corridas
