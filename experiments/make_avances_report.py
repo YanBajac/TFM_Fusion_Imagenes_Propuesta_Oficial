@@ -38,6 +38,7 @@ V = {
     "sufijo": "_libre" if LIBRE else "",
 }
 
+BASE_DOCS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs")
 MR = os.path.join(ROOT, "experiments", "results",
                   "metrics_reports_libre" if LIBRE else "metrics_reports")
 OUT  = os.path.join(ROOT, "docs", "_local")
@@ -1761,6 +1762,39 @@ SEM_LIDER_NOM = DET_LBL.get(_lld_o.index[0], _lld_o.index[0]).split(" (")[0]
 IR_INDIST_NOM = (DET_LBL.get(_sm_ind.rival.iloc[0], _sm_ind.rival.iloc[0]).split(" (")[0]
                  if len(_sm_ind) else "ninguna")
 
+# ------------------------------------------------- las referencias, leidas del libro de la tesis
+# El informe no tenia ninguna: cero apariciones de «Referencias» o de DOI en sus paginas, citando en prosa
+# a Ortega y Espinoza, Toet, Burt y Adelson, Kingsbury y Piella. Se leen del libro EN TIEMPO DE GENERACION
+# para que las dos listas no puedan divergir; copiarlas seria crear una segunda fuente de verdad.
+def _referencias_del_libro():
+    """Las entradas bibliograficas del libro, o lista vacia si no se puede leer."""
+    try:
+        from docx import Document as _Doc
+        _d = _Doc(os.path.join(BASE_DOCS, "Tesis_Borrador_V3.docx"))
+    except Exception as _e:                                            # pragma: no cover
+        print(f"AVISO: no se pudieron leer las referencias del libro ({type(_e).__name__}: {_e})")
+        return []
+    # los limites del capitulo se buscan por encabezado, no por numero de parrafo
+    _ini = _fin = None
+    for _i, _p in enumerate(_d.paragraphs):
+        _t = _p.text.strip()
+        _es_tit = (_p.style.name or "").startswith(("Heading 1", "Título 1", "Titulo 1"))
+        if _es_tit and _re.match(r"\d+\.\s*REFERENCIAS", _t, _re.I):
+            _ini = _i
+        elif _es_tit and _ini is not None and _re.match(r"\d+\.\s*AP[ÉE]NDICE", _t, _re.I):
+            _fin = _i
+            break
+    if _ini is None:
+        print("AVISO: no se encontro el capitulo de referencias en el libro")
+        return []
+    _fin = _fin if _fin is not None else len(_d.paragraphs)
+    return [_p.text.strip() for _p in _d.paragraphs[_ini + 1:_fin] if len(_p.text.strip()) > 40]
+
+
+BIB = _referencias_del_libro()
+BIB_N = len(BIB)
+BIB_DOI = sum(1 for _r in BIB if "doi" in _r.lower() or "10." in _r)
+
 # ------------------------------------------------- las ocho metricas que el analisis no usa
 # Se definen porque SI aparecen en resultados —el ranking de las diecisiete, el ranking con Nabf, el
 # analisis de artefactos de M3FD— y hasta ahora la seccion 7 solo las nombraba. La direccion se lee de
@@ -3402,6 +3436,33 @@ H.append(f"""
 </div>
 """)
 
+
+# Las referencias van al final del cuerpo y antes de los anexos, que es su lugar. Se parten en paginas de
+# a lo sumo _BIB_POR_PAG entradas: con 38 y el formato APA no entran en una, y el derrame corre la
+# numeracion y tira los marcadores.
+# Cuantas entradas por pagina. Medido con el banco de una pagina, no estimado: con el formato APA y la
+# sangria francesa, 12 entran en la PRIMERA —que lleva ademas el parrafo introductorio— y 14 en las
+# siguientes. Con 20 la pagina derramaba, y el derrame se lleva el pie y corre toda la numeracion.
+_BIB_PRIMERA, _BIB_RESTO = 12, 14
+_bib_bloques = [BIB[:_BIB_PRIMERA]] if BIB else [[]]
+_bib_bloques += [BIB[_i:_i + _BIB_RESTO] for _i in range(_BIB_PRIMERA, len(BIB), _BIB_RESTO)]
+_bib_bloques = [g for g in _bib_bloques if g] or [[]]
+for _k, _grupo in enumerate(_bib_bloques):
+    _cab = ("17. Referencias" if _k == 0
+            else "17. Referencias (continuación)")
+    _intro = (f"""
+  <p>Las {BIB_N} entradas que sostienen este informe y el documento de tesis, {BIB_DOI} de ellas con DOI.
+  La lista es la misma del capítulo de referencias del borrador de tesis y se lee de ese archivo al
+  generar este informe, de modo que las dos no pueden divergir.</p>""" if _k == 0 else "")
+    _filas = "".join(f'<p style="margin-left:8mm; text-indent:-8mm; margin-bottom:2mm;">{_r}</p>'
+                     for _r in _grupo)
+    H.append(f"""
+<div class="page">
+  <h2>{_cab}</h2>{_intro}
+  {_filas}
+  {pie()}
+</div>
+""")
 
 # ---------- Anexos 1-20: las 25 configuraciones del PSO en cada escena ----------
 _nota_anexo = f"""

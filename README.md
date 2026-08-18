@@ -406,7 +406,7 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 ├── docs/
 │   ├── Tesis_Borrador_V3.docx      # Documento principal (74 págs; formato UCOM/Villalba)
 │   ├── Tesis_Borrador_V3.pdf       #   el mismo, renderizado, para leerlo sin Word
-│   ├── Avances_Tesis.pdf           # Informe de avances (93 págs; resumen llano, índice, Anexos A1-A20 y A21)
+│   ├── Avances_Tesis.pdf           # Informe de avances (96 págs; resumen llano, índice, Anexos A1-A20 y A21)
 │   ├── Avances_Tesis_Tablas.xlsx   # Libro de tablas (13 hojas, detalle por escena)
 │   ├── Tesis_Defensa_Presentacion.pptx # Defensa (22 láminas + reserva, notas del orador)
 │   ├── Tesis_Defensa_Presentacion.pdf  #   el mismo, renderizado
