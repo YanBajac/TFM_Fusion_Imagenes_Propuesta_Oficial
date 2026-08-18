@@ -1061,6 +1061,13 @@ for _py in sorted(list((RAIZ / 'src').rglob('*.py')) + list((RAIZ / 'experiments
         _mod = _m.group(1)
         if _mod in _STDLIB or _mod in ('src', 'experiments', '__future__'):
             continue
+        # Los MODULOS LOCALES no van en requirements.txt: un script de experiments/ que importa a otro
+        # del mismo directorio —«import run_complementariedad_escenas as base», para no tener dos
+        # implementaciones del mismo criterio de emparejado— no depende de ningun paquete de PyPI. Sin
+        # esta excepcion el chequeo reclamaba que se declararan como dependencias, que es un falso
+        # positivo: el modulo esta en el repositorio, al lado del que lo importa.
+        if (RAIZ / 'experiments' / f'{_mod}.py').exists() or (RAIZ / f'{_mod}.py').exists():
+            continue
         _imp.setdefault(_PAQ.get(_mod, _mod), set()).add(_py.name)
 _nodecl = {p: sorted(v)[:3] for p, v in _imp.items() if p.lower() not in _req_txt}
 ok(not _nodecl, f'los {len(_imp)} paquetes importados estan en requirements.txt'

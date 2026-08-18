@@ -114,6 +114,8 @@ def main():
     ap.add_argument("--conf", type=float, default=0.25)
     ap.add_argument("--iou", type=float, default=0.5)
     ap.add_argument("--prefijo", default="m3fd_comp", choices=["m3fd_comp", "m3fd_test"])
+    ap.add_argument("--forzar", action="store_true",
+                    help="permite que esta corrida reemplace una grilla con MAS puntos")
     ap.add_argument("--guardar-objetos", action="store_true",
                     help="ademas del resumen, guarda el detalle por objeto de cada punto de la "
                          "grilla. Hace falta para las pruebas pareadas: comparar dos puntos por sus "
@@ -225,6 +227,17 @@ def main():
         print(f"  r = {r} listo en {time.time() - t0:.0f} s")
 
     d = pd.DataFrame(filas)
+    # NO DEJAR QUE UNA GRILLA MAS CHICA PISE UNA MAS GRANDE. Paso: despues de barrer 18 puntos se
+    # volvio a correr con 4 para guardar el detalle por objeto, el CSV quedo con esos 4, y el informe
+    # —que lee la cantidad del archivo— publico «se barrieron 4 puntos». Era honesto respecto del dato
+    # y falso respecto del experimento. Ahora hay que pedirlo expresamente.
+    if GRILLA_CSV.exists():
+        previo = len(pd.read_csv(GRILLA_CSV))
+        if previo > len(d) and not a.forzar:
+            raise SystemExit(
+                f"ABORTA: {GRILLA_CSV.name} ya tiene {previo} puntos y esta corrida trae {len(d)}. "
+                f"Sobrescribirlo dejaria al informe describiendo un barrido mas chico del que se hizo. "
+                f"Si es a proposito, correr con --forzar.")
     d.to_csv(GRILLA_CSV, index=False)
     if a.guardar_objetos:
         largo = [{"r": r, "m": m, "clave": k, "detectado": v}

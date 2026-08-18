@@ -1761,6 +1761,120 @@ SEM_LIDER_NOM = DET_LBL.get(_lld_o.index[0], _lld_o.index[0]).split(" (")[0]
 IR_INDIST_NOM = (DET_LBL.get(_sm_ind.rival.iloc[0], _sm_ind.rival.iloc[0]).split(" (")[0]
                  if len(_sm_ind) else "ninguna")
 
+# ------------------------------------------------- complementariedad medida OBJETO POR OBJETO
+# El conteo por clase de la pagina anterior mide «recupera People» como al menos un verdadero positivo
+# de esa clase en la escena. Con ese grano, la condicion del director —el objeto A solo en el visible, el
+# objeto B solo en el infrarrojo, los dos en la fusionada— se cumple en apenas cinco escenas de las 232,
+# y con n = 5 no se concluye nada. El grano correcto es el objeto. Lo calcula
+# experiments/run_complementariedad_objetos.py y aca solo se lee.
+_ob = pd.read_csv(os.path.join(MR, "complementariedad_objetos.csv"))
+_obr = pd.read_csv(os.path.join(MR, "complementariedad_objetos_resumen.csv")).set_index("entrada")
+_obt = pd.read_csv(os.path.join(MR, "complementariedad_objetos_m3fd_test.csv"))
+_obrt = pd.read_csv(os.path.join(MR, "complementariedad_objetos_resumen_m3fd_test.csv")).set_index("entrada")
+_obe = pd.read_csv(os.path.join(MR, "complementariedad_objetos_escenas.csv")).set_index("entrada")
+
+
+def _reparto(d):
+    sv = int(((d.VIS == 1) & (d.IR == 0)).sum())
+    si = int(((d.IR == 1) & (d.VIS == 0)).sum())
+    am = int(((d.VIS == 1) & (d.IR == 1)).sum())
+    nn = int(((d.VIS == 0) & (d.IR == 0)).sum())
+    return sv, si, am, nn
+
+
+OB_SV, OB_SI, OB_AM, OB_NN = _reparto(_ob)
+OB_TOT = len(_ob)
+OB_ESC = int(_ob.escena.nunique())
+N_ESC_M3 = OB_ESC
+OB_UNICA = OB_SV + OB_SI
+OBT_SV, OBT_SI, OBT_AM, OBT_NN = _reparto(_obt)
+OBT_TOT, OBT_ESC = len(_obt), int(_obt.escena.nunique())
+OBT_UNICA = OBT_SV + OBT_SI
+OB_ESC_APTAS = int(_obe.escenas_aptas.iloc[0])
+OB_PROP_ESC = int(_obe.loc[PROP, "resuelve"])
+_ob_ord = _obr.sort_values("pct", ascending=False)
+OB_PUESTO = list(_ob_ord.index).index(PROP) + 1
+OB_N_ENT = len(_ob_ord)
+OB_MEJOR = DET_LBL.get(_ob_ord.index[0], _ob_ord.index[0]).split(" (")[0]
+OB_MEJOR_PCT = dec(float(_ob_ord.pct.iloc[0]), 1)
+OB_PROP_PCT = dec(float(_obr.loc[PROP, "pct"]), 1)
+OBT_PROP_PCT = dec(float(_obrt.loc[PROP, "pct"]), 1)
+
+# la grilla del punto de operacion, y la validacion en reserva
+_gr = pd.read_csv(os.path.join(MR, "grilla_complementariedad.csv"))
+_grt = pd.read_csv(os.path.join(MR, "grilla_complementariedad_m3fd_test.csv"))
+_par = pd.read_csv(os.path.join(MR, "pareado_punto_operacion.csv"))
+GR_N = len(_gr)
+_g_ad = _gr[(_gr.r == 25) & (_gr.m.round(3) == 0.30)].iloc[0]
+_gt_ad = _grt[(_grt.r == 25) & (_grt.m.round(3) == 0.30)].iloc[0]
+_gt_re = _grt[(_grt.r == 25) & (_grt.m.round(3) == 0.10)].iloc[0]
+GR_PEOR_QUE = int((_gr.recupera > _g_ad.recupera).sum())
+GR_M_MEJOR = dec(float(_gr.groupby("m").recupera.mean().idxmax()), 2)
+GR_M_PEOR = dec(float(_gr.groupby("m").recupera.mean().idxmin()), 2)
+GR_MEDIA_MEJOR = dec(float(_gr.groupby("m").recupera.mean().max()), 1)
+GR_MEDIA_PEOR = dec(float(_gr.groupby("m").recupera.mean().min()), 1)
+RE_AD_OBJ, RE_RE_OBJ = int(_gt_ad.recupera), int(_gt_re.recupera)
+RE_AD_PCT, RE_RE_PCT = dec(float(_gt_ad.pct_objetos), 1), dec(float(_gt_re.pct_objetos), 1)
+_p_re = _par[(_par.rol == "reserva") & (_par.comparacion == "reajustado_vs_adoptado")]
+_p_se = _par[(_par.rol == "seleccion") & (_par.comparacion == "reajustado_vs_adoptado")]
+
+
+def _pval(v):
+    return dec(float(v), 4) if float(v) >= 0.0001 else f"{float(v):.1e}".replace(".", ",")
+
+
+PAR_RE_GANA = int(_p_re.gana.iloc[0]) if len(_p_re) else 0
+PAR_RE_PIERDE = int(_p_re.pierde.iloc[0]) if len(_p_re) else 0
+PAR_RE_P = _pval(_p_re.p.iloc[0]) if len(_p_re) else "—"
+PAR_SE_GANA = int(_p_se.gana.iloc[0]) if len(_p_se) else 0
+PAR_SE_PIERDE = int(_p_se.pierde.iloc[0]) if len(_p_se) else 0
+PAR_SE_P = _pval(_p_se.p.iloc[0]) if len(_p_se) else "—"
+# contra que comparativos NO se distingue, en reserva
+_cmp = _par[(_par.rol == "reserva") & (_par.comparacion.str.startswith("reajustado_vs_"))
+            & (~_par.comparacion.str.endswith("adoptado"))]
+_indist = [c.replace("reajustado_vs_", "") for c in _cmp[_cmp.p >= 0.05].comparacion]
+_gana_a = [c.replace("reajustado_vs_", "") for c in _cmp[(_cmp.p < 0.05) & (_cmp.gana > _cmp.pierde)].comparacion]
+RE_INDIST = ", ".join(DET_LBL.get(x, x).split(" (")[0] for x in _indist) or "ninguno"
+RE_INDIST_N = len(_indist)
+RE_GANA_A = ", ".join(DET_LBL.get(x, x).split(" (")[0] for x in _gana_a) or "ninguno"
+_ratio = _cmp[_cmp.comparacion == "reajustado_vs_RatioPiramide"]
+RE_RATIO_P = _pval(_ratio.p.iloc[0]) if len(_ratio) else "—"
+RE_RATIO_B = int(_ratio.b.iloc[0]) if len(_ratio) else 0
+# EL VEREDICTO SE DERIVA DEL VALOR p, no se escribe. La primera version de este parrafo decia «en reserva
+# la diferencia no alcanza significancia» con un p de 0,21, que era el del punto (5; 0,10); al pasar la
+# prueba al punto que el informe efectivamente recomienda —(25; 0,10)— el p bajo a 0,049 y la frase quedo
+# afirmando lo contrario de su propio numero. Derivandolo no puede volver a pasar.
+_rp_val = float(_ratio.p.iloc[0]) if len(_ratio) else 1.0
+RE_RATIO_SIG = ("la diferencia no alcanza significancia" if _rp_val >= 0.05
+                else "la diferencia alcanza significancia, y apenas" if _rp_val >= 0.01
+                else "la diferencia alcanza significancia")
+
+_ob_rot = {**DET_LBL}
+TAB_OBJETOS = (
+    '<table class="chica"><thead><tr><th class="l">Entrada</th>'
+    '<th colspan="2">Selección (232 escenas)</th><th colspan="2">Reserva (' + str(OBT_ESC)
+    + ' escenas)</th></tr><tr><th class="l"></th><th>objetos</th><th>%</th>'
+    '<th>objetos</th><th>%</th></tr></thead><tbody>'
+    + "".join(
+        f'<tr><td class="l">{_ob_rot.get(k, k).split(" (")[0]}</td>'
+        f'<td>{int(_obr.loc[k, "recupera"])} de {OB_UNICA}</td>'
+        f'<td>{dec(float(_obr.loc[k, "pct"]), 1)}</td>'
+        f'<td>{int(_obrt.loc[k, "recupera"])} de {OBT_UNICA}</td>'
+        f'<td>{dec(float(_obrt.loc[k, "pct"]), 1)}</td></tr>'
+        for k in _ob_ord.index)
+    + '</tbody></table>')
+
+_fil_gr = "".join(
+    f'<tr><td>{dec(m, 2)}</td>'
+    + "".join(f'<td>{int(_gr[(_gr.r == r) & (_gr.m.round(3) == round(m, 3))].recupera.iloc[0])}</td>'
+              for r in sorted(_gr.r.unique()))
+    + f'<td>{dec(float(_gr[_gr.m.round(3) == round(m, 3)].recupera.mean()), 1)}</td></tr>'
+    for m in sorted(_gr.m.unique()))
+TAB_GRILLA = ('<table class="chica"><thead><tr><th>Peso m</th>'
+              + "".join(f'<th>r = {r}</th>' for r in sorted(_gr.r.unique()))
+              + '<th>media</th></tr></thead><tbody>' + _fil_gr + '</tbody></table>')
+
+
 def tabla_det():
     """La Tabla 10, sobre las CINCO semillas: media, desvio y recorrido de cada entrada.
 
@@ -2884,6 +2998,76 @@ H.append(f"""
 </div>
 """)
 
+H.append(f"""
+<div class="page">
+  <h2>14. Clases complementarias (continuación): la medición objeto por objeto</h2>
+  <p><b>Por qué el grano importa.</b> El conteo de la página anterior es <b>por clase</b>: «recupera
+  personas» significa que al menos un objeto de esa clase quedó emparejado en la escena. Pero el
+  objetivo habla de <b>objetos</b>: que el objeto que sólo se ve en el visible y el que sólo se ve en el
+  infrarrojo aparezcan los dos en la fusionada. Con el grano de clase, la condición estricta —cada
+  modalidad aportando justo lo que a la otra le falta— se cumple en <b>cinco</b> de las {N_ESC_M3} escenas,
+  y con esa muestra no se puede concluir nada. Contando objeto por objeto la muestra pasa a ser
+  utilizable.</p>
+  <p>De los <b>{OB_TOT} objetos</b> anotados en las {OB_ESC} escenas, <b>{OB_SV}</b> los detecta sólo el
+  visible, <b>{OB_SI}</b> sólo el infrarrojo, {OB_AM} los detectan las dos y <b>{OB_NN} ninguna</b>.
+  Esos últimos quedan <b>fuera del denominador</b>, y es una decisión que hay que declarar: si una clase
+  se le escapa a las dos modalidades, ninguna fusión puede recuperarla, porque no se puede crear
+  información que ninguna fuente tiene. Contarlos castigaría a todos los métodos por algo que no es de la
+  fusión. Quedan entonces <b>{OB_UNICA} objetos exclusivos de una modalidad</b>, que son los que la
+  condición reclama para la fusión.</p>
+  <p><b>Tabla 12a.</b> De los objetos que detecta una sola modalidad, cuántos conserva cada entrada.
+  Se informan las dos particiones por separado: la de {OB_ESC} escenas donde se ajustó el punto de
+  operación y la de reserva, con {OBT_ESC} escenas y {OBT_UNICA} objetos, que no participó de ningún
+  ajuste.</p>
+  {TAB_OBJETOS}
+  <p class="lectura">Lectura: la mejor entrada es <b>{OB_MEJOR}</b> ({OB_MEJOR_PCT} %) y la propuesta,
+  <b>en su punto de operación adoptado</b>, queda <b>{OB_PUESTO}.ª de {OB_N_ENT}</b> con
+  {OB_PROP_PCT} % en selección y {OBT_PROP_PCT} % en reserva. El orden se replica en las dos
+  particiones, de modo que no es un artefacto de la muestra. Por debajo sólo queda el Top-Hat clásico:
+  los dos operadores morfológicos son los que menos conservan, y el desglose de la Tabla 11 dice dónde
+  —en la clase que sólo vive en el canal visible—. El realce fuerte, que es lo que las métricas de
+  actividad premian, borra los objetos de bajo contraste que esa clase aporta.</p>
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>14. Clases complementarias (continuación): el punto de operación re-ajustado a la tarea</h2>
+  <p><b>La hipótesis que queda por probar.</b> Si el realce fuerte es lo que borra los objetos del
+  canal visible, entonces el problema no es el operador sino <b>dónde se lo puso a trabajar</b>. El
+  punto adoptado (r = 25, m = {V['m']}) se eligió sobre las nueve métricas de calidad de imagen; la
+  tarea es otra. Se barrieron {GR_N} puntos de (r, m) midiendo la conservación de esos
+  {OB_UNICA} objetos, <b>sin reentrenar el detector</b>: es el mismo modelo, entrenado con las dos
+  modalidades, y sólo cambia la imagen que se le da a inferir.</p>
+  <p><b>Tabla 12b.</b> Objetos conservados según el peso de realce, para cada radio (selección).</p>
+  {TAB_GRILLA}
+  <p class="lectura">Lectura: el punto adoptado es de los <b>peores del barrido</b> —{GR_PEOR_QUE} de
+  los {GR_N} puntos conservan más objetos que él— y el efecto es sistemático, no un punto suelto:
+  promediando los radios, m = {GR_M_PEOR} conserva {GR_MEDIA_PEOR} objetos y m = {GR_M_MEJOR} conserva
+  {GR_MEDIA_MEJOR}. <b>El peso es lo que decide; el radio casi no importa</b>, lo que permite conservar
+  r = 25 y con él todo el análisis de calidad.</p>
+  <p><b>Validación en reserva, que es la que vale.</b> El punto se eligió sobre la partición de
+  selección, así que su resultado ahí está optimistamente sesgado y no se reporta como hallazgo. En la
+  partición de reserva, manteniendo r = 25 y bajando el peso a 0,10, la conservación pasa de
+  <b>{RE_AD_OBJ} a {RE_RE_OBJ}</b> de {OBT_UNICA} objetos ({RE_AD_PCT} % a {RE_RE_PCT} %). La prueba
+  pareada sobre los mismos objetos —McNemar exacto, que mira sólo los discordantes— da <b>{PAR_RE_GANA}
+  objetos ganados contra {PAR_RE_PIERDE} perdidos, p = {PAR_RE_P}</b>. No es un intercambio: es una
+  mejora casi estricta. En selección el mismo contraste da {PAR_SE_GANA} contra {PAR_SE_PIERDE},
+  p = {PAR_SE_P}.</p>
+  <p class="lectura">Dónde deja al operador, y qué <b>no</b> autoriza a decir. Re-ajustado, en reserva
+  es <b>estadísticamente indistinguible de {RE_INDIST_N} de los comparativos</b>
+  ({RE_INDIST}) y le gana al {RE_GANA_A}. En su punto adoptado quedaba último entre las fusiones. Pero
+  <b>no supera a la Ratio Pyramid</b>, que conserva {RE_RATIO_B} objetos: en reserva
+  {RE_RATIO_SIG} (p = {RE_RATIO_P}) y en selección también, a favor de la Ratio. La afirmación que la
+  evidencia sostiene es que el operador es <b>competitivo con el estado del arte una vez ajustado a la
+  tarea</b>, no que sea el mejor. Y el hallazgo de fondo es el mismo del resto del trabajo, ahora medido
+  desde la aplicación: el punto de operación lo fijó el criterio de evaluación, y para esta tarea ese
+  criterio elegía casi el peor punto disponible.</p>
+  {pie()}
+</div>
+""")
+
 # La conclusion de H6 va en su propia pagina. Al declarar la potencia el parrafo crecio y la
 # pagina anterior —que ya lleva la tabla de las 232 escenas— derramaba; lo marco el bloque 8b.
 # Ademas es el remate de una de las siete hipotesis y se lee mejor sin la tabla encima.
@@ -2892,7 +3076,9 @@ H.append(f"""
   <h2>14. Clases complementarias (continuación): hasta dónde llega el rechazo</h2>
   <p><b>Conclusión sobre el objetivo declarado, y hasta dónde llega.</b> La hipótesis de que una
   mejor calidad de fusión se traduzca en la detección de objetos complementarios <b>se rechaza</b>
-  para el método propuesto. Hace falta aclarar qué alcance tiene ese rechazo. El
+  para el método propuesto <b>en su punto de operación adoptado</b> —re-ajustado a la tarea, como
+  muestran las dos páginas anteriores, el operador es indistinguible de los comparativos
+  multiescala—. Hace falta aclarar qué alcance tiene ese rechazo. El
   contraste <b>no es significativo</b>, y una prueba que no rechaza puede querer decir dos cosas
   muy distintas: que no hay efecto, o que no había con qué verlo. El test de McNemar mira solo
   los pares discordantes, y acá son <b>{POT_ND}</b> ({POT_B} escenas a favor de la propuesta y

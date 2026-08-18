@@ -28,7 +28,10 @@ from scipy.stats import binomtest
 MR = ROOT / "experiments" / "results" / "metrics_reports"
 SALIDA = MR / "pareado_punto_operacion.csv"
 ADOPTADO = (25, 0.30)
-CANDIDATO = (5, 0.10)
+# El candidato es (25; 0,10) y NO (5; 0,10), que es el mejor absoluto de la grilla por dos objetos:
+# conservar r = 25 deja intacto todo el analisis de calidad del trabajo, y la diferencia entre los dos
+# no la sostiene la muestra. El informe recomienda este, asi que la prueba tiene que ser de este.
+CANDIDATO = (25, 0.10)
 PROP = "Propuesta_Novedosa"
 
 
