@@ -162,3 +162,73 @@ Esto se habla con el director, y son dos puntos:
 2. Que se va a buscar el punto de operación del operador **sobre el criterio de complementariedad**.
 
 El experimento de M3FD fue su idea; esta grilla es la continuación natural de ese diseño.
+
+---
+
+# De informe de avances a reporte técnico — auditoría del 17 de agosto
+
+Auditoría propia, con evidencia medida sobre el PDF y el código. (El estudio en paralelo que había
+lanzado para esto falló dos veces entero por sobrecarga del servidor, así que se hizo en secuencia.)
+
+## Lo que YA está bien y no hay que tocar
+
+- **Los hiperparámetros de los siete métodos están declarados** en §6: LP 4 niveles, RP con su fórmula,
+  DWT Haar 3 niveles, DTCWT 4 niveles y seis subbandas, CVT db4 3 niveles con la aclaración de que es
+  una aproximación y no la curvelet. Verifiqué la afirmación «Haar» contra el código: `dwt_fusion` usa
+  `db1`, que es Haar. Correcto.
+- **Las nueve métricas del análisis están definidas** en §7 con las ecuaciones (18) a (22), y declara que
+  todas son «mayor es mejor».
+- **Las semillas** están declaradas en todo el capítulo de LLVIP (39 menciones), con el estudio de cinco
+  semillas y su desvío.
+
+## Los cuatro huecos, en orden de lo que un revisor exige primero
+
+### 1. No hay bibliografía. Ninguna. *(alto)*
+
+Cero apariciones de «Referencias», «Bibliografía» o DOI en 92 páginas. El informe cita en prosa a Ortega
+y Espinoza (2025), Toet (1989), Burt y Adelson, Kingsbury y Piella, y no hay lista donde resolverlos.
+
+**El dato existe**: el libro tiene **38 referencias** con DOI, y cubre las dos que el informe cita en
+prosa. Se leen de `docs/Tesis_Borrador_V3.docx`, párrafos 443–481. Estimado: 2 páginas.
+
+### 2. Las ocho métricas adicionales se usan y nunca se definen *(alto)*
+
+§7 las nombra —Qabf, Nabf, SCD, VIF, FMI, Q0, QW, QE— y ahí queda. Pero aparecen en resultados: el
+ranking de las diecisiete, el ranking con Nabf, el análisis de M3FD. Un lector no puede interpretar «3,459
+con las diecisiete» sin saber qué son las diecisiete.
+
+**El dato existe**: la dirección de cada una sale de `METRIC_DIRECTION` en `src/metrics/evaluators.py`, y
+las atribuciones están documentadas en el propio código —Xydeas-Petrović 2000, Sheikh-Bovik 2006,
+Aslantas-Bendes 2015, Haghighat 2011, Piella-Heijmans 2003—, **siete de las ocho ya con entrada en la
+bibliografía del libro**. Estimado: 1 página, una tabla.
+
+### 3. No hay bloque de reproducibilidad *(alto)*
+
+Cero menciones a versiones de software; cero a «inventario», «reproducir», «requirements», «commit» o
+«repositorio». Sólo 3 menciones de archivos `.py` y 4 de `.csv` en todo el documento, así que no se puede
+ir del número al archivo.
+
+**El dato existe y ya está capturado**: `entorno.csv` (28 filas) lo dejó `experiments/perfil_entorno.py`
+— Python 3.11.14, Windows 10.0.26200, i7-13620H, 31,7 GB, RTX 4050, CUDA 12.1, y las catorce versiones
+instaladas. Falta el inventario script → CSV → tabla, que se deriva del repositorio. Estimado: 2 páginas.
+
+### 4. El apparatus de «avance» *(medio)*
+
+Seis lugares, todos con una sola aparición, así que es una edición acotada: el subtítulo de portada
+«Presentación de avances»; y en la carilla, «Tres diferencias con el plan de junio, **para su visto
+bueno**», «Lo que falta» y «Dónde mirar». Más «Próximos pasos» en §16, que en un reporte técnico es
+legítimo como trabajo futuro y sólo hay que reformular su encabezado.
+
+No hay ningún «se recomienda» ni «queda como trabajo futuro» de gestión: eso ya está limpio.
+
+## Lo que NO falta medir
+
+**Nada.** Los cuatro huecos son de escritura, y los datos de los tres primeros ya existen en archivos del
+repositorio. Es la mejor noticia de la auditoría: no hay costo de cómputo, sólo de redacción.
+
+## Tamaño y orden
+
+Unas **5 páginas nuevas**, que llevarían el informe de 92 a ~97. El orden que propongo es por peso:
+bibliografía, métricas adicionales, reproducibilidad, y al final el apparatus, que es el único que
+depende de una decisión de género —si el documento deja de dirigirse al director— y conviene hacerlo
+junto con el encuadre de `PROPUESTA_ENCUADRE.md`.
