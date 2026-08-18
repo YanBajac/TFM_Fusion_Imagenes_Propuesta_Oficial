@@ -42,9 +42,20 @@ import pandas as pd
 import run_complementariedad_escenas as base
 
 SALIDA = ROOT / "experiments" / "results" / "metrics_reports"
-OBJ_CSV = SALIDA / "complementariedad_objetos.csv"
-RES_CSV = SALIDA / "complementariedad_objetos_resumen.csv"
-ESC_CSV = SALIDA / "complementariedad_objetos_escenas.csv"
+
+
+def salidas(pref):
+    """Los tres CSV de esta particion.
+
+    La particion por defecto —m3fd_comp, las escenas con ambas clases— conserva los nombres sin sufijo
+    porque son los que ya estan versionados y citados. Cualquier otra particion escribe con sufijo, para
+    que validar sobre m3fd_test no pise la medicion de m3fd_comp: los dos resultados tienen que convivir,
+    porque uno es donde se ELIGIO el punto y el otro donde se VALIDA.
+    """
+    suf = "" if pref == "m3fd_comp" else f"_{pref}"
+    return (SALIDA / f"complementariedad_objetos{suf}.csv",
+            SALIDA / f"complementariedad_objetos_resumen{suf}.csv",
+            SALIDA / f"complementariedad_objetos_escenas{suf}.csv")
 
 
 def detectados(gt_cajas, pred_cajas, umbral):
@@ -77,6 +88,7 @@ def main():
     ap.add_argument("--prefijo", default="m3fd_comp", choices=["m3fd_comp", "m3fd_test"])
     a = ap.parse_args()
     base.PREF = a.prefijo
+    OBJ_CSV, RES_CSV, ESC_CSV = salidas(a.prefijo)
 
     import cv2
     from ultralytics import YOLO

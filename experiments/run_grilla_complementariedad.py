@@ -51,8 +51,12 @@ from run_complementariedad_objetos import detectados
 from src.fusion.optimal_top_hat import combined_top_hat
 
 SALIDA = ROOT / "experiments" / "results" / "metrics_reports"
-GRILLA_CSV = SALIDA / "grilla_complementariedad.csv"
-OBJ_REF = SALIDA / "complementariedad_objetos.csv"
+def rutas(pref):
+    """La salida de la grilla y la referencia por objeto de ESTA particion."""
+    suf = "" if pref == "m3fd_comp" else f"_{pref}"
+    return (SALIDA / f"grilla_complementariedad{suf}.csv",
+            SALIDA / f"complementariedad_objetos{suf}.csv",
+            SALIDA / f"grilla_complementariedad_detalle{suf}.csv")
 PROP = "Propuesta_Novedosa"
 
 
@@ -109,7 +113,14 @@ def main():
     ap.add_argument("--pesos", default="0.05,0.10,0.15,0.20,0.30,0.50")
     ap.add_argument("--conf", type=float, default=0.25)
     ap.add_argument("--iou", type=float, default=0.5)
+    ap.add_argument("--prefijo", default="m3fd_comp", choices=["m3fd_comp", "m3fd_test"])
+    ap.add_argument("--guardar-objetos", action="store_true",
+                    help="ademas del resumen, guarda el detalle por objeto de cada punto de la "
+                         "grilla. Hace falta para las pruebas pareadas: comparar dos puntos por sus "
+                         "totales no dice si la diferencia es consistente objeto por objeto.")
     a = ap.parse_args()
+    GRILLA_CSV, OBJ_REF, DET_CSV = rutas(a.prefijo)
+    base.PREF = a.prefijo
     radios = [int(x) for x in a.radios.split(",")]
     pesos = [float(x) for x in a.pesos.split(",")]
     if (25, 0.30) not in [(r, m) for r in radios for m in pesos]:
@@ -123,7 +134,7 @@ def main():
     # resultado como .jpg; fusionar esos .jpg ya comprimidos daria una entrada distinta de la que se
     # midio. Con las copias comprimidas el punto de control daba 4 escenas donde la referencia tiene
     # 6: chico, pero suficiente para que la grilla no fuera comparable.
-    dSel = ROOT / "datasets" / "m3fd_comp_VIS" / "images" / "val"
+    dSel = ROOT / "datasets" / f"{a.prefijo}_VIS" / "images" / "val"
     dV = ROOT / "data" / "M3FD_Detection" / "Vis"
     dI = ROOT / "data" / "M3FD_Detection" / "Ir"
     stems = sorted(p.stem for p in dSel.glob("*.jpg"))
@@ -155,6 +166,7 @@ def main():
     print(f"escenas con al menos un objeto exclusivo de cada modalidad: {len(esc_apta)}\n")
 
     filas = []
+    det_todo = {}
     t00 = time.time()
     for r in radios:
         t0 = time.time()
@@ -190,6 +202,7 @@ def main():
                       f"({time.time() - t0:.0f} s)", flush=True)
 
         for m in pesos:
+            det_todo[(r, m)] = dict(det[m])
             dd = det[m]
             rec = sum(dd.get(k, 0) for k in unica)
             rv = sum(dd.get(k, 0) for k in solo_vis)
@@ -213,6 +226,11 @@ def main():
 
     d = pd.DataFrame(filas)
     d.to_csv(GRILLA_CSV, index=False)
+    if a.guardar_objetos:
+        largo = [{"r": r, "m": m, "clave": k, "detectado": v}
+                 for (r, m), dd in det_todo.items() for k, v in dd.items()]
+        pd.DataFrame(largo).to_csv(DET_CSV, index=False)
+        print(f"    detalle por objeto -> {DET_CSV.name} ({len(largo)} filas)")
 
     # ------------------------------------------------------------------ el control
     ctrl = d[(d.r == 25) & (np.isclose(d.m, 0.30))]

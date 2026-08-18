@@ -1,0 +1,15 @@
+particion,rol,comparacion,n,a,b,gana,pierde,p
+m3fd_comp,seleccion,reajustado_vs_adoptado,447,272,232,61,21,1.1296023055413025e-05
+m3fd_comp,seleccion,reajustado_vs_PiramideLaplace,447,272,284,21,33,0.13367423536410522
+m3fd_comp,seleccion,reajustado_vs_RatioPiramide,447,272,310,21,59,2.5291102564670602e-05
+m3fd_comp,seleccion,reajustado_vs_DWT,447,272,260,42,30,0.1945051658673991
+m3fd_comp,seleccion,reajustado_vs_DTCWT,447,272,275,22,25,0.7708669945730263
+m3fd_comp,seleccion,reajustado_vs_Curvelet,447,272,240,49,17,0.0001014771231679886
+m3fd_comp,seleccion,reajustado_vs_TopHat_Clasico,447,272,203,82,13,2.0830055605008275e-13
+m3fd_test,reserva,reajustado_vs_adoptado,119,76,57,23,4,0.000310748815536499
+m3fd_test,reserva,reajustado_vs_PiramideLaplace,119,76,75,7,6,1.0
+m3fd_test,reserva,reajustado_vs_RatioPiramide,119,76,83,8,15,0.21003961563110352
+m3fd_test,reserva,reajustado_vs_DWT,119,76,74,13,11,0.8388197422027588
+m3fd_test,reserva,reajustado_vs_DTCWT,119,76,72,8,4,0.3876953125
+m3fd_test,reserva,reajustado_vs_Curvelet,119,76,69,11,4,0.11846923828124999
+m3fd_test,reserva,reajustado_vs_TopHat_Clasico,119,76,51,26,1,4.172325134277344e-07
