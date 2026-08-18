@@ -1152,6 +1152,53 @@ if 'avances' in DOCUMENTOS:
                f'las {len(set(_rem))} remisiones del resumen caen en la seccion que nombran'
                + (f' — {_malas[:4]}' if _malas else ''))
 
+# --------------------------------------------- 27. ningun entregable menciona la herramienta
+# POR QUE. Los entregables se presentan como trabajo del tesista, y lo son: los experimentos, las
+# decisiones y las conclusiones son suyas. Pero los archivos EDITABLES arrastran rastros del entorno en
+# lugares que NO SE VEN al leer el documento, y habia dos:
+#   - el libro tenia CINCO comentarios de Word con w:author="Claude", tres de ellos anclados en el texto.
+#     No salen en el PDF —LibreOffice no los imprime— pero se ven en el panel de revision de Word, que es
+#     lo primero que abre quien recibe el .docx;
+#   - el deck tenia el TEXTO ALTERNATIVO de cinco imagenes con la ruta completa del directorio temporal,
+#     que lleva la palabra en el camino. Se ve en el campo de texto alternativo de PowerPoint.
+# No lo detectaba nada, porque los bloques que miran el texto de los documentos leen el PDF, y ahi no
+# aparece ninguna de las dos cosas.
+# QUE SE REVISA. Cada entregable POR DENTRO: en los .docx/.pptx/.xlsx todas las partes XML —lo que incluye
+# comentarios, autores, metadatos y atributos como el texto alternativo— y en los PDF el texto, los
+# metadatos y las anotaciones.
+print('\n=== 27. ningun entregable menciona la herramienta con la que se trabajo ===')
+_PAT_IA = re.compile(r'claude|anthropic|chatgpt|openai|copilot|gemini', re.I)
+_hallado = []
+for _p in sorted((RAIZ / 'docs').glob('*')):
+    if _p.suffix.lower() in ('.docx', '.pptx', '.xlsx'):
+        import zipfile as _zp
+        with _zp.ZipFile(_p) as _z:
+            for _nm in _z.namelist():
+                if not _nm.endswith(('.xml', '.rels')):
+                    continue
+                _t = _z.read(_nm).decode('utf-8', errors='replace')
+                _m = _PAT_IA.search(_t)
+                if _m:
+                    _ctx = re.sub(r'\s+', ' ', _t[max(0, _m.start() - 30):_m.end() + 30])
+                    _hallado.append(f'{_p.name}/{_nm}: «…{_ctx}…»')
+    elif _p.suffix.lower() == '.pdf':
+        with fitz.open(str(_p)) as _d:
+            for _k, _v in (_d.metadata or {}).items():
+                if _v and _PAT_IA.search(str(_v)):
+                    _hallado.append(f'{_p.name}: metadato {_k} = {_v}')
+            for _i in range(_d.page_count):
+                _m = _PAT_IA.search(_d[_i].get_text())
+                if _m:
+                    _hallado.append(f'{_p.name}: texto de la pag. {_i + 1}')
+                    break
+                if any(_PAT_IA.search(str((_an.info or {}).get('content', '')) +
+                                     str((_an.info or {}).get('title', '')))
+                       for _an in _d[_i].annots()):
+                    _hallado.append(f'{_p.name}: anotacion en la pag. {_i + 1}')
+                    break
+ok(not _hallado, 'los entregables de docs/ no mencionan la herramienta'
+                 + (f' — {len(_hallado)} rastros: {_hallado[:3]}' if _hallado else ''))
+
 # --------------------------------------------- 26. inventario del informe: ninguna pagina se pierde
 # POR QUE, Y ES EL CHEQUEO MAS IMPORTANTE DE LOS QUE MIRAN EL INFORME. Los pies del informe se
 # escribian a mano, uno por pagina, y el generador abortaba si la secuencia no era 2..N. Eso tenia un
