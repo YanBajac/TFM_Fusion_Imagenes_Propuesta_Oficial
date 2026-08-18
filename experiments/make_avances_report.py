@@ -2179,7 +2179,10 @@ li { margin-bottom: 1mm; text-align: justify; }
 .portada .datos { font-size: 11.5pt; line-height: 2.1; }
 """
 
-_PG = 3   # la ultima pagina con numero explicito es la 3, la del indice
+_PG = 4   # la ultima pagina con numero explicito es la 4, la del indice
+#         Son cuatro y no dos porque el frente lleva portada, resumen, la pagina de decisiones para el
+#         director y el indice; los tres ultimos se construyen al final y se insertan al frente, asi que
+#         pasan su numero. El cuerpo arranca en la 5.
 
 
 def pie(n=None):
@@ -4063,7 +4066,7 @@ for _b in "".join(H).split('<div class="page"')[1:]:
     _mp = _re.search(r'<div class="pie">(\d+)</div>', _b)
     if _mh and _mp:
         _PAG_SEC.setdefault(int(_mh.group(1)), int(_mp.group(1)))
-for _n in (4, 5, 8, 9, 10, 13, 14, 16):
+for _n in (4, 5, 8, 9, 10, 13, 14, 16, 17):
     assert _n in _PAG_SEC, f"la carilla remite a la seccion {_n} y no se encontro su pagina"
 
 _RESUMEN = f"""
@@ -4085,8 +4088,7 @@ _RESUMEN = f"""
   imágenes TNO: la propuesta, la metodología clásica del Top-Hat y cinco métodos multiescala del
   estado del arte. Se usaron nueve métricas de calidad de imagen y pruebas estadísticas basadas en
   rangos. Además se entrenó un detector de objetos sobre cada versión fusionada —{SEM_N} veces
-  cada una, cambiando sólo la semilla de arranque, para saber cuánto mueve el azar al resultado— y así
-  ver si la mejora de calidad sirve de algo en una tarea posterior.</p>
+  cada una, cambiando sólo la semilla de arranque, para saber cuánto mueve el azar al resultado—.</p>
 
   <p><b>Lo que salió.</b> El método <b>desplaza el punto de operación</b> de la fusión; no mejora
   todo a la vez. Gana con claridad en detalle y contraste espacial: 24 de 25 comparaciones contra
@@ -4096,37 +4098,73 @@ _RESUMEN = f"""
   Ese primer puesto <b>depende del criterio</b>: medido con las diecisiete métricas que el mismo
   evaluador calcula, pasa a tercero.</p>
 
-  <p><b>Lo que no salió, y terminó siendo el segundo aporte.</b> La mejora de calidad no se
-  traslada a la tarea. En LLVIP —peatones nocturnos etiquetados— la cámara térmica sola llega a {SEM_IR} de mAP, el
-  puntaje del detector entre 0 y 1, y le gana a {IR_SUPERA} de las
-  siete fusiones, y de la séptima, {IR_INDIST_NOM}, no se distingue. Entre las fusiones no hay orden
-  que sostener: entrenar la misma entrada {SEM_N} veces cambiando sólo la semilla la mueve
-  {SEM_DESV} de mAP, más que la distancia que las separa entre sí. La propuesta alcanza {SEM_PROP},
-  queda {SEM_PUESTO}.ª de siete e indistinguible de {SEM_INDIST} de sus {SEM_RIVALES} rivales.
-  Y el conjunto de nueve métricas no distingue
-  detalle útil de ruido: una imagen a la que se le agregó ruido a propósito queda tercera entre
-  catorce entradas, por delante de cinco de los seis métodos reales. De ahí salió el segundo aporte: auditar si el protocolo con que se evalúa la fusión mide lo que dice medir.</p>
+  <p><b>Lo que no salió, y por qué.</b> La mejora de calidad no se traslada a la tarea, y hay que
+  separar dos experimentos distintos. En <b>LLVIP</b> el detector se reentrena sobre cada entrada, así
+  que compara qué imagen entrena mejor; y su única clase anotada es térmica, de modo que ahí no hay
+  complementariedad que medir. Toda fusión mejora sobre el visible solo, y ninguna supera al
+  infrarrojo ({SEM_IR} de mAP, media de {SEM_N} semillas; el puntaje del detector entre 0 y 1),
+  lo que dice algo de la tarea —el
+  peatón nocturno es térmico— y no del operador. El experimento que <b>sí</b> responde al objetivo es
+  <b>M3FD</b>: un solo detector entrenado con las dos modalidades, evaluado por inferencia sobre las
+  fusionadas, para ver si detecta los objetos que sólo ve una de ellas. Ahí la propuesta, en su punto
+  de operación adoptado, queda {OB_PUESTO}.ª de {OB_N_ENT}.</p>
 
-  <p><b>Tres diferencias con el plan de junio, para su visto bueno.</b> El método quedó de una sola
-  escala y no multiescala. Se reportan nueve métricas de las doce previstas, sobre diecisiete
-  calculadas. Y la detección se evaluó con un detector, YOLOv8n, en lugar de los tres acordados
-  (YOLO, RF-DETR y un modelo en Keras), aunque sobre dos conjuntos etiquetados y no uno. Los motivos están en el informe; la decisión es suya.</p>
-
-  <p><b>Lo que falta.</b> Agregar al conjunto de evaluación por lo menos una métrica que castigue
-  los artefactos —los halos y bordes falsos que la fusión puede inventar—, y repetir la comparación con esa batería ampliada. Darles a todos los operadores
-  morfológicos el mismo presupuesto de ajuste, para aislar cuánto aporta el banco de cinco elementos.
-  Repetir la prueba de detección con otros detectores, y la de M3FD con varias semillas como ya se
-  hizo con LLVIP. Y sumar una validación perceptual con observadores.</p>
-
-  <p><b>Dónde mirar.</b> El método en la sección 4 (pág. {_PAG_SEC[4]}); la elección de r y m en
-  la 5 (pág. {_PAG_SEC[5]}), con su desarrollo en el anexo A21; los resultados y la estadística en las 8 y 9 (págs. {_PAG_SEC[8]} y
-  {_PAG_SEC[9]}); la robustez en la 10 (pág. {_PAG_SEC[10]}); la detección en las 13 y 14
-  (págs. {_PAG_SEC[13]} y {_PAG_SEC[14]}); y las conclusiones en la 16 (pág. {_PAG_SEC[16]}).</p>
+  <p><b>Y al mirar por qué, apareció el hallazgo.</b> Lo que falla es el <b>punto de operación</b>, no
+  el operador. Se eligió sobre las nueve métricas de imagen, que premian actividad espacial —justo lo
+  que borra los objetos de bajo contraste del visible—: de {GR_N} configuraciones probadas, la
+  adoptada es de las peores. Conservando r = 25 y bajando el peso a 0,10, en una partición que no
+  participó del ajuste la conservación pasa de {RE_AD_OBJ} a {RE_RE_OBJ} de {OBT_UNICA} objetos
+  —{PAR_RE_GANA} ganados contra {PAR_RE_PIERDE} perdidos, p = {PAR_RE_P}— y el operador pasa a ser
+  <b>indistinguible de {RE_INDIST_N} de sus {SEM_RIVALES} comparativos</b>. El criterio de calidad y
+  el de la tarea piden puntos distintos: ése es el segundo aporte. El conjunto de nueve tampoco
+  distingue detalle útil de ruido —una imagen con ruido agregado queda tercera entre catorce
+  entradas—.</p>
 
   {pie(2)}
 </div>
 """
+
+# La carilla se PARTE EN DOS, y el corte es por funcion. Al incorporar el hallazgo del punto de
+# operacion, la pagina quedo a TRES PALABRAS de derramar —697 entraban y 700 no— y con ese margen
+# cualquier edicion posterior la rompe. Pero el problema no era el largo: la pagina se habia convertido
+# en dos cosas distintas, un resumen de lo que se hizo y un pedido de decisiones al director. Separadas,
+# el resumen sigue siendo un resumen y los pedidos quedan donde se pueden accionar, y las dos paginas
+# tienen margen.
+_PARA_DIRECTOR = f"""
+<div class="page">
+  <h2>Estado del trabajo y decisiones pendientes</h2>
+
+  <p><b>Dos decisiones que le pido.</b> Primero, si se adopta <b>m = 0,10 para la aplicación</b> y se
+  conserva m = 0,30 para el benchmark de calidad: serían dos puntos de operación declarados, uno por
+  criterio, y esa separación es en sí misma el hallazgo del trabajo. Y segundo, cómo queda enunciado el
+  aporte: el objetivo registrado es uno y el informe presenta dos, de modo que conviene resolverlo antes
+  de reescribir el documento de tesis. La redacción propuesta va aparte, en un documento breve.</p>
+
+  <p><b>Tres diferencias con el plan de junio, para su visto bueno.</b> El método quedó de una sola
+  escala y no multiescala. Se reportan nueve métricas de las doce previstas, sobre diecisiete
+  calculadas. Y la detección se evaluó con un detector, YOLOv8n, en lugar de los tres acordados
+  (YOLO, RF-DETR y un modelo en Keras), aunque sobre dos conjuntos etiquetados y no uno. Los motivos
+  están en el informe; la decisión es suya.</p>
+
+  <p><b>Lo que falta.</b> Incorporar al conjunto de evaluación al menos una métrica que castigue los
+  artefactos —los halos y bordes falsos que la fusión puede inventar— y repetir la comparación con esa
+  batería ampliada. Darles a todos los operadores morfológicos el mismo presupuesto de ajuste, para
+  aislar cuánto aporta el banco de cinco elementos. Repetir la prueba de detección con otros
+  detectores, y la de M3FD con varias semillas como ya se hizo con LLVIP. Y sumar una validación
+  perceptual con observadores.</p>
+
+  <p><b>Dónde mirar.</b> El método en la sección 4 (pág. {_PAG_SEC[4]}); la elección de r y m en la 5
+  (pág. {_PAG_SEC[5]}), con su desarrollo en el anexo A21; los resultados y la estadística en las 8 y 9
+  (págs. {_PAG_SEC[8]} y {_PAG_SEC[9]}); la robustez en la 10 (pág. {_PAG_SEC[10]}); los dos
+  experimentos de detección en las 13 y 14 (págs. {_PAG_SEC[13]} y {_PAG_SEC[14]}); las conclusiones en
+  la 16 (pág. {_PAG_SEC[16]}); y el entorno de ejecución y la secuencia para reproducir todo, en la 17
+  (pág. {_PAG_SEC[17]}).</p>
+
+  {pie(3)}
+</div>
+"""
 H.insert(1, _RESUMEN)
+H.insert(2, _PARA_DIRECTOR)
 
 _cuerpo = "".join(H)
 _BLOQUES = []
@@ -4195,10 +4233,10 @@ _INDICE = f"""
   listan con su rango; el PDF lleva además marcadores de navegación, uno por encabezado.</p>
   <table class="chica"><thead><tr><th class="l">Sección</th><th style="text-align:right">Pág.</th>
   </tr></thead><tbody>{_idx_filas}</tbody></table>
-  {pie(3)}
+  {pie(4)}
 </div>
 """
-H.insert(2, _INDICE)
+H.insert(3, _INDICE)
 print(f"indice: {len(_FILAS_IDX)} entradas · marcadores: {len(_TOC)}")
 
 # Control duro de la numeracion, en DOS partes. La segunda —que la secuencia sea 2, 3, ..., N— es la

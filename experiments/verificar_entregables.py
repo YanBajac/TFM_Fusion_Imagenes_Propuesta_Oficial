@@ -1136,6 +1136,11 @@ if 'avances' in DOCUMENTOS:
                f'las {len(_dec_res)} cifras decimales del resumen {_dec_res} aparecen en el cuerpo'
                + (f' — SIN RESPALDO: {_huerfanas}' if _huerfanas else ''))
             # y las remisiones de pagina tienen que existir y llevar a la seccion que nombran
+            # las remisiones se mudaron a la segunda pagina del frente, asi que el texto que se
+            # inspecciona abarca las dos
+            _t2f = plano(re.sub(r'\s+', ' ', ' '.join(
+                _d[_j].get_text() for _j in range(_pag_res - 1, min(_pag_res + 1, _npg)))))
+            _t_res = _t2f
             _rem = [(int(_s), int(_p)) for _s, _p in
                     re.findall(r'la (?:secci[oó]n )?(\d{1,2}) \(p[aá]g\. (\d{1,3})\)', _t_res)]
             _rem += [(int(_s), int(_p)) for _s, _p in
@@ -1346,10 +1351,16 @@ if 'avances' in DOCUMENTOS and _sem_res.exists():
     if _i_res is None:
         ok(False, 'no se encontro la carilla de resumen')
     else:
+        # EL FRENTE SON DOS PAGINAS desde que la carilla se partio: el resumen con los resultados y
+        # una pagina de decisiones para el director. Las cifras del hallazgo estan en la primera y las
+        # remisiones en la segunda, asi que el chequeo mira LAS DOS. Mirar solo la primera es lo que
+        # hacia antes, y al partirla informo «no se encontro el parrafo del hallazgo»: el defecto era
+        # del chequeo, no del documento.
         with fitz.open(str(DOCUMENTOS['avances']['ruta'])) as _d:
-            _t = re.sub(r'\s+', ' ', _d[_i_res].get_text())
-        # el parrafo del hallazgo de deteccion: de «no se traslada a la tarea» hasta el punto final
-        _m = re.search(r'no se traslada a la tarea\.(.{0,900}?)(?=Y el conjunto de nueve)', _t)
+            _t = re.sub(r'\s+', ' ', ' '.join(_d[_j].get_text()
+                                              for _j in range(_i_res, min(_i_res + 2, _d.page_count))))
+        # el parrafo del hallazgo de deteccion, desde que se separan los dos experimentos
+        _m = re.search(r'no se traslada a la tarea(.{0,1600}?)(?=Tres diferencias|Dos decisiones)', _t)
         if not _m:
             ok(False, 'no se encontro en el resumen el parrafo del hallazgo de deteccion')
         else:
@@ -1361,7 +1372,11 @@ if 'avances' in DOCUMENTOS and _sem_res.exists():
                     _validos |= {f'{_v:.3f}'.replace('.', ','), f'{_v:.4f}'.replace('.', ',')}
             _desv = {f'{_v:.4f}'.replace('.', ',') for _v in _sm.mAP50_desv}
             _desv |= {f'{_sm.mAP50_desv.median():.4f}'.replace('.', ',')}
-            _citados = set(re.findall(r'0,\d{3,4}', _frag))
+            # SOLO las cifras presentadas COMO mAP. Tomar toda cifra decimal del parrafo acreditaba
+            # como «mAP de LLVIP» al p = 0,0002 del re-ajuste de M3FD, que no es un mAP ni es de LLVIP:
+            # el chequeo fallaba sobre un parrafo correcto. Se exige que «mAP» este en la vecindad.
+            _citados = {_mm.group(1) for _mm in re.finditer(r'(0,\d{3,4})', _frag)
+                        if 'map' in plano(_frag[max(0, _mm.start() - 60):_mm.end() + 60]).lower()}
             _viejos = sorted(_citados - _validos - _desv)
             ok(not _viejos,
                f'los {len(_citados)} mAP que el resumen atribuye a LLVIP son medias del estudio'
@@ -1371,9 +1386,17 @@ if 'avances' in DOCUMENTOS and _sem_res.exists():
             ok(not _una or _n_sem == 1,
                f'el resumen no declara un unico entrenamiento habiendo {_n_sem} semillas'
                + (f' — dice «{_una[0]}»' if _una else ''))
-            ok(f'{_n_sem} veces' in _frag or f'{_n_sem} semillas' in _frag
-               or f'{_n_sem} entrenamientos' in _frag,
-               f'el resumen declara las {_n_sem} semillas al dar el hallazgo de deteccion')
+            # y la glosa de las semillas se exige SI el parrafo cita algun mAP: es lo que hay que
+            # atribuir a una media. Cuando el parrafo describe el resultado sin cifras de mAP —como
+            # desde que separa LLVIP de M3FD— no hay nada que atribuir, y exigirla igual convertia una
+            # redaccion mas honesta en un fallo.
+            # con LIMITE DE PALABRA: buscar la subcadena «5 semillas» la daba por buena dentro de
+            # «45 semillas», y 45 son las corridas del estudio (9 entradas x 5 semillas), no las
+            # semillas. Asi paso una vez un numero equivocado en la propia carilla.
+            _glosa_sem = re.search(rf'(?<!\d){_n_sem} (veces|semillas|entrenamientos)\b', _frag)
+            ok(not _citados or bool(_glosa_sem),
+               (f'el resumen declara las {_n_sem} semillas al dar los {len(_citados)} mAP'
+                if _citados else 'el resumen da el hallazgo sin citar mAP: no hay media que atribuir'))
 
         # Y LAS DOS UNIDADES CON QUE DA SUS RESULTADOS SE EXPLICAN EN LA PROPIA CARILLA. El resumen
         # esta escrito en lenguaje llano, pero llegaba con «3,39 de rango medio» y «0,961 de mAP» sin
@@ -1482,6 +1505,34 @@ for _py in sorted(list((RAIZ / 'src').rglob('*.py')) + list((RAIZ / 'experiments
                 _fugas.setdefault(_py.name, set()).add(_n)
 ok(not _fugas, f'ningun script escribe en docs/ raiz fuera de los {len(_DOCS_RAIZ)} declarados'
                + (f' — {({k: sorted(v) for k, v in _fugas.items()})}' if _fugas else ''))
+
+# ---------------------------------------------------------------------------------------------------
+# 28. NINGUN SCRIPT LLEVA CARACTERES DE CONTROL EN EL CODIGO.
+# De donde sale este bloque. Un chequeo de este mismo archivo se escribio con un script Python dentro de
+# un heredoc de bash, y la secuencia `\b` de una expresion regular llego como el caracter de retroceso
+# (0x08) en lugar de las dos letras. El archivo compila, la regex compila, y el editor no muestra nada:
+# lo unico que cambia es que la expresion pide un retroceso literal y por lo tanto NO COINCIDE NUNCA. Un
+# chequeo que no puede coincidir no avisa que se rompio; sigue diciendo OK.
+# Por eso el control es sobre los bytes y no sobre el comportamiento. Se admiten el salto de linea y el
+# tabulador, que son legitimos; cualquier otro caracter por debajo de 0x20 en un .py es un accidente de
+# escapado. Cuesta un recorrido de los archivos y cierra toda una familia de errores invisibles.
+print('\n=== 28. ningun script del repositorio lleva caracteres de control en el codigo ===')
+_ADMITIDOS = {'\n', '\t'}
+_ctrl = {}
+for _py in sorted((RAIZ / 'experiments').rglob('*.py')):
+    if '__pycache__' in str(_py):
+        continue
+    _t = _py.read_text(encoding='utf-8', errors='replace')
+    _malos = {}
+    for _i, _ln in enumerate(_t.splitlines(), 1):
+        _c = sorted({hex(ord(_x)) for _x in _ln if ord(_x) < 32 and _x not in _ADMITIDOS})
+        if _c:
+            _malos[_i] = _c
+    if _malos:
+        _ctrl[_py.name] = _malos
+ok(not _ctrl, f'los {len(list((RAIZ / "experiments").rglob("*.py")))} scripts no llevan caracteres de '
+              f'control fuera de salto de linea y tabulador'
+              + (f' — {_ctrl}' if _ctrl else ''))
 
 # --------------------------------------------- resumen
 print(f'\n=== {len(fallos)} fallos · {len(avisos)} avisos ===')
