@@ -1,0 +1,29 @@
+bloque,clave,valor
+interprete,Python,3.11.14
+interprete,implementacion,CPython
+interprete,ruta,C:\Users\Usuario\Documents\unv\mastertesis\tesis_mciencias_datos\.venv\Scripts\python.exe
+sistema,sistema operativo,Windows 10
+sistema,version detallada,10.0.26200
+sistema,arquitectura,AMD64
+maquina,CPU,13th Gen Intel(R) Core(TM) i7-13620H
+maquina,nucleos logicos,16
+maquina,RAM (GB),31.7
+maquina,GPU,NVIDIA GeForce RTX 4050 Laptop GPU
+maquina,CUDA disponible,si
+maquina,CUDA,12.1
+paquete,numpy,1.26.4
+paquete,opencv-python,4.13.0
+paquete,scipy,1.17.1
+paquete,scikit-image,0.26.0
+paquete,PyWavelets,1.8.0
+paquete,pandas,3.0.3
+paquete,matplotlib,3.11.0
+paquete,torch,2.5.1+cu121
+paquete,ultralytics,8.4.68
+paquete,PyMuPDF,1.28.0
+paquete,python-docx,1.2.0
+paquete,python-pptx,1.0.2
+paquete,openpyxl,3.1.5
+paquete,PyYAML,6.0.3
+ejecucion,fusion y metricas,CPU (NumPy y OpenCV; sin GPU)
+ejecucion,entrenamiento e inferencia del detector,GPU (NVIDIA GeForce RTX 4050 Laptop GPU)
