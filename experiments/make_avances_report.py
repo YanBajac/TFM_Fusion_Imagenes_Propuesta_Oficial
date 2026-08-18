@@ -1761,6 +1761,48 @@ SEM_LIDER_NOM = DET_LBL.get(_lld_o.index[0], _lld_o.index[0]).split(" (")[0]
 IR_INDIST_NOM = (DET_LBL.get(_sm_ind.rival.iloc[0], _sm_ind.rival.iloc[0]).split(" (")[0]
                  if len(_sm_ind) else "ninguna")
 
+# ------------------------------------------------- las ocho metricas que el analisis no usa
+# Se definen porque SI aparecen en resultados —el ranking de las diecisiete, el ranking con Nabf, el
+# analisis de artefactos de M3FD— y hasta ahora la seccion 7 solo las nombraba. La direccion se lee de
+# METRIC_DIRECTION, la misma constante que aplican los rankings: asi el cuadro no puede declarar una
+# direccion distinta de la que el calculo usa. La descripcion y la atribucion son editoriales, y las
+# atribuciones se verificaron contra la bibliografia del trabajo antes de escribirlas.
+_MET8 = [
+    ("Qabf", "Calidad de la transferencia de bordes: qué proporción de la información de gradiente de "
+             "las dos fuentes sobrevive en la imagen fusionada.", "[0, 1]",
+     "Xydeas y Petrović (2000)"),
+    ("Nabf", "Artefactos añadidos por la fusión: la fracción de información de gradiente presente en la "
+             "imagen fusionada que <b>no</b> proviene de ninguna de las fuentes. Es la única métrica del "
+             "evaluador con dirección inversa.", "[0, 1]", "Xydeas y Petrović (2000)"),
+    ("SCD", "Suma de las correlaciones de las diferencias: mide cuánto de lo que la fusión aporta sobre "
+            "cada fuente se corresponde con la otra fuente. El óptimo está cerca de 2.", "≈ [0, 2]",
+     "Aslantas y Bendes (2015)"),
+    ("VIF", "Fidelidad de la información visual: cuánta información del modelo de estadísticas de "
+            "escenas naturales se conserva.", "[0, 1]", "Sheikh y Bovik (2006)"),
+    ("FMI", "Información mutua de rasgos, calculada sobre los mapas de gradiente y normalizada.",
+     "[0, 1]", "Haghighat et al. (2011)"),
+    ("Q0", "Índice de calidad universal aplicado a la fusión, promediado sobre ventanas locales.",
+     "≈ [0, 1]", "Piella y Heijmans (2003)"),
+    ("QW", "El mismo índice ponderado por la saliencia local de cada fuente.", "≈ [0, 1]",
+     "Piella y Heijmans (2003)"),
+    ("QE", "El índice ponderado además por la información de bordes.", "≈ [0, 1]",
+     "Piella y Heijmans (2003)"),
+]
+_DIR_TXT = {"max": "mayor es mejor", "min": "<b>menor es mejor</b>"}
+assert all(_m[0] in DIRECTION_TODAS for _m in _MET8), "alguna de las ocho no esta en METRIC_DIRECTION"
+assert not any(_m[0] in METS for _m in _MET8), "alguna de las ocho esta entre las nueve reportadas"
+TAB_MET8 = (
+    '<table class="chica"><thead><tr><th>Métrica</th><th class="l">Qué mide</th>'
+    '<th>Dirección</th><th>Rango</th><th class="l">Referencia</th></tr></thead><tbody>'
+    + "".join(f'<tr><td>{_n}</td><td class="l">{_d}</td>'
+              f'<td>{_DIR_TXT[DIRECTION_TODAS[_n]]}</td><td>{_r}</td>'
+              f'<td class="l">{_ref}</td></tr>'
+              for _n, _d, _r, _ref in _MET8)
+    + '</tbody></table>')
+MET8_N = len(_MET8)
+MET8_MIN = ", ".join(_m[0] for _m in _MET8 if DIRECTION_TODAS[_m[0]] == "min")
+MET17_N = len(DIRECTION_TODAS)
+
 # ------------------------------------------------- complementariedad medida OBJETO POR OBJETO
 # El conteo por clase de la pagina anterior mide «recupera People» como al menos un verdadero positivo
 # de esa clase en la escena. Con ese grano, la condicion del director —el objeto A solo en el visible, el
@@ -2449,6 +2491,32 @@ H.append(f"""
   {CN_RANGO_RUIDO}), por delante de {CN_COMPAR_DETRAS} de los seis métodos comparativos, y su rango
   mejora de forma monótona al aumentar la varianza. Los resultados de las secciones siguientes deben
   leerse con ese alcance.</p>
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>7. Métricas de evaluación (continuación): las ocho que el evaluador calcula</h2>
+  <p>El análisis se restringe a las nueve de la página anterior por fidelidad con la metodología de
+  referencia, pero el evaluador implementado calcula <b>{MET17_N}</b>. Las {MET8_N} restantes no forman
+  parte del criterio principal y <b>sí intervienen en los resultados</b>: sostienen el ranking con las
+  {MET17_N} métricas de la sección 10, el ranking que incorpora Nabf, y la lectura de artefactos del
+  experimento de M3FD. Se definen acá para que esos resultados se puedan interpretar.</p>
+  <p><b>Tabla 2.</b> Las {MET8_N} métricas que el evaluador calcula y el análisis principal no usa. La
+  dirección de cada una se toma de la misma constante que aplican los rankings
+  (<span class="mono">METRIC_DIRECTION</span> en <span class="mono">src/metrics/evaluators.py</span>), de
+  modo que el cuadro no puede declarar una dirección distinta de la que el cálculo usa.</p>
+  {TAB_MET8}
+  <p class="lectura">Lectura, y es la que explica por qué el conjunto de nueve no alcanza. De las
+  {MET17_N} métricas implementadas, <b>{MET8_N} quedan fuera del criterio principal y una sola tiene
+  dirección inversa: {MET8_MIN}</b>. Al restringir el análisis a las nueve, el criterio se queda sin
+  ninguna cantidad que penalice lo que la fusión <i>agrega</i> y no estaba en las fuentes. Las nueve
+  premian magnitud —entropía, contraste, gradiente, frecuencia espacial— y la magnitud crece tanto con el
+  detalle útil como con el ruido. Ésa es la razón por la que una fusión de ruido gaussiano puede escalar
+  el ranking, y la razón por la que el trabajo incorpora {MET8_MIN} como agregación declarada además del
+  conjunto de referencia. Los valores de las {MET17_N} para las 140 fusiones del benchmark están en
+  <span class="mono">all_metrics.csv</span>.</p>
   {pie()}
 </div>
 """)
