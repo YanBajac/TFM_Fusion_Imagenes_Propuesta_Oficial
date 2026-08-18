@@ -4088,7 +4088,10 @@ _RESUMEN = f"""
   imágenes TNO: la propuesta, la metodología clásica del Top-Hat y cinco métodos multiescala del
   estado del arte. Se usaron nueve métricas de calidad de imagen y pruebas estadísticas basadas en
   rangos. Además se entrenó un detector de objetos sobre cada versión fusionada —{SEM_N} veces
-  cada una, cambiando sólo la semilla de arranque, para saber cuánto mueve el azar al resultado—.</p>
+  cada una, cambiando sólo la semilla de arranque, para saber cuánto mueve el azar al resultado—. Y en
+  un segundo conjunto, M3FD, se entrenó un único detector con las imágenes visibles e infrarrojas y sus
+  etiquetas, y se lo probó sobre las fusionadas sin volver a entrenarlo: es el experimento que pregunta
+  si la fusión conserva los objetos que sólo veía una de las dos cámaras.</p>
 
   <p><b>Lo que salió.</b> El método <b>desplaza el punto de operación</b> de la fusión; no mejora
   todo a la vez. Gana con claridad en detalle y contraste espacial: 24 de 25 comparaciones contra
