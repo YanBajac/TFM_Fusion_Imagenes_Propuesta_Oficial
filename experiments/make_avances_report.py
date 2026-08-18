@@ -1762,6 +1762,86 @@ SEM_LIDER_NOM = DET_LBL.get(_lld_o.index[0], _lld_o.index[0]).split(" (")[0]
 IR_INDIST_NOM = (DET_LBL.get(_sm_ind.rival.iloc[0], _sm_ind.rival.iloc[0]).split(" (")[0]
                  if len(_sm_ind) else "ninguna")
 
+# ------------------------------------------------- el entorno de ejecucion y la secuencia de reproduccion
+# El entorno sale de entorno.csv (experiments/perfil_entorno.py) y la secuencia, del README, leido aca para
+# que el informe no tenga una copia que se separe. Los dos se verifican antes de publicarse.
+_ent = pd.read_csv(os.path.join(MR, "entorno.csv"))
+_ENT_ROT = {"interprete": "Intérprete", "sistema": "Sistema", "maquina": "Equipo",
+            "paquete": "Bibliotecas", "ejecucion": "Dónde corrió cada etapa"}
+_ent_bloques = [(_ENT_ROT.get(_b, _b), _g) for _b, _g in _ent.groupby("bloque", sort=False)]
+# Las filas se arman en un bucle y no dentro de un f-string anidado: la primera version metia comillas
+# escapadas en la expresion de un f-string, que este Python no admite.
+def _tabla_ent(bloques):
+    _f_ = []
+    for _rot, _g in bloques:
+        for _k, _fi in enumerate(_g.itertuples()):
+            _cel = f'<td class="l"><b>{_rot}</b></td>' if _k == 0 else '<td></td>'
+            _f_.append(f'<tr>{_cel}<td class="l">{_fi.clave}</td>'
+                       f'<td class="l">{_fi.valor}</td></tr>')
+    return ('<table class="chica"><thead><tr><th class="l">Bloque</th><th class="l">Clave</th>'
+            '<th class="l">Valor</th></tr></thead><tbody>' + "".join(_f_) + '</tbody></table>')
+
+
+# Se parte en DOS tablas: las 28 filas mas la prosa no entran en una pagina, y el derrame se lleva el
+# pie y corre la numeracion. El corte es por bloque, que es donde el lector lo espera: el equipo por un
+# lado y las bibliotecas por otro.
+_ENT_EQUIPO = {"Intérprete", "Sistema", "Equipo"}
+TAB_ENTORNO_A = _tabla_ent([b for b in _ent_bloques if b[0] in _ENT_EQUIPO])
+TAB_ENTORNO_B = _tabla_ent([b for b in _ent_bloques if b[0] not in _ENT_EQUIPO])
+ENT_PY = _ent.loc[_ent.clave == "Python", "valor"].iloc[0]
+ENT_SO = _ent.loc[_ent.clave == "sistema operativo", "valor"].iloc[0]
+ENT_CPU = _ent.loc[_ent.clave == "CPU", "valor"].iloc[0]
+ENT_GPU = _ent.loc[_ent.clave == "GPU", "valor"].iloc[0]
+ENT_N_PAQ = int((_ent.bloque == "paquete").sum())
+
+
+def _secuencia_del_readme():
+    """Los comandos de la seccion de ejecucion del README, con su comentario. Vacio si no se puede."""
+    _p = os.path.join(os.path.dirname(MR), "..", "..", "README.md")
+    _p = os.path.normpath(os.path.join(BASE_DOCS, "..", "README.md"))
+    try:
+        _t = open(_p, encoding="utf-8").read()
+    except Exception as _e:                                            # pragma: no cover
+        print(f"AVISO: no se pudo leer el README ({type(_e).__name__})")
+        return []
+    _m = _re.search(r'^##\s*\d+\.\s*Ejecuci[oó]n de experimentos(.*?)^##\s', _t, _re.S | _re.M)
+    if not _m:
+        print("AVISO: no se encontro la seccion de ejecucion en el README")
+        return []
+    _pasos = []
+    for _bloque in _re.findall(r'```[a-z]*\n(.*?)```', _m.group(1), _re.S):
+        _com = None
+        for _ln in _bloque.splitlines():
+            _ln = _ln.strip()
+            if _ln.startswith("#"):
+                _com = _ln.lstrip("# ").strip()
+            elif _ln:
+                # se le quita la numeracion propia del README —«0.», «3b.»— porque la tabla ya
+                # lleva su columna de orden y el numero duplicado se lee como un error
+                _c_ = _re.sub(r'^\d+[a-z]?\.\s*', '', _com or '')
+                _pasos.append((_c_, _ln))
+                _com = None
+    return _pasos
+
+
+SEQ = _secuencia_del_readme()
+# Control: cada .py que la secuencia nombra tiene que existir. Una secuencia de reproduccion que nombra un
+# script inexistente promete algo que falla recien cuando alguien la sigue.
+_faltan_seq = []
+for _c, _cmd in SEQ:
+    for _f in _re.findall(r'(experiments/[\w/]+\.py)', _cmd):
+        if not os.path.exists(os.path.join(os.path.dirname(BASE_DOCS), _f)):
+            _faltan_seq.append(_f)
+assert not _faltan_seq, f"la secuencia de reproduccion nombra scripts que no existen: {_faltan_seq}"
+SEQ_N = len(SEQ)
+TAB_SECUENCIA = (
+    '<table class="chica"><thead><tr><th>#</th><th class="l">Qué hace</th>'
+    '<th class="l">Comando</th></tr></thead><tbody>'
+    + "".join(f'<tr><td>{_i}</td><td class="l">{_c}</td>'
+              f'<td class="l"><span class="mono">{_cmd}</span></td></tr>'
+              for _i, (_c, _cmd) in enumerate(SEQ, 1))
+    + '</tbody></table>')
+
 # ------------------------------------------------- las referencias, leidas del libro de la tesis
 # El informe no tenia ninguna: cero apariciones de «Referencias» o de DOI en sus paginas, citando en prosa
 # a Ortega y Espinoza, Toet, Burt y Adelson, Kingsbury y Piella. Se leen del libro EN TIEMPO DE GENERACION
@@ -3437,6 +3517,74 @@ H.append(f"""
 """)
 
 
+H.append(f"""
+<div class="page">
+  <h2>17. Reproducibilidad: el equipo de ejecución</h2>
+  <p>Todos los resultados de este informe se produjeron en un único equipo. Los datos de esta sección los
+  genera <span class="mono">experiments/perfil_entorno.py</span>, que consulta el intérprete, el sistema y
+  las bibliotecas en el momento de ejecutarse: declara entonces las versiones <b>instaladas</b> que
+  produjeron estos números, y no las declaradas en un archivo de dependencias, que pueden no coincidir.</p>
+  <p><b>Tabla 15.</b> Intérprete, sistema operativo y equipo.</p>
+  {TAB_ENTORNO_A}
+  <p class="lectura">Una aclaración sobre el equipo, porque es fácil atribuirle el costo a la parte
+  equivocada: <b>la fusión y las métricas corren en CPU</b> —son NumPy y OpenCV— y la placa de video se
+  usa sólo para entrenar y evaluar el detector. El operador propuesto es liviano y no necesita GPU; los
+  dos experimentos de detección, sí. La tabla siguiente lo declara etapa por etapa.</p>
+  <p class="lectura">Nota sobre el formato: en esta sección y en la siguiente, los números de versión se
+  escriben <b>con punto decimal</b> —Python 3.11.14, CUDA 12.1— porque es su forma canónica y no son
+  cantidades. El resto del informe usa coma decimal.</p>
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>17. Reproducibilidad (continuación): bibliotecas y etapas</h2>
+  <p><b>Tabla 15a.</b> Las {ENT_N_PAQ} bibliotecas instaladas que intervienen en el procesamiento, la
+  estadística y la generación de los documentos, y dónde corrió cada etapa. Las versiones van
+  <b>con punto decimal</b>, que es su forma canónica.</p>
+  {TAB_ENTORNO_B}
+  <p class="lectura">Por qué se declaran las versiones y no sólo los nombres. La morfología matemática,
+  las transformadas wavelet y varias de las métricas dependen de la implementación, no sólo de la
+  definición: un cambio de versión de OpenCV o de PyWavelets puede mover la tercera cifra decimal de
+  cualquier tabla de este informe sin que cambie ninguna decisión del método. Con las versiones a la
+  vista, una diferencia de ese tamaño entre una réplica y este documento se explica; sin ellas, no hay
+  forma de distinguirla de un error. El archivo <span class="mono">requirements.txt</span> del
+  repositorio fija los mínimos, y esta tabla registra lo que efectivamente se usó.</p>
+  {pie()}
+</div>
+""")
+
+H.append(f"""
+<div class="page">
+  <h2>17. Reproducibilidad (continuación): cómo repetir el experimento</h2>
+  <p>La secuencia siguiente reproduce el benchmark de calidad desde el corpus. El orden importa: cada
+  paso consume las salidas del anterior. Los comandos se leen del archivo <span class="mono">README.md</span>
+  del repositorio al generar este informe, que es donde se mantienen, y el generador <b>verifica que cada
+  script nombrado exista</b> antes de publicarlos.</p>
+  <p><b>Tabla 16.</b> Secuencia de reproducción del benchmark de calidad, en orden
+  ({SEQ_N} pasos). Los comandos y sus comentarios se citan <b>textualmente</b> del README, de modo que
+  conservan su formato original, <b>con punto decimal</b> donde el README lo usa, como en «m* = 0.30»: a
+  una cita no se le cambia la forma, porque entonces deja de ser lo que hay que escribir en la
+  consola.</p>
+  {TAB_SECUENCIA}
+  <p class="lectura">Lo que esta secuencia <b>no</b> incluye, y hay que decirlo. Los dos experimentos de
+  detección necesitan además los datasets LLVIP y M3FD, que no se distribuyen con el repositorio, y una
+  GPU: son {SEM_CORRIDAS} entrenamientos en LLVIP y uno en M3FD. Sus scripts están en
+  <span class="mono">experiments/detection_llvip/</span> y
+  <span class="mono">experiments/detection_m3fd/</span>, y el README documenta cómo invocarlos. Los
+  análisis que se agregaron después —el estudio de semillas, el barrido del punto de operación, la
+  medición por objeto— reutilizan los detectores ya entrenados y son sólo inferencia, de modo que no
+  requieren repetir ningún entrenamiento.</p>
+  <p class="lectura">Y una advertencia sobre el corpus. De los pares del TNO se excluyó uno,
+  <span class="mono">heather (hei vis)</span>, porque su archivo del canal visible era una copia del
+  infrarrojo; se sustituyó por <span class="mono">Kaptein 1123</span> para conservar los {N_ESC} pares.
+  La verificación del corpus es el paso 1 de la secuencia justamente por eso: comprueba los md5, que cada
+  par tenga sus dos canales y que no haya duplicados, antes de gastar tiempo en lo demás.</p>
+  {pie()}
+</div>
+""")
+
 # Las referencias van al final del cuerpo y antes de los anexos, que es su lugar. Se parten en paginas de
 # a lo sumo _BIB_POR_PAG entradas: con 38 y el formato APA no entran en una, y el derrame corre la
 # numeracion y tira los marcadores.
@@ -3448,8 +3596,8 @@ _bib_bloques = [BIB[:_BIB_PRIMERA]] if BIB else [[]]
 _bib_bloques += [BIB[_i:_i + _BIB_RESTO] for _i in range(_BIB_PRIMERA, len(BIB), _BIB_RESTO)]
 _bib_bloques = [g for g in _bib_bloques if g] or [[]]
 for _k, _grupo in enumerate(_bib_bloques):
-    _cab = ("17. Referencias" if _k == 0
-            else "17. Referencias (continuación)")
+    _cab = ("18. Referencias" if _k == 0
+            else "18. Referencias (continuación)")
     _intro = (f"""
   <p>Las {BIB_N} entradas que sostienen este informe y el documento de tesis, {BIB_DOI} de ellas con DOI.
   La lista es la misma del capítulo de referencias del borrador de tesis y se lee de ese archivo al

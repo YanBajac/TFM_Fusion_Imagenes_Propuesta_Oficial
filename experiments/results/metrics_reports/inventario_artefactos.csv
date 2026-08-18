@@ -1,0 +1,69 @@
+csv,produce,productores,llega_a_documento,generadores
+ablacion_banco.csv,run_ablacion_banco.py,1,si,make_avances_report.py
+ablacion_banco_contrastes.csv,run_ablacion_banco.py,1,no,—
+ablacion_banco_resumen.csv,run_ablacion_banco.py + run_ranking_mas_nabf.py,2,si,make_avances_report.py
+ajuste_comparativos.csv,run_ajuste_comparativos.py,1,si,make_avances_report.py
+ajuste_comparativos_mejores.csv,run_ajuste_comparativos.py,1,si,make_avances_report.py
+ajuste_comparativos_ranking.csv,run_ajuste_comparativos.py,1,si,make_avances_report.py
+all_metrics.csv,run_all_fusions.py + run_metodologia_referencia.py + run_stats_analysis.py,3,si,make_avances_excel.py + make_avances_report.py
+aptitud_operador_configs.csv,analisis_aptitud_operador.py,1,no,—
+aptitud_operador_energia.csv,analisis_aptitud_operador.py,1,si,make_avances_report.py
+aptitud_operador_terminos.csv,analisis_aptitud_operador.py,1,no,—
+barrido_metricas_vs_m.csv,barrido_metricas_vs_m.py,1,si,make_avances_report.py
+comparacion_aptitudes.csv,compara_aptitudes.py,1,si,make_avances_report.py
+comparacion_aptitudes_wilcoxon.csv,compara_aptitudes.py,1,no,—
+complementariedad_criticas.csv,run_complementariedad_escenas.py,1,no,—
+complementariedad_objetos.csv,run_complementariedad_objetos.py + run_grilla_complementariedad.py + run_pareado_punto_operacion.py,3,si,make_avances_report.py
+complementariedad_objetos_escenas.csv,run_complementariedad_objetos.py + run_grilla_complementariedad.py + run_pareado_punto_operacion.py,3,si,make_avances_report.py
+complementariedad_objetos_escenas_m3fd_test.csv,run_complementariedad_objetos.py + run_grilla_complementariedad.py + run_pareado_punto_operacion.py,3,si,make_avances_report.py
+complementariedad_objetos_m3fd_test.csv,run_complementariedad_objetos.py + run_grilla_complementariedad.py + run_pareado_punto_operacion.py,3,si,make_avances_report.py
+complementariedad_objetos_resumen.csv,run_complementariedad_objetos.py + run_grilla_complementariedad.py + run_pareado_punto_operacion.py,3,si,make_avances_report.py
+complementariedad_objetos_resumen_m3fd_test.csv,run_complementariedad_objetos.py + run_grilla_complementariedad.py + run_pareado_punto_operacion.py,3,si,make_avances_report.py
+complementariedad_por_escena.csv,run_complementariedad_escenas.py,1,si,make_avances_report.py
+complementariedad_resumen.csv,run_complementariedad_escenas.py,1,si,make_avances_report.py
+control_negativo.csv,run_control_negativo.py,1,si,make_avances_report.py
+control_negativo_ranking.csv,run_control_negativo.py,1,si,make_avances_report.py
+control_tophat_igual_peso.csv,SIN PRODUCTOR,0,si,make_avances_report.py
+control_tophat_igual_peso_ranking.csv,make_avances_report.py,1,si,make_avances_report.py
+correlacion_calidad_deteccion.csv,run_correlacion_calidad_deteccion.py,1,no,—
+curva_aptitud_vs_m.csv,SIN PRODUCTOR,0,si,make_avances_report.py
+descriptive_means.csv,eval_fo_optima.py + run_stats_analysis.py,2,si,make_avances_excel.py + make_avances_report.py
+detecciones_metodos_escena.csv,make_figura_detecciones_metodos.py,1,si,make_avances_report.py
+detection_llvip_map.csv,train_eval_llvip.py,1,si,make_avances_excel.py + make_avances_report.py
+detection_llvip_semillas.csv,run_semillas_llvip.py,1,si,make_avances_report.py + make_figura_semillas.py
+detection_m3fd_map.csv,train_eval_m3fd.py,1,si,make_avances_excel.py + make_avances_report.py + make_figura_semillas.py
+dispersion_pareada.csv,dispersion_pareada.py,1,si,make_avances_report.py
+entorno.csv,perfil_entorno.py,1,si,make_avances_report.py + make_reporte_optimos.py
+escenas_distintas.csv,run_escenas_distintas.py,1,no,—
+fo_ablacion_comparativa.csv,eval_fo_optima.py,1,no,—
+fo_ablacion_per_image.csv,eval_fo_optima.py,1,no,—
+friedman_results.csv,run_stats_analysis.py,1,si,make_avances_excel.py + make_avances_report.py
+grilla_complementariedad.csv,run_grilla_complementariedad.py,1,si,make_avances_report.py
+grilla_complementariedad_detalle.csv,run_grilla_complementariedad.py + run_pareado_punto_operacion.py,2,no,—
+grilla_complementariedad_detalle_m3fd_test.csv,run_grilla_complementariedad.py + run_pareado_punto_operacion.py,2,no,—
+grilla_complementariedad_m3fd_test.csv,run_grilla_complementariedad.py,1,si,make_avances_report.py
+inventario_artefactos.csv,SIN PRODUCTOR,0,no,—
+metodologia_referencia.csv,run_metodologia_referencia.py,1,si,make_avances_report.py
+metodologia_referencia_pareado.csv,run_metodologia_referencia.py,1,si,make_avances_report.py
+metodologia_referencia_ranking.csv,run_metodologia_referencia.py,1,si,make_avances_report.py
+optimo_exacto_fo.csv,optimo_exacto_fo.py,1,si,make_avances_report.py
+pareado_punto_operacion.csv,run_pareado_punto_operacion.py,1,si,make_avances_report.py
+potencia_mcnemar.csv,potencia_mcnemar.py,1,si,make_avances_report.py
+pso_grid_search.csv,SIN PRODUCTOR,0,si,make_avances_excel.py + make_avances_report.py
+pso_grid_search_fo_clasico.csv,pso_repeticiones.py,1,no,—
+pso_grid_search_fo_propuesta.csv,pso_repeticiones.py,1,si,make_avances_excel.py + make_avances_report.py
+pso_por_imagen.csv,pso_por_imagen.py,1,si,make_avances_excel.py + make_avances_report.py + make_reporte_optimos.py
+pso_por_imagen_libre.csv,SIN PRODUCTOR,0,si,make_avances_report.py + make_reporte_optimos.py
+pso_repeticiones_propuesta.csv,analizar_repeticiones.py + optimo_exacto_fo.py + pso_repeticiones.py,3,si,make_avances_excel.py + make_avances_report.py
+pso_repeticiones_propuesta_libre.csv,analizar_repeticiones.py + optimo_exacto_fo.py + pso_repeticiones.py,3,si,make_avances_report.py
+pso_repeticiones_resumen_propuesta.csv,analizar_repeticiones.py + optimo_exacto_fo.py + pso_repeticiones.py,3,no,—
+pso_repeticiones_resumen_propuesta_libre.csv,analizar_repeticiones.py + optimo_exacto_fo.py + pso_repeticiones.py,3,no,—
+ranking_17_metricas.csv,make_avances_report.py,1,si,make_avances_report.py
+ranking_mas_nabf.csv,run_ranking_mas_nabf.py,1,no,—
+ranking_methods.csv,run_stats_analysis.py,1,si,make_avances_excel.py + make_avances_report.py
+referencia_pso_ortega_espinoza.csv,referencia_pso_ortega_espinoza.py,1,si,make_avances_report.py
+saturacion_vs_m.csv,run_saturacion_vs_m.py,1,si,make_avances_report.py
+semillas_llvip_pareadas.csv,run_analisis_semillas_llvip.py,1,si,make_avances_report.py
+semillas_llvip_resumen.csv,run_analisis_semillas_llvip.py,1,no,—
+superficie_aptitud_fo.csv,superficie_aptitud.py,1,no,—
+wilcoxon_results.csv,run_stats_analysis.py,1,si,make_avances_excel.py + make_avances_report.py
