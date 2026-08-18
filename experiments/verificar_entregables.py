@@ -1048,7 +1048,8 @@ print('\n=== 19. requirements.txt declara todo lo que el codigo importa ===')
 _STDLIB = set('''os sys re json math time datetime pathlib collections itertools functools argparse
 subprocess shutil zipfile hashlib io copy random warnings unicodedata typing dataclasses glob
 statistics textwrap html csv traceback base64 xml multiprocessing urllib abc contextlib enum
-tempfile string operator pickle gzip struct threading queue logging inspect importlib ast'''.split())
+tempfile string operator pickle gzip struct threading queue logging inspect importlib ast
+platform sysconfig site locale codecs difflib binascii uuid decimal fractions numbers'''.split())
 # nombre del modulo -> nombre del paquete en PyPI, cuando no coinciden
 _PAQ = {'cv2': 'opencv-python', 'skimage': 'scikit-image', 'PIL': 'Pillow', 'fitz': 'PyMuPDF',
         'docx': 'python-docx', 'pptx': 'python-pptx', 'pywt': 'PyWavelets',
