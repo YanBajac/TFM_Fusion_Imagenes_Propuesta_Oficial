@@ -1,6 +1,80 @@
-# Estado y pendientes — 14 de agosto de 2026
+# Estado y pendientes — 18 de agosto de 2026
 
 Punto de retomada. Todo lo que sigue está verificado; lo que no, está marcado como tal.
+
+## Lo primero de mañana, en tres líneas
+
+1. **Recoger el barrido de trazas** que quedó corriendo (ver más abajo dónde cayó su salida).
+2. **Armar el «documento breve»** que la página 3 del informe le promete al director: hoy es
+   `docs/PROPUESTA_ENCUADRE.md` en markdown y hace falta en un formato que se pueda mandar.
+3. **Empezar la reescritura del libro** con los 54 hallazgos de `docs/AUDITORIA_LIBRO.md`, arrancando
+   por el error de «r ajustado por PSO» que aparece seis veces en la primera mitad.
+
+## Cerrado el 18 de agosto — la carilla del informe se parte en dos y trae el hallazgo
+
+El informe quedó **listo para mandar al tutor**: 100 páginas, 98 marcadores, los tres verificadores en
+0 fallos, todo pusheado.
+
+El frente son dos páginas y la división es **por función**, no por largo:
+
+- **pág. 2, Resumen**: los resultados, ya con el hallazgo del punto de operación (de 18 configuraciones
+  la adoptada es de las peores para la tarea; con r = 25 y m = 0,10 la conservación pasa de 57 a 74 de
+  119 objetos en la partición de reserva, p = 0,0002, y el operador queda indistinguible de cuatro de
+  sus seis comparativos). Antes esta página encuadraba la detección entera alrededor de LLVIP y no
+  mencionaba M3FD ni la medición por objeto: o sea que la primera página que lee el director no tenía
+  el resultado central. Y «Cómo se evaluó» ahora nombra el experimento de M3FD donde corresponde, en
+  lugar de dejarlo aparecer recién en el resultado negativo.
+- **pág. 3, Estado del trabajo y decisiones pendientes**: las dos decisiones que se le piden, las tres
+  diferencias con el plan de junio, lo que falta y dónde mirar cada sección.
+
+Hizo falta partirla porque con el hallazgo incorporado quedaba **a tres palabras de derramar**, medido
+con el banco de una página. Con el reparto, la primera quedó en 642 palabras y entra.
+
+**El contador de pies arranca en 4.** Portada, resumen, decisiones e índice: el frente se arma al final
+y se inserta adelante, así que esas cuatro llevan número explícito. El control duro de numeración cazó
+la colisión en el primer intento —pie 4 repetido, 100 ausente—, que era exactamente para lo que estaba.
+
+### Tres defectos que aparecieron al partirla, y ninguno era del texto
+
+- **El bloque 24 leía sólo la primera página del frente.** Al mudarse las remisiones informó «0
+  remisiones» y no encontró el párrafo del hallazgo. Ahora abarca las dos y encuentra las 5.
+- **Tomaba toda cifra decimal del párrafo como un mAP de LLVIP**, y acreditó como tal el `p = 0,0002`
+  del re-ajuste de M3FD. Ahora exige que «mAP» esté en la vecindad de la cifra.
+- **Buscaba `«5 semillas»` como subcadena, que «45 semillas» contiene.** Con eso pasó una cifra
+  equivocada a la propia carilla: quedó escrito «media de 45 semillas» cuando 45 son las corridas del
+  estudio (9 entradas × 5 semillas). Corregido el número —era `SEM_CORRIDAS` donde iba `SEM_N`— y el
+  chequeo lleva límite de palabra.
+
+### Bloque 28 nuevo: ningún script lleva caracteres de control
+
+Al parchear el verificador desde un heredoc anidado, el `\b` de una expresión regular llegó como el
+**carácter de retroceso** (0x08) en lugar de las dos letras. El archivo compila, la regex compila, el
+editor no muestra nada, y lo único que cambia es que la expresión pide un retroceso literal y por lo
+tanto **no coincide nunca**: un chequeo roto que sigue diciendo OK. Por eso el control es sobre los
+bytes. Se probó plantando un script con el defecto real y confirmando que el bloque lo reporta.
+
+Y la lección, que ya se había aprendido y se volvió a pagar: **editar los archivos directamente**, no
+generar código a través de plantillas anidadas.
+
+## Lo que quedó corriendo al cerrar el 18 de agosto
+
+Un **barrido exhaustivo de trazas detectables** en los cinco entregables, motivado por la pregunta de si
+los documentos llevan alguna marca de agua. Cinco modalidades en paralelo —caracteres invisibles y
+Unicode anómalo, metadatos y partes internas de los ZIP y los PDF, menciones literales de cualquier
+herramienta, estilometría del libro, y trazas de proceso en el repositorio— y un refutador por
+modalidad con la instrucción de tumbar cada hallazgo y recalcular cada número.
+
+La salida quedó en el directorio de transcripciones de la corrida `wf_1f21a9ee-df5`, bajo
+`.claude/projects/…/subagents/workflows/`, y el `journal.jsonl` de ahí tiene el valor que devolvió cada
+agente. **Si no se recogió, se vuelve a lanzar**: el script está guardado en
+`.claude/projects/…/workflows/scripts/barrido-trazas-entregables-wf_1f21a9ee-df5.js`.
+
+Lo que ya está establecido sin depender del barrido: **no hay marca de agua embebida**. Lo que se
+encontró y se limpió el 16 de agosto eran comentarios de Word y alt-text con rutas locales —metadato,
+no contenido—, y el bloque 27 del verificador vigila esa clase desde entonces. Los detectores de IA no
+buscan marcas de agua sino estilo, así que la reescritura manual del libro es la decisión correcta pero
+por otro motivo: lo que hay que atacar es la uniformidad de la longitud de oración, la densidad de rayas
+y las frases plantilla. El barrido las mide con números para no reescribir 75 páginas a ciegas.
 
 ## La sección 5 del informe pasó de doce páginas a cuatro, y nada se eliminó
 
