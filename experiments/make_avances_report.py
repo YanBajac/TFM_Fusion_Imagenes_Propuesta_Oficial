@@ -3297,12 +3297,22 @@ H.append(f"""
         rango el argmax es r = {OE_R_LIBRE}</b>, que es el radio que esta tesis adopta, con
         m = {OE_M_LIBRE}. Lo que el intervalo ajeno fija por completo es el <b>peso</b>, no el
         radio.</li>
-    <li>El <b>orden de calidad no predice el orden de utilidad</b> en la tarea posterior, y
-        <b>ninguna fusión supera a la mejor modalidad individual</b>. En el conteo por escena la
-        propuesta queda por debajo del visible solo. La hipótesis de que la mejora de calidad se
-        traslade a la detección <b>se rechaza</b> para una ventaja de {POT_DELTA80} puntos
-        porcentuales o más, que es la resolución que dan los {POT_ND} pares discordantes. La
-        diferencia observada es de {POT_DIF_OBS} puntos <b>en contra</b>.</li>
+    <li>El <b>orden de calidad no predice el orden de utilidad</b> en la tarea posterior. Con el
+        detector reentrenado por entrada (LLVIP) ninguna fusión supera al infrarrojo solo, aunque
+        ahí la clase anotada es única y térmica, de modo que ese resultado habla de la tarea; y en el
+        conteo por escena de M3FD la propuesta queda por debajo del visible solo. La hipótesis de que
+        la mejora de calidad se traslade a la detección <b>se rechaza</b> para una ventaja de
+        {POT_DELTA80} puntos porcentuales o más, que es la resolución que dan los {POT_ND} pares
+        discordantes; la diferencia observada es de {POT_DIF_OBS} puntos <b>en contra</b>.</li>
+    <li>Y el <b>punto de operación</b>, no el operador, es lo que falla en la tarea aplicativa. Midiendo
+        objeto por objeto sobre M3FD —de los {OB_UNICA} objetos que detecta una sola modalidad, cuántos
+        conserva la fusión— el punto adoptado queda {OB_PUESTO}.º de {OB_N_ENT}, y es de los peores de un
+        barrido de {GR_N} configuraciones: {GR_PEOR_QUE} conservan más objetos que él. Conservando
+        r = 25 y bajando el peso a 0,10, en una partición que no participó del ajuste la conservación
+        pasa de {RE_AD_OBJ} a {RE_RE_OBJ} de {OBT_UNICA} objetos ({PAR_RE_GANA} ganados contra
+        {PAR_RE_PIERDE} perdidos, McNemar exacto p = {PAR_RE_P}), y el operador pasa a ser
+        <b>indistinguible de {RE_INDIST_N} de los seis comparativos</b>. El criterio de imagen elegía,
+        para esta tarea, casi el peor punto disponible.</li>
   </ol>
   <p class="lectura">Consecuencia metodológica: un protocolo de evaluación de fusión debería incluir
   al menos una métrica que <b>penalice artefactos</b>, declarar la <b>redundancia</b> entre sus
