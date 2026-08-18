@@ -1,0 +1,8 @@
+entrada,escenas_aptas,resuelve,pct
+PiramideLaplace,56,13,23.2
+RatioPiramide,56,13,23.2
+DTCWT,56,13,23.2
+DWT,56,6,10.7
+Curvelet,56,6,10.7
+Propuesta_Novedosa,56,6,10.7
+TopHat_Clasico,56,4,7.1

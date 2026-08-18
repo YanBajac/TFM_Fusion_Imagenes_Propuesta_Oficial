@@ -1,0 +1,8 @@
+entrada,objetos_de_una_sola_modalidad,recupera,pct,recupera_solo_VIS,de_solo_VIS,recupera_solo_IR,de_solo_IR,conserva_de_ambas,de_ambas
+RatioPiramide,447,310,69.4,139,179,171,268,496,532
+PiramideLaplace,447,284,63.5,136,179,148,268,489,532
+DTCWT,447,275,61.5,133,179,142,268,484,532
+DWT,447,260,58.2,123,179,137,268,461,532
+Curvelet,447,240,53.7,118,179,122,268,461,532
+Propuesta_Novedosa,447,232,51.9,118,179,114,268,469,532
+TopHat_Clasico,447,203,45.4,97,179,106,268,431,532
