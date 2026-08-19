@@ -1,5 +1,5 @@
 ## PLAN DE EDICIÓN DEL DECK DE DEFENSA
-Fuente leída: `C:\Users\Usuario\Documents\unv\mastertesis\tesis_mciencias_datos\docs\Tesis_Defensa_Presentacion.pptx` (19 diapositivas, volcado completo con python-pptx, incluidas tabla y notas del orador). Todas las cifras del plan fueron re-verificadas contra los CSV vigentes de `experiments/results/metrics_reports/` y contra `docs/historial/Reencuadre_Final.md`.
+Fuente leída: `docs\Tesis_Defensa_Presentacion.pptx` (19 diapositivas, volcado completo con python-pptx, incluidas tabla y notas del orador). Todas las cifras del plan fueron re-verificadas contra los CSV vigentes de `experiments/results/metrics_reports/` y contra `docs/historial/Reencuadre_Final.md`.
 
 ---
 

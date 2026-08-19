@@ -314,7 +314,7 @@ Debe eliminarse la fórmula "mejora a cada modalidad en la clase donde esa modal
 
 ## Anexo — Procedencia de las cifras citadas
 
-Todas las rutas son relativas a `C:\Users\Usuario\Documents\unv\mastertesis\tesis_mciencias_datos\`.
+Todas las rutas son relativas a ``.
 
 - Rankings, medias, Friedman y Wilcoxon: `experiments\results\metrics_reports\ranking_methods.csv`, `descriptive_means.csv`, `friedman_results.csv`, `wilcoxon_results.csv`.
 - Métricas por imagen, incluidas las ocho no analizadas: `experiments\results\metrics_reports\all_metrics.csv` (columnas Qabf, Nabf, SCD, VIF, FMI, Q0, QW, QE; 7 métodos × 20 imágenes).

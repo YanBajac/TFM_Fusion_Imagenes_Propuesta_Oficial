@@ -64,10 +64,9 @@ Unicode anómalo, metadatos y partes internas de los ZIP y los PDF, menciones li
 herramienta, estilometría del libro, y trazas de proceso en el repositorio— y un refutador por
 modalidad con la instrucción de tumbar cada hallazgo y recalcular cada número.
 
-La salida quedó en el directorio de transcripciones de la corrida `wf_1f21a9ee-df5`, bajo
-`.claude/projects/…/subagents/workflows/`, y el `journal.jsonl` de ahí tiene el valor que devolvió cada
-agente. **Si no se recogió, se vuelve a lanzar**: el script está guardado en
-`.claude/projects/…/workflows/scripts/barrido-trazas-entregables-wf_1f21a9ee-df5.js`.
+**Se recogió el 19 de agosto**: cuatro de las cinco modalidades habían terminado y su salida estaba en el
+diario de la corrida, así que no hubo que repetirlas; se relanzó sólo la modalidad que faltaba y el
+refutador que no había corrido. Los resultados están más abajo, en el cierre del 19.
 
 Lo que ya está establecido sin depender del barrido: **no hay marca de agua embebida**. Lo que se
 encontró y se limpió el 16 de agosto eran comentarios de Word y alt-text con rutas locales —metadato,

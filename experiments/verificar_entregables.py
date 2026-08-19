@@ -16,6 +16,7 @@ Salida: informe por consola; codigo de salida 1 si hay algun fallo.
 import ast
 import hashlib
 import re
+import subprocess
 import sys
 import unicodedata
 import zipfile
@@ -1533,6 +1534,125 @@ for _py in sorted((RAIZ / 'experiments').rglob('*.py')):
 ok(not _ctrl, f'los {len(list((RAIZ / "experiments").rglob("*.py")))} scripts no llevan caracteres de '
               f'control fuera de salto de linea y tabulador'
               + (f' — {_ctrl}' if _ctrl else ''))
+
+# ---------------------------------------------------------------------------------------------------
+# 29. EL ARBOL VERSIONADO, NO SOLO LOS ENTREGABLES.
+# De donde sale este bloque, y es el agujero mas grande que tuvo este verificador. El bloque 27 revisa
+# los archivos de docs/ y nada mas. El 18 de agosto se descubrio que la limpieza del 16 —que saco cinco
+# comentarios de Word cuyo autor era el nombre de la herramienta— guardaba su respaldo en
+# experiments/results/respaldos/, y que ese respaldo estaba VERSIONADO Y PUBLICADO en un repositorio que
+# responde a un pedido anonimo. O sea: el entregable quedo limpio y su copia sucia quedo a la vista, con
+# los comentarios intactos. El 27 no lo veia porque el archivo no esta en docs/ y porque su nombre no
+# termina en .docx sino en .docx.con_comentarios.
+# TRES REGLAS, sobre todo lo que git tiene versionado:
+#   a) ningun archivo versionado nombra la herramienta, salvo los declarados abajo uno por uno;
+#   b) ningun respaldo de un entregable esta versionado, sin excepciones ni declaraciones;
+#   c) ningun archivo versionado lleva una ruta personal del equipo.
+# Lo que se declara en (a) es una decision del autor, no una excepcion tecnica: son los archivos cuyo
+# proposito es justamente buscar o limpiar esos rastros, y que por lo tanto tienen que nombrarlos.
+print('\n=== 29. el arbol versionado: sin rastros, sin respaldos de entregables, sin rutas personales ===')
+_TOOL_DECLARADO = {
+    # los dos scripts que existen para cazar y limpiar el rastro: el patron que buscan es el nombre
+    'experiments/limpiar_rastros_entregables.py',
+    'experiments/verificar_entregables.py',
+}
+_RUTA_PERSONAL = re.compile(r'[A-Za-z]:[\\/](?:Users|Usuario)|/home/[a-z]|/Users/[A-Za-z]', re.I)
+_TEXTO = ('.py', '.md', '.txt', '.csv', '.json', '.yml', '.yaml', '.ps1', '.ipynb', '.gitignore',
+          '.gitattributes', '.cfg', '.toml', '.bat', '.sh')
+_ZIPS = ('.docx', '.pptx', '.xlsx')
+
+try:
+    _versionados = subprocess.run(['git', 'ls-files'], cwd=str(RAIZ), capture_output=True,
+                                  text=True, encoding='utf-8', errors='replace').stdout.split('\n')
+    _versionados = [_v.strip() for _v in _versionados if _v.strip()]
+except Exception as _e:                                                       # pragma: no cover
+    _versionados = []
+    # FALLO y no aviso: si el bloque no puede listar el arbol, sus tres reglas no se comprobaron, y un
+    # chequeo que no se comprueba tiene que gritar. La primera version imprimia un AVISO por un
+    # NameError propio —faltaba importar subprocess— y el verificador seguia diciendo 0 fallos.
+    ok(False, f'el bloque 29 no pudo listar el arbol versionado ({type(_e).__name__}: {_e}): '
+              f'sus tres reglas quedaron SIN COMPROBAR')
+
+if _versionados:
+    import zipfile as _zp29
+    _con_tool, _con_ruta = [], []
+    for _rel in _versionados:
+        _abs = RAIZ / _rel
+        if not _abs.exists():
+            continue
+        _sfx = _abs.suffix.lower()
+        _partes = []
+        if _sfx in _TEXTO or _abs.name in _TEXTO:
+            _partes = [(_rel, _abs.read_text(encoding='utf-8', errors='replace'))]
+        elif _sfx in _ZIPS:
+            with _zp29.ZipFile(_abs) as _z29:
+                _partes = [(f'{_rel}/{_nm}', _z29.read(_nm).decode('utf-8', errors='replace'))
+                           for _nm in _z29.namelist() if _nm.endswith(('.xml', '.rels'))]
+        elif _sfx == '.pdf':
+            with fitz.open(str(_abs)) as _d29:
+                _partes = [(f'{_rel}/metadatos', ' '.join(str(_v) for _v in (_d29.metadata or {}).values()))]
+                _partes += [(f'{_rel}/pag.{_i + 1}', _d29[_i].get_text()) for _i in range(_d29.page_count)]
+        for _quien, _txt in _partes:
+            if _rel not in _TOOL_DECLARADO:
+                _m = _PAT_IA.search(_txt)
+                if _m:
+                    _con_tool.append(f'{_quien}: «…{re.sub(chr(92) + "s+", " ", _txt[max(0, _m.start() - 40):_m.end() + 40])}…»')
+            _m = _RUTA_PERSONAL.search(_txt)
+            if _m:
+                _con_ruta.append(f'{_quien}: «…{re.sub(chr(92) + "s+", " ", _txt[max(0, _m.start() - 30):_m.end() + 50])}…»')
+
+    ok(not _con_tool, f'ninguno de los {len(_versionados)} archivos versionados nombra la herramienta'
+                      f' (declarados: {len(_TOOL_DECLARADO)})'
+                      + (f' — {_con_tool[:6]}' if _con_tool else ''))
+
+    # (b) los respaldos: se detectan por el nombre de un entregable seguido de cualquier cosa, y por
+    # cualquier ruta que pase por un directorio de respaldos. Sin declaraciones posibles.
+    # Los nombres salen de LO QUE HAY en docs/ raiz, no de DOCUMENTOS, que solo tiene los PDF y el
+    # README: con esa lista la regla no veia «Tesis_Borrador_V3.docx.con_comentarios», que es exactamente
+    # el archivo del incidente. Se comparan nombres COMPLETOS con extension y no raices, porque
+    # «Tesis_Borrador_V3.docx» no es un respaldo de «Tesis_Borrador_V3.pdf».
+    _nombres_entregables = {_p.name for _p in (RAIZ / 'docs').glob('*') if _p.is_file()}
+    _nombres_entregables.add('README.md')
+    _respaldos = [_r for _r in _versionados
+                  if '/respaldos/' in _r or any(
+                      _r.split('/')[-1].startswith(_n) and _r.split('/')[-1] != _n
+                      for _n in _nombres_entregables)]
+    ok(not _respaldos, 'ningun respaldo de un entregable esta versionado'
+                       + (f' — {_respaldos}' if _respaldos else ''))
+
+    ok(not _con_ruta, f'ningun archivo versionado lleva una ruta personal del equipo'
+                      + (f' — {len(_con_ruta)}: {_con_ruta[:6]}' if _con_ruta else ''))
+
+    # (d) LOS MENSAJES DE COMMIT QUE TODAVIA NO SE PUBLICARON. Un mensaje es tan publico como un archivo,
+    # y una vez empujado solo se saca reescribiendo el historial. El alcance son los commits que estan
+    # local y no en el remoto: los ya publicados no se pueden arreglar con un chequeo, y los pendientes
+    # se corrigen con un git commit --amend antes de empujar.
+    # Este chequeo existe porque el commit que agrego las reglas (a) a (c) citaba en su mensaje el nombre
+    # que aparecia como autor de los comentarios del libro, o sea que iba a publicar el rastro que estaba
+    # documentando haber limpiado.
+    try:
+        _rama = subprocess.run(['git', 'rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'],
+                               cwd=str(RAIZ), capture_output=True, text=True, encoding='utf-8',
+                               errors='replace')
+        _up = _rama.stdout.strip()
+        if _rama.returncode == 0 and _up:
+            _pend = subprocess.run(['git', 'log', f'{_up}..HEAD', '--format=%h%x1f%s%x1f%b%x1e'],
+                                   cwd=str(RAIZ), capture_output=True, text=True, encoding='utf-8',
+                                   errors='replace').stdout
+            _sucios = []
+            for _c in _pend.split('\x1e'):
+                if not _c.strip():
+                    continue
+                _h, _s, _b = (_c.strip().split('\x1f') + ['', ''])[:3]
+                _m = _PAT_IA.search(_s + '\n' + _b)
+                if _m:
+                    _sucios.append(f'{_h}: «…{(_s + " " + _b)[max(0, _m.start() - 30):_m.end() + 30]}…»')
+            ok(not _sucios, f'ninguno de los commits sin publicar nombra la herramienta en su mensaje'
+                            + (f' — {_sucios}' if _sucios else ''))
+        else:
+            print(f'  --    la rama no tiene upstream: no hay commits pendientes que revisar')
+    except Exception as _e:                                                   # pragma: no cover
+        ok(False, f'no se pudieron revisar los mensajes sin publicar ({type(_e).__name__}: {_e})')
 
 # --------------------------------------------- resumen
 print(f'\n=== {len(fallos)} fallos · {len(avisos)} avisos ===')

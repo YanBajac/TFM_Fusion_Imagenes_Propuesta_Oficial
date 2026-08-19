@@ -21,7 +21,7 @@ corregida, y el análisis de complementariedad por escena que mide el objetivo d
 |---|---|---|
 | 0.1 | Versionar los 38 archivos pendientes (22 modificados + 16 sin seguimiento), incluidos `src/datasets.py` y los CSV de estadística | Hoy un clon del repositorio **no reproduce ninguno** de los resultados vigentes. Es lo más barato de la lista y lo que un jurado técnico puede pedir en el acto. |
 
-Sin coautoría de Claude en los commits (regla del repositorio).
+Sin coautoría de herramientas en los commits (regla del repositorio).
 
 ---
 

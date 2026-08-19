@@ -1,7 +1,7 @@
 bloque,clave,valor
 interprete,Python,3.11.14
 interprete,implementacion,CPython
-interprete,ruta,C:\Users\Usuario\Documents\unv\mastertesis\tesis_mciencias_datos\.venv\Scripts\python.exe
+interprete,ruta,.venv\Scripts\python.exe
 sistema,sistema operativo,Windows 10
 sistema,version detallada,10.0.26200
 sistema,arquitectura,AMD64

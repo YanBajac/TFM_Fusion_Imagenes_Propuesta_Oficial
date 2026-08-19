@@ -98,12 +98,28 @@ def gpu():
         return 'torch no importa', False, None
 
 
+def ruta_interprete():
+    """La ruta del interprete RELATIVA a la raiz del repositorio.
+
+    Lo que esta fila tiene que decir es que se corrio con el interprete del entorno virtual del proyecto
+    y no con el Python del sistema, y para eso alcanza `.venv\\Scripts\\python.exe`. `sys.executable`
+    devuelve la ruta absoluta, que arrastra el arbol de carpetas del equipo —y esa ruta se publicaba en
+    la tabla del entorno de la pagina 65 del informe de avances, que se manda al director—.
+    """
+    raiz = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    try:
+        rel = os.path.relpath(sys.executable, raiz)
+    except ValueError:                          # otra unidad de disco: no hay relativa posible
+        return os.path.basename(sys.executable)
+    return rel if not rel.startswith('..') else os.path.basename(sys.executable)
+
+
 def main():
     g, cuda_ok, cuda_ver = gpu()
     filas = [
         ('interprete', 'Python', platform.python_version()),
         ('interprete', 'implementacion', platform.python_implementation()),
-        ('interprete', 'ruta', sys.executable),
+        ('interprete', 'ruta', ruta_interprete()),
         ('sistema', 'sistema operativo', f'{platform.system()} {platform.release()}'),
         ('sistema', 'version detallada', platform.version()),
         ('sistema', 'arquitectura', platform.machine()),

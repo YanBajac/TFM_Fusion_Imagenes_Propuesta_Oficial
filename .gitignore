@@ -89,3 +89,8 @@ docs/_obsoletos/
 
 # PDF de fuentes de terceros: no se redistribuyen en el repo
 docs/fuentes/*.pdf
+
+# Respaldos pre-limpieza de los entregables. NUNCA versionados: son la copia CON los rastros que se
+# limpiaron del entregable, asi que versionarlos deshace la limpieza. Paso: los dos primeros se
+# publicaron en el remoto y uno lleva los comentarios de Word con el nombre de la herramienta.
+experiments/results/respaldos/
