@@ -1471,7 +1471,10 @@ _DOCS_RAIZ = {
     'Tesis_Defensa_Presentacion.pdf': 'entregable: el deck renderizado',
     'ESTADO_Y_PENDIENTES.md': 'estado vivo del proyecto',
     'PROPUESTA_ENCUADRE.md': 'la redaccion propuesta para el encuadre del aporte, a decidir con el '
-                            'director: no modifica ningun entregable',
+                            'director: no modifica ningun entregable. Es la FUENTE del PDF de abajo',
+    'Propuesta_Encuadre.pdf': 'entregable: el documento breve que la pagina 3 del informe le promete al '
+                              'director. Lo arma experiments/make_encuadre_pdf.py desde el .md de '
+                              'arriba, con la tipografia del informe',
     'PLAN_REESCRITURA_INFORME.md': 'que cambia en el informe al aclararse que el objetivo es uno y '
                                     'que el experimento que lo responde es el de M3FD',
     'AUDITORIA_LIBRO.md': 'las afirmaciones del libro marcadas al auditarlas contra los CSV, para la '

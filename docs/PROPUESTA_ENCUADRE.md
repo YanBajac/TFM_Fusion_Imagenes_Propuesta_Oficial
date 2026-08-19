@@ -1,6 +1,6 @@
 # Propuesta de encuadre del aporte — para conversar con el director
 
-**17 de agosto de 2026.** Este documento no modifica nada. Es una propuesta de redacción para una
+**19 de agosto de 2026.** Este documento no modifica nada. Es una propuesta de redacción para una
 decisión que no me corresponde tomar: cómo queda enunciado el objetivo del trabajo.
 
 ## El problema, en cuatro frases

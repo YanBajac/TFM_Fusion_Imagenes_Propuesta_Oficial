@@ -408,6 +408,8 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 │   ├── Tesis_Borrador_V3.pdf       #   el mismo, renderizado, para leerlo sin Word
 │   ├── Avances_Tesis.pdf           # Informe de avances (100 págs; resumen, decisiones para el director, índice, Anexos A1-A21)
 │   ├── Avances_Tesis_Tablas.xlsx   # Libro de tablas (13 hojas, detalle por escena)
+│   ├── Propuesta_Encuadre.pdf      # El documento breve que la pág. 3 del informe le promete al director
+│   ├── PROPUESTA_ENCUADRE.md       #   su fuente: se edita acá y se recompila el PDF
 │   ├── Tesis_Defensa_Presentacion.pptx # Defensa (22 láminas + reserva, notas del orador)
 │   ├── Tesis_Defensa_Presentacion.pdf  #   el mismo, renderizado
 │   ├── ESTADO_Y_PENDIENTES.md      # Estado vivo: qué está cerrado, qué falta y cómo correr todo
