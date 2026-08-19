@@ -413,6 +413,7 @@ TFM_Fusion_Imagenes_Propuesta_Oficial/
 │   ├── Tesis_Defensa_Presentacion.pptx # Defensa (22 láminas + reserva, notas del orador)
 │   ├── Tesis_Defensa_Presentacion.pdf  #   el mismo, renderizado
 │   ├── ESTADO_Y_PENDIENTES.md      # Estado vivo: qué está cerrado, qué falta y cómo correr todo
+│   ├── PLAN_REESCRITURA_LIBRO.md   # Lista de trabajo de la reescritura manual, párrafo por párrafo
 │   ├── Auditoria_Bibliografia.md   # Auditoría de las referencias contra Crossref y OpenAlex
 │   ├── Plan_Deck_Defensa.md        # Plan de edición del deck (22 láminas)
 │   ├── historial/                  # Documentos de trabajo ya cumplidos; NO son el estado actual

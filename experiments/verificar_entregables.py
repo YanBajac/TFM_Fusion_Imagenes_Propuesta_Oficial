@@ -1477,6 +1477,9 @@ _DOCS_RAIZ = {
                               'arriba, con la tipografia del informe',
     'PLAN_REESCRITURA_INFORME.md': 'que cambia en el informe al aclararse que el objetivo es uno y '
                                     'que el experimento que lo responde es el de M3FD',
+    'PLAN_REESCRITURA_LIBRO.md': 'la lista de trabajo para la reescritura manual, parrafo por parrafo: '
+                                 'lo produce experiments/plan_reescritura_libro.py cruzando la '
+                                 'auditoria con la medicion de estilo del propio docx',
     'AUDITORIA_LIBRO.md': 'las afirmaciones del libro marcadas al auditarlas contra los CSV, para la '
                           'revision manual: 987 revisadas, 910 respaldadas',
     'Auditoria_Bibliografia.md': 'vivo: lo reusa la auditoria de referencias',

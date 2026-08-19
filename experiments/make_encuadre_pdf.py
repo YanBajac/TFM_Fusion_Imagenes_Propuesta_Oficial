@@ -229,7 +229,11 @@ def main():
         clave = re.sub(r'\*\*|`', '', primera)[:40]
         if clave and re.sub(r'\s+', ' ', clave) not in plano:
             fallos.append(f'falta una cita: «{clave}…»')
-    sucio = re.search(r'[A-Za-z]:[\\/](?:Users|Usuario)|claude|anthropic', plano, re.I)
+    # El vocabulario de rastros no se repite aca: vive en limpiar_rastros_entregables, que es el modulo
+    # que existe para eso. Tenerlo en dos lugares hace que uno de los dos se quede viejo, y ademas
+    # obligaba a declarar este archivo en la lista de excepciones del bloque 29 del verificador.
+    from limpiar_rastros_entregables import PAT, RUTA
+    sucio = PAT.search(plano) or RUTA.search(plano)
     if sucio:
         fallos.append(f'el PDF lleva un rastro: «{plano[max(0, sucio.start() - 30):sucio.end() + 30]}»')
 

@@ -1,0 +1,168 @@
+parrafo,zona,estilo,palabras,oraciones,oracion_mas_larga,oraciones_largas,rayas,punto_y_coma,arranque_ordinal,hallazgos,veredictos,ubicaciones,n_hallazgos,gravedad_max,inicio
+83,frente,Normal,604,10,110,6,8,7,0,"media: Parrafo 83 (RESUMEN); identico en el parrafo 86 del SUMMARY ('tuned automatically by PSO' + 'r=25 by design') — INCOHERENCIA + media: Parrafo 83 (RESUMEN) y parrafo 86 (SUMMARY), tres pasajes cada uno — INCOHERENCIA + media: Parrafo 83 (RESUMEN); 'low cost' implicito en el parrafo 86 ('interpretable single-scale morphological operator') — SIN FUENTE",INCOHERENCIA · SIN FUENTE,RESUMEN,3,media,La fusión de imágenes visible (VIS) e infrarroja (IR) busca una sola imagen que conserve e
+86,frente,Normal,524,10,96,6,8,7,0,"media: Parrafo 83 (RESUMEN); identico en el parrafo 86 del SUMMARY ('tuned automatically by PSO' + 'r=25 by design') — INCOHERENCIA + media: Parrafo 83 (RESUMEN) y parrafo 86 (SUMMARY), tres pasajes cada uno — INCOHERENCIA + media: Parrafo 83 (RESUMEN); 'low cost' implicito en el parrafo 86 ('interpretable single-scale morphological operator') — SIN FUENTE",INCOHERENCIA · SIN FUENTE,RESUMEN,3,media,Visible (VIS) and infrared (IR) image fusion is key for computer perception under adverse 
+197,cuerpo,Normal,132,4,48,1,0,0,0,,,—,0,,"La percepción visual computacional moderna depende, en numerosas aplicaciones críticas, de"
+198,cuerpo,Normal,61,2,45,1,0,0,0,,,—,0,,Las aplicaciones que se benefician de esta integración son numerosas y de alto impacto: vi
+199,cuerpo,Normal,89,2,51,1,0,2,0,,,—,0,,"Existen, en términos generales, tres familias de métodos de fusión: las de píxel, ampliame"
+200,cuerpo,Normal,204,4,97,2,4,2,0,,,—,0,,Esta tesis se sitúa explícitamente en el espacio de los métodos clásicos interpretables. P
+201,cuerpo,Normal,102,7,36,0,0,0,1,,,—,0,,El documento sigue este orden. En el capítulo de Problema de Investigación se delimita la 
+204,cuerpo,Normal,96,4,36,0,0,0,0,,,—,0,,"Pese a más de tres décadas de investigación en fusión de imágenes multimodal, no existe un"
+205,cuerpo,Normal,135,4,44,2,2,0,0,,,—,0,,La morfología matemática ofrece un marco intermedio: opera directamente sobre la geometría
+207,cuerpo,Normal,136,5,40,0,2,0,3,,,—,0,,"La justificación de este trabajo descansa sobre tres ejes. Primero, la relevancia aplicada"
+210,cuerpo,Normal,147,1,147,1,4,1,0,,,—,0,,"Diseñar, implementar y caracterizar un operador de fusión de imágenes visibles e infrarroj"
+212,cuerpo,List Paragraph,107,2,96,1,0,3,0,,,—,0,,Formular e implementar el operador tal como efectivamente se evalúa: sobre una sola escala
+213,cuerpo,List Paragraph,52,1,52,1,0,0,0,,,—,0,,Delimitar el alcance real de la optimización por enjambre de partículas: establecer cuál d
+214,cuerpo,List Paragraph,71,1,71,1,0,0,0,,,—,0,,Comparar el operador con la metodología clásica y con cinco configuraciones de referencia 
+215,cuerpo,List Paragraph,39,1,39,0,0,0,0,,,—,0,,"Evaluar si la batería de métricas empleada discrimina calidad de fusión, mediante tres pru"
+216,cuerpo,List Paragraph,54,1,54,1,0,0,0,,,—,0,,Medir el efecto de la fusión sobre la detección de objetos con dos experimentos independie
+219,cuerpo,Normal,72,1,72,1,2,0,0,,,—,0,,¿En qué dirección desplaza el punto de operación de la fusión VIS/IR un operador Top-Hat d
+221,cuerpo,List Paragraph,46,1,46,1,2,0,0,,,—,0,,"¿Cómo debe formularse el operador —banco de disco y líneas, combinación de las respuestas "
+222,cuerpo,List Paragraph,34,1,34,0,0,0,0,,,—,0,,"¿Cuál de los dos hiperparámetros (r, m) determina efectivamente la aptitud declarada, qué "
+223,cuerpo,List Paragraph,48,1,48,1,0,0,0,,,—,0,,"¿Existen diferencias estadísticamente significativas entre la Propuesta Novedosa, la metod"
+224,cuerpo,List Paragraph,32,1,32,0,0,0,0,,,—,0,,¿Discrimina la batería de nueve métricas sin referencia entre detalle útil y ruido inyecta
+225,cuerpo,List Paragraph,43,1,43,1,2,0,0,,,—,0,,¿La fusión —y en particular el método propuesto— mejora el desempeño de un detector de obj
+227,cuerpo,Normal,268,9,40,0,0,2,0,"media: Parrafo 229, limitacion novena, frente a H5 en el parrafo 227 y a la seccion 5.8.5 (parrafo 418) — INCOHERENCIA + media: Parrafo 227 (1.5 Hipotesis), hoja de ruta final — INCOHERENCIA",INCOHERENCIA,Hipotesis · limitacion novena,2,media,"De la formulación anterior se derivan siete hipótesis de trabajo, todas contrastables con "
+229,cuerpo,Normal,437,11,72,5,6,5,10,"media: Parrafo 229, limitacion novena — CONTRADICE + media: Parrafo 229, limitacion novena, frente a H5 en el parrafo 227 y a la seccion 5.8.5 (parrafo 418) — INCOHERENCIA",CONTRADICE · INCOHERENCIA,limitacion novena,2,media,"Esta investigación se circunscribe a las siguientes limitaciones, que deben tenerse presen"
+231,cuerpo,Normal,97,2,69,1,0,6,0,,,—,0,,El alcance de la tesis abarca: la implementación íntegra y reproducible del método propues
+234,cuerpo,Normal,109,4,38,0,0,0,0,,,—,0,,"La fusión de imágenes multimodal, particularmente VIS+IR, cuenta con una literatura abunda"
+235,cuerpo,Normal,143,5,33,0,0,0,0,,,—,0,,"Específicamente en fusión morfológica, Mukhopadhyay y Chanda (2000) introducen una de las "
+236,cuerpo,Normal,67,4,22,0,0,0,0,,,—,0,,"Los métodos profundos, por su parte, han avanzado rápidamente. Ma et al. (2019, FusionGAN)"
+237,cuerpo,Normal,124,3,52,2,4,1,0,,,—,0,,"Una visión panorámica reciente la ofrece la revisión de Singh et al. (2023), que sistemati"
+239,cuerpo,Normal,8,2,6,0,0,0,0,,,—,0,,Tabla 1. Notación empleada en el marco teórico.
+242,cuerpo,Normal,93,3,40,0,0,2,0,,,—,0,,La fusión de imágenes a nivel pixel se formaliza como un operador F: ℝ^{H×W} × ℝ^{H×W} → ℝ
+244,cuerpo,Normal,122,4,34,0,0,2,0,,,—,0,,La morfología matemática es un cuerpo algebraico para el análisis de estructuras geométric
+245,cuerpo,Normal,35,2,23,0,0,0,0,,,—,0,,Las dos operaciones fundamentales son la dilatación (δ) y la erosión (ε). En escala de gri
+247,cuerpo,Normal,111,5,37,0,0,0,0,,,—,0,,La transformada White Top-Hat se define como la diferencia entre la imagen original y su a
+248,cuerpo,Normal,54,2,37,0,0,0,0,,,—,0,,"Para realzar estructuras direccionales, La combinación de elementos estructurantes circula"
+249,cuerpo,Normal,22,1,22,0,0,0,0,,,—,0,,"y reconstruyen la imagen realzada sumando los realces claros y restando los oscuros, combi"
+251,cuerpo,Normal,17,2,15,0,0,0,0,,,—,0,,"Figura 1. Operaciones morfológicas (erosión, dilatación, apertura y cierre) y transformada"
+254,cuerpo,Normal,181,4,68,3,4,0,0,,,—,0,,La metodología clásica de fusión por transformada Top-Hat constituye la referencia morfoló
+255,cuerpo,Normal,9,1,9,0,0,0,0,,,—,0,,La imagen fusionada final se reconstruye según la regla:
+256,cuerpo,Normal,69,2,45,1,0,0,0,,,—,0,,El operador clásico admite dos modos: emplear únicamente la White Top-Hat (realce del deta
+258,cuerpo,Normal,20,2,18,0,0,0,0,,,—,0,,"Figura 2. Esquema conceptual de la fusión Top-Hat clásica: disco único, combinación por má"
+260,cuerpo,Normal,124,3,55,1,4,2,0,,,—,0,,La propuesta central de esta tesis —la Propuesta Novedosa— es un método de fusión morfológ
+261,cuerpo,Normal,109,6,30,0,2,0,0,,,—,0,,Elementos estructurantes circulares y lineales. El operador se calcula sobre una sola esca
+262,cuerpo,Normal,37,1,37,0,2,0,0,,,—,0,,"Para cada fuente f y radio r, la ecuación (7) define la respuesta lineal promediada —White"
+264,cuerpo,Normal,22,2,20,0,0,0,0,,,—,0,,Figura 3. Banco de cinco elementos estructurantes (un disco y cuatro líneas): las respuest
+266,cuerpo,Normal,93,4,38,0,0,0,0,,,—,0,,"Transformadas óptimas por suma. Siguiendo el esquema de Bala et al., la respuesta lineal p"
+267,cuerpo,Normal,102,4,53,1,2,1,0,,,—,0,,Reconstrucción y regla de fusión. Sobre la imagen base I_base = (I_VIS + I_IR)/2 —que reti
+269,cuerpo,Normal,46,2,44,1,0,0,0,,,—,0,,Figura 4. Flujograma de la Propuesta Novedosa: proceso paso a paso (banco de cinco element
+271,cuerpo,Normal,163,5,58,2,4,1,0,,,—,0,,Optimización por Enjambre de Partículas (PSO). El método tiene dos hiperparámetros —el rad
+272,cuerpo,Normal,15,1,15,0,0,0,0,,,—,0,,El PSO optimiza el vector de hiperparámetros del método dentro del espacio de búsqueda aco
+274,cuerpo,Normal,79,4,45,1,0,2,0,,,—,0,,"Figura 5. Optimización por enjambre de partículas (PSO) del vector de hiperparámetros (r, "
+276,cuerpo,Normal,409,11,68,5,0,2,0,"alta: Tabla 2, fila «Escala (radio)»; refuerza la apertura del parrafo 276 («Los hiperparametros (r, m) se ajustan maximizando la funcion objetivo del trabajo de referencia») — CONTRADICE + alta: Parrafo 276 (seccion 2.2.5, Funcion de aptitud) — CONTRADICE",CONTRADICE,Tabla 2,2,alta,"Función de aptitud (Ortega y Espinoza). Los hiperparámetros (r, m) se ajustan maximizando "
+277,cuerpo,Normal,10,2,8,0,0,0,0,"media: Tabla 2 «Configuracion de la Propuesta Novedosa y del PSO», ultima fila (tabla que sigue al parrafo 277, seccion 2.2.5) — CONTRADICE",CONTRADICE,Tabla 2,1,media,Tabla 2. Configuración de la Propuesta Novedosa y del PSO.
+280,cuerpo,Normal,33,1,33,0,0,0,0,,,—,0,,Para situar el método propuesto en el panorama de la disciplina se utilizan seis métodos c
+281,cuerpo,Normal,6,2,4,0,0,0,0,,,—,0,,Tabla 3. Métodos comparativos del benchmark.
+284,cuerpo,Normal,180,3,95,2,4,1,0,"media: Parrafo 284 (2.2.7 Metricas de evaluacion), ultima frase — INCOHERENCIA",INCOHERENCIA,—,1,media,Dado que en la fusión VIS/IR no existe una imagen de referencia (ground truth) —como subra
+285,cuerpo,Normal,93,3,52,1,2,0,0,,,—,0,,A continuación se formalizan las principales métricas sin referencia empleadas en la evalu
+286,cuerpo,Normal,20,2,18,0,0,1,0,,,—,0,,Entropía (EN). Cantidad de información de la imagen fusionada; mayor es mejor (p_l = histo
+287,cuerpo,Normal,111,4,46,1,0,1,0,,,—,0,,Eficiencia de fusión (FE). Cociente entre la entropía de la imagen fusionada y el promedio
+288,cuerpo,Normal,17,2,14,0,0,1,0,,,—,0,,Desviación estándar (SD). Contraste global respecto de la media μ; mayor SD indica mayor d
+289,cuerpo,Normal,86,4,50,1,0,0,0,,,—,0,,"Frecuencia espacial (SF). Nitidez y nivel de detalle, combinando las frecuencias por filas"
+290,cuerpo,Normal,16,2,13,0,0,0,0,,,—,0,,"Gradiente medio (MG). Definición y agudeza de los bordes a partir de los gradientes Δx, Δy"
+291,cuerpo,Normal,21,2,18,0,0,1,0,,,—,0,,Información mutua (MI). Información de las fuentes A y B transferida a la fusión F; suma d
+292,cuerpo,Normal,22,2,17,0,0,0,0,,,—,0,,"Q^AB/F (Xydeas y Petrović, 2000). Preservación de la información de bordes, ponderada por "
+293,cuerpo,Normal,27,2,17,0,0,2,0,,,—,0,,"N^AB/F (Nabf; mismo marco que Q^AB/F, Xydeas y Petrović, 2000). Tasa de ruido y artefactos"
+294,cuerpo,Normal,21,1,21,0,0,1,0,,,—,0,,"SSIM (Wang et al., 2004).Similitud estructural entre la fusión y las fuentes (luminancia, "
+295,cuerpo,Normal,18,1,18,0,0,0,0,,,—,0,,"SCD (Aslantas y Bendes, 2015).Suma de correlaciones de las diferencias D_1, D_2 entre la f"
+296,cuerpo,Normal,20,1,20,0,0,0,0,,,—,0,,"VIF (Sheikh y Bovik, 2006).Fidelidad visual de la información, basada en un modelo de info"
+297,cuerpo,Normal,17,2,16,0,0,0,0,,,—,0,,"FMI. Información mutua de los mapas de características (gradiente), normalizada por las en"
+298,cuerpo,Normal,24,2,21,0,0,1,0,,,—,0,,Q_0 / Piella. Calidad estructural universal; las variantes Q_W y Q_E la ponderan por la sa
+301,cuerpo,Normal,28,2,18,0,0,0,0,,,—,0,,"Imagen capturada en el rango espectral de 400 a 700 nanómetros, correspondiente a la sensi"
+303,cuerpo,Normal,41,2,28,0,0,0,0,,,—,0,,"Imagen capturada en el rango térmico (típicamente 8 a 14 micras, IR de onda larga) que reg"
+305,cuerpo,Normal,67,4,27,0,0,0,0,,,—,0,,Conjunto plano y compacto que define la geometría del vecindario sobre el que actúan las o
+307,cuerpo,Normal,22,2,13,0,0,0,0,,,—,0,,Operador morfológico definido como la diferencia entre la imagen original y su apertura. A
+309,cuerpo,Normal,54,3,26,0,0,0,0,,,—,0,,"Operador morfológico dual del WTH, definido como la diferencia entre el cierre de la image"
+311,cuerpo,Normal,64,3,33,0,2,0,0,,,—,0,,Representación de una imagen como suma de capas que aíslan estructuras a distintas escalas
+313,cuerpo,Normal,27,1,27,0,0,0,0,,,—,0,,Mecanismo de selección capa-a-capa que escoge el aporte de la fuente cuya actividad local 
+315,cuerpo,Normal,25,1,25,0,0,0,0,,,—,0,,Indicador cuantitativo de calidad calculado únicamente a partir de la imagen fusionada o d
+317,cuerpo,Normal,26,2,14,0,0,0,0,,,—,0,,Prueba estadística no paramétrica para muestras relacionadas con tres o más tratamientos. 
+319,cuerpo,Normal,26,1,26,0,0,0,0,,,—,0,,"Prueba estadística no paramétrica de rangos signados para comparaciones pareadas, utilizad"
+321,cuerpo,Normal,54,2,28,0,0,1,0,,,—,0,,"Segmento recto de longitud 2r+1 orientado a un ángulo determinado (0°, 45°, 90° o 135°), u"
+323,cuerpo,Normal,43,1,43,1,0,0,0,,,—,0,,"Regla que, dadas las transformadas Top-Hat obtenidas con distintos elementos estructurante"
+325,cuerpo,Normal,36,1,36,0,0,0,0,,,—,0,,Esquema de fusión morfológica de referencia: White y Black Top-Hat con un único disco sobr
+327,cuerpo,Normal,51,3,25,0,0,1,0,,,—,0,,Escalar que pondera cuánto se suman los realces brillantes (WTH) y se restan los oscuros (
+329,cuerpo,Normal,43,2,31,0,0,0,0,"alta: parrafo 329, §3.15 PSO; y fila «Radio del SE (r) ... 1-25 (ajustado por PSO)» de la Tabla 26 (§4.4) — INCOHERENCIA",INCOHERENCIA,§3.15,1,alta,"Metaheurística poblacional (Kennedy y Eberhart, 1995) que busca el óptimo de una función m"
+331,cuerpo,Normal,81,3,35,0,0,1,0,,,—,0,,Criterio escalar que el PSO maximiza para evaluar cada solución candidata. Aquí es la func
+334,cuerpo,Normal,32,2,26,0,0,0,0,,,—,0,,La investigación adopta un enfoque cuantitativo. Todos los hallazgos se sostienen en medic
+336,cuerpo,Normal,37,3,18,0,0,0,0,,,—,0,,"La investigación es de tipo experimental, con carácter descriptivo y comparativo. Se manip"
+338,cuerpo,Normal,139,2,84,2,2,1,0,"alta: parrafo 338, §4.3 Diseno — CONTRADICE",CONTRADICE,§4.3,1,alta,"El diseño es comparativo inter-método: siete métodos de fusión —la Propuesta Novedosa, la "
+341,cuerpo,Normal,151,5,49,1,2,1,0,"media: parrafo 341, §4.5 — INCOHERENCIA",INCOHERENCIA,§4.5,1,media,"El corpus experimental son veinte pares VIS/IR del TNO Image Fusion Dataset, dataset públi"
+342,cuerpo,Normal,98,2,61,1,0,1,0,"baja: parrafo 342, §4.5 Dataset y preprocesamiento — INCOHERENCIA",INCOHERENCIA,§4.5,1,baja,Para la evaluación orientada a tarea con verdad de campo (sección 5.5.1) se emplea adicion
+344,cuerpo,Normal,55,2,35,0,0,0,0,"baja: parrafo 344, §4.6 Implementacion — INCOHERENCIA",INCOHERENCIA,§4.6,1,baja,"Toda la implementación se realizó en Python 3.11 con las bibliotecas NumPy, OpenCV, scikit"
+346,cuerpo,Normal,163,5,82,1,2,1,3,,,—,0,,"Se aplicaron tres procedimientos no paramétricos. Primero, la prueba de Friedman (Friedman"
+348,cuerpo,Normal,83,1,83,1,2,0,0,,,—,0,,El capítulo presenta primero la caracterización del corpus y los análisis cualitativo y cu
+350,cuerpo,Normal,94,4,36,0,0,0,0,baja: parrafo 350 (§5.1 Caracterizacion del dataset) — CONTRADICE,CONTRADICE,§5.1,1,baja,Las veinte (20) imágenes pareadas del TNO Image Fusion Dataset cubren escenarios variados:
+352,cuerpo,Normal,168,4,74,2,0,4,0,media: parrafo 352 (§5.2 Analisis cualitativo) — INCOHERENCIA,INCOHERENCIA,§5.2,1,media,La figura 6 muestra tres pares representativos del dataset junto con los resultados de los
+354,cuerpo,Normal,15,2,13,0,0,0,0,,,—,0,,Figura 6. Comparación cualitativa de los métodos de fusión sobre tres pares representativo
+356,cuerpo,Normal,169,4,57,2,0,0,0,,,—,0,,La Tabla 4 presenta los promedios de las seis métricas clásicas y la Tabla 5 los de la fre
+357,cuerpo,Normal,13,2,11,0,0,0,0,"media: parrafo 359 (§5.3), en relacion con las Tablas 4 y 5 (parrafos 357 y 358) — INCOHERENCIA",INCOHERENCIA,§5.3,1,media,Tabla 4. Promedios de las seis métricas clásicas por método (n = 20).
+358,cuerpo,Normal,18,2,16,0,0,0,0,"media: parrafo 359 (§5.3), en relacion con las Tablas 4 y 5 (parrafos 357 y 358) — INCOHERENCIA",INCOHERENCIA,§5.3,1,media,"Tabla 5. Promedios de frecuencia espacial (SF), similitud estructural (SSIM) y PSNR por mé"
+359,cuerpo,Normal,68,2,37,0,0,1,0,"media: parrafo 359 (§5.3), en relacion con las Tablas 4 y 5 (parrafos 357 y 358) — INCOHERENCIA",INCOHERENCIA,§5.3,1,media,"Estas métricas, ponderadas por bordes y estructura local, complementan a las anteriores: l"
+360,cuerpo,Normal,22,1,22,0,0,0,0,,,—,0,,"Una distribución más completa de las métricas, no reducida al promedio, se aprecia en los "
+362,cuerpo,Normal,22,2,20,0,0,0,0,,,—,0,,"Figura 7. Diagramas de caja de seis métricas representativas (SSIM, SF, EN, SD, MI_ir, PSN"
+365,cuerpo,Normal,60,2,31,0,0,0,0,,,—,0,,"La Tabla 6 reporta la prueba de Friedman aplicada de forma independiente a cada métrica, c"
+366,cuerpo,Normal,12,2,10,0,0,1,0,,,—,0,,"Tabla 6. Prueba de Friedman por métrica (χ², p-valor; α = 0,05)."
+368,cuerpo,Normal,154,3,75,2,0,1,0,media: parrafo 368 (§5.4.2 Comparaciones pareadas Wilcoxon) — CONTRADICE,CONTRADICE,§5.4.2,1,media,Para precisar dónde residen las diferencias se aplicó la prueba de Wilcoxon de rangos sign
+370,cuerpo,Normal,379,9,58,6,8,2,0,media: parrafo 370 (§5.4.3 Ranking promedio) — CONTRADICE,CONTRADICE,§5.4.3,1,media,La Tabla 7 muestra el ranking promedio de cada método (1 = mejor) en seis de las nueve mét
+371,cuerpo,Normal,11,2,9,0,0,0,0,,,—,0,,Tabla 7. Ranking promedio por método y métrica (1 = mejor).
+373,cuerpo,Normal,20,2,18,0,0,0,0,,,—,0,,"Figura 8. Ranking global por método (promedio de rangos sobre las nueve métricas, con la d"
+375,cuerpo,Normal,82,3,49,1,2,1,0,,,—,0,,Para una evaluación concluyente —con verdad de campo— se reentrenó el mismo detector (YOLO
+376,cuerpo,Normal,20,2,18,0,1,1,0,,,—,0,,Tabla 8. Detección de peatones en LLVIP — mAP por modalidad (YOLOv8n; subconjunto 2000 tra
+377,cuerpo,Normal,204,5,74,3,6,2,3,"alta: parrafo 377 (§5.5, tercera lectura de la Tabla 8) — CONTRADICE + media: parrafo 377 (§5.5, primera lectura de la Tabla 8); la misma cifra se repite en el parrafo 399 — CONTRADICE",CONTRADICE,§5.5,2,alta,"La Tabla 8 admite tres lecturas. Primero, toda fusión mejora con claridad sobre el visible"
+379,cuerpo,Normal,94,4,58,1,0,1,0,,,—,0,,Figura 12. Dispersión de cada entrada del detector sobre las 5 semillas de entrenamiento e
+380,cuerpo,Normal,165,4,74,2,4,0,0,,,—,0,,Detección con clases complementarias (M3FD). Como complemento se diseñó un experimento de 
+381,cuerpo,Normal,37,2,35,0,0,0,0,,,—,0,,"Tabla 9. Clases complementarias en M3FD: AP@0,5 por clase y mAP global con un detector úni"
+382,cuerpo,Normal,268,7,49,4,0,2,0,,,—,0,,"La Tabla 9 muestra una complementariedad real pero asimétrica, y menos extrema de lo que s"
+384,cuerpo,Normal,62,2,60,1,0,1,0,,,—,0,,Figura 9. Detecciones del modelo único VIS+IR en dos escenas de la partición de prueba de 
+386,cuerpo,Normal,138,3,87,1,2,2,0,,,—,0,,La Propuesta Novedosa —método central de esta tesis— se optimizó con PSO sobre un subconju
+387,cuerpo,Normal,139,3,57,2,2,1,0,,,—,0,,"La Tabla 10 compara la propuesta, en su configuración óptima (r = 25, m = 0,30), con la me"
+388,cuerpo,Normal,158,4,75,2,2,4,0,,,—,0,,La significación de estas diferencias se verificó con la prueba de Wilcoxon pareada (n = 2
+389,cuerpo,Normal,163,4,66,2,2,0,0,,,—,0,,La elección del peso es robusta: las 25 combinaciones del barrido convergieron al mismo va
+390,cuerpo,Normal,23,2,21,0,1,0,0,,,—,0,,Tabla 10. Propuesta Novedosa frente a la metodología clásica Top-Hat y al estado del arte 
+392,cuerpo,Normal,55,2,53,1,0,1,0,,,—,0,,"Figura 10. Propuesta Novedosa (r = 25 por diseño; m = 0,30, piso del rango) frente a la me"
+393,cuerpo,Normal,126,3,66,2,0,1,0,,,—,0,,La Figura 11 resume la optimización del método. El panel izquierdo muestra la aptitud Fo e
+395,cuerpo,Normal,63,3,35,0,0,0,0,,,—,0,,Figura 11. Aptitud Fo en función del peso de contraste con el radio fijo en r = 25 (izq.) 
+396,cuerpo,Normal,60,3,34,0,0,2,0,"baja: parrafo 396, pie de la Tabla 11 — INCOHERENCIA",INCOHERENCIA,Tabla 11,1,baja,"Tabla 11. Barrido de configuraciones del PSO con el rango publicado m ∈ [0,30; 2,00]: mejo"
+399,cuerpo,Normal,505,9,97,6,2,2,6,"media: parrafo 377 (§5.5, primera lectura de la Tabla 8); la misma cifra se repite en el parrafo 399 — CONTRADICE + media: parrafo 399, quinta observacion de la Discusion integrada (la frase abre con «la evaluacion orientada a tarea (deteccion sobre LLVIP, repetida con 5 semillas de entrenamiento por entrada)») — CONTRADICE",CONTRADICE,§5.5,2,media,"Los hallazgos cuantitativos pueden sintetizarse en seis observaciones. Primero, la Propues"
+401,cuerpo,Normal,93,3,59,1,0,1,0,,,—,0,,Las secciones anteriores aplican el protocolo de evaluación; esta lo pone a prueba. El seg
+403,cuerpo,Normal,164,6,55,1,2,0,0,,,—,0,,El orden de mérito no es una propiedad del operador sino del criterio. Con las nueve métri
+404,cuerpo,Normal,151,6,47,1,0,1,0,,,—,0,,La batería contiene además redundancia interna. La eficiencia de fusión se define como el 
+406,cuerpo,Normal,72,3,37,0,0,0,0,,,—,0,,"Si la batería mide calidad de fusión, una imagen deliberadamente degradada debería quedar "
+407,cuerpo,Normal,28,2,26,0,0,1,0,,,—,0,,Tabla 12. Control negativo: rango medio de los siete métodos y de siete entradas degradada
+408,cuerpo,Normal,165,6,38,0,4,0,0,,,—,0,,"El resultado es inequívoco. Con las nueve métricas, la fusión de ruido con σ = 0,20 alcanz"
+410,cuerpo,Normal,66,3,31,0,0,0,0,,,—,0,,"La comparación con el Top-Hat clásico de la sección 5.6 no aísla el aporte del banco, porq"
+411,cuerpo,Normal,27,2,25,0,0,2,0,,,—,0,,"Tabla 13. Ablación del banco de elementos estructurantes con (r, m) = (25; 0,30) fijos en "
+412,cuerpo,Normal,216,5,61,3,4,2,0,"media: parrafo 412, §5.8.3 (lectura de la Tabla 13) — CONTRADICE + baja: parrafo 412, §5.8.3 — INCOHERENCIA",CONTRADICE · INCOHERENCIA,§5.8.3,2,media,Con las nueve métricas la suma de ramas —la combinación que adopta la propuesta— es la mej
+414,cuerpo,Normal,76,3,28,0,0,1,0,,,—,0,,El protocolo concede a la propuesta un paso de ajuste de hiperparámetros que no concede a 
+415,cuerpo,Normal,30,2,28,0,0,0,0,,,—,0,,"Tabla 14. Rango medio por escenario de ajuste: con los comparativos por defecto, con los c"
+416,cuerpo,Normal,204,5,68,2,4,2,0,,,—,0,,Bajo el protocolo tal como está declarado —escenario A— la propuesta encabeza el benchmark
+418,cuerpo,Normal,551,17,73,5,6,2,0,"media: Parrafo 229, limitacion novena, frente a H5 en el parrafo 227 y a la seccion 5.8.5 (parrafo 418) — INCOHERENCIA + media: parrafo 418, §5.8.5 (segunda mencion del factor; la primera, «su disco, que extrae 4,21 veces menos energia de detalle», si es correcta) — INCOHERENCIA",INCOHERENCIA,limitacion novena · §5.8.5,2,media,La optimización no determina la configuración evaluada. El argmax de la aptitud dentro del
+419,cuerpo,Normal,176,6,54,1,2,0,0,"alta: parrafo 419, cierre de §5.8.5 — SIN FUENTE",SIN FUENTE,§5.8.5,1,alta,El contraste con la tarea posterior cierra la auditoría. La correlación de Spearman entre 
+422,cuerpo,Normal,66,2,62,1,0,0,0,,,—,0,,"Se propuso, implementó y evaluó la Propuesta Novedosa, un método de fusión VIS/IR basado e"
+423,cuerpo,List Paragraph,310,5,91,4,8,2,0,media: párrafo 423 (conclusión específica 1) — CONTRADICE,CONTRADICE,conclusión específica 1,1,media,La Propuesta Novedosa —con las respuestas lineales promediadas y sumadas a la del disco so
+424,cuerpo,List Paragraph,71,1,71,1,0,1,0,,,—,0,,Entre los métodos del estado del arte no hay dominancia global: DTCWT lidera la similitud 
+425,cuerpo,List Paragraph,74,1,74,1,0,1,0,,,—,0,,"La propuesta presenta el mejor ranking global agregado (3,39 sobre los 7 métodos), sosteni"
+426,cuerpo,List Paragraph,81,2,62,1,2,0,0,,,—,0,,"La información mutua premia la combinación lineal: en la ablación de la sección 5.8.3, el "
+427,cuerpo,List Paragraph,92,3,58,1,2,5,0,media: párrafo 427 (conclusión específica 5) — INCOHERENCIA,INCOHERENCIA,conclusión específica 5,1,media,"Dentro de la familia Top-Hat, la forma de combinar las respuestas del banco introduce dife"
+428,cuerpo,List Paragraph,94,2,65,1,2,1,0,media: párrafo 428 (conclusión específica 6) — INCOHERENCIA,INCOHERENCIA,conclusión específica 6,1,media,Los dos hiperparámetros del método son el radio r y el peso m; no hay profundidad de desco
+429,cuerpo,List Paragraph,71,1,71,1,0,0,0,,,—,0,,Las pruebas no paramétricas confirman que las diferencias observadas no son fruto del azar
+430,cuerpo,List Paragraph,90,2,55,1,2,0,0,,,—,0,,"El realce morfológico se paga en artefactos, y conviene declararlo: en Nabf —la única métr"
+431,cuerpo,List Paragraph,49,2,41,1,0,0,0,,,—,0,,Es metodológicamente fundamental separar la regla de fusión de detalle (max-actividad por 
+432,cuerpo,List Paragraph,28,1,28,0,0,0,0,,,—,0,,No existe un método universalmente óptimo: la decisión de qué algoritmo de fusión emplear 
+434,cuerpo,Normal,16,1,16,0,0,0,0,,,—,0,,A partir de los hallazgos se proponen las siguientes líneas de trabajo futuro y de aplicac
+435,cuerpo,Normal,69,2,40,0,0,0,0,baja: párrafo 435 (recomendación 1) — INCOHERENCIA,INCOHERENCIA,recomendación 1,1,baja,Repetir toda evaluación orientada a tarea con varias semillas de entrenamiento y reportar 
+436,cuerpo,List Paragraph,68,1,68,1,0,0,0,,,—,0,,Profundizar en reglas de fusión que aprovechen el Black Top-Hat de forma selectiva (p. ej.
+437,cuerpo,List Paragraph,17,1,17,0,0,0,0,media: párrafo 437 (recomendación 3) — INCOHERENCIA,INCOHERENCIA,recomendación 3,1,media,"Replicar la evaluación sobre datasets adicionales (RoadScene, M3FD, MS-COCO multiespectral"
+438,cuerpo,List Paragraph,29,1,29,0,0,0,0,,,—,0,,Explorar reglas de fusión adaptativas que ponderen la actividad local en función de estadí
+439,cuerpo,List Paragraph,21,1,21,0,0,0,0,media: párrafo 439 (recomendación 5) — CONTRADICE,CONTRADICE,recomendación 5,1,media,Evaluar híbridos Top-Hat ↔ pirámide de Laplace que combinen la fidelidad a fuentes del pri
+440,cuerpo,List Paragraph,29,1,29,0,0,0,0,,,—,0,,"Comparar contra modelos de fusión profundos preentrenados (FusionGAN, U2Fusion, SeAFusion)"
+441,cuerpo,List Paragraph,83,1,83,1,0,1,0,media: párrafo 441 (recomendación 7) — SIN FUENTE,SIN FUENTE,recomendación 7,1,media,Seleccionar el método de fusión según el criterio operativo prioritario: para aplicaciones
+442,cuerpo,List Paragraph,43,1,43,1,0,1,0,,,—,0,,"Reportar siempre la información mutua junto con métricas de calidad global (EN, SD, MG) pa"
+484,apendice,Normal,99,2,92,1,2,0,0,"media: parrafo 484 (apendice A, inventario de modulos) — CONTRADICE + baja: parrafo 484 (apendice A) — INCOHERENCIA + baja: parrafo 484 (apendice A, ultima frase) — INCOHERENCIA",CONTRADICE · INCOHERENCIA,apéndice A,3,media,"La totalidad del código de esta tesis está disponible en el repositorio del proyecto, orga"
+490,apendice,Normal,35,2,20,0,0,0,0,baja: parrafo 490 (apendice B) — INCOHERENCIA,INCOHERENCIA,apéndice B,1,baja,Cada combinación del barrido ejecuta una corrida PSO independiente con semilla propia (25 
+492,apendice,Normal,126,4,41,1,0,0,0,"media: parrafo 492 (apendice C, ultima frase) — SIN FUENTE",SIN FUENTE,apéndice C,1,media,Las tablas completas con los 99 contrastes Wilcoxon (la propuesta frente a los 5 métodos d
+515,apendice,Normal,17,1,17,0,0,0,0,"alta: parrafos 515 y 516 (apendice D, cierre del pseudocodigo y nota) — CONTRADICE",CONTRADICE,apéndice D,1,alta,"(r, m) se optimizan por PSO (barrido de 25 configuraciones) -> r = 25, m = 0,30"
+516,apendice,Normal,65,2,55,1,2,0,0,"alta: parrafos 515 y 516 (apendice D, cierre del pseudocodigo y nota) — CONTRADICE",CONTRADICE,apéndice D,1,alta,Nota: la versión definitiva y única del método (sección 2.2.5) promedia las cuatro respues
+518,apendice,Normal,144,6,53,1,2,0,0,"alta: parrafo 518 (apendice E, Refinamiento metodologico de la regla de fusion) — CONTRADICE + alta: parrafo 518 (apendice E, ultima frase) — SIN FUENTE",CONTRADICE · SIN FUENTE,apéndice E,2,alta,Durante el desarrollo iterativo de la implementación se identificó un punto sutil pero sus
