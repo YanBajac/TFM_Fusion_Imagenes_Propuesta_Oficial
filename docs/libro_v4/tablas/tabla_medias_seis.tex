@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Media de las seis métricas por método, sobre los veinte pares del corpus}
+\label{tab:medias_seis}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Método} & \textbf{EN} & \textbf{SD} & \textbf{MG} & \textbf{MI} & \textbf{SSIM} & \textbf{PSNR} \\
+\midrule
+Propuesta & \textbf{6.9855} & 0.1439 & 0.0355 & 0.7486 & 0.6584 & 16.84 \\
+DTCWT & 6.6877 & 0.1172 & 0.0255 & 0.8755 & \textbf{0.7249} & 17.60 \\
+Pirámide de Laplace & 6.8400 & \textbf{0.1550} & 0.0252 & \textbf{1.4210} & 0.7059 & 14.94 \\
+Pirámide de razón & 6.8098 & 0.1271 & 0.0275 & 0.7995 & 0.7051 & 17.37 \\
+DWT (db4) & 6.6445 & 0.1132 & 0.0260 & 0.8828 & 0.7162 & \textbf{17.65} \\
+Top-Hat clásico & 6.9220 & 0.1352 & \textbf{0.0478} & 0.6398 & 0.5640 & 16.87 \\
+DWT (Haar) & 6.6816 & 0.1166 & 0.0275 & 0.8711 & 0.7014 & 17.59 \\
+\bottomrule
+\end{tabular}
+\nota{Elaboración propia. En las seis métricas, un valor mayor es mejor, y la negrita marca el mejor valor de cada columna. Los métodos siguen el orden del rango promedio (Tabla~\ref{tab:ranking_seis}). EN: entropía. SD: desviación estándar. MG: gradiente medio. MI: información mutua. SSIM: similitud estructural. En MI y en SSIM, el valor es el promedio del calculado contra la imagen visible y del calculado contra la infrarroja. PSNR: relación señal-ruido de pico, en decibelios, calculada con el promedio de los dos errores cuadráticos medios. DWT (Haar) y DWT (db4) son la misma transformada con dos bases distintas (Sección~\ref{sec:comparativos}). Propuesta: el algoritmo de fusión presentado en este trabajo.}
+\end{table}

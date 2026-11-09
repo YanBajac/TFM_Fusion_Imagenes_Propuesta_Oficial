@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Tasa de acierto de las entradas fusionadas en la detección de objetos}
+\label{tab:v2_tasas}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Entrada} & \textbf{Solo visible} & \textbf{Solo infrarroja} & \textbf{Equilibrada} & \textbf{De ambas} \\
+\midrule
+Pirámide de Laplace & 60.5 & 72.5 & \textbf{66.5} & 97.1 \\
+DTCWT & 53.7 & 72.2 & 62.9 & 94.1 \\
+DWT (Haar) & 53.7 & 70.9 & 62.3 & 95.9 \\
+Propuesta & 55.6 & 67.2 & 61.4 & 94.4 \\
+DWT (db4) & 51.2 & 69.2 & 60.2 & 96.0 \\
+Promedio simple & 49.1 & 71.3 & 60.2 & 95.1 \\
+Top-Hat clásico & 51.3 & 65.5 & 58.4 & 94.1 \\
+Pirámide de razón & 49.0 & 57.3 & 53.1 & 93.0 \\
+\bottomrule
+\end{tabular}
+\nota{Elaboración propia. Las tasas están en porcentaje y se calcularon con el umbral principal. El umbral principal de cada detector se fijó para que este cometiera, en los cuadros de seguimiento, tantos falsos positivos de personas y luces por imagen como los detectores de la visible con un umbral de 0.25. Solo visible y Solo infrarroja se calculan sobre los objetos que ve una sola cámara: 211 vistos solo por la visible y 622 solo por la infrarroja. La columna De ambas se calcula sobre los 724 objetos que ven las dos cámaras. La columna Equilibrada es el promedio de las dos columnas anteriores. Las filas van de mayor a menor tasa equilibrada, y la mayor está en negrita. Cada tasa promedia, sobre tres semillas, la fracción de objetos encontrados. La visible y la infrarroja no figuran porque sus detectores definen qué objetos ve una sola cámara. Propuesta: el algoritmo de fusión presentado en este trabajo.}
+\end{table}

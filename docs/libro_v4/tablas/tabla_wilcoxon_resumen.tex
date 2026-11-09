@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Contrastes de Wilcoxon pareados de la propuesta frente a los demás métodos}
+\label{tab:wilcoxon_resumen}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccclcc}
+\toprule
+& \multicolumn{3}{c}{\textbf{Contra los cinco multiescala}} & \multicolumn{3}{c}{\textbf{Contra el Top-Hat clásico}} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+\textbf{Métrica} & \textbf{Gana} & \textbf{Pierde} & \textbf{Empata} & \textbf{Resultado} & \textbf{Diferencia} & \textbf{\boldmath $p$ corregido} \\
+\midrule
+EN & 5 & 0 & 0 & gana & 0.0636 & $< 0.001$ \\
+SD & 4 & 0 & 1 & gana & 0.0087 & $< 0.001$ \\
+MG & 5 & 0 & 0 & pierde & $-$0.0123 & $< 0.001$ \\
+MI & 0 & 4 & 1 & gana & 0.1089 & $< 0.001$ \\
+SSIM & 0 & 5 & 0 & gana & 0.0944 & $< 0.001$ \\
+PSNR & 1 & 4 & 0 & empata & $-$0.0319 & 0.674 \\
+\bottomrule
+\end{tabular}
+\nota{Elaboración propia. Gana, Pierde y Empata cuentan los contrastes de la propuesta con los cinco métodos multiescala. Resultado, Diferencia y $p$ corregido se refieren a su contraste con el Top-Hat clásico. Un contraste significativo al 5~\% después de corregir por comparaciones múltiples, con Holm sobre los once contrastes de cada métrica, cuenta como victoria o derrota de la propuesta según el signo de la diferencia de medias. Uno no significativo cuenta como empate. Diferencia: media de la propuesta menos media del Top-Hat clásico, en las unidades de cada métrica (decibelios en PSNR). El Top-Hat clásico se usó con radio 5 y peso 1.}
+\end{table}

@@ -1,0 +1,26 @@
+\chapter*{Anexos}
+\phantomsection
+\addcontentsline{toc}{chapter}{Anexos}
+
+% Tablas y figuras de los anexos con numeración propia: A.1, A.2, etc.
+\setcounter{table}{0}\renewcommand{\thetable}{A.\arabic{table}}
+\setcounter{figure}{0}\renewcommand{\thefigure}{A.\arabic{figure}}
+
+\section*{Participación en congresos}
+
+{\setlength{\leftskip}{1cm}\noindent\fullcite{bajacfigueredo2024}\par}
+{\setlength{\leftskip}{1cm}\noindent Trabajo presentado en el XLIII Congresso Nacional de Matemática Aplicada
+e Computacional, Porto de Galinhas, Pernambuco, Brasil, del 16 al 20 de septiembre de 2024.\par}
+
+% Este anexo empieza en página nueva: así la Tabla A.1 arranca junto a su texto y la nota no queda sola.
+\clearpage
+\section*{Contrastes de Wilcoxon completos}
+
+La Tabla~\ref{tab:wilcoxon_completa} reúne los sesenta y seis contrastes de Wilcoxon de las seis métricas,
+calculados sobre los veinte pares. En cada métrica hay once: seis comparan la propuesta con los demás
+métodos y cinco comparan el Top-Hat clásico con cada método multiescala. La corrección de Holm se aplicó
+dentro de cada métrica, sobre esos once contrastes. La columna Escenas repite la decisión con las trece
+escenas como bloques, en lugar de los veinte pares. Los contrastes de la propuesta se resumen en la
+Tabla~\ref{tab:wilcoxon_resumen}, de la Sección~\ref{sec:estadistico}.
+
+\input{tablas/tabla_wilcoxon_completa}

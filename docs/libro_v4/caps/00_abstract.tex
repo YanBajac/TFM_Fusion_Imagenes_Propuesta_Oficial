@@ -1,0 +1,26 @@
+\chapter*{Abstract}
+\phantomsection
+\addcontentsline{toc}{chapter}{Abstract}
+
+\begin{otherlanguage}{english}
+
+An algorithm for fusing infrared and visible images based on mathematical morphology is proposed: a
+single-scale Top-Hat with a disk and four oriented line segments. It adds the bright detail to the average
+of the two images and subtracts the dark detail, both multiplied by a weight. Through particle swarm
+optimization, the weight settled at the lowest allowed value, 0.30, and the radius of 25 pixels, which
+gives more enhancement, was chosen. The hypothesis is that the algorithm outperforms the classical Top-Hat
+in quality and in detecting objects seen by only one camera, and that it is comparable in quality to five
+multiscale methods. With six no-reference metrics on twenty nighttime pairs, it outperformed the classical
+Top-Hat on four, lost on one and tied on another. It achieved the best average rank of the seven methods,
+though narrowly and with an order that changes with the metrics: against the multiscale methods, it gained
+contrast and sharpness and lost similarity to the source images. On another dataset, with daytime and
+nighttime scenes, the balanced hit rate of the detector trained on its fused images was 61.4\%. It averages the
+hit rates on objects seen only by the visible camera and on those seen only by the infrared one. It ranked
+fourth among eight fused inputs and was 3.0 points above the classical Top-Hat, a minimal advantage that
+changed sign with the seed. The hypothesis largely holds for quality; for detection, it remains to be
+confirmed with new training runs and data.
+
+\textbf{Keywords:} Infrared and visible image fusion; Mathematical morphology; Top-Hat transform;
+Particle swarm optimization; Object detection.
+
+\end{otherlanguage}

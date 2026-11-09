@@ -1,0 +1,94 @@
+# ===================================================================================================
+# Qué no se versiona.
+#
+# Se versiona lo que hace falta para reproducir el trabajo y verificar sus cifras. Lo que se vuelve a
+# generar corriendo un script, lo que pesa gigabytes, lo que tiene licencia de un tercero y lo que es
+# propio del entorno de cada equipo, no.
+# ===================================================================================================
+
+# --- Entornos e intérpretes -------------------------------------------------------------------------
+.venv/
+venv/
+env/
+.python-version.local
+
+# --- Corpus TNO: las imágenes no se redistribuyen ---------------------------------------------------
+# Tienen su propia licencia (figshare 10.6084/m9.figshare.1008029). Se excluye el CONTENIDO y no el
+# directorio, porque git no desciende a un directorio excluido y la negación de la línea siguiente no
+# se aplicaría.
+data/raw/*
+# El manifiesto SÍ se versiona: md5 y procedencia de cada archivo, que hacen al corpus reconstruible y
+# verificable. Lo leen preparar_corpus.py y verificar_corpus.py.
+!data/raw/MANIFIESTO_CORPUS.csv
+
+# --- Datos de detección: se descargan o se generan aparte -------------------------------------------
+data/M3FD_Detection/
+datasets/
+*.zip
+
+# --- Salidas regenerables ---------------------------------------------------------------------------
+data/processed/
+experiments/results/fused_images/
+runs/
+# Los CSV de experiments/results/metrics_reports/ SÍ se versionan: de ellos salen las tablas, las
+# figuras de resultados y la estadística del libro. Se excluye lo que se rearma desde esos CSV.
+experiments/results/metrics_reports/*.png
+experiments/results/metrics_reports/*.html
+# Los estados del PSO (experiments/results/pso/) SÍ se versionan: documentan las corridas publicadas.
+
+# --- Pesos de modelos -------------------------------------------------------------------------------
+# yolov8n.pt se descarga aparte y va en la raíz (ver la sección 6.2 del README).
+*.pt
+*.pth
+*.onnx
+
+# --- Fuentes de terceros ----------------------------------------------------------------------------
+# Los PDF de las obras de referencia no se redistribuyen.
+docs/fuentes/*.pdf
+
+# --- Compilación del libro --------------------------------------------------------------------------
+# Auxiliares que quedan si se compila dentro de docs/libro_v4; algunos (.fls, .synctex.gz) guardan
+# rutas absolutas del equipo. El PDF publicado es docs/libro_v4/Tesis_Bazan_Bajac.pdf; main.pdf es el
+# que deja cada compilación.
+docs/libro_v4/main.pdf
+docs/libro_v4/*.aux
+docs/libro_v4/*.bbl
+docs/libro_v4/*.bcf
+docs/libro_v4/*.blg
+docs/libro_v4/*.fdb_latexmk
+docs/libro_v4/*.fls
+docs/libro_v4/*.lof
+docs/libro_v4/*.lot
+docs/libro_v4/*.out
+docs/libro_v4/*.run.xml
+docs/libro_v4/*.synctex.gz
+docs/libro_v4/*.toc
+docs/libro_v4/caps/*.aux
+
+# --- Python -----------------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.cache
+
+# --- Jupyter ----------------------------------------------------------------------------------------
+.ipynb_checkpoints/
+
+# --- Editores y sistema operativo -------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*~
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# --- Varios -----------------------------------------------------------------------------------------
+.env
+.env.*
+*.log

@@ -1,0 +1,18 @@
+\begin{table}[htbp]
+\centering
+\caption{Prueba de Friedman por métrica, con siete métodos y veinte pares}
+\label{tab:friedman_seis}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Métrica} & \textbf{\boldmath $\chi^2$} & \textbf{\boldmath $p$} & \textbf{¿Difieren?} \\
+\midrule
+EN & 88.3 & $< 0.001$ & sí \\
+SD & 105.1 & $< 0.001$ & sí \\
+MG & 101.7 & $< 0.001$ & sí \\
+MI & 91.2 & $< 0.001$ & sí \\
+SSIM & 100.5 & $< 0.001$ & sí \\
+PSNR & 111.8 & $< 0.001$ & sí \\
+\bottomrule
+\end{tabular}
+\nota{Elaboración propia. La prueba contrasta si los rangos promedio de los métodos difieren más de lo esperable por azar. Con siete métodos, tiene seis grados de libertad. La columna ¿Difieren? indica si la diferencia fue significativa, como ocurrió en las seis métricas. En ese caso, algunos métodos quedan mejor o peor ubicados de forma sistemática, par tras par.}
+\end{table}

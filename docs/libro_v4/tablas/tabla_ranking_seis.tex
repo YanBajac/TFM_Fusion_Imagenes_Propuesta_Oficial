@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Rango promedio de cada método, por métrica y global}
+\label{tab:ranking_seis}
+\begin{tabular}{clccccccc}
+\toprule
+\textbf{Puesto} & \textbf{Método} & \textbf{EN} & \textbf{SD} & \textbf{MG} & \textbf{MI} & \textbf{SSIM} & \textbf{PSNR} & \textbf{Global} \\
+\midrule
+1 & Propuesta & 1.50 & 1.65 & 2.00 & 5.45 & 5.90 & 5.35 & \textbf{3.642} \\
+2 & DTCWT & 4.90 & 5.05 & 6.05 & 3.15 & 1.30 & 2.25 & 3.783 \\
+3 & Pirámide de Laplace & 3.25 & 2.00 & 6.25 & 1.20 & 3.80 & 6.95 & 3.908 \\
+4 & Pirámide de razón & 3.55 & 3.60 & 4.65 & 4.95 & 3.00 & 4.35 & 4.017 \\
+5 & DWT (db4) & 6.85 & 7.00 & 4.75 & 2.65 & 2.50 & 1.00 & 4.125 \\
+6 & Top-Hat clásico & 2.45 & 2.85 & 1.00 & 6.80 & 7.00 & 5.35 & 4.242 \\
+7 & DWT (Haar) & 5.50 & 5.85 & 3.30 & 3.80 & 4.50 & 2.75 & 4.283 \\
+\bottomrule
+\end{tabular}
+\nota{Elaboración propia. En cada par y en cada métrica, el rango 1 corresponde al mejor método. Cada columna de métrica promedia esos rangos sobre los pares, y la columna Global promedia las seis columnas de métrica. Un valor menor es mejor, y la negrita marca el mejor rango global. La prueba de Friedman opera sobre estos mismos rangos. Propuesta: el algoritmo de fusión presentado en este trabajo.}
+\end{table}

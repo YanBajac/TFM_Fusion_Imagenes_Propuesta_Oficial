@@ -1,0 +1,204 @@
+% =====================================================================================
+%  Fusión de imágenes infrarrojas y visibles mediante morfología matemática
+%  Tesis de Maestría en Ciencia de Datos, Universidad Comunera (UCOM)
+%
+%  Compilación:  latexmk -pdf main.tex     (o pdflatex → biber → pdflatex ×2)
+% =====================================================================================
+\documentclass[12pt,a4paper,oneside]{book}
+
+% ---------- idioma y codificación -----------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+% spanish, último de la lista, es el idioma principal; english solo silabea el Abstract.
+% es-nodecimaldot es necesaria: sin ella babel-spanish imprime con coma los decimales en modo matemático.
+\usepackage[english,es-tabla,es-nodecimaldot,spanish]{babel}
+% Cortes de palabras inglesas de las referencias que el silabeo español hace mal.
+\babelhyphenation[spanish]{multi-scale learn-ing Spring-er Py-Wave-lets}
+\usepackage{lmodern}          % Latin Modern en todo el documento, también en la portada
+
+% ---------- geometría e interlineado --------------------------------------------------
+\usepackage[a4paper,left=25mm,right=25mm,top=25mm,bottom=25mm]{geometry}
+\usepackage{setspace}
+\onehalfspacing               % interlineado 1.5
+\widowpenalty=10000           % sin líneas viudas
+\clubpenalty=10000            % sin líneas huérfanas
+
+% ---------- párrafos ------------------------------------------------------------------
+\setlength{\parindent}{1.5em} % sangría de primera línea
+\setlength{\parskip}{0pt}     % sin espacio extra entre párrafos
+
+% ---------- pie de página: solo el número, centrado -----------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}\renewcommand{\headrulewidth}{0pt}}
+
+% ---------- títulos -------------------------------------------------------------------
+% nobottomtitles*: un título que no deja debajo lugar para tres renglones pasa a la página siguiente.
+% Se suma \pageshrink porque titlesec compara contra la página ya encogida.
+\usepackage[nobottomtitles*]{titlesec}
+\renewcommand{\bottomtitlespace}{\dimexpr5\baselineskip+\pageshrink\relax}
+% Sin asterisco en \titlespacing, para que el primer párrafo del capítulo conserve la sangría.
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titlespacing{\chapter}{0pt}{50pt}{40pt}
+% El punto final del número va en el formato y no en \thesection, para que \ref no lo repita.
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection.}{1em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection.}{1em}{}
+
+% ---------- tablas y figuras ----------------------------------------------------------
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}            % columnas con alineación propia (lista de abreviaturas)
+\usepackage{longtable}        % la lista de abreviaturas ocupa más de una página
+\usepackage{caption}
+% Tablas: «Tabla N.M: Título» arriba, centrado, en el cuerpo del texto (12 pt).
+\captionsetup{labelsep=colon}
+\captionsetup[table]{position=above}
+% Figuras: «Figura N.M» en negrita en su renglón y el título en cursiva debajo, arriba de la imagen.
+\captionsetup[figure]{position=above,font=normalsize,labelfont=bf,textfont=it,labelsep=newline,justification=raggedright,singlelinecheck=false}
+% Nota debajo de figuras y tablas, en \small y con «Nota.» en cursiva. Uso: \nota{Elaboración propia.}
+\newcommand{\nota}[1]{\par\vspace{6pt}{\raggedright\small\textit{Nota.}\ #1\par}}
+\usepackage[section]{placeins}
+% En las páginas que solo tienen flotantes, estos van arriba y separados por el espacio normal.
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{\floatsep}
+\makeatother
+
+% ---------- matemática ----------------------------------------------------------------
+\usepackage{amsmath,amssymb}
+
+% ---------- bibliografía APA ----------------------------------------------------------
+% biblatex-apa requiere csquotes; autostyle toma las comillas del idioma activo de babel.
+\usepackage[autostyle]{csquotes}
+\usepackage[style=apa,backend=biber,natbib=true]{biblatex}
+\DeclareLanguageMapping{spanish}{spanish-apa}
+\addbibresource{referencias.bib}
+% spanish.lbx pone guion en los rangos de páginas y quita la coma antes de «&» en las listas de
+% tres o más nombres, como los editores. APA 7 usa raya corta y esa coma.
+\DefineBibliographyExtras{spanish}{%
+  \protected\def\bibrangedash{\textendash\penalty\hyphenpenalty}%
+  \def\finalandcomma{\addcomma}}
+% Las URL no se estiran entre caracteres y se pueden cortar también tras letras y cifras.
+% \biburlbigskip es un registro muskip: va en mu, no en pt.
+\biburlbigskip=0mu\relax
+\setcounter{biburlnumpenalty}{9000}
+\setcounter{biburlucpenalty}{8000}
+\setcounter{biburllcpenalty}{7000}
+
+% ---------- enlaces -------------------------------------------------------------------
+\usepackage[hidelinks]{hyperref}
+
+% ---------- datos del trabajo ---------------------------------------------------------
+\newcommand{\titulotesis}{Fusión de imágenes infrarrojas y visibles mediante morfología matemática}
+\newcommand{\subtitulotesis}{Un operador Top-Hat de una sola escala con un banco de cinco elementos
+estructurantes: calidad de la fusión y aplicación a la detección de objetos}
+\newcommand{\facultad}{Facultad de Informática}
+\newcommand{\programa}{Maestría en Ciencia de Datos}
+\newcommand{\autorA}{Juan Pablo Bazán}
+\newcommand{\autorB}{Yan Bajac}
+% \autores separa los nombres con \quad: sirve solo para la carátula, donde van solos en su renglón.
+\newcommand{\autores}{Lic. \autorA{} \quad Ing. \autorB}
+\newcommand{\tutor}{D.Sc. Julio César Mello}
+\newcommand{\fechaentrega}{Diciembre 2026}
+% Metadatos del PDF. Van después de los datos del trabajo, porque se expanden en el momento.
+\hypersetup{pdftitle={\titulotesis}, pdfauthor={\autorA{} y \autorB},
+  pdfsubject={Tesis de \programa, Universidad Comunera}, pdflang={es}}
+
+% =====================================================================================
+\begin{document}
+
+% ---------- portada --------------------------------------------------------------------
+% La portada no lleva ancla de página para no duplicar la del capítulo 1.
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+\centering
+\includegraphics[width=50mm]{figuras/logo_ucom}\par
+\vspace{1cm}
+{\large \facultad\par}
+\vspace{2cm}
+{\huge\bfseries \titulotesis\par}
+\vspace{2.8cm}
+{\large Tesis para optar al título de \programa\par}
+\vspace{0.5cm}
+{\large Autores: \autorA{} y \autorB\par
+Tutor: \tutor\par}
+\vfill
+{\large Asunción, Paraguay\par
+\fechaentrega\par}
+\end{titlepage}
+\hypersetup{pageanchor=true}
+
+% Los números romanos empiezan después de la portada: la carátula es la página i.
+\frontmatter
+
+% ---------- carátula -------------------------------------------------------------------
+\thispagestyle{empty}
+\begin{center}
+{\huge\bfseries \titulotesis\par}
+\vspace{0.6cm}
+{\Large \subtitulotesis\par}
+\vspace{3cm}
+\begin{minipage}{0.75\textwidth}\centering\large
+Tesis presentada a la \facultad{} de la Universidad Comunera como requisito para optar al título
+de \programa.
+\end{minipage}\par
+\vspace{3cm}
+{\large \autores\par}
+\vspace{1cm}
+{\large Tutor: \tutor\par}
+\vfill
+{\large Universidad Comunera\par
+Asunción, Paraguay\par}
+\end{center}
+\clearpage
+
+% ---------- hoja de aprobación ---------------------------------------------------------
+\thispagestyle{empty}
+\begin{center}
+{\huge\bfseries \titulotesis\par}
+\vspace{2cm}
+\begin{minipage}{0.75\textwidth}\centering\large
+Tesis presentada por Lic.~\mbox{\autorA} e \mbox{Ing.~\autorB} a la \facultad{} de la Universidad Comunera
+como requisito para optar al título de \programa, y aprobada por el siguiente Tribunal Examinador.
+\end{minipage}\par
+\vspace{2.5cm}
+\newcommand{\firma}{\rule{0.55\textwidth}{0.4pt}\par\vspace{0.2cm}{\large Nombre y firma\par}\vspace{1.6cm}}
+\firma\firma\firma
+{\large Fecha de aprobación: \rule{0.3\textwidth}{0.4pt}\par}
+\end{center}
+\clearpage
+
+\include{caps/00_resumen}
+\include{caps/00_abstract}
+\include{caps/00_agradecimientos}
+
+\tableofcontents
+\include{caps/00_siglas}
+% Las dos listas entran al Índice general.
+\clearpage\phantomsection\addcontentsline{toc}{chapter}{\listfigurename}
+\listoffigures
+\clearpage\phantomsection\addcontentsline{toc}{chapter}{\listtablename}
+\listoftables
+
+% ---------- cuerpo --------------------------------------------------------------------
+\mainmatter
+
+\include{caps/cap1_introduccion}
+\include{caps/cap2_marco}
+\include{caps/cap3_metodologia}
+\include{caps/cap4_resultados}
+\include{caps/cap5_discusion}
+\include{caps/cap6_conclusiones}
+\include{caps/cap7_recomendaciones}
+
+% ---------- bibliografía y anexos -----------------------------------------------------
+\printbibliography[heading=bibintoc,title={Referencias}]
+
+% Los anexos van sin \appendix, para no imprimir «Apéndice A» ni numerar sus apartados.
+\include{caps/anexos}
+
+\end{document}

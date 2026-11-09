@@ -1,0 +1,11 @@
+entrada,semilla,mAP50_ep30,mAP50_ep40,pendiente_ultimas_5
+VIS,3,0.7333,0.7493,0.00076
+IR,3,0.6949,0.7305,0.0034
+Propuesta_Novedosa,0,0.7347,0.7636,0.00335
+Promedio,0,0.7159,0.7523,0.00249
+PiramideLaplace,0,0.7406,0.7616,0.00397
+RatioPiramide,0,0.7364,0.7638,0.00075
+DWT,0,0.7151,0.7348,-0.00069
+DTCWT,0,0.7335,0.7524,0.00322
+Curvelet,0,0.7372,0.7512,0.00204
+TopHat_Clasico,0,0.7191,0.7385,0.00232

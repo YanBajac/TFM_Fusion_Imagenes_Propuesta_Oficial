@@ -1,0 +1,181 @@
+\chapter{Discusión}
+\label{cap:discusion}
+
+El Capítulo~\ref{cap:introduccion} planteó dos preguntas, y los resultados las responden con distinto grado
+de firmeza. La primera se refería a la calidad de las imágenes del algoritmo propuesto. Esas imágenes
+fueron mejores que las del Top-Hat clásico en cuatro de las seis métricas. Frente a los cinco métodos
+multiescala, la calidad del algoritmo fue comparable, aunque con un perfil propio: más actividad y menos
+fidelidad. Sus imágenes tienen más información, contraste y nitidez, pero se parecen menos a las
+fuentes. La propuesta encabezó la clasificación por rango promedio, pero por un margen estrecho y sin
+que ese margen se sometiera a prueba. La segunda pregunta era si un detector entrenado con esas imágenes
+encuentra más objetos vistos por una sola cámara que uno entrenado con las del Top-Hat clásico. El
+detector encontró algo más, pero la ventaja es mínima. La tasa equilibrada, que promedia el acierto en
+los objetos de solo la visible y de solo la infrarroja, fue 3.0 puntos mayor que la del Top-Hat
+clásico, con un intervalo de 0.0 a 6.0. Según el par de semillas, esa diferencia cambia de signo. Así,
+en calidad la hipótesis se sostiene en lo principal; en la detección, la ventaja queda como un hallazgo
+por confirmar. El capítulo discute esos
+resultados en cinco ejes: el perfil de calidad y su costo, el ajuste de los parámetros, la aplicación a
+la detección, la relación entre calidad y detección y, al final, las limitaciones del estudio.
+
+\section{La calidad de la fusión y su costo}
+\label{sec:disc-calidad}
+
+El primer puesto por rango promedio, con 3.642 frente a 3.783 de la DTCWT (Tabla~\ref{tab:ranking_seis}),
+no autoriza a decir que la propuesta supere a ese método. Esa diferencia no tiene una prueba propia, y los
+dos métodos llegan a la cabeza por caminos opuestos. La propuesta fue primera en actividad y sexta en
+fidelidad; la DTCWT, sexta en actividad y segunda en fidelidad. Como cada grupo reúne tres métricas, el
+rango global lo decide la suma de los dos rangos parciales: 7.28 para la propuesta y 7.57 para la DTCWT.
+Un perfil marcado no basta, por sí solo, para llegar a la cabeza. La DWT (db4), todavía más
+desequilibrada que la DTCWT entre los dos grupos, quedó quinta.
+
+El perfil de la propuesta nace de la regla de fusión (Ecuación~\ref{eq:regla-tophat}), que toma su forma del realce de
+contraste de la Ecuación~\eqref{eq:realce} \parencite{bai2012}. Sumar el detalle claro y restar el oscuro
+agranda la diferencia de brillo entre cada detalle y su entorno, pero aleja la imagen de sus fuentes. El
+barrido del peso lo confirma (Sección~\ref{sec:res-ajuste}). Con la propuesta y con el Top-Hat clásico,
+subir $m$ elevó la desviación estándar y el gradiente medio y bajó las tres métricas de fidelidad. El
+compromiso es, entonces, propio de la regla y no depende del banco de elementos. Algo parecido observaron
+\textcite{bajacfigueredo2024} con otra variable. Al agrandar el elemento estructurante de 3 a 9,
+subieron la desviación estándar, la entropía y la frecuencia espacial, y la información mutua bajó o se
+mantuvo.
+
+El costo se ve también en las imágenes. La resta del detalle oscuro es el único término de la regla que
+lleva un píxel por debajo del promedio de las fuentes, y puede bajarlo hasta el negro, donde el valor se
+recorta. De ahí el borde oscuro que rodea a la persona en la Figura~\ref{fig:montaje_kaptein}.
+
+Frente al Top-Hat clásico, la propuesta ganó en entropía, desviación estándar, información mutua y
+similitud estructural, perdió en gradiente medio y empató en PSNR (Tabla~\ref{tab:wilcoxon_resumen}). Ese
+reparto no puede atribuirse al banco, porque entre los dos métodos cambian a la vez los elementos, el radio
+y el peso. Según el barrido, el peso mueve por sí solo tres de esas métricas en la dirección
+observada. Con los dos operadores, un peso menor reduce el gradiente medio y eleva la
+información mutua y la similitud estructural. La propuesta usa un peso de 0.30, y el Top-Hat clásico,
+de 1, así que parte de esas diferencias puede deberse solo a ese peso menor.
+
+El primer puesto depende también del conjunto de métricas. Con las nueve métricas iniciales, cinco de
+ellas de actividad, la propuesta quedó primera. Con un conjunto de diecisiete, en el que doce comparan
+la fusión con sus fuentes, bajó al tercer puesto, detrás de la pirámide de Laplace y de la DTCWT. Por
+otra parte, los cinco métodos multiescala se usaron con sus parámetros por defecto, mientras que el radio
+de la propuesta se eligió sobre los mismos veinte pares de la evaluación (Sección~\ref{sec:ajuste}).
+Nada asegura que el orden se mantenga si todos se ajustan con un mismo criterio.
+
+El control con imágenes degradadas marca el límite de las métricas de actividad: una ventaja en ellas
+no prueba, por sí sola, que el detalle agregado sea útil. Cuanto más ruido se agregó al promedio simple,
+más puestos ganó la imagen resultante, hasta empatar en el octavo con el Top-Hat clásico
+(Sección~\ref{sec:res-robustez}). Con la mayor intensidad fue, además, la mejor de las catorce entradas
+en las tres métricas de actividad. En ese mismo control, la propuesta quedó tercera, detrás de la
+pirámide de Laplace y del promedio simple sin degradar. Ese puesto lo producen las dos versiones
+desenfocadas, que en fidelidad quedaron delante de la propuesta y, en las seis métricas, detrás del promedio
+simple. Al ordenar solo los siete métodos y el promedio, la propuesta quedó primera, y el promedio, sexto. La cabeza de la clasificación resistió también el análisis por
+escenas. Con un bloque por escena,
+la propuesta siguió primera y la DTCWT segunda, y solo uno de los sesenta y seis contrastes cambió su
+decisión.
+
+\section{El ajuste de los parámetros}
+\label{sec:disc-ajuste}
+
+Las veinticinco corridas del enjambre terminaron con el peso en 0.30, el límite inferior del rango de
+búsqueda. La grilla de comprobación indica que ese valor es un borde y no un máximo interior. En cada
+radio, el mejor peso quedó muy por debajo de ese límite. A partir de 0.30, la aptitud, la función que
+el enjambre busca maximizar, bajó con cada aumento del peso (Sección~\ref{sec:res-ajuste}). Una
+explicación posible está en la forma de la aptitud (Ecuación~\ref{eq:aptitud}). Dos de sus tres términos, la similitud estructural y la PSNR, premian el
+parecido con las fuentes, y cada aumento del peso aleja de ellas la fusión. La entropía, el tercer
+término, no compensa esa pérdida.
+
+El resultado difiere del de \textcite{ortegarodriguez2025}, que buscaron el peso en el mismo rango.
+Hicieron 125 corridas, con veinticinco configuraciones en cada una de cinco escenas, y el peso terminó
+en 0.30 solo en 17, todas de una misma escena. Aquel trabajo usó la aptitud original, que aquí se
+adaptó, ajustó los parámetros escena por escena y empleó un disco único. Cualquiera de esas diferencias
+podría explicar el contraste, que no se investigó. La última tiene una lectura directa. El detalle del
+banco puede llegar al doble del de un disco del mismo radio (Ecuación~\ref{eq:banco}), así que un
+mismo peso aleja más la fusión de sus fuentes.
+
+En el radio, el enjambre no llegó a un valor único, porque con $m = 0.30$ la aptitud tiene dos máximos
+locales: uno en $r = 1$ y otro, menor, en $r = 25$. Casi todas las corridas, incluidas las quinientas de
+control, terminaron en uno de esos dos radios (Sección~\ref{sec:res-ajuste}), y la mayor aptitud
+corresponde a $r = 1$. Aun así, se adoptó $r = 25$ porque prioriza el realce: con $r = 1$, el disco y
+los segmentos miden apenas tres píxeles de ancho y solo extraen detalles muy finos. Frente a $r = 1$, el
+radio adoptado fue mejor en todas las métricas de actividad y peor en todas las de fidelidad. Esa
+elección explica en parte la ventaja de la propuesta sobre los métodos multiescala en entropía,
+desviación estándar y gradiente medio.
+
+\section{La aplicación a la detección}
+\label{sec:disc-deteccion}
+
+La ventaja de la propuesta frente al Top-Hat clásico, de 3.0 puntos de tasa equilibrada, admite dos
+lecturas (Tabla~\ref{tab:deteccion_tophat}). La primera se apoya en el intervalo de confianza del
+95~\%, de 0.0 a 6.0, que excluye el cero por muy poco: su límite inferior es de 0.02 puntos. El cero
+queda fuera también con los otros dos umbrales, pero no con el \textit{bootstrap} salvaje por grupos,
+más confiable cuando los grupos son pocos y de tamaño desigual. Con el umbral principal, ese cálculo
+dio un intervalo de $-3.5$ a 5.5 y un valor de $p$ de 0.17. La segunda lectura surge de los pares de
+semillas. Sus nueve diferencias van de $-3.1$ a 7.8 puntos, y las tres
+negativas enfrentan a la propuesta con una misma semilla del Top-Hat clásico.
+
+Las dos lecturas no se contradicen. El intervalo mide cómo varía la diferencia entre los grupos de
+cuadros. Como la tasa de cada objeto llega ya promediada sobre las tres semillas, el intervalo no recoge
+por completo la variación del entrenamiento. Los pares de semillas, en cambio, la dejan a la vista: basta que un
+detector del Top-Hat clásico acierte más que los otros dos para invertir el signo en tres de los nueve
+pares. Por eso la ventaja es mínima, y queda como un hallazgo por confirmar con más grupos, más semillas
+y otros detectores (Capítulo~\ref{cap:recomendaciones}).
+
+El hallazgo, además, no aísla el efecto del banco. Entre la propuesta y el Top-Hat clásico cambian a la vez
+los elementos, el radio y el peso (Sección~\ref{sec:operador}), y la comparación no dice cuál de esos
+cambios produce la diferencia. Tampoco muestra que el detalle agregado ayude a detectar. El promedio
+simple es la regla de la Ecuación~\eqref{eq:regla-tophat} con peso cero, de modo que la comparación con
+él mide el aporte del detalle. El Top-Hat clásico tuvo una tasa menor que la de ese promedio
+(58.4~\% contra 60.2~\%, sin prueba entre ambos). Como referencia, la propuesta superó a ese promedio
+por apenas 1.2 puntos. El intervalo de esa diferencia, calculado del mismo modo que el de la
+Tabla~\ref{tab:deteccion_tophat}, va de $-6.6$ a 9.0 e incluye el cero.
+
+Aun si se confirmara, la ventaja frente al Top-Hat clásico no pondría a la propuesta entre las mejores
+entradas para detectar. Entre las ocho entradas fusionadas quedó cuarta, con 61.4~\%, y la pirámide de Laplace
+tuvo la mayor tasa, 66.5~\% (Tabla~\ref{tab:v2_tasas}). Esa pirámide superó a la propuesta con todas las
+combinaciones de semillas. En la mAP50, una medida secundaria calculada sobre todas las clases, cinco de
+las ocho entradas fusionadas superaron a la infrarroja sola. La propuesta no estuvo entre ellas, aunque
+su diferencia con la infrarroja fue menor que la variación entre sus propias semillas
+(Sección~\ref{sec:res-secundarias}). En esa medida y en los cuadros con un objeto de cada cámara,
+además, el Top-Hat clásico quedó apenas por encima de la propuesta, sin prueba entre ambos.
+
+Estas comparaciones valen para un entrenamiento de cuarenta épocas. En el seguimiento hecho con la
+primera semilla de cada entrada, nueve de los diez detectores todavía mejoraban al final del
+entrenamiento su mAP50 sobre los cuadros de seguimiento, que no son los de la prueba. Entre las épocas 30 y 40, además, la propuesta pasó de estar por debajo a estar por encima
+de la pirámide de Laplace y de la DWT (db4) en esa medida (Sección~\ref{sec:res-secundarias}). Con un
+entrenamiento más largo, el orden entre entradas de tasa parecida podría cambiar.
+
+\section{Relación entre calidad y detección}
+\label{sec:disc-relacion}
+
+Los dos planos de la evaluación no ordenaron a los métodos de la misma manera. La correlación de Spearman
+entre los dos órdenes fue de $-0.32$ y no resultó significativa (Sección~\ref{sec:res-secundarias}).
+Con siete métodos la prueba es débil, y solo una relación muy fuerte habría alcanzado la significación.
+Los dos órdenes provienen, además, de conjuntos distintos: la calidad se midió en el TNO y la detección
+en M3FD. Los dos métodos morfológicos ilustran la distancia entre la actividad y la detección. Fueron
+los mejores en actividad, pero en detección, entre las ocho entradas fusionadas, la propuesta quedó
+cuarta y el Top-Hat clásico, séptimo. Esto no prueba que la calidad sea irrelevante para detectar, pero
+el orden por métricas de imagen no anticipó el orden en la tarea. Ese desacuerdo respalda evaluar la
+fusión también por su efecto en una tarea, como proponen \textcite{liu2022} y \textcite{tang2022}.
+
+\section{Limitaciones del estudio}
+\label{sec:disc-limitaciones}
+
+Los resultados permiten precisar las limitaciones anunciadas en la Sección~\ref{sec:limitaciones}. En
+calidad, el primer puesto no equivale a superioridad. Descansa en diferencias de rango promedio que no se
+sometieron a prueba y cambia con el conjunto de métricas. Ese puesto se ganó en actividad a costa de la
+fidelidad. Además, se obtuvo en condiciones que pueden favorecer a la propuesta: su radio se eligió
+sobre los mismos veinte pares de la evaluación, y los métodos con los que se la comparó no se ajustaron.
+Tres de esos veinte pares sirvieron también para calcular la aptitud del enjambre. Todo lo
+dicho vale para una sola configuración, $r = 25$ y $m = 0.30$, y el barrido muestra que el perfil se
+desplaza con el peso. El radio se mide en píxeles, sin adaptarse al tamaño de la imagen. En el TNO, el disco de 51 píxeles de ancho
+cubre entre el 8.9~\% y el 20.6~\% del lado menor de la imagen. Un mismo radio abarca, así, detalles
+de distinto tamaño relativo.
+
+En la detección, los objetos de una sola cámara quedaron definidos por los detectores de la visible y de
+la infrarroja, sin revisión humana. Los objetos de ese tipo se reparten en solo diez grupos de cuadros, y
+con tan pocos grupos la comparación tiene poca potencia, es decir, poca capacidad de revelar una diferencia
+real. Cuando los grupos son pocos y de tamaño muy desigual, además, el error estándar robusto por grupos tiende a
+quedarse corto, y el intervalo puede resultar más estrecho de lo debido. Sin el mayor de esos grupos,
+la diferencia con el Top-Hat clásico baja de 3.0 a 1.5 puntos. Las luces, por su parte, están
+concentradas: casi dos de cada tres provienen de un solo grupo (Sección~\ref{sec:caracterizacion}). Se usó un solo tipo de detector, de tamaño pequeño, con tres
+semillas por entrada y cuarenta épocas de entrenamiento.
+
+El estudio no incluyó métodos de fusión basados en redes neuronales ni los morfológicos multiescala de
+\textcite{bai2013} y \textcite{roman2020}. El foco estuvo en un operador de una sola escala, y la
+comparación con esas familias queda para trabajos futuros (Capítulo~\ref{cap:recomendaciones}).

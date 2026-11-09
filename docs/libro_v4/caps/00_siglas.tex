@@ -1,0 +1,58 @@
+\chapter*{Lista de Abreviaturas y Símbolos}
+\phantomsection
+\addcontentsline{toc}{chapter}{Lista de Abreviaturas y Símbolos}
+
+% Una sola lista, sin subtítulos, primero las siglas y después los símbolos. La sigla va alineada a
+% la derecha en una columna de unos 27 mm, y el original en inglés, en cursiva entre paréntesis. Es una longtable porque la lista no entra en una sola página y una tabular no se corta.
+{\setlength{\LTleft}{0pt}\setlength{\LTpre}{0pt}
+\begin{longtable}{@{}>{\raggedleft\arraybackslash}p{0.17\textwidth}p{0.77\textwidth}@{}}
+AP     & Precisión media (\textit{Average Precision}) \\
+AP50   & Precisión media con un umbral de superposición (IoU) de 0.5 \\
+BTH    & Transformada Top-Hat negra (\textit{Black Top-Hat}) \\
+db4    & Base \textit{wavelet} de Daubechies de orden cuatro \\
+DTCWT  & Transformada \textit{wavelet} compleja de doble árbol (\textit{Dual-Tree Complex Wavelet Transform}) \\
+DWT    & Transformada \textit{wavelet} discreta (\textit{Discrete Wavelet Transform}) \\
+EN     & Entropía (\textit{Entropy}) \\
+FE     & Eficiencia de fusión (\textit{Fusion Efficiency}) \\
+FMI    & Información mutua de características (\textit{Feature Mutual Information}) \\
+IC     & Intervalo de confianza \\
+IoU    & Intersección sobre la unión (\textit{Intersection over Union}) \\
+IR     & Imagen infrarroja térmica (\textit{Infrared}) \\
+JPEG   & Formato de compresión de imágenes (\textit{Joint Photographic Experts Group}) \\
+M3FD   & Conjunto de pares de imágenes visibles e infrarrojas de varios escenarios, con objetos marcados (\textit{Multi-scenario Multi-modality Dataset}) \\
+mAP50  & Media de la AP50 sobre las clases de objetos (\textit{mean Average Precision}) \\
+MG     & Gradiente medio (\textit{Mean Gradient}) \\
+MI     & Información mutua (\textit{Mutual Information}) \\
+MSE    & Error cuadrático medio (\textit{Mean Squared Error}) \\
+Nabf   & Medida del ruido y los artefactos que agrega la fusión \\
+PASCAL VOC & Desafío de reconocimiento visual de objetos (\textit{Pattern Analysis, Statistical Modelling and Computational Learning Visual Object Classes}) \\
+PSNR   & Relación señal-ruido de pico (\textit{Peak Signal-to-Noise Ratio}) \\
+PSO    & Optimización por enjambre de partículas (\textit{Particle Swarm Optimization}) \\
+Q0, QW, QE & Índices de calidad de Piella: ponderado por la varianza local, ponderado por ventana y de bordes \\
+Qabf   & Índice que mide cuánta información de bordes pasa de las fuentes a la fusión \\
+SCD    & Suma de las correlaciones de las diferencias (\textit{Sum of the Correlations of Differences}) \\
+SD     & Desviación estándar (\textit{Standard Deviation}) \\
+SF     & Frecuencia espacial (\textit{Spatial Frequency}) \\
+SSIM   & Índice de similitud estructural (\textit{Structural Similarity}) \\
+TNO    & Organización neerlandesa de investigación científica aplicada (\textit{Nederlandse Organisatie voor Toegepast Natuurwetenschappelijk Onderzoek}) \\
+VIF    & Fidelidad de la información visual (\textit{Visual Information Fidelity}) \\
+VIS    & Imagen visible (\textit{Visible}) \\
+WTH    & Transformada Top-Hat blanca (\textit{White Top-Hat}) \\
+YOLO   & Detector de objetos de una sola pasada (\textit{You Only Look Once}) \\
+YOLOv8 & Octava versión de YOLO \\
+YOLOv8n & Variante más pequeña (\textit{nano}) de YOLOv8 \\
+$H$, $W$ & Número de filas y de columnas de una imagen \\
+$f$    & Cualquier imagen normalizada \\
+$I_{\mathrm{VIS}}$, $I_{\mathrm{IR}}$ & Imágenes fuente visible e infrarroja, normalizadas entre cero y uno \\
+$F$    & Imagen fusionada \\
+$b$    & Elemento estructurante \\
+$\varepsilon$, $\delta$ & Erosión y dilatación \\
+$\gamma$, $\varphi$ & Apertura y cierre \\
+$r$    & Radio de los elementos estructurantes, en píxeles \\
+$D_r$  & Disco de radio $r$ \\
+$S_{r,\theta}$ & Segmento de radio $r$ y orientación $\theta$ \\
+$m$    & Peso del detalle agregado en la regla de fusión \\
+$\mathit{VP}$, $\mathit{FP}$, $\mathit{FN}$ & Verdaderos positivos, falsos positivos y falsos negativos de un detector \\
+$P$, $R$ & Precisión y exhaustividad de un detector \\
+\end{longtable}
+\addtocounter{table}{-1}}

@@ -1,0 +1,90 @@
+\chapter{Conclusiones}
+\label{cap:conclusiones}
+
+En los veinte pares nocturnos del TNO, el algoritmo propuesto produce imágenes de calidad comparable a
+la de los cinco métodos multiescala. Frente al Top-Hat clásico, la propuesta es mejor en cuatro de las
+seis métricas. Lo que la distingue es su perfil. Por su puesto medio en cada grupo de métricas, queda primera en las de actividad, que miden
+información, contraste y nitidez, y sexta de siete en las de fidelidad, que miden el parecido con las
+fuentes. Con las seis métricas encabeza la clasificación por rango promedio, es decir, por el puesto
+medio de cada método en todos los pares y métricas. Lo hace, sin embargo, por un margen estrecho y sin
+una prueba que lo respalde. Ese primer lugar depende, además, del conjunto de métricas, y se obtuvo con
+los métodos comparados en sus parámetros por defecto. Por eso no se concluye que la propuesta supere a los métodos multiescala,
+sino que se ubica entre ellos con un perfil propio, que privilegia el realce sobre la fidelidad. En la
+aplicación a la detección, el detector entrenado con las imágenes de la propuesta aventaja por un margen
+mínimo al entrenado con las del Top-Hat clásico. Esa diferencia depende de la semilla aleatoria del
+entrenamiento y queda como un hallazgo por confirmar.
+
+Las conclusiones particulares siguen el orden de los objetivos específicos
+(Sección~\ref{sec:objetivos}):
+
+\begin{enumerate}
+\item \textbf{Implementación y ajuste del algoritmo:} El algoritmo quedó implementado como se describe
+en la Sección~\ref{sec:propuesta}, con el banco de cinco elementos estructurantes y la regla de fusión
+con peso. Su radio y su peso se ajustaron mediante optimización por enjambre de partículas, con un
+rango de búsqueda de 1 a 25 para el radio y de 0.30 a 2.00 para el peso. Las veinticinco corridas terminaron
+con el peso en el límite inferior, $m = 0.30$. En el radio, en cambio, se repartieron sobre todo entre
+los dos extremos del rango: dieciséis terminaron en $r = 1$, ocho en $r = 25$ y una en $r = 14$. Ese
+valor del peso es un borde del rango y no un máximo interior: la grilla de comprobación mostró que
+la aptitud, la función que el enjambre busca maximizar, era mayor con pesos menores que 0.30. El mejor
+peso de cada radio estuvo entre 0.05 y 0.07. Se adoptó $r = 25$, uno de los dos resultados del
+enjambre, porque prioriza el realce. Frente a $r = 1$, sobre los veinte pares y con las nueve métricas
+iniciales, ese radio fue mejor en las cinco de actividad y peor en las cuatro de fidelidad. Esa elección
+se hizo sobre las mismas imágenes con que después se evaluó la calidad, y explica en parte la ventaja
+de la propuesta en actividad.
+
+\item \textbf{Calidad de imagen:} Frente al Top-Hat clásico, la propuesta ganó en entropía, desviación
+estándar, información mutua y similitud estructural. Perdió en gradiente medio y empató en la relación
+señal-ruido de pico. Frente a los cinco métodos multiescala, su calidad fue comparable. Obtuvo el mejor
+rango promedio, 3.642 frente a 3.783 de la DTCWT, pero la diferencia es de 0.14 puestos y no tiene
+prueba propia. Con diecisiete métricas, en cambio, la propuesta quedó tercera
+(Sección~\ref{sec:res-robustez}). Los contrastes de Wilcoxon frente a los métodos multiescala muestran
+el mismo perfil: la propuesta ganó catorce de los quince de actividad y perdió trece de los quince de
+fidelidad. Ese
+intercambio entre realce y fidelidad proviene de la regla de fusión. En el barrido del peso, al subir
+$m$ crecieron la desviación estándar y el gradiente medio y bajaron las tres métricas de fidelidad. Con
+el Top-Hat clásico ocurrió lo mismo. La cabeza de la clasificación se mantuvo al tomar un bloque por escena. Con esos trece
+bloques, la propuesta siguió primera y sesenta y cinco de los sesenta y seis contrastes conservaron su
+decisión. El control con
+versiones degradadas del promedio simple, en cambio, señala un límite de las métricas de actividad. Con
+el ruido más intenso, ese promedio obtuvo el mejor valor de las catorce entradas en esas tres métricas.
+Por eso, una ventaja en actividad no prueba, por sí sola, que el detalle agregado sea útil.
+
+\item \textbf{Aplicación a la detección:} En el conjunto M3FD, el detector entrenado con las imágenes
+de la propuesta alcanzó una tasa de acierto equilibrada del 61.4~\%. Esa tasa es el promedio entre el
+acierto sobre los objetos que solo ve la cámara visible y el acierto sobre los que solo ve la infrarroja. La propuesta quedó
+cuarta entre las ocho entradas fusionadas; la mayor tasa correspondió a la pirámide de Laplace, con
+66.5~\% (Tabla~\ref{tab:v2_tasas}). Frente al Top-Hat clásico, la tasa fue 3.0 puntos mayor, con un
+intervalo de confianza del 95~\% de 0.0 a 6.0 (Tabla~\ref{tab:deteccion_tophat}). Es una ventaja
+mínima: el límite inferior, de 0.02 puntos, apenas supera el cero. Con los
+otros dos umbrales de confianza también lo supera, pero no con el \textit{bootstrap} salvaje por grupos, otra forma de
+calcular el intervalo, más confiable cuando los grupos son pocos y desiguales. Con el umbral principal, ese
+cálculo dio un intervalo de $-3.5$ a 5.5 y un valor de $p$ de 0.17. La diferencia tampoco es robusta a la
+semilla: según el par de semillas, fue de $-3.1$ a 7.8 puntos. Se trata, por lo tanto, de un hallazgo por confirmar con más grupos, más semillas y otros
+detectores (Capítulo~\ref{cap:recomendaciones}). Aunque se confirmara, la ventaja no podría atribuirse
+al banco, porque entre los dos métodos cambian a la vez los elementos estructurantes, el radio y el
+peso. Tampoco se mostró que el detalle agregado ayude a detectar: frente al promedio simple, la
+diferencia fue de 1.2 puntos, con un intervalo de $-6.6$ a 9.0.
+
+\item \textbf{Examen de la hipótesis:} En su parte de calidad, la hipótesis planteada en el
+Capítulo~\ref{cap:introduccion} se sostiene en lo principal (Sección~\ref{sec:res-hipotesis}). La propuesta superó
+al Top-Hat clásico en cuatro de las seis métricas, y su calidad resultó comparable a la de los cinco
+métodos multiescala. En la aplicación a la detección, la ventaja frente al Top-Hat clásico es mínima.
+Con el umbral principal, el límite inferior del intervalo supera el cero por muy poco, y la diferencia
+cambia de signo según el par de semillas. Esa parte de la hipótesis queda, por eso, como un hallazgo
+que falta confirmar.
+\end{enumerate}
+
+El aporte del trabajo es un algoritmo de fusión de imágenes infrarrojas y visibles que puede explicarse
+paso a paso. El algoritmo lleva a esta fusión el banco de cinco elementos estructurantes que
+\textcite{floressf} emplearon para realzar mamografías, y combina sus respuestas según
+\textcite{bala2024}. La regla con peso y el ajuste del radio y del peso por enjambre de partículas
+siguen a \textcite{ortegarodriguez2025}. Cada parámetro tiene una lectura directa: el radio determina el
+tamaño del detalle que se extrae, y el peso, cuánto de ese detalle se suma. La calidad de sus imágenes
+quedó caracterizada con seis métricas y pruebas no paramétricas. Frente a los métodos multiescala, esas
+imágenes ganan contraste y nitidez y pierden fidelidad a las fuentes, en una medida que regula el peso.
+La aplicación a la detección se evaluó con detectores entrenados sobre cada tipo de imagen, y la ventaja
+frente al Top-Hat clásico quedó por confirmar. No se halló una relación significativa entre el puesto
+de cada método en calidad y su tasa equilibrada (Sección~\ref{sec:disc-relacion}). Los dos métodos
+morfológicos, los mejores en actividad, quedaron cuarto y séptimo de ocho en detección. Esa
+falta de correspondencia respalda medir la fusión también por su efecto en una tarea que use sus
+imágenes \parencite{liu2022, tang2022}.

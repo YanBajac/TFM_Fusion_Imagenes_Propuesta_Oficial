@@ -1,0 +1,27 @@
+# Minimos para la EVALUACION DE CALIDAD (fusiones, metricas, estadistica, tablas y figuras del libro),
+# lo unico que hace falta para reproducir el resultado principal de la tesis. Todo en CPU.
+#
+#     pip install -r requirements.txt
+#
+# La deteccion (M3FD) pide torch, torchvision y ultralytics, que pesan un orden de magnitud
+# mas y necesitan GPU. Estan aparte, en requirements-deteccion.txt, para que quien solo quiera la
+# evaluacion de calidad no se baje 2,5 GB de ruedas con CUDA que no va a usar. src/datasets.py ya
+# tiene ese corte hecho en el codigo: importa torch dentro de un try y sigue sin el (TORCH_AVAILABLE).
+#
+# Para REPETIR con las versiones exactas del entorno publicado: requirements-lock.txt.
+
+# --- Nucleo del calculo -------------------------------------------------------------------------
+numpy>=1.26
+opencv-python>=4.9
+scikit-image>=0.22
+scipy>=1.12
+pandas>=2.2
+PyWavelets>=1.6
+dtcwt>=0.12          # Dual-Tree Complex Wavelet (comparativo DTCWT)
+Pillow>=10.0         # PIL: carga de pares y figuras
+
+# --- Figuras ------------------------------------------------------------------------------------
+matplotlib>=3.8
+
+# --- Lectura de la obra de referencia -----------------------------------------------------------
+PyMuPDF>=1.24        # fitz: lee los anexos del PDF de Ortega y Espinoza (referencia_pso_ortega_espinoza.py)

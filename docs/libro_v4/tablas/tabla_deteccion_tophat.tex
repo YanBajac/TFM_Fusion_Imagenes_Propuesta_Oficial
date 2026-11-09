@@ -1,0 +1,16 @@
+\begin{table}[htbp]
+\centering
+\caption{Diferencia de tasa equilibrada entre la propuesta y el Top-Hat clásico}
+\label{tab:deteccion_tophat}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Cálculo} & \textbf{Diferencia} & \textbf{Intervalo del 95~\%} \\
+\midrule
+Umbral principal & 3.0 & [0.0, 6.0] \\
+Umbral fijo de 0.25 & 2.7 & [0.0, 5.3] \\
+Umbral de mejor equilibrio por clase & 2.5 & [1.1, 3.9] \\
+\addlinespace \textit{Bootstrap} salvaje por grupos & 3.0 & [$-$3.5, 5.5] \\
+\bottomrule
+\end{tabular}
+\nota{Elaboración propia. La diferencia, en puntos porcentuales, es la tasa de acierto equilibrada de la propuesta menos la del Top-Hat clásico. El cálculo de los intervalos de confianza del 95~\% se describe en la Sección~\ref{sec:det-comparacion}. La unidad del análisis es el grupo de bloques contiguos de cuadros: de los once grupos de la prueba, entran los diez que tienen objetos de una sola cámara. Las tres primeras filas usan un error estándar robusto por grupos y la distribución $t$ con nueve grados de libertad \parencite{cameron2015}. La última fila usa el umbral principal y un \textit{bootstrap} salvaje por grupos, estudentizado y con la hipótesis nula impuesta \parencite{cameron2008, webb2023}. Su intervalo reúne las diferencias que esa prueba no rechaza al 5~\%, y el valor $p$ para una diferencia nula es 0.17. Los límites inferiores que se muestran como 0.0 son positivos: 0.02 puntos con el umbral principal y 0.05 con el umbral fijo. Según el par de semillas, la diferencia va de $-$3.1 a 7.8 puntos con el umbral principal. Con el umbral fijo va de $-$2.9 a 7.1, y con el de mejor equilibrio por clase, de $-$5.2 a 9.1. Con cada umbral, tres de las nueve diferencias son negativas: frente a una misma semilla del Top-Hat clásico, las tres semillas de la propuesta quedan por debajo. Por eso la diferencia no es robusta a la semilla.}
+\end{table}

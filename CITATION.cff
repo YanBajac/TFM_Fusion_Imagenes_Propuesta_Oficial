@@ -1,0 +1,112 @@
+cff-version: 1.2.0
+message: >-
+  Para citar este trabajo, usar los datos de preferred-citation, que corresponden a la tesis. Los
+  conjuntos de datos se citan aparte (ver references). La licencia MIT cubre el código y los
+  resultados; el libro y su PDF no (ver LICENSE).
+title: Fusión de imágenes infrarrojas y visibles mediante morfología matemática
+type: software
+authors:
+  - family-names: Bazán
+    given-names: Juan Pablo
+    affiliation: Universidad Comunera
+  - family-names: Bajac
+    given-names: Yan
+    affiliation: Universidad Comunera
+abstract: >-
+  Libro en LaTeX y en PDF, código y resultados de una tesis de Maestría en Ciencia de Datos. Se
+  propone un algoritmo de fusión de imágenes infrarrojas y visibles basado en morfología matemática:
+  un Top-Hat de una sola escala con un disco y cuatro segmentos orientados. Suma al promedio de las
+  dos imágenes el detalle claro y le resta el oscuro, ambos multiplicados por un peso m. Mediante
+  optimización por enjambre de partículas, el peso quedó en el mínimo permitido, 0.30, y se eligió el
+  radio de 25 píxeles, que da más realce. Con seis métricas
+  sin referencia en veinte pares nocturnos del TNO Image Fusion Dataset, el algoritmo superó al
+  Top-Hat clásico en cuatro métricas, perdió en una y empató en otra, y obtuvo el mejor rango
+  promedio de los siete métodos comparados, por poco y con un orden que depende de las métricas. En
+  M3FD, la tasa de acierto equilibrada del detector entrenado con sus imágenes fue del 61.4 %, cuarta
+  entre ocho entradas fusionadas y 3.0 puntos por encima del Top-Hat clásico, una ventaja mínima que
+  cambió de signo según la semilla y que queda como hallazgo por confirmar.
+keywords:
+  - fusión de imágenes infrarrojas y visibles
+  - morfología matemática
+  - transformada Top-Hat
+  - optimización por enjambre de partículas
+  - detección de objetos
+license: MIT
+repository-code: https://github.com/YanBajac/TFM_Fusion_Imagenes_Propuesta_Oficial
+url: https://github.com/YanBajac/TFM_Fusion_Imagenes_Propuesta_Oficial
+date-released: "2026-11-09"
+preferred-citation:
+  type: thesis
+  title: Fusión de imágenes infrarrojas y visibles mediante morfología matemática
+  authors:
+    - family-names: Bazán
+      given-names: Juan Pablo
+    - family-names: Bajac
+      given-names: Yan
+  thesis-type: Tesis de Maestría en Ciencia de Datos
+  institution:
+    name: Universidad Comunera, Facultad de Informática
+    city: Asunción
+    country: PY
+  year: 2026
+  languages:
+    - es
+  url: https://github.com/YanBajac/TFM_Fusion_Imagenes_Propuesta_Oficial
+  notes: >-
+    Subtítulo: Un operador Top-Hat de una sola escala con un banco de cinco elementos estructurantes:
+    calidad de la fusión y aplicación a la detección de objetos. Autores: Lic. Juan Pablo Bazán e
+    Ing. Yan Bajac. Tutor: D.Sc. Julio César Mello. El PDF está en docs/libro_v4/Tesis_Bazan_Bajac.pdf.
+references:
+  - type: data
+    title: TNO Image Fusion Dataset
+    authors:
+      - family-names: Toet
+        given-names: Alexander
+    publisher:
+      name: figshare
+    doi: 10.6084/m9.figshare.1008029
+    year: 2014
+    license: CC-BY-4.0
+    notes: >-
+      Corpus de la evaluación de calidad (veinte pares nocturnos). No se redistribuye: se reconstruye
+      con data/raw/MANIFIESTO_CORPUS.csv y experiments/preparar_corpus.py.
+  - type: article
+    title: The TNO multiband image data collection
+    authors:
+      - family-names: Toet
+        given-names: Alexander
+    journal: Data in Brief
+    volume: 15
+    start: 249
+    end: 251
+    doi: 10.1016/j.dib.2017.09.038
+    year: 2017
+  - type: conference-paper
+    title: >-
+      Target-aware dual adversarial learning and a multi-scenario multi-modality benchmark to fuse
+      infrared and visible for object detection
+    authors:
+      - family-names: Liu
+        given-names: J.
+      - family-names: Fan
+        given-names: X.
+      - family-names: Huang
+        given-names: Z.
+      - family-names: Wu
+        given-names: G.
+      - family-names: Liu
+        given-names: R.
+      - family-names: Zhong
+        given-names: W.
+      - family-names: Luo
+        given-names: Z.
+    collection-title: 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)
+    publisher:
+      name: IEEE
+    start: 5792
+    end: 5801
+    doi: 10.1109/CVPR52688.2022.00571
+    year: 2022
+    notes: >-
+      Presenta M3FD, el conjunto de la evaluación de la detección. No se redistribuye: los enlaces de
+      descarga están en https://github.com/JinyuanLiu-CV/TarDAL.

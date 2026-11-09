@@ -1,0 +1,29 @@
+{
+  "config": {
+    "Curvelet": {
+      "levels": 3,
+      "wavelet": "db4"
+    },
+    "DTCWT": {
+      "levels": 4
+    },
+    "DWT": {
+      "levels": 3
+    },
+    "PiramideLaplace": {
+      "levels": 4
+    },
+    "Propuesta_Novedosa": {
+      "m": 0.3,
+      "mode": "sum",
+      "r": 25
+    },
+    "RatioPiramide": {
+      "levels": 4
+    },
+    "TopHat_Clasico": {
+      "r": 5
+    }
+  },
+  "huella": "7a7ca81dd578c591"
+}

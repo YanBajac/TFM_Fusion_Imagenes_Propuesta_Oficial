@@ -1,0 +1,22 @@
+# Solo para la DETECCION DE OBJETOS (Seccion 3.5 del libro): reentrenar YOLOv8 sobre M3FD. Nada de
+# esto hace falta para la evaluacion de calidad, que es el resultado principal.
+#
+#     pip install -r requirements.txt -r requirements-deteccion.txt
+#
+# NECESITA GPU. En CPU el entrenamiento de 40 epocas no termina en un tiempo razonable.
+#
+# CON GPU, INSTALAR PRIMERO LAS RUEDAS CON CUDA, desde el indice de PyTorch. En Windows, PyPI solo
+# publica el torch de CPU: el entrenamiento arranca igual pero ignora la GPU y tarda cien veces mas,
+# sin decir por que. Tampoco alcanza con --extra-index-url, porque pip elige la version mas nueva de
+# los dos indices, que es la de PyPI. Con las ruedas de CUDA 12.1, las que se usaron:
+#
+#     pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu121
+#     pip install -r requirements-deteccion.txt
+#
+# El segundo comando no reemplaza el torch instalado, porque ya cumple el minimo de abajo.
+# Si torch ya quedo instalado sin CUDA, reparar_torch_gpu.ps1 reinstala la rueda correcta.
+# Para comprobar que quedo bien:  python experiments/comprobar_entorno.py --deteccion
+
+torch>=2.0
+torchvision>=0.15
+ultralytics>=8.2     # YOLOv8: entrenamiento y evaluacion en M3FD

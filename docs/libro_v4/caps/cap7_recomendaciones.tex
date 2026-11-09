@@ -1,0 +1,64 @@
+\chapter{Recomendaciones}
+\label{cap:recomendaciones}
+
+Las recomendaciones que siguen se desprenden de los resultados y de las limitaciones señaladas en las
+Secciones~\ref{sec:limitaciones} y~\ref{sec:disc-limitaciones}.
+
+\begin{itemize}
+\item \textbf{Contraste de la hipótesis:} La hipótesis del trabajo (Capítulo~\ref{cap:introduccion}) se
+planteó a partir de estos resultados, cuando ya se los conocía. Su examen muestra que es compatible con
+ellos, pero esa compatibilidad no equivale a ponerla a prueba. Se recomienda contrastarla con datos
+nuevos y con una regla de decisión fijada de antemano, que indique qué resultado la sostiene y cuál la
+contradice.
+
+\item \textbf{Confirmación del hallazgo en detección:} La ventaja de la propuesta sobre el Top-Hat
+clásico fue mínima y dependió de la semilla. La tasa equilibrada de la propuesta, que promedia el acierto
+sobre los objetos de cada cámara, fue 3.0 puntos mayor que la del Top-Hat clásico, con un intervalo de
+confianza de 0.0 a 6.0. Con el \textit{bootstrap} salvaje por grupos, el intervalo fue de $-3.5$ a 5.5
+e incluyó el cero. Según el par de semillas, la diferencia fue de $-3.1$ a 7.8 puntos. Confirmar esa
+ventaja exige, ante todo, más grupos independientes en la prueba, de tamaño más parejo, armados por
+secuencia de video y no solo por cuadros contiguos.
+También conviene entrenar con más semillas por entrada, porque las tres diferencias negativas se dieron
+frente a una misma semilla del Top-Hat clásico. Las luces, por su parte, deberían provenir de más tramos
+de video: en la prueba, un solo grupo reunió casi dos de cada tres. Por último, la comparación debería
+repetirse con otros detectores y con más épocas de entrenamiento. En nueve de los diez detectores
+seguidos época por época, la mAP50 sobre los cuadros de seguimiento todavía subía en
+las últimas cinco épocas. En esa misma medida, entre las épocas 30 y 40 cambió además el orden de la propuesta frente a la
+pirámide de Laplace y la DWT (db4).
+
+\item \textbf{Ajuste con un mismo criterio:} Los métodos comparativos se usaron con sus parámetros por
+defecto, mientras que el radio de la propuesta se eligió sobre los mismos veinte pares con que se evaluó
+la calidad. Se recomienda ajustar todos los métodos, la propuesta incluida, con un mismo criterio y
+sobre pares que luego no entren en la evaluación. Sería útil, además, medir la calidad en otros
+conjuntos, cuyas imágenes visibles provengan de cámaras comunes y no de cámaras con intensificador de
+imagen.
+
+\item \textbf{Aptitud del ajuste:} La grilla mostró que la aptitud, la función que el enjambre
+busca maximizar, era mayor con pesos por debajo del rango de búsqueda: el mejor peso de cada radio
+estuvo entre 0.05 y 0.07. Con pesos tan bajos, la regla de la Ecuación~\eqref{eq:regla-tophat} deja la
+fusión cerca del promedio simple. Esa preferencia por pesos bajos podría deberse a que dos de los tres
+términos de la aptitud (Ecuación~\ref{eq:aptitud}) premian el parecido con las fuentes. Se recomienda definir una
+aptitud en la que ese parecido no domine, calcularla sobre pares ajenos a la evaluación y tomar el
+promedio simple como referencia.
+
+\item \textbf{Otros métodos comparativos:} Este trabajo se centró en un operador de una sola escala.
+Como se indicó en la Sección~\ref{sec:limitaciones}, dejó fuera la fusión con redes neuronales y los
+métodos morfológicos multiescala de \textcite{bai2013} y de \textcite{roman2020}. Incluirlos permitiría ubicar la propuesta
+frente a esas dos familias.
+
+\item \textbf{Revisión humana de los objetos de una sola cámara:} Un objeto se contó como visto por una
+sola cámara si lo encontraban al menos dos de los tres detectores de esa cámara y a lo sumo uno de los
+de la otra. Con ese criterio, un objeto que muestran ambas cámaras pudo contarse como de una sola cámara
+si los detectores de la otra no lo encontraron. Conviene confirmar esa condición con una revisión
+humana.
+
+\item \textbf{Radio relativo al tamaño de la imagen:} El radio se expresó en píxeles, de modo que la
+parte de la imagen que abarca depende de su resolución. Con $r = 25$, el disco de 51 píxeles de ancho
+cubre entre el 8.9 y el 20.6~\% del lado menor de las imágenes del TNO. Si el radio se expresara en
+proporción al tamaño de la imagen, abarcaría detalles de igual tamaño relativo en todas ellas.
+
+\item \textbf{Fusión con la imagen visible en color:} La imagen visible se usó en escala de grises.
+Queda por estudiar una fusión que combine el brillo de las dos imágenes y conserve el color de la
+visible. Esa fusión interesa sobre todo para las luces, la clase en que la cámara común más aventaja a
+la térmica.
+\end{itemize}

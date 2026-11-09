@@ -1,0 +1,21 @@
+\chapter*{Resumen}
+\phantomsection
+\addcontentsline{toc}{chapter}{Resumen}
+
+Se propone un algoritmo de fusión de imágenes infrarrojas y visibles basado en morfología matemática: un
+Top-Hat de una sola escala con un disco y cuatro segmentos orientados. Suma al promedio de las dos imágenes
+el detalle claro y le resta el oscuro, ambos multiplicados por un peso. Mediante optimización por enjambre
+de partículas, el peso quedó en el mínimo permitido, 0.30, y se eligió el radio de 25 píxeles, que da más
+realce. La hipótesis es que el algoritmo supera al Top-Hat clásico en calidad y en detectar objetos que ve
+una sola cámara, y que es comparable en calidad a cinco métodos multiescala. Con seis métricas sin
+referencia en veinte pares nocturnos, superó al Top-Hat clásico en cuatro, perdió en una y empató en otra.
+Obtuvo el mejor rango promedio de los siete métodos, aunque por poco y con un orden que cambia según las
+métricas: frente a los métodos multiescala, ganó contraste y nitidez y perdió parecido con las fuentes. En
+otro conjunto, de día y de noche, la tasa de acierto equilibrada del detector entrenado con sus fusiones
+fue del 61.4~\%. Promedia el acierto sobre los objetos que ve solo la cámara visible y sobre los que ve
+solo la infrarroja. Esa tasa quedó cuarta entre ocho entradas fusionadas y 3.0 puntos por encima del Top-Hat
+clásico, una ventaja mínima que cambió de signo según la semilla. En calidad la hipótesis se sostiene en lo
+principal; en detección, queda por confirmar con nuevos entrenamientos y datos.
+
+\textbf{Palabras clave:} Fusión de imágenes infrarrojas y visibles; Morfología matemática; Transformada
+Top-Hat; Optimización por enjambre de partículas; Detección de objetos.

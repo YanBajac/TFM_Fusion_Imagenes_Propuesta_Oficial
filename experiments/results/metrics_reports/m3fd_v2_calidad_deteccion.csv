@@ -1,0 +1,8 @@
+,rango_calidad,tasa_equilibrada,rho_spearman,p,semillas
+Propuesta_Novedosa,3.642,0.6141,-0.3214,0.4821,3
+TopHat_Clasico,4.242,0.5842,-0.3214,0.4821,3
+PiramideLaplace,3.908,0.6651,-0.3214,0.4821,3
+RatioPiramide,4.017,0.5313,-0.3214,0.4821,3
+DWT,4.283,0.6231,-0.3214,0.4821,3
+DTCWT,3.783,0.6295,-0.3214,0.4821,3
+Curvelet,4.125,0.6021,-0.3214,0.4821,3
